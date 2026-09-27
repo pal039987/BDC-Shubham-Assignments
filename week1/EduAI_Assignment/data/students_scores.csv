@@ -1,0 +1,251 @@
+StudentID,Name,Gender,Semester,Subject,Marks
+1,John Simmons,Male,1,Math,77
+1,John Simmons,Male,1,Physics,67
+1,John Simmons,Male,1,Chemistry,79
+1,John Simmons,Male,1,English,92
+1,John Simmons,Male,1,Computer Science,66
+2,Mrs. Natalie Davis MD,Female,2,Math,66
+2,Mrs. Natalie Davis MD,Female,2,Physics,93
+2,Mrs. Natalie Davis MD,Female,2,Chemistry,81
+2,Mrs. Natalie Davis MD,Female,2,English,62
+2,Mrs. Natalie Davis MD,Female,2,Computer Science,78
+3,Emily Medina,Male,2,Math,63
+3,Emily Medina,Male,2,Physics,63
+3,Emily Medina,Male,2,Chemistry,73
+3,Emily Medina,Male,2,English,41
+3,Emily Medina,Male,2,Computer Science,44
+4,Sara Blake,Male,1,Math,61
+4,Sara Blake,Male,1,Physics,54
+4,Sara Blake,Male,1,Chemistry,74
+4,Sara Blake,Male,1,English,56
+4,Sara Blake,Male,1,Computer Science,48
+5,Dawn Scott,Female,1,Math,91
+5,Dawn Scott,Female,1,Physics,66
+5,Dawn Scott,Female,1,Chemistry,71
+5,Dawn Scott,Female,1,English,48
+5,Dawn Scott,Female,1,Computer Science,61
+6,Kimberly Henson,Male,1,Math,71
+6,Kimberly Henson,Male,1,Physics,52
+6,Kimberly Henson,Male,1,Chemistry,75
+6,Kimberly Henson,Male,1,English,60
+6,Kimberly Henson,Male,1,Computer Science,65
+7,Lindsay Brown,Male,2,Math,60
+7,Lindsay Brown,Male,2,Physics,97
+7,Lindsay Brown,Male,2,Chemistry,69
+7,Lindsay Brown,Male,2,English,54
+7,Lindsay Brown,Male,2,Computer Science,82
+8,Tina Wilson,Male,2,Math,51
+8,Tina Wilson,Male,2,Physics,73
+8,Tina Wilson,Male,2,Chemistry,40
+8,Tina Wilson,Male,2,English,50
+8,Tina Wilson,Male,2,Computer Science,72
+9,Jonathan Banks,Female,2,Math,81
+9,Jonathan Banks,Female,2,Physics,72
+9,Jonathan Banks,Female,2,Chemistry,68
+9,Jonathan Banks,Female,2,English,65
+9,Jonathan Banks,Female,2,Computer Science,47
+10,Linda Craig,Female,3,Math,59
+10,Linda Craig,Female,3,Physics,63
+10,Linda Craig,Female,3,Chemistry,85
+10,Linda Craig,Female,3,English,75
+10,Linda Craig,Female,3,Computer Science,43
+11,Michael Blankenship,Male,2,Math,74
+11,Michael Blankenship,Male,2,Physics,64
+11,Michael Blankenship,Male,2,Chemistry,59
+11,Michael Blankenship,Male,2,English,79
+11,Michael Blankenship,Male,2,Computer Science,85
+12,Mark Patel,Female,3,Math,83
+12,Mark Patel,Female,3,Physics,57
+12,Mark Patel,Female,3,Chemistry,65
+12,Mark Patel,Female,3,English,74
+12,Mark Patel,Female,3,Computer Science,84
+13,Jeffrey Leach,Female,2,Math,62
+13,Jeffrey Leach,Female,2,Physics,67
+13,Jeffrey Leach,Female,2,Chemistry,53
+13,Jeffrey Leach,Female,2,English,52
+13,Jeffrey Leach,Female,2,Computer Science,82
+14,Alicia Horton,Male,3,Math,90
+14,Alicia Horton,Male,3,Physics,68
+14,Alicia Horton,Male,3,Chemistry,85
+14,Alicia Horton,Male,3,English,75
+14,Alicia Horton,Male,3,Computer Science,60
+15,Casey Henson,Male,1,Math,75
+15,Casey Henson,Male,1,Physics,93
+15,Casey Henson,Male,1,Chemistry,69
+15,Casey Henson,Male,1,English,93
+15,Casey Henson,Male,1,Computer Science,30
+16,Shari Thompson,Female,1,Math,82
+16,Shari Thompson,Female,1,Physics,71
+16,Shari Thompson,Female,1,Chemistry,65
+16,Shari Thompson,Female,1,English,71
+16,Shari Thompson,Female,1,Computer Science,40
+17,Brooke Wall,Female,3,Math,66
+17,Brooke Wall,Female,3,Physics,75
+17,Brooke Wall,Female,3,Chemistry,92
+17,Brooke Wall,Female,3,English,62
+17,Brooke Wall,Female,3,Computer Science,57
+18,Rebekah Davidson,Female,1,Math,62
+18,Rebekah Davidson,Female,1,Physics,83
+18,Rebekah Davidson,Female,1,Chemistry,74
+18,Rebekah Davidson,Female,1,English,62
+18,Rebekah Davidson,Female,1,Computer Science,77
+19,Brent Diaz,Female,1,Math,71
+19,Brent Diaz,Female,1,Physics,84
+19,Brent Diaz,Female,1,Chemistry,59
+19,Brent Diaz,Female,1,English,65
+19,Brent Diaz,Female,1,Computer Science,64
+20,Veronica Adkins,Female,1,Math,48
+20,Veronica Adkins,Female,1,Physics,74
+20,Veronica Adkins,Female,1,Chemistry,73
+20,Veronica Adkins,Female,1,English,70
+20,Veronica Adkins,Female,1,Computer Science,66
+21,Eric Olsen,Female,3,Math,48
+21,Eric Olsen,Female,3,Physics,63
+21,Eric Olsen,Female,3,Chemistry,64
+21,Eric Olsen,Female,3,English,57
+21,Eric Olsen,Female,3,Computer Science,67
+22,Jackie Salinas,Male,1,Math,76
+22,Jackie Salinas,Male,1,Physics,98
+22,Jackie Salinas,Male,1,Chemistry,72
+22,Jackie Salinas,Male,1,English,73
+22,Jackie Salinas,Male,1,Computer Science,68
+23,Robert Lee,Male,2,Math,41
+23,Robert Lee,Male,2,Physics,69
+23,Robert Lee,Male,2,Chemistry,70
+23,Robert Lee,Male,2,English,100
+23,Robert Lee,Male,2,Computer Science,67
+24,Mr. John Green,Female,1,Math,74
+24,Mr. John Green,Female,1,Physics,69
+24,Mr. John Green,Female,1,Chemistry,52
+24,Mr. John Green,Female,1,English,87
+24,Mr. John Green,Female,1,Computer Science,81
+25,Amanda Moreno,Male,1,Math,81
+25,Amanda Moreno,Male,1,Physics,56
+25,Amanda Moreno,Male,1,Chemistry,91
+25,Amanda Moreno,Male,1,English,48
+25,Amanda Moreno,Male,1,Computer Science,78
+26,Nicole Jennings,Female,3,Math,100
+26,Nicole Jennings,Female,3,Physics,55
+26,Nicole Jennings,Female,3,Chemistry,61
+26,Nicole Jennings,Female,3,English,71
+26,Nicole Jennings,Female,3,Computer Science,62
+27,Kyle Hawkins,Female,3,Math,46
+27,Kyle Hawkins,Female,3,Physics,71
+27,Kyle Hawkins,Female,3,Chemistry,54
+27,Kyle Hawkins,Female,3,English,77
+27,Kyle Hawkins,Female,3,Computer Science,56
+28,Megan Brooks,Male,3,Math,93
+28,Megan Brooks,Male,3,Physics,58
+28,Megan Brooks,Male,3,Chemistry,65
+28,Megan Brooks,Male,3,English,82
+28,Megan Brooks,Male,3,Computer Science,51
+29,Joshua Lyons,Female,2,Math,73
+29,Joshua Lyons,Female,2,Physics,89
+29,Joshua Lyons,Female,2,Chemistry,45
+29,Joshua Lyons,Female,2,English,72
+29,Joshua Lyons,Female,2,Computer Science,73
+30,Daniel Perez,Female,1,Math,81
+30,Daniel Perez,Female,1,Physics,51
+30,Daniel Perez,Female,1,Chemistry,50
+30,Daniel Perez,Female,1,English,77
+30,Daniel Perez,Female,1,Computer Science,74
+31,John Griffin,Male,2,Math,73
+31,John Griffin,Male,2,Physics,75
+31,John Griffin,Male,2,Chemistry,59
+31,John Griffin,Male,2,English,73
+31,John Griffin,Male,2,Computer Science,74
+32,Brian Combs,Male,4,Math,59
+32,Brian Combs,Male,4,Physics,97
+32,Brian Combs,Male,4,Chemistry,77
+32,Brian Combs,Male,4,English,52
+32,Brian Combs,Male,4,Computer Science,79
+33,Emily Moran,Female,3,Math,55
+33,Emily Moran,Female,3,Physics,81
+33,Emily Moran,Female,3,Chemistry,87
+33,Emily Moran,Female,3,English,57
+33,Emily Moran,Female,3,Computer Science,84
+34,Crystal Duncan,Male,3,Math,76
+34,Crystal Duncan,Male,3,Physics,82
+34,Crystal Duncan,Male,3,Chemistry,98
+34,Crystal Duncan,Male,3,English,66
+34,Crystal Duncan,Male,3,Computer Science,58
+35,David Parsons,Male,2,Math,56
+35,David Parsons,Male,2,Physics,57
+35,David Parsons,Male,2,Chemistry,68
+35,David Parsons,Male,2,English,75
+35,David Parsons,Male,2,Computer Science,74
+36,James Thompson,Male,3,Math,82
+36,James Thompson,Male,3,Physics,70
+36,James Thompson,Male,3,Chemistry,91
+36,James Thompson,Male,3,English,66
+36,James Thompson,Male,3,Computer Science,100
+37,Dr. Michael Chavez DDS,Female,3,Math,79
+37,Dr. Michael Chavez DDS,Female,3,Physics,57
+37,Dr. Michael Chavez DDS,Female,3,Chemistry,53
+37,Dr. Michael Chavez DDS,Female,3,English,77
+37,Dr. Michael Chavez DDS,Female,3,Computer Science,66
+38,Ashley Lee,Male,2,Math,80
+38,Ashley Lee,Male,2,Physics,77
+38,Ashley Lee,Male,2,Chemistry,68
+38,Ashley Lee,Male,2,English,57
+38,Ashley Lee,Male,2,Computer Science,47
+39,Barbara Jones,Female,2,Math,63
+39,Barbara Jones,Female,2,Physics,82
+39,Barbara Jones,Female,2,Chemistry,73
+39,Barbara Jones,Female,2,English,51
+39,Barbara Jones,Female,2,Computer Science,72
+40,Kenneth Gonzalez,Female,4,Math,75
+40,Kenneth Gonzalez,Female,4,Physics,56
+40,Kenneth Gonzalez,Female,4,Chemistry,72
+40,Kenneth Gonzalez,Female,4,English,70
+40,Kenneth Gonzalez,Female,4,Computer Science,52
+41,Paul Houston,Female,2,Math,75
+41,Paul Houston,Female,2,Physics,78
+41,Paul Houston,Female,2,Chemistry,86
+41,Paul Houston,Female,2,English,85
+41,Paul Houston,Female,2,Computer Science,49
+42,Marvin Grant,Female,2,Math,55
+42,Marvin Grant,Female,2,Physics,77
+42,Marvin Grant,Female,2,Chemistry,77
+42,Marvin Grant,Female,2,English,77
+42,Marvin Grant,Female,2,Computer Science,100
+43,Emily Hall,Male,3,Math,78
+43,Emily Hall,Male,3,Physics,87
+43,Emily Hall,Male,3,Chemistry,84
+43,Emily Hall,Male,3,English,79
+43,Emily Hall,Male,3,Computer Science,65
+44,Mark Maddox DVM,Female,4,Math,81
+44,Mark Maddox DVM,Female,4,Physics,58
+44,Mark Maddox DVM,Female,4,Chemistry,66
+44,Mark Maddox DVM,Female,4,English,62
+44,Mark Maddox DVM,Female,4,Computer Science,71
+45,Sarah Hood,Female,2,Math,100
+45,Sarah Hood,Female,2,Physics,41
+45,Sarah Hood,Female,2,Chemistry,80
+45,Sarah Hood,Female,2,English,45
+45,Sarah Hood,Female,2,Computer Science,62
+46,Carl Brown,Male,4,Math,86
+46,Carl Brown,Male,4,Physics,70
+46,Carl Brown,Male,4,Chemistry,53
+46,Carl Brown,Male,4,English,59
+46,Carl Brown,Male,4,Computer Science,80
+47,Gerald Newman,Male,1,Math,59
+47,Gerald Newman,Male,1,Physics,73
+47,Gerald Newman,Male,1,Chemistry,70
+47,Gerald Newman,Male,1,English,60
+47,Gerald Newman,Male,1,Computer Science,100
+48,Kathy Brown,Male,2,Math,79
+48,Kathy Brown,Male,2,Physics,39
+48,Kathy Brown,Male,2,Chemistry,72
+48,Kathy Brown,Male,2,English,60
+48,Kathy Brown,Male,2,Computer Science,82
+49,Anna Perry,Male,4,Math,58
+49,Anna Perry,Male,4,Physics,68
+49,Anna Perry,Male,4,Chemistry,77
+49,Anna Perry,Male,4,English,82
+49,Anna Perry,Male,4,Computer Science,51
+50,Elizabeth George,Male,4,Math,64
+50,Elizabeth George,Male,4,Physics,62
+50,Elizabeth George,Male,4,Chemistry,60
+50,Elizabeth George,Male,4,English,96
+50,Elizabeth George,Male,4,Computer Science,76

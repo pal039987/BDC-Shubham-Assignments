@@ -1,0 +1,26 @@
+Prompt #,Prompt Used,Model Output
+1,Summarize the review.,"**Summary:**
+
+Although the headphones arrived two days late in damaged packaging, the sound quality is great, and customer support was helpful in replacing the box."
+2,Give a brief summary of the customer feedback.,"**Summary:**
+
+The customer experienced a two-day shipping delay and received damaged packaging, but was satisfied with the headphones' great sound quality and praised customer support for resolving the issue by replacing the box."
+3,Summarize the key points from the review text.,"Here are the key points from the review:
+
+* **Delivery & Packaging:** The headphones arrived two days late, and the packaging was damaged.
+* **Product Quality:** The sound quality of the headphones is great.
+* **Customer Support:** Customer service was helpful and resolved the issue by replacing the box."
+4,Highlight pros and cons from this customer review.,"Here are the pros and cons extracted from the customer review:
+
+**Pros:**
+* **Great sound quality:** The core feature of the headphones performs well.
+* **Helpful customer support:** The support team resolved the issue by replacing the damaged box.
+
+**Cons:**
+* **Delayed delivery:** The package arrived two days late.
+* **Damaged packaging:** The box was damaged upon arrival."
+5,What is the customer's overall opinion?,"The customer’s overall opinion is **generally positive/satisfied**, despite experiencing some initial issues. 
+
+Here is a breakdown of their feedback:
+* **Positive:** They are very happy with the core product (great sound quality) and pleased with the customer service (helpful and resolved the packaging issue).
+* **Negative:** They experienced minor inconveniences with late shipping and damaged packaging, but these were adequately addressed."

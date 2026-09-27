@@ -1,0 +1,63 @@
+import json
+import os
+
+# Simulated password manager
+password_store = {}
+
+def add_entry(site, username, password):
+    password_store[site] = {
+        "username": username,
+        "password": password
+    }
+    print(f"Entry added for '{site}'.")
+
+def get_password(site):
+    if site in password_store:
+        entry = password_store[site]
+        print(f"Site: {site}")
+        print(f"Username: {entry['username']}")
+        print(f"Password: {entry['password']}")
+        return entry['password']
+    else:
+        print(f"No entry found for '{site}'.")
+        return None
+
+def list_sites():
+    if not password_store:
+        print("No sites stored yet.")
+        return
+    print("Stored sites:")
+    for site in password_store:
+        print(f"  - {site}")
+
+
+# Save to file
+def save_to_file(filename="passwords.json"):
+    with open(filename, "w") as f:
+        json.dump(password_store, f, indent=4)
+    print(f"Passwords saved to '{filename}'.")
+
+# Load from file
+def load_from_file(filename="passwords.json"):
+    global password_store
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            password_store = json.load(f)
+        print(f"Passwords loaded from '{filename}'.")
+    else:
+        print(f"No saved file '{filename}' found.")
+
+
+# Example usage:
+add_entry("gmail.com", "shubham123", "MyP@ss1")
+add_entry("github.com", "shubham-dev", "GitHub#456")
+add_entry("netflix.com", "shubham", "Netflix789")
+
+list_sites()
+print()
+get_password("github.com")
+print()
+get_password("amazon.com")  # not stored
+
+save_to_file()
+load_from_file()

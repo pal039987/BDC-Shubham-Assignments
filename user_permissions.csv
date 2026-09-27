@@ -1,0 +1,5 @@
+username,role,active,last_login
+alice,admin,True,2024-05-01 10:30:00
+bob,user,True,2024-05-02 14:00:00
+carol,editor,False,2024-04-20 09:15:00
+dave,viewer,True,2024-05-03 08:45:00

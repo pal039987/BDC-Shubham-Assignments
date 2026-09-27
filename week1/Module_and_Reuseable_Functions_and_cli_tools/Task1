@@ -1,0 +1,32 @@
+from datetime import datetime
+
+# Function to generate a greeting
+def greet_user(name):
+    current_hour = datetime.now().hour
+    
+    if current_hour < 12:
+        time_greeting = "Good morning"
+    elif current_hour < 17:
+        time_greeting = "Good afternoon"
+    else:
+        time_greeting = "Good evening"
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return f"{time_greeting}, {name}! Welcome back. ({timestamp})"
+
+# Function to print CLI-styled message block
+def cli_message(title, message):
+    width = max(len(title), len(message)) + 4
+    border = "=" * width
+    
+    print(border)
+    print(f"  {title}")
+    print("-" * width)
+    print(f"  {message}")
+    print(border)
+
+# Example usage:
+greeting = greet_user("Shubham")
+print(greeting)
+print()
+cli_message("Welcome", "You have 2 new notifications.")

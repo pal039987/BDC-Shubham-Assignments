@@ -1,0 +1,370 @@
+from datetime import datetime, date
+
+
+# ============================================================
+# PART 1: Product Class
+# ============================================================
+
+class Product:
+    def __init__(self, product_id, name, category, price, stock, min_stock_level=5):
+        self.product_id = product_id
+        self.name = name
+        self.category = category
+        self.price = price
+        self.stock = stock
+        self.min_stock_level = min_stock_level
+
+    def update_stock(self, quantity):
+        new_stock = self.stock + quantity
+        if new_stock < 0:
+            raise ValueError(
+                f"Insufficient stock for '{self.name}': "
+                f"cannot reduce stock by {abs(quantity)} when only {self.stock} available."
+            )
+        self.stock = new_stock
+
+    def get_details(self):
+        return {
+            "product_id": self.product_id,
+            "name": self.name,
+            "category": self.category,
+            "price": self.price,
+            "stock": self.stock,
+            "min_stock_level": self.min_stock_level
+        }
+
+    def is_low_stock(self):
+        return self.stock < self.min_stock_level
+
+    def __str__(self):
+        return f"[ID: {self.product_id}] {self.name} ({self.category}) - ${self.price:.2f} | Stock: {self.stock}"
+
+    def __repr__(self):
+        return (f"Product(product_id={self.product_id!r}, name={self.name!r}, "
+                f"category={self.category!r}, price={self.price!r}, "
+                f"stock={self.stock!r}, min_stock_level={self.min_stock_level!r})")
+
+
+class PerishableProduct(Product):
+    def __init__(self, product_id, name, category, price, stock, expiry_date, min_stock_level=5):
+        super().__init__(product_id, name, category, price, stock, min_stock_level)
+        self.expiry_date = expiry_date  # format: "YYYY-MM-DD"
+
+    def is_expired(self):
+        expiry = datetime.strptime(self.expiry_date, "%Y-%m-%d").date()
+        return date.today() > expiry
+
+    def __str__(self):
+        return f"{super().__str__()} | Expiry: {self.expiry_date}"
+
+
+# ============================================================
+# PART 2: InventoryManager Class
+# ============================================================
+
+class InventoryManager:
+    def __init__(self):
+        self.products = {}
+
+    def add_product(self, product):
+        if product.product_id in self.products:
+            raise ValueError(f"Product ID '{product.product_id}' already exists.")
+        self.products[product.product_id] = product
+
+    def remove_product(self, product_id):
+        if product_id not in self.products:
+            raise KeyError(f"Product ID '{product_id}' not found.")
+        del self.products[product_id]
+
+    def get_product(self, product_id):
+        return self.products.get(product_id)
+
+    def list_all_products(self):
+        return list(self.products.values())
+
+    def search_products(self, query, search_by='name'):
+        results = []
+        query_lower = str(query).lower()
+
+        for product in self.products.values():
+            if search_by == 'name' and query_lower in product.name.lower():
+                results.append(product)
+            elif search_by == 'category' and query_lower in product.category.lower():
+                results.append(product)
+            elif search_by == 'id' and query_lower in product.product_id.lower():
+                results.append(product)
+
+        return results
+
+    def update_stock(self, product_id, quantity_change):
+        product = self.get_product(product_id)
+        if product is None:
+            raise KeyError(f"Product ID '{product_id}' not found.")
+        try:
+            product.update_stock(quantity_change)
+        except ValueError as e:
+            print(f"Error updating stock for '{product_id}': {e}")
+
+    def get_low_stock_products(self):
+        return [p for p in self.products.values() if p.is_low_stock()]
+
+    def get_expired_perishable_products(self):
+        expired = []
+        for product in self.products.values():
+            if hasattr(product, 'is_expired') and product.is_expired():
+                expired.append(product)
+        return expired
+
+    def get_total_inventory_value(self):
+        return sum(p.price * p.stock for p in self.products.values())
+
+    def generate_report(self):
+        total_products = len(self.products)
+        total_quantity = sum(p.stock for p in self.products.values())
+        total_value = self.get_total_inventory_value()
+        low_stock = self.get_low_stock_products()
+        expired = self.get_expired_perishable_products()
+
+        print("=" * 40)
+        print("       INVENTORY REPORT")
+        print("=" * 40)
+        print(f"Total unique products: {total_products}")
+        print(f"Total quantity in stock: {total_quantity}")
+        print(f"Total inventory value: ${total_value:.2f}")
+
+        print("\nLow-stock products:")
+        if low_stock:
+            for p in low_stock:
+                print(f"  {p}")
+        else:
+            print("  None")
+
+        print("\nExpired perishable products:")
+        if expired:
+            for p in expired:
+                print(f"  {p}")
+        else:
+            print("  None")
+
+        print("=" * 40)
+
+
+# ============================================================
+# PART 3: Command-Line Interface (CLI)
+# ============================================================
+
+def main():
+    inventory_manager = InventoryManager()
+
+    while True:
+        print("\n--- Inventory Management System ---")
+        print("1. Add Product")
+        print("2. Remove Product")
+        print("3. Update Stock")
+        print("4. View Product Details")
+        print("5. List All Products")
+        print("6. Search Products")
+        print("7. View Low Stock Products")
+        print("8. View Expired Products")
+        print("9. Generate Inventory Report")
+        print("10. Exit")
+
+        choice = input("Enter your choice: ").strip()
+
+        if choice == '1':
+            try:
+                product_id = input("Enter product ID: ").strip()
+                name = input("Enter product name: ").strip()
+                category = input("Enter category: ").strip()
+
+                price = float(input("Enter price: "))
+                if price <= 0:
+                    print("Error: Price must be a positive number.")
+                    continue
+
+                stock = int(input("Enter stock quantity: "))
+                if stock < 0:
+                    print("Error: Stock cannot be negative.")
+                    continue
+
+                min_stock_input = input("Enter min stock level (press Enter for default 5): ").strip()
+                min_stock_level = int(min_stock_input) if min_stock_input else 5
+                if min_stock_level < 0:
+                    print("Error: Min stock level cannot be negative.")
+                    continue
+
+                is_perishable = input("Is this a perishable product? (y/n): ").strip().lower()
+
+                if is_perishable == 'y':
+                    expiry_date = input("Enter expiry date (YYYY-MM-DD): ").strip()
+                    try:
+                        datetime.strptime(expiry_date, "%Y-%m-%d")
+                    except ValueError:
+                        print("Error: Invalid date format. Use YYYY-MM-DD.")
+                        continue
+                    product = PerishableProduct(product_id, name, category, price, stock, expiry_date, min_stock_level)
+                else:
+                    product = Product(product_id, name, category, price, stock, min_stock_level)
+
+                inventory_manager.add_product(product)
+                print(f"Product '{name}' added successfully.")
+
+            except ValueError as e:
+                print(f"Error: Invalid input. {e}")
+
+        elif choice == '2':
+            product_id = input("Enter product ID to remove: ").strip()
+            try:
+                inventory_manager.remove_product(product_id)
+                print(f"Product '{product_id}' removed successfully.")
+            except KeyError as e:
+                print(f"Error: {e}")
+
+        elif choice == '3':
+            product_id = input("Enter product ID: ").strip()
+            try:
+                quantity_change = int(input("Enter quantity change (+ to add, - to remove): "))
+                inventory_manager.update_stock(product_id, quantity_change)
+                print(f"Stock updated for '{product_id}'.")
+            except ValueError:
+                print("Error: Please enter a valid integer for quantity.")
+            except KeyError as e:
+                print(f"Error: {e}")
+
+        elif choice == '4':
+            product_id = input("Enter product ID: ").strip()
+            product = inventory_manager.get_product(product_id)
+            if product:
+                print(product)
+            else:
+                print(f"No product found with ID '{product_id}'.")
+
+        elif choice == '5':
+            products = inventory_manager.list_all_products()
+            if products:
+                print("\nAll Products:")
+                for p in products:
+                    print(f"  {p}")
+            else:
+                print("No products in inventory.")
+
+        elif choice == '6':
+            query = input("Enter search term: ").strip()
+            search_by = input("Search by (name/category/id): ").strip().lower()
+            if search_by not in ('name', 'category', 'id'):
+                print("Invalid search criteria. Defaulting to 'name'.")
+                search_by = 'name'
+            results = inventory_manager.search_products(query, search_by)
+            if results:
+                print(f"\nFound {len(results)} matching product(s):")
+                for p in results:
+                    print(f"  {p}")
+            else:
+                print("No matching products found.")
+
+        elif choice == '7':
+            low_stock = inventory_manager.get_low_stock_products()
+            if low_stock:
+                print("\nLow Stock Products:")
+                for p in low_stock:
+                    print(f"  {p}")
+            else:
+                print("No products are low on stock.")
+
+        elif choice == '8':
+            expired = inventory_manager.get_expired_perishable_products()
+            if expired:
+                print("\nExpired Products:")
+                for p in expired:
+                    print(f"  {p}")
+            else:
+                print("No expired products.")
+
+        elif choice == '9':
+            inventory_manager.generate_report()
+
+        elif choice == '10':
+            print("Exiting Inventory Management System. Goodbye!")
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+
+# ============================================================
+# PART 4: Advanced Challenges (Conceptual - Bonus)
+# ============================================================
+
+"""
+4.2 UNIT TESTING (CONCEPTUAL)
+
+If writing unit tests (e.g. using Python's `unittest` or `pytest`), here's
+what I would cover:
+
+Product class:
+- test_update_stock_add: stock increases correctly on positive quantity
+- test_update_stock_subtract: stock decreases correctly on negative quantity
+- test_update_stock_negative_raises_error: ValueError raised when stock would go below zero
+- test_is_low_stock_true: returns True when stock < min_stock_level
+- test_is_low_stock_false: returns False when stock >= min_stock_level
+- test_get_details_returns_correct_dict: dictionary matches all attributes
+- test_str_representation: __str__ output matches expected format
+
+InventoryManager class:
+- test_add_product_success: product added correctly to dictionary
+- test_add_product_duplicate_id_raises_error: ValueError on duplicate product_id
+- test_remove_product_success: product removed correctly
+- test_remove_product_not_found_raises_error: KeyError on missing product_id
+- test_get_product_found / test_get_product_not_found: returns Product or None
+- test_search_products_by_name / category / id: correct matches returned
+- test_update_stock_valid: stock updates correctly through manager
+- test_update_stock_invalid_id: KeyError raised for non-existent product
+- test_get_low_stock_products: only products below min_stock_level returned
+- test_get_expired_perishable_products: only expired PerishableProducts returned
+- test_get_total_inventory_value: correct sum of (price * stock) across all products
+- test_generate_report_runs_without_error: report prints without exceptions
+
+Edge cases to include:
+- Empty inventory (no products at all)
+- Exactly at min_stock_level boundary (should NOT count as low stock)
+- Product with stock = 0
+- PerishableProduct with expiry_date = today (boundary case)
+- Searching with a query that matches nothing
+"""
+
+"""
+4.3 DATA PERSISTENCE (CONCEPTUAL)
+
+Currently, all data lives only in memory (self.products dictionary) and is
+lost when the program exits. To persist data across runs, I would:
+
+Using JSON:
+- Add a `save_to_file(self, filename="inventory.json")` method to
+  InventoryManager that loops through self.products, calls get_details()
+  on each Product (plus expiry_date for PerishableProduct), and writes
+  the resulting list of dictionaries to a JSON file using json.dump().
+- Add a `load_from_file(self, filename="inventory.json")` method that
+  reads the JSON file with json.load(), then reconstructs Product or
+  PerishableProduct objects (checking for an 'expiry_date' key to decide
+  which class to use) and repopulates self.products.
+- Call load_from_file() once when the program starts (inside main()),
+  and call save_from_file() every time data changes (after add/remove/
+  update_stock), or once when the user selects "Exit" from the menu.
+
+Using CSV:
+- Similar idea, but using Python's csv module instead - each row would
+  represent one product, with columns for product_id, name, category,
+  price, stock, min_stock_level, and expiry_date (left blank for
+  non-perishable products).
+- CSV is simpler for viewing in Excel/Sheets, but JSON is better here
+  since it naturally supports nested/optional fields like expiry_date
+  without needing blank columns.
+
+JSON is the better fit for this project since the data structure (products
+with optional extra fields for PerishableProduct) maps cleanly to JSON's
+dictionary format.
+"""
+
+
+if __name__ == "__main__":
+    main()

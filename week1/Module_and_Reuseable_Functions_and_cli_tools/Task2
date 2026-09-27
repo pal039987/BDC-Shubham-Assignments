@@ -1,0 +1,42 @@
+import os
+from datetime import datetime
+
+# Function to list files
+def list_files(directory):
+    try:
+        files = os.listdir(directory)
+        if not files:
+            print(f"No files found in '{directory}'.")
+            return
+        print(f"Files in '{directory}':")
+        for f in files:
+            print(f"  - {f}")
+    except FileNotFoundError:
+        print(f"Error: Directory '{directory}' not found.")
+    except NotADirectoryError:
+        print(f"Error: '{directory}' is not a directory.")
+
+# Function to read file
+def read_file(filepath):
+    try:
+        with open(filepath, 'r') as f:
+            content = f.read()
+        print(f"--- Content of '{filepath}' ---")
+        print(content)
+    except FileNotFoundError:
+        print(f"Error: File '{filepath}' not found.")
+    except IsADirectoryError:
+        print(f"Error: '{filepath}' is a directory, not a file.")
+
+# Function to write logs
+def write_log(message):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("log.txt", "a") as f:
+        f.write(f"[{timestamp}] {message}\n")
+    print(f"Logged: {message}")
+
+
+# Example usage:
+list_files(".")
+write_log("Application started")
+read_file("log.txt")

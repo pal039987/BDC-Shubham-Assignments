@@ -1,0 +1,213 @@
+import json
+import os
+import csv
+
+
+# ============================================================
+# PART 1: JSON Configuration Management
+# ============================================================
+
+CONFIG_JSON_FILE = 'app_config.json'
+
+# 1.1 Initial Application Configuration
+default_app_config = {
+    "app_name": "MyAwesomeApp",
+    "version": 1.2,
+    "debug_mode": False,
+    "max_connections": 100,
+    "allowed_features": ["dashboard", "reporting", "admin_panel"],
+    "database": {"host": "localhost", "port": 5432, "user": "admin"}
+}
+
+# 1.2 Function to Save Configuration
+def save_config_json(config_data, filepath):
+    try:
+        with open(filepath, 'w') as f:
+            json.dump(config_data, f, indent=4)
+        print(f"Configuration saved to '{filepath}'.")
+    except IOError as e:
+        print(f"Error saving configuration to '{filepath}': {e}")
+
+# 1.3 Function to Load Configuration
+def load_config_json(filepath):
+    try:
+        with open(filepath, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"'{filepath}' not found. Using default configuration.")
+        return default_app_config
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON from '{filepath}': {e}. Using default configuration.")
+        return default_app_config
+
+
+# ============================================================
+# PART 2: CSV Data Management
+# ============================================================
+
+PERMISSIONS_CSV_FILE = 'user_permissions.csv'
+
+# 2.1 Initial User Permissions Data
+default_user_permissions = [
+    {"username": "alice", "role": "admin", "active": True, "last_login": "2024-05-01 10:30:00"},
+    {"username": "bob", "role": "user", "active": True, "last_login": "2024-05-02 14:00:00"},
+    {"username": "carol", "role": "editor", "active": False, "last_login": "2024-04-20 09:15:00"},
+    {"username": "dave", "role": "viewer", "active": True, "last_login": "2024-05-03 08:45:00"}
+]
+
+# 2.2 Function to Save User Permissions to CSV
+def save_permissions_csv(permissions_data, filepath, fieldnames):
+    try:
+        with open(filepath, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(permissions_data)
+        print(f"Permissions saved to '{filepath}'.")
+    except IOError as e:
+        print(f"Error saving permissions to '{filepath}': {e}")
+
+# 2.3 Function to Load User Permissions from CSV
+def load_permissions_csv(filepath):
+    try:
+        with open(filepath, 'r', newline='') as f:
+            reader = csv.DictReader(f)
+            permissions = []
+            for row in reader:
+                # cast 'active' back to boolean since CSV stores everything as strings
+                row['active'] = row['active'].strip().lower() == 'true'
+                permissions.append(row)
+            return permissions
+    except FileNotFoundError:
+        print(f"'{filepath}' not found. Using default permissions.")
+        return default_user_permissions
+    except csv.Error as e:
+        print(f"Error reading CSV from '{filepath}': {e}. Using default permissions.")
+        return default_user_permissions
+
+
+# ============================================================
+# PART 3: Combined Config Loader and CLI
+# ============================================================
+
+class ConfigManager:
+    def __init__(self, app_config_path, user_perms_path, default_app_config, default_user_permissions):
+        self.app_config_path = app_config_path
+        self.user_perms_path = user_perms_path
+        self.default_app_config = default_app_config
+        self.default_user_permissions = default_user_permissions
+        self.app_config = self.load_app_config()
+        self.user_permissions = self.load_user_permissions()
+        self.user_fieldnames = list(default_user_permissions[0].keys())
+
+    def load_app_config(self):
+        return load_config_json(self.app_config_path)
+
+    def save_app_config(self):
+        save_config_json(self.app_config, self.app_config_path)
+
+    def load_user_permissions(self):
+        return load_permissions_csv(self.user_perms_path)
+
+    def save_user_permissions(self):
+        save_permissions_csv(self.user_permissions, self.user_perms_path, self.user_fieldnames)
+
+    # 3.2 Methods to modify config and permissions directly via the class
+    def update_app_setting(self, key, value):
+        self.app_config[key] = value
+        print(f"App setting '{key}' updated to '{value}'.")
+
+    def add_user_permission(self, username, role, active, last_login):
+        for user in self.user_permissions:
+            if user['username'] == username:
+                print(f"User '{username}' already exists.")
+                return
+        self.user_permissions.append({
+            "username": username,
+            "role": role,
+            "active": active,
+            "last_login": last_login
+        })
+        print(f"User '{username}' added successfully.")
+
+    def update_user_role(self, username, new_role):
+        for user in self.user_permissions:
+            if user['username'] == username:
+                user['role'] = new_role
+                print(f"User '{username}' role updated to '{new_role}'.")
+                return
+        print(f"User '{username}' not found.")
+
+
+# 3.3 CLI
+def main():
+    manager = ConfigManager(
+        CONFIG_JSON_FILE,
+        PERMISSIONS_CSV_FILE,
+        default_app_config,
+        default_user_permissions
+    )
+
+    while True:
+        print("\n--- Config Management CLI ---")
+        print("1. View App Settings")
+        print("2. Update App Setting")
+        print("3. View User Permissions")
+        print("4. Add New User Permission")
+        print("5. Update User Role")
+        print("6. Exit (Save Changes)")
+
+        choice = input("Enter your choice: ").strip()
+
+        if choice == '1':
+            print("\nCurrent App Settings:")
+            for key, value in manager.app_config.items():
+                print(f"  {key}: {value}")
+
+        elif choice == '2':
+            key = input("Enter setting key to update: ").strip()
+            value = input("Enter new value: ").strip()
+
+            # try to preserve proper data types when possible
+            if value.lower() in ('true', 'false'):
+                value = value.lower() == 'true'
+            else:
+                try:
+                    value = int(value)
+                except ValueError:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass  # keep as string
+
+            manager.update_app_setting(key, value)
+
+        elif choice == '3':
+            print("\nCurrent User Permissions:")
+            for user in manager.user_permissions:
+                print(f"  {user}")
+
+        elif choice == '4':
+            username = input("Enter username: ").strip()
+            role = input("Enter role: ").strip()
+            active_input = input("Is active? (y/n): ").strip().lower()
+            active = active_input == 'y'
+            last_login = input("Enter last login (YYYY-MM-DD HH:MM:SS): ").strip()
+            manager.add_user_permission(username, role, active, last_login)
+
+        elif choice == '5':
+            username = input("Enter username: ").strip()
+            new_role = input("Enter new role: ").strip()
+            manager.update_user_role(username, new_role)
+
+        elif choice == '6':
+            print("Saving changes and exiting...")
+            manager.save_app_config()
+            manager.save_user_permissions()
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+    main()

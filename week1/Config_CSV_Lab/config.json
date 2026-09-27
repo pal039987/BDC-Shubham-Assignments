@@ -1,0 +1,14 @@
+{
+    "app_name": "InventoryApp",
+    "version": "1.0",
+    "features": [
+        "add",
+        "update",
+        "delete",
+        "export"
+    ],
+    "database": {
+        "type": "sqlite",
+        "path": "/data/db.sqlite3"
+    }
+}
