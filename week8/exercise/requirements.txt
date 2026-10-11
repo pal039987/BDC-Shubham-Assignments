@@ -1,0 +1,17 @@
+sentence-transformers
+faiss-cpu
+nltk
+pypdf
+scikit-learn
+wikipedia-api
+transformers
+sentencepiece
+torch
+numpy
+fastapi
+uvicorn
+pydantic
+langchain
+langchain-google-genai
+python-dotenv
+requests

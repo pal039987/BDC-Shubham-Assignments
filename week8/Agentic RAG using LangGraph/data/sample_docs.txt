@@ -1,0 +1,23 @@
+Generative AI is a branch of artificial intelligence
+that can create new content such as text, images,
+audio, video, and software code.
+
+Retrieval Augmented Generation, commonly called RAG,
+combines information retrieval with language model
+generation. A RAG system retrieves relevant documents
+before asking the language model to generate an answer.
+
+FAISS is a library for efficient similarity search
+over dense numerical vectors. It is frequently used
+in semantic search and RAG applications.
+
+LangGraph is a framework for building stateful,
+multi-step and agentic workflows.
+
+FastAPI is a Python framework for building APIs
+using Python. It provides automatic API documentation
+and request validation.
+
+Vector embeddings represent text as numerical vectors.
+Texts with similar meanings can have similar vector
+representations, which makes semantic search possible.

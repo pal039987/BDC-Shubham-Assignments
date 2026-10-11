@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.personalexpensetracker.app-mergeDebugResources-45:/values-v30/values-v30.xml",
+            "map": [
+                {
+                    "source": "/home/bdcadmin/.gradle/caches/8.10.2/transforms/b14bd8a59fd07380191b74e0162ac826/transformed/jetified-material3-release/res/values-v30/values-v30.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "72",
+                        "endOffsets": "123"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,1 @@
+torch>=2.2\ntransformers>=4.45\npandas>=2.0\nsafetensors>=0.4\n

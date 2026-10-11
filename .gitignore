@@ -4,3 +4,21 @@ __pycache__/
 .env
 *.log
 week1/git-practice/
+
+.env
+.env.*
+venv/
+**/venv/
+__pycache__/
+*.pyc
+
+# Large generated model files
+week9/exercise/outputs/checkpoints/
+week9/exercise/outputs/lora_adapter/
+week9/exercise/outputs/*.png
+week9/exercise/outputs/best_model/
+week9/exercise/outputs/checkpoints/
+week9/exercise/outputs/lora_adapter/
+week9/exercise/outputs/*.png
+week9/exercise/.dvc/cache/
+week9/exercise/.dvc/tmp/

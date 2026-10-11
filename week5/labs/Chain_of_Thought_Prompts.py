@@ -7,10 +7,11 @@
 # 🔹 Step 2: Import and Configure Gemini
 
 
+import os
 import google.generativeai as genai
+from dotenv import load_dotenv
 
 # Configure with your Gemini API key
-from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.environ.get("GEMINI_API_KEY")

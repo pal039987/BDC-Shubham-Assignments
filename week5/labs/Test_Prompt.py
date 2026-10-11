@@ -12,9 +12,10 @@ from PIL import Image
 import IPython.display as display
 import time
 import pandas as pd
+from dotenv import load_dotenv
 
 # Configure Gemini with your API key
-from dotenv import load_dotenv
+
 
 load_dotenv()
 API_KEY = os.environ.get("GEMINI_API_KEY")

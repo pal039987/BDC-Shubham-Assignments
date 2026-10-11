@@ -1,0 +1,7 @@
+langgraph
+langchain
+python-dotenv
+streamlit
+google-generativeai
+pandas
+plotly
