@@ -12,6 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <!-- Official TradingView Hosted Widget Script -->
+  <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
@@ -183,12 +185,28 @@
       <!-- Active Instrument Header -->
       <div class="chart-header">
         <div class="chart-header-left">
-          <div class="active-coin-pill" id="chart-active-coin-pill" title="Active Trading Pair">
+          <div class="active-coin-pill" id="chart-active-coin-pill" title="Click to Switch Trading Pair" onclick="togglePairQuickMenu()">
             <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" class="chp-icon" id="chp-icon" alt="Coin"/>
             <span class="chp-symbol" id="chp-symbol">BTC/USDT</span>
             <span class="chp-name" id="chp-name">Bitcoin</span>
+            <span class="chp-caret">▾</span>
           </div>
-          <span class="chart-source-badge badge-provider" id="chart-source-badge">CoinGecko Feed</span>
+          <!-- Quick Pair Selection Dropdown -->
+          <div id="chart-pair-quick-menu" class="pair-quick-menu hidden">
+            <div class="pq-item" onclick="selectCoin('bitcoin'); closePairQuickMenu();">
+              <span class="pq-sym">BTC/USDT</span>
+              <span class="pq-name">Bitcoin</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('ethereum'); closePairQuickMenu();">
+              <span class="pq-sym">ETH/USDT</span>
+              <span class="pq-name">Ethereum</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('solana'); closePairQuickMenu();">
+              <span class="pq-sym">SOL/USDT</span>
+              <span class="pq-name">Solana</span>
+            </div>
+          </div>
+          <span class="chart-source-badge badge-provider" id="chart-source-badge" title="Visual Chart: TradingView (Binance Feed) | Paper-Trading Engine: VTrade (CoinGecko Feed)">TradingView Chart • VTrade Engine</span>
         </div>
         <div class="chart-price-info">
           <div class="chart-price-badge-row">
@@ -218,7 +236,8 @@
           <button class="tf-btn" data-tf="1d"  onclick="selectTF('1d',this)">1D</button>
         </div>
         <div class="chart-mode-group">
-          <button class="cmode-btn active" id="cmode-candle" onclick="setChartMode('candle')" title="Native Candlesticks">📊 Candles</button>
+          <button class="cmode-btn active" id="cmode-tv" onclick="setChartMode('tv')" title="Official TradingView Advanced Chart">TradingView</button>
+          <button class="cmode-btn" id="cmode-candle" onclick="setChartMode('candle')" title="Native Candlesticks">📊 Candles</button>
           <button class="cmode-btn" id="cmode-line" onclick="setChartMode('line')" title="Simple Line Chart">📈 Line</button>
           <button class="cmode-btn" id="btn-chart-fullscreen" onclick="toggleChartFullscreen()" title="Fullscreen Chart">⛶ Fullscreen</button>
         </div>
@@ -226,8 +245,8 @@
 
       <!-- Chart Container with Left Drawing Tools & Viewport -->
       <div class="chart-container-box" id="chart-container-box">
-        <!-- Left Side Drawing Tools -->
-        <div class="chart-toolbar-left" id="chart-toolbar-left">
+        <!-- Left Side Drawing Tools (For Native Candles) -->
+        <div class="chart-toolbar-left hidden" id="chart-toolbar-left">
           <button class="ctb-btn active" id="dt-cursor" onclick="setDrawTool('cursor')" title="Crosshair / Select">✛</button>
           <button class="ctb-btn" id="dt-trend" onclick="setDrawTool('trend')" title="Trend Line">╱</button>
           <button class="ctb-btn" id="dt-horiz" onclick="setDrawTool('horiz')" title="Horizontal Line / S&R">―</button>
@@ -252,17 +271,59 @@
           <button class="btn-square-fullscreen" id="btn-square-fullscreen" onclick="toggleChartFullscreen()" title="Fullscreen Chart (Square)">
             <span id="square-fs-icon">⛶</span>
           </button>
-          <!-- Floating Zoom Controls (+ / − / ↺) -->
-          <div class="chart-zoom-controls" id="chart-zoom-controls">
+          <!-- Floating Zoom Controls (+ / − / ↺) for Native Candles -->
+          <div class="chart-zoom-controls hidden" id="chart-zoom-controls">
             <button class="cz-btn" id="btn-zoom-in" onclick="chartZoomIn()" title="Zoom In (+)">+</button>
             <button class="cz-btn" id="btn-zoom-out" onclick="chartZoomOut()" title="Zoom Out (−)">−</button>
             <button class="cz-btn" id="btn-zoom-reset" onclick="chartZoomReset()" title="Reset Zoom View">↺</button>
           </div>
-          <canvas id="candle-chart" class="chart-canvas"></canvas>
-          <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
+
+          <!-- ─── TRADINGVIEW HOSTED CHART CONTAINER ─── -->
+          <div id="tv-chart-container" class="tv-chart-container">
+            <!-- Loading Indicator -->
+            <div id="tv-chart-loading" class="tv-chart-loading">
+              <div class="tv-spinner"></div>
+              <div class="tv-loading-text">Loading TradingView Hosted Chart…</div>
+            </div>
+            <!-- Error / Offline Fallback -->
+            <div id="tv-chart-error" class="tv-chart-error hidden">
+              <div class="tv-error-icon">⚠️</div>
+              <div class="tv-error-msg" id="tv-error-msg">TradingView Chart is temporarily unavailable</div>
+              <div class="tv-error-sub">Check your internet connection or switch to native candles.</div>
+              <div class="tv-error-actions">
+                <button class="tv-retry-btn" onclick="retryTradingViewChart()">↻ Retry Connection</button>
+                <button class="tv-fallback-btn" onclick="setChartMode('candle')">Switch to Native Candles</button>
+              </div>
+            </div>
+            <!-- Unsupported Symbol Notice -->
+            <div id="tv-chart-unsupported" class="tv-chart-unsupported hidden">
+              <div class="tv-unsupported-icon">🚫</div>
+              <div class="tv-unsupported-msg" id="tv-unsupported-msg">Unsupported Trading Pair</div>
+              <div class="tv-unsupported-sub">VTrade TradingView chart strictly supports BTC/USDT, ETH/USDT, and SOL/USDT. Please select a supported pair:</div>
+              <div class="tv-pair-actions">
+                <button class="tv-pair-pick-btn" onclick="selectCoin('bitcoin')">BTC/USDT</button>
+                <button class="tv-pair-pick-btn" onclick="selectCoin('ethereum')">ETH/USDT</button>
+                <button class="tv-pair-pick-btn" onclick="selectCoin('solana')">SOL/USDT</button>
+              </div>
+            </div>
+            <!-- Widget DOM Target -->
+            <div id="tradingview_widget_box" class="tradingview-widget-box"></div>
+            <!-- Attribution & Required Disclosures -->
+            <div class="tv-attribution-bar">
+              <span class="tv-attr-text">Chart by <a href="https://www.tradingview.com/" target="_blank" rel="noopener nofollow">TradingView</a></span>
+              <span class="tv-attr-sep">•</span>
+              <span class="tv-attr-text tv-attr-symbol" id="tv-symbol-display">BINANCE:BTCUSDT</span>
+              <span class="tv-attr-sep">•</span>
+              <span class="tv-attr-notice" title="Market Data Isolation">Visual Only • Execution via VTrade Engine</span>
+            </div>
+          </div>
+
+          <!-- Native Charts (Hidden when TradingView is active) -->
+          <canvas id="candle-chart" class="chart-canvas hidden"></canvas>
+          <canvas id="drawing-canvas" class="drawing-canvas hidden"></canvas>
           <canvas id="price-chart" class="chart-canvas hidden"></canvas>
           <div id="candle-crosshair-bar" class="candle-crosshair-bar hidden"></div>
-          <div class="chart-overlay" id="chart-loading">
+          <div class="chart-overlay hidden" id="chart-loading">
             <div class="chart-skeleton-view">
               <div class="sk-label-pulse" id="chart-loading-text">Fetching Live Market Candles…</div>
             </div>

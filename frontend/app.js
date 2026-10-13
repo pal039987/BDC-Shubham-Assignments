@@ -252,7 +252,7 @@ let username     = safeStorageGet('ct_username') || '';
 let balance      = parseFloat(safeStorageGet('ct_balance') || 10000);
 let selectedCoin = 'bitcoin';
 let currentTF    = '15m';
-let chartMode    = 'candle';    // 'candle' | 'tv' | 'line'
+let chartMode    = 'tv';        // 'tv' (TradingView default) | 'candle' | 'line'
 let drawTool     = 'cursor';    // 'cursor' | 'trend' | 'horiz' | 'brush' | 'measure'
 let drawColor    = '#f0b90b';
 let drawings     = [];
@@ -347,6 +347,7 @@ function showApp() {
   if (typeof applySettingsToTradePanel === 'function') applySettingsToTradePanel();
   if (typeof initDownloadApkVisibility === 'function') initDownloadApkVisibility();
   initMarketExplorer();
+  setChartMode(chartMode);
   loadAll();
   initRealtimeTicker();
   setupDrawingCanvas();
@@ -966,7 +967,7 @@ function selectCoin(coin) {
   const chpSym  = document.getElementById('chp-symbol');
   const chpName = document.getElementById('chp-name');
   if (chpIcon) chpIcon.src = coinDef.icon;
-  if (chpSym)  chpSym.textContent = `${coinDef.symbol}/USD`;
+  if (chpSym)  chpSym.textContent = coinDef.pair;
   if (chpName) chpName.textContent = coinDef.name;
 
   // 4. Update Delta Trade Panel & Mini Stats
@@ -1129,35 +1130,94 @@ function onPriceTick(coin, prevPrice, newPrice) {
 
 
 
+// ─── TRADINGVIEW OFFICIAL HOSTED WIDGET INTEGRATION ───────
+const SUPPORTED_TV_SYMBOLS = {
+  'bitcoin': 'BINANCE:BTCUSDT',
+  'btc': 'BINANCE:BTCUSDT',
+  'btc/usdt': 'BINANCE:BTCUSDT',
+  'ethereum': 'BINANCE:ETHUSDT',
+  'eth': 'BINANCE:ETHUSDT',
+  'eth/usdt': 'BINANCE:ETHUSDT',
+  'solana': 'BINANCE:SOLUSDT',
+  'sol': 'BINANCE:SOLUSDT',
+  'sol/usdt': 'BINANCE:SOLUSDT'
+};
+
+const TV_INTERVAL_MAP = {
+  '1m': '1',
+  '3m': '3',
+  '5m': '5',
+  '15m': '15',
+  '1h': '60',
+  '4h': '240',
+  '1d': 'D',
+  '1D': 'D',
+  '1w': 'W',
+  '1W': 'W'
+};
+
+function getTradingViewSymbol(coinIdOrPair) {
+  if (!coinIdOrPair) return null;
+  const key = String(coinIdOrPair).trim().toLowerCase();
+  // Strictly reject gold/xau or any unsupported pair
+  if (key.includes('gold') || key.includes('xau')) {
+    return null;
+  }
+  return SUPPORTED_TV_SYMBOLS[key] || null;
+}
+
+function getTradingViewInterval(tf) {
+  if (!tf) return '15';
+  return TV_INTERVAL_MAP[String(tf).trim().toLowerCase()] || TV_INTERVAL_MAP[String(tf).trim()] || '15';
+}
+
+let tvWidgetInstance = null;
+let currentTvSymbol = null;
+let currentTvInterval = null;
+let tvLoadTimeout = null;
+
 // ─── CHART MODES & TIMEFRAME ──────────────────────────────
 function setChartMode(mode) {
   chartMode = mode;
-  ['candle','tv','line'].forEach(m => {
+  ['tv', 'candle', 'line'].forEach(m => {
     const btn = document.getElementById(`cmode-${m}`);
     if (btn) btn.classList.toggle('active', m === mode);
   });
 
-  const tvWrap     = document.getElementById('tv-chart-container');
-  const candleCvs  = document.getElementById('candle-chart');
-  const drawCvs    = document.getElementById('drawing-canvas');
-  const priceCvs   = document.getElementById('price-chart');
-  const toolbar    = document.getElementById('drawing-toolbar');
-  const crosshair  = document.getElementById('candle-crosshair-bar');
+  const tvWrap        = document.getElementById('tv-chart-container');
+  const candleCvs     = document.getElementById('candle-chart');
+  const drawCvs       = document.getElementById('drawing-canvas');
+  const priceCvs      = document.getElementById('price-chart');
+  const toolbar       = document.getElementById('chart-toolbar-left') || document.getElementById('drawing-toolbar');
+  const crosshair     = document.getElementById('candle-crosshair-bar');
+  const zoomControls  = document.getElementById('chart-zoom-controls');
+  const sourceBadge   = document.getElementById('chart-source-badge');
 
   if (mode === 'tv') {
-    tvWrap.classList.remove('hidden');
-    candleCvs.classList.add('hidden');
-    drawCvs.classList.add('hidden');
-    priceCvs.classList.add('hidden');
-    toolbar.classList.add('hidden');
+    if (tvWrap) tvWrap.classList.remove('hidden');
+    if (candleCvs) candleCvs.classList.add('hidden');
+    if (drawCvs) drawCvs.classList.add('hidden');
+    if (priceCvs) priceCvs.classList.add('hidden');
+    if (toolbar) toolbar.classList.add('hidden');
     if (crosshair) crosshair.classList.add('hidden');
+    if (zoomControls) zoomControls.classList.add('hidden');
+    if (sourceBadge) {
+      sourceBadge.textContent = 'TradingView Chart • VTrade Engine';
+      sourceBadge.className = 'chart-source-badge badge-live';
+      sourceBadge.title = 'Visual Chart: TradingView (Binance Feed) | Paper-Trading Engine: VTrade (CoinGecko Feed)';
+    }
     renderTradingViewChart();
   } else if (mode === 'candle') {
-    tvWrap.classList.add('hidden');
-    candleCvs.classList.remove('hidden');
-    drawCvs.classList.remove('hidden');
-    priceCvs.classList.add('hidden');
-    toolbar.classList.remove('hidden');
+    if (tvWrap) tvWrap.classList.add('hidden');
+    if (candleCvs) candleCvs.classList.remove('hidden');
+    if (drawCvs) drawCvs.classList.remove('hidden');
+    if (priceCvs) priceCvs.classList.add('hidden');
+    if (toolbar) toolbar.classList.remove('hidden');
+    if (zoomControls) zoomControls.classList.remove('hidden');
+    if (sourceBadge) {
+      sourceBadge.textContent = 'CoinGecko Feed';
+      sourceBadge.title = 'CoinGecko Real-Time OHLC & Order Book Feed';
+    }
     if (candleData && candleData.length) {
       renderCandlestickChart(candleData);
       renderDrawings();
@@ -1165,12 +1225,16 @@ function setChartMode(mode) {
       loadChart(selectedCoin, currentTF);
     }
   } else { // line
-    tvWrap.classList.add('hidden');
-    candleCvs.classList.add('hidden');
-    drawCvs.classList.add('hidden');
-    priceCvs.classList.remove('hidden');
-    toolbar.classList.add('hidden');
+    if (tvWrap) tvWrap.classList.add('hidden');
+    if (candleCvs) candleCvs.classList.add('hidden');
+    if (drawCvs) drawCvs.classList.add('hidden');
+    if (priceCvs) priceCvs.classList.remove('hidden');
+    if (toolbar) toolbar.classList.add('hidden');
     if (crosshair) crosshair.classList.add('hidden');
+    if (zoomControls) zoomControls.classList.add('hidden');
+    if (sourceBadge) {
+      sourceBadge.textContent = 'CoinGecko Feed';
+    }
     loadChart(selectedCoin, currentTF);
   }
 }
@@ -1178,7 +1242,7 @@ function setChartMode(mode) {
 function selectTF(tf, btn) {
   currentTF = tf;
   document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
   if (chartMode === 'tv') {
     renderTradingViewChart();
   } else {
@@ -1186,20 +1250,69 @@ function selectTF(tf, btn) {
   }
 }
 
-// ─── TRADINGVIEW PRO CHART ────────────────────────────────
-function renderTradingViewChart() {
+// ─── TRADINGVIEW ADVANCED CHART WIDGET EMBED ───────────────
+function renderTradingViewChart(force = false) {
   const container = document.getElementById('tv-chart-container');
-  if (!container) return;
-  const coinDef = getCoinDefinition(selectedCoin);
-  const symbol = `BINANCE:${coinDef.binanceSymbol}`;
-  const intervalMap = { '1m':'1', '3m':'3', '5m':'5', '15m':'15', '1h':'60', '4h':'240', '1d':'D', '1w':'W' };
-  const tvInterval = intervalMap[currentTF] || '15';
+  const widgetBox = document.getElementById('tradingview_widget_box');
+  const loadingEl = document.getElementById('tv-chart-loading');
+  const errorEl   = document.getElementById('tv-chart-error');
+  const errorMsg  = document.getElementById('tv-error-msg');
+  const unsuppEl  = document.getElementById('tv-chart-unsupported');
+  const symDisp   = document.getElementById('tv-symbol-display');
+  if (!container || !widgetBox) return;
 
-  if (typeof TradingView !== 'undefined' && TradingView.widget) {
+  const tvSymbol = getTradingViewSymbol(selectedCoin);
+  const tvInterval = getTradingViewInterval(currentTF);
+
+  // 1. Strict pair validation
+  if (!tvSymbol) {
+    widgetBox.innerHTML = '';
+    if (loadingEl) loadingEl.classList.add('hidden');
+    if (errorEl) errorEl.classList.add('hidden');
+    if (unsuppEl) unsuppEl.classList.remove('hidden');
+    return;
+  }
+  if (unsuppEl) unsuppEl.classList.add('hidden');
+
+  // 2. Offline check
+  if (!navigator.onLine) {
+    if (loadingEl) loadingEl.classList.add('hidden');
+    if (errorEl) {
+      errorEl.classList.remove('hidden');
+      if (errorMsg) errorMsg.textContent = 'Offline: TradingView chart requires internet connection';
+    }
+    return;
+  }
+
+  // 3. Avoid redundant reloads
+  if (!force && tvWidgetInstance && currentTvSymbol === tvSymbol && currentTvInterval === tvInterval) {
+    return;
+  }
+
+  currentTvSymbol = tvSymbol;
+  currentTvInterval = tvInterval;
+
+  if (loadingEl) loadingEl.classList.remove('hidden');
+  if (errorEl) errorEl.classList.add('hidden');
+  if (symDisp) symDisp.textContent = tvSymbol;
+
+  clearTimeout(tvLoadTimeout);
+  tvLoadTimeout = setTimeout(() => {
+    if (loadingEl && !loadingEl.classList.contains('hidden')) {
+      loadingEl.classList.add('hidden');
+      if (errorEl) {
+        errorEl.classList.remove('hidden');
+        if (errorMsg) errorMsg.textContent = 'Connection timeout loading TradingView chart';
+      }
+    }
+  }, 12000);
+
+  function createWidget() {
     try {
-      new TradingView.widget({
+      widgetBox.innerHTML = '';
+      tvWidgetInstance = new TradingView.widget({
         autosize: true,
-        symbol: symbol,
+        symbol: tvSymbol,
         interval: tvInterval,
         timezone: "Asia/Kolkata",
         theme: "dark",
@@ -1207,16 +1320,80 @@ function renderTradingViewChart() {
         locale: "en",
         toolbar_bg: "#0b0e11",
         enable_publishing: false,
-        hide_side_toolbar: false, // FULL 50+ DRAWING TOOLS ON LEFT!
-        allow_symbol_change: true,
+        hide_side_toolbar: false, // Left side drawing tools
+        allow_symbol_change: false, // Symbol controlled strictly by VTrade
         save_image: false,
-        container_id: "tradingview_widget_box"
+        container_id: "tradingview_widget_box",
+        hide_volume: false,
+        withdateranges: true,
+        details: false,
+        hotlist: false,
+        calendar: false
       });
-    } catch(e) { console.error('TradingView widget err:', e); }
+
+      // Dismiss loading overlay smoothly after widget loads
+      setTimeout(() => {
+        if (loadingEl) loadingEl.classList.add('hidden');
+        clearTimeout(tvLoadTimeout);
+      }, 1400);
+    } catch(e) {
+      console.error('TradingView Widget init error:', e);
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (errorEl) {
+        errorEl.classList.remove('hidden');
+        if (errorMsg) errorMsg.textContent = 'Failed to load TradingView chart: ' + (e.message || 'Error');
+      }
+    }
+  }
+
+  if (typeof TradingView !== 'undefined' && TradingView.widget) {
+    createWidget();
   } else {
-    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--txt3);font-size:12px;">Connecting to TradingView feed...</div>`;
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
+    script.onload = () => {
+      if (typeof TradingView !== 'undefined' && TradingView.widget) {
+        createWidget();
+      }
+    };
+    script.onerror = () => {
+      clearTimeout(tvLoadTimeout);
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (errorEl) {
+        errorEl.classList.remove('hidden');
+        if (errorMsg) errorMsg.textContent = 'Failed to load TradingView resources from CDN';
+      }
+    };
+    document.head.appendChild(script);
   }
 }
+
+function retryTradingViewChart() {
+  currentTvSymbol = null;
+  currentTvInterval = null;
+  renderTradingViewChart(true);
+}
+
+// ─── PAIR QUICK MENU TOGGLES ──────────────────────────────
+function togglePairQuickMenu() {
+  const menu = document.getElementById('chart-pair-quick-menu');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function closePairQuickMenu() {
+  const menu = document.getElementById('chart-pair-quick-menu');
+  if (menu) menu.classList.add('hidden');
+}
+
+document.addEventListener('click', (e) => {
+  const pill = document.getElementById('chart-active-coin-pill');
+  const menu = document.getElementById('chart-pair-quick-menu');
+  if (pill && menu && !pill.contains(e.target) && !menu.contains(e.target)) {
+    menu.classList.add('hidden');
+  }
+});
+
 
 // ─── TRUTHFUL CANDLES STORE (PROVIDER CACHE & STATIC BASELINE) ──────────
 const providerOhlcCache = {};

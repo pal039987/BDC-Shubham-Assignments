@@ -1201,6 +1201,16 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
   border-radius: 0 !important;
   border: none !important;
   background: #0b0e11 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.chart-container-box.fullscreen-chart .chart-wrap {
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100vh !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
 }
 
 .btn-exit-fullscreen {
@@ -1403,12 +1413,248 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
 .chart-wrap {
   position: relative;
   flex: 1;
-  min-height: 280px;
+  min-height: 380px;
   background: var(--bg0);
   overflow: hidden;
   width: 100%;
 }
-.tv-wrap, .chart-canvas {
+
+/* TradingView Container & Widget Box */
+.tv-chart-container {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  background: #0b0e11;
+  overflow: hidden;
+}
+
+.tradingview-widget-box {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100% !important;
+  height: calc(100% - 24px) !important;
+  min-height: 0;
+  background: #0b0e11;
+}
+
+.tradingview-widget-box iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  display: block;
+}
+
+/* TV Loading Overlay */
+.tv-chart-loading {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 14, 17, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 25;
+  transition: opacity 0.25s ease;
+}
+
+.tv-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #2962ff;
+  border-radius: 50%;
+  animation: tvSpin 0.8s linear infinite;
+}
+
+@keyframes tvSpin {
+  to { transform: rotate(360deg); }
+}
+
+.tv-loading-text {
+  color: var(--txt2);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* TV Error & Offline States */
+.tv-chart-error, .tv-chart-unsupported {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 14, 17, 0.96);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  z-index: 30;
+}
+
+.tv-error-icon, .tv-unsupported-icon {
+  font-size: 38px;
+}
+
+.tv-error-msg, .tv-unsupported-msg {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.tv-error-sub, .tv-unsupported-sub {
+  color: var(--txt3);
+  font-size: 12px;
+  max-width: 340px;
+  line-height: 1.5;
+}
+
+.tv-error-actions, .tv-pair-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tv-retry-btn, .tv-fallback-btn, .tv-pair-pick-btn {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tv-retry-btn {
+  background: #2962ff;
+  color: #fff;
+  border: 1px solid #2962ff;
+}
+
+.tv-retry-btn:hover {
+  background: #1e53e5;
+}
+
+.tv-fallback-btn {
+  background: rgba(255,255,255,0.08);
+  color: var(--txt1);
+  border: 1px solid var(--border);
+}
+
+.tv-fallback-btn:hover {
+  background: rgba(255,255,255,0.14);
+}
+
+.tv-pair-pick-btn {
+  background: rgba(14, 203, 129, 0.15);
+  color: #0ecb81;
+  border: 1px solid rgba(14, 203, 129, 0.35);
+}
+
+.tv-pair-pick-btn:hover {
+  background: #0ecb81;
+  color: #000;
+}
+
+/* Attribution Bar */
+.tv-attribution-bar {
+  height: 24px;
+  background: #080a0d;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--txt3);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.tv-attribution-bar a {
+  color: #2962ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.tv-attribution-bar a:hover {
+  text-decoration: underline;
+}
+
+.tv-attr-symbol {
+  color: var(--txt1);
+  font-weight: 600;
+}
+
+.tv-attr-notice {
+  color: #848e9c;
+  font-size: 9.5px;
+  margin-left: auto;
+}
+
+/* Quick Pair Dropdown */
+.pair-quick-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  background: #141822;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  z-index: 100;
+  min-width: 170px;
+  overflow: hidden;
+}
+
+.pq-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  font-size: 12px;
+  color: var(--txt1);
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+}
+
+.pq-item:last-child {
+  border-bottom: none;
+}
+
+.pq-item:hover {
+  background: rgba(41, 98, 255, 0.15);
+  color: #3878ff;
+}
+
+.pq-sym {
+  font-weight: 700;
+}
+
+.pq-name {
+  font-size: 11px;
+  color: var(--txt3);
+}
+
+.active-coin-pill {
+  cursor: pointer;
+}
+
+.chp-caret {
+  font-size: 9px;
+  color: var(--txt3);
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+}
+
+.chart-canvas {
   position: absolute;
   inset: 0;
   width: 100% !important;
@@ -2425,13 +2671,19 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
     width: 100% !important;
     overflow-x: hidden !important;
   }
-  /* Chart height 40vh on phones, min 260px, max 420px (Requirement E1) */
+  /* Chart height 50vh on phones, min 340px, max 520px */
   .chart-wrap {
-    height: 40vh !important;
-    min-height: 260px !important;
-    max-height: 420px !important;
+    height: 50vh !important;
+    min-height: 340px !important;
+    max-height: 520px !important;
     flex: none !important;
     width: 100% !important;
+  }
+  .chart-container-box.fullscreen-chart .chart-wrap {
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100vh !important;
+    flex: 1 1 auto !important;
   }
   .bottom-panel {
     height: auto;

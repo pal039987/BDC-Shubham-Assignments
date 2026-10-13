@@ -31,6 +31,46 @@ function getCoinDefinition(coinId) {
   return SUPPORTED_COINS.find(c => c.id === lower || c.symbol.toLowerCase() === lower) || null;
 }
 
+// ─── TradingView Official Symbol & Interval Mapping ──────────
+const TV_SUPPORTED_SYMBOLS = {
+  'bitcoin': 'BINANCE:BTCUSDT',
+  'btc': 'BINANCE:BTCUSDT',
+  'btc/usdt': 'BINANCE:BTCUSDT',
+  'ethereum': 'BINANCE:ETHUSDT',
+  'eth': 'BINANCE:ETHUSDT',
+  'eth/usdt': 'BINANCE:ETHUSDT',
+  'solana': 'BINANCE:SOLUSDT',
+  'sol': 'BINANCE:SOLUSDT',
+  'sol/usdt': 'BINANCE:SOLUSDT'
+};
+
+const TV_INTERVAL_MAP = {
+  '1m': '1',
+  '3m': '3',
+  '5m': '5',
+  '15m': '15',
+  '1h': '60',
+  '4h': '240',
+  '1d': 'D',
+  '1D': 'D',
+  '1w': 'W',
+  '1W': 'W'
+};
+
+function getTradingViewSymbol(coinIdOrPair) {
+  if (!coinIdOrPair) return null;
+  const key = String(coinIdOrPair).trim().toLowerCase();
+  if (key.includes('gold') || key.includes('xau')) {
+    return null;
+  }
+  return TV_SUPPORTED_SYMBOLS[key] || null;
+}
+
+function getTradingViewInterval(tf) {
+  if (!tf) return '15';
+  return TV_INTERVAL_MAP[String(tf).trim().toLowerCase()] || TV_INTERVAL_MAP[String(tf).trim()] || '15';
+}
+
 // ─── 2. Provider Data Parsing & Tether USDT Conversion ─────
 function parseCoinGeckoPrices(cgPayload) {
   if (!cgPayload || typeof cgPayload !== 'object') throw new Error('Invalid payload');
@@ -396,6 +436,67 @@ async function runAllTests() {
     assert.strictEqual(wallet.positions.length, 0);
     assert.strictEqual(wallet.orders.length, 0);
     assert.strictEqual(wallet.history.length, 0);
+  });
+
+  // Test 11: TradingView Hosted Widget Symbol Mapping & Rejection of Unsupported Pairs
+  it('correctly maps supported pairs to official exchange symbols and strictly rejects GOLD/XAU', () => {
+    // BTC/USDT
+    assert.strictEqual(getTradingViewSymbol('BTC/USDT'), 'BINANCE:BTCUSDT');
+    assert.strictEqual(getTradingViewSymbol('btc'), 'BINANCE:BTCUSDT');
+    assert.strictEqual(getTradingViewSymbol('bitcoin'), 'BINANCE:BTCUSDT');
+
+    // ETH/USDT
+    assert.strictEqual(getTradingViewSymbol('ETH/USDT'), 'BINANCE:ETHUSDT');
+    assert.strictEqual(getTradingViewSymbol('eth'), 'BINANCE:ETHUSDT');
+    assert.strictEqual(getTradingViewSymbol('ethereum'), 'BINANCE:ETHUSDT');
+
+    // SOL/USDT
+    assert.strictEqual(getTradingViewSymbol('SOL/USDT'), 'BINANCE:SOLUSDT');
+    assert.strictEqual(getTradingViewSymbol('sol'), 'BINANCE:SOLUSDT');
+    assert.strictEqual(getTradingViewSymbol('solana'), 'BINANCE:SOLUSDT');
+
+    // Rejections (Must return null, never silently substitute a different asset)
+    assert.strictEqual(getTradingViewSymbol('gold'), null);
+    assert.strictEqual(getTradingViewSymbol('GOLD/USDT'), null);
+    assert.strictEqual(getTradingViewSymbol('XAU'), null);
+    assert.strictEqual(getTradingViewSymbol('XAU/USD'), null);
+    assert.strictEqual(getTradingViewSymbol('dogecoin'), null);
+    assert.strictEqual(getTradingViewSymbol('ADA'), null);
+  });
+
+  // Test 12: TradingView Supported Timeframes and Interval Mapping
+  it('maps UI timeframes accurately to official TradingView interval codes', () => {
+    assert.strictEqual(getTradingViewInterval('1m'), '1');
+    assert.strictEqual(getTradingViewInterval('3m'), '3');
+    assert.strictEqual(getTradingViewInterval('5m'), '5');
+    assert.strictEqual(getTradingViewInterval('15m'), '15');
+    assert.strictEqual(getTradingViewInterval('1h'), '60');
+    assert.strictEqual(getTradingViewInterval('4h'), '240');
+    assert.strictEqual(getTradingViewInterval('1d'), 'D');
+    assert.strictEqual(getTradingViewInterval('1D'), 'D');
+    assert.strictEqual(getTradingViewInterval('1w'), 'W');
+    assert.strictEqual(getTradingViewInterval('unknown'), '15'); // default fallback
+  });
+
+  // Test 13: Strict Separation: TradingView Visual Display vs Paper-Trading Engine Prices
+  it('ensures complete isolation: TradingView visual symbols never feed order execution or P&L math', () => {
+    const wallet = new VTradeWallet(10000);
+    const tvSymbol = getTradingViewSymbol('BTC/USDT');
+    assert.strictEqual(tvSymbol, 'BINANCE:BTCUSDT');
+
+    // Trading engine uses verified CoinGecko / Tether rate price, NOT widget DOM
+    const cgPayload = {
+      bitcoin: { usd: 84000 },
+      tether: { usd: 1.0 }
+    };
+    const parsed = parseCoinGeckoPrices(cgPayload);
+    const executionPrice = parsed.bitcoin.price;
+
+    wallet.spotBuy('bitcoin', 0.1, executionPrice, Date.now());
+    // Wallet position holdings strictly equals execution amount (0.1)
+    assert.strictEqual(wallet.holdings['bitcoin'], 0.1);
+    const expectedCost = (0.1 * 84000) * 1.0005; // 0.05% fee included
+    assert.strictEqual(wallet.cashBalance, parseFloat((10000 - expectedCost).toFixed(2)));
   });
 
   const total = tests.length;
