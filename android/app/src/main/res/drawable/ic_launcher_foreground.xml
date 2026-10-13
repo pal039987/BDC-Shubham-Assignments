@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Left Silver-White Leg -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M32,36 L43,32 L53,76 L42,76 Z" />
+    <!-- Right Emerald Surging Trading Leg -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M49,68 L57,78 L80,26 L71,24 L58,49 Z" />
+    <!-- Apex Arrow Detail -->
+    <path
+        android:fillColor="#6EE7B7"
+        android:pathData="M80,26 L73,38 L66,31 Z" />
+</vector>

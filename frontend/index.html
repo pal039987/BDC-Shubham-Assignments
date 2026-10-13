@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CryptoTrader Pro – Virtual BTC & ETH Trading</title>
-  <meta name="description" content="Trade Bitcoin and Ethereum virtually with real-time prices, positions, limit orders, stop loss and take profit." />
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b0e11" />
+  <title>VTrade – Virtual Crypto Trading</title>
+  <meta name="description" content="VTrade – Professional virtual paper trading platform for BTC/USDT, ETH/USDT, and SOL/USDT with genuine live market prices." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0b0f19" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,15 +19,16 @@
 <div id="auth-overlay" class="auth-overlay">
   <div class="auth-brand">
     <div class="brand-logo">
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" r="20" fill="url(#brandG)"/>
-        <path d="M13 20L17 24L27 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <defs><linearGradient id="brandG" x1="0" y1="0" x2="40" y2="40"><stop offset="0%" stop-color="#f7931a"/><stop offset="100%" stop-color="#e8427c"/></linearGradient></defs>
+      <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
+        <rect width="40" height="40" rx="10" fill="#0B0F19"/>
+        <path d="M11 13L15.5 11.5L20 28L15.5 28Z" fill="#E2E8F0"/>
+        <path d="M19 25L22 28.5L30.5 10L27 9L22.5 18Z" fill="#10B981"/>
+        <path d="M30.5 10L28 14L25.5 11.5Z" fill="#6EE7B7"/>
       </svg>
     </div>
     <div>
-      <div class="brand-name">CryptoTrader <span class="brand-pro">Pro</span></div>
-      <div class="brand-sub">Professional Virtual Trading Platform</div>
+      <div class="brand-name">VTrade</div>
+      <div class="brand-sub">Professional Virtual Crypto Trading</div>
     </div>
   </div>
 
@@ -40,7 +41,7 @@
     <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
       <div class="form-group">
         <label>Email Address</label>
-        <div class="input-wrapper"><span class="input-icon">✉</span><input type="email" id="login-email" placeholder="you@example.com" required /></div>
+        <div class="input-wrapper"><span class="input-icon">✉</span><input type="email" id="login-email" placeholder="trader@vtrade.com" required /></div>
       </div>
       <div class="form-group">
         <label>Password</label>
@@ -53,25 +54,25 @@
     <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
       <div class="form-group">
         <label>Username</label>
-        <div class="input-wrapper"><span class="input-icon">👤</span><input type="text" id="reg-username" placeholder="traderpro" required /></div>
+        <div class="input-wrapper"><span class="input-icon">👤</span><input type="text" id="reg-username" placeholder="protrader" required /></div>
       </div>
       <div class="form-group">
         <label>Email Address</label>
-        <div class="input-wrapper"><span class="input-icon">✉</span><input type="email" id="reg-email" placeholder="you@example.com" required /></div>
+        <div class="input-wrapper"><span class="input-icon">✉</span><input type="email" id="reg-email" placeholder="trader@vtrade.com" required /></div>
       </div>
       <div class="form-group">
         <label>Password</label>
         <div class="input-wrapper"><span class="input-icon">🔒</span><input type="password" id="reg-password" placeholder="Min. 6 characters" minlength="6" required /></div>
       </div>
       <div id="reg-error" class="auth-error hidden"></div>
-      <button type="submit" class="btn-primary btn-full" id="reg-btn"><span>Get Started – Free $10,000</span><div class="btn-loader hidden"></div></button>
+      <button type="submit" class="btn-primary btn-full" id="reg-btn"><span>Create Account – Free $10,000 USDT</span><div class="btn-loader hidden"></div></button>
     </form>
 
     <div class="auth-features">
-      <div class="auth-feat">📊 Live prices</div>
-      <div class="auth-feat">💼 Positions</div>
-      <div class="auth-feat">🎯 Limit orders</div>
-      <div class="auth-feat">📱 Mobile app</div>
+      <div class="auth-feat">📊 Real Market Data</div>
+      <div class="auth-feat">💼 Spot & Futures</div>
+      <div class="auth-feat">🎯 Limit Orders</div>
+      <div class="auth-feat">📱 Android APK</div>
     </div>
   </div>
 </div>
@@ -79,15 +80,17 @@
 <!-- ══════════════════════ MAIN APP ══════════════════════ -->
 <div id="app" class="app hidden">
 
-  <!-- NAVBAR (Requirement B) -->
+  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="nav-brand">
-      <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" r="20" fill="url(#navG)"/>
-        <path d="M13 20L17 24L27 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <defs><linearGradient id="navG" x1="0" y1="0" x2="40" y2="40"><stop offset="0%" stop-color="#f7931a"/><stop offset="100%" stop-color="#e8427c"/></linearGradient></defs>
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
+        <rect width="40" height="40" rx="9" fill="#0B0F19"/>
+        <path d="M11 13L15.5 11.5L20 28L15.5 28Z" fill="#E2E8F0"/>
+        <path d="M19 25L22 28.5L30.5 10L27 9L22.5 18Z" fill="#10B981"/>
+        <path d="M30.5 10L28 14L25.5 11.5Z" fill="#6EE7B7"/>
       </svg>
-      <span class="brand-name-sm">CryptoTrader <span class="brand-pro">Pro</span></span>
+      <span class="brand-name-sm">VTrade</span>
+      <span class="paper-badge">PAPER TRADING</span>
     </div>
 
     <!-- Hidden ticker elements for background updates -->
@@ -97,12 +100,12 @@
       <span id="nav-balance"></span>
     </div>
 
-    <button class="nav-btn-apk" id="nav-btn-apk" onclick="handleDownloadApk(event)" title="Download Android APK">📱 Download APK</button>
+    <button class="nav-btn-apk" id="nav-btn-apk" onclick="handleDownloadApk(event)" title="Download VTrade Android APK">📱 Download APK</button>
 
     <div class="nav-right">
       <button class="nav-btn-settings" id="nav-btn-settings" onclick="openSettingsSheet()" title="Settings">⚙️</button>
       <div class="nav-user-pill">
-        <div class="user-av" id="user-avatar">T</div>
+        <div class="user-av" id="user-avatar">V</div>
         <span id="nav-username">Trader</span>
       </div>
       <button class="btn-logout" onclick="logout()" title="Logout">⎋</button>
@@ -115,86 +118,81 @@
     <!-- LEFT SIDEBAR: Chart area -->
     <div class="chart-area">
 
-      <!-- ══════ WATCHLIST (HORIZONTALLY SCROLLABLE ROW OF COIN CHIPS) ══════ -->
+      <!-- ══════ WATCHLIST (BTC/USDT, ETH/USDT, SOL/USDT) ══════ -->
       <div class="watchlist-section" id="watchlist-section">
         <div class="watchlist-header-bar">
           <div class="wl-title-group">
-            <span class="wl-label">🔥 WATCHLIST</span>
-            <span class="wl-count-tag" id="wl-count-tag">20 Markets</span>
+            <span class="wl-label">🔥 MARKETS</span>
+            <span class="wl-count-tag" id="wl-count-tag">3 Supported Pairs</span>
           </div>
           <div class="wl-right-actions">
-            <div id="market-data-badge" class="data-badge live" title="CoinGecko Live API (Auto-refresh 30s)">
+            <div id="market-data-badge" class="data-badge live" title="CoinGecko Market Data Status">
               <span class="badge-pulse-dot"></span>
               <span id="badge-status-text">Live</span>
             </div>
-            <button class="btn-toggle-markets" id="btn-toggle-markets" onclick="toggleMarketsPanel()" title="Toggle Full Markets List">
+            <span class="last-sync-time" id="last-sync-time">Just now</span>
+            <button class="btn-toggle-markets" id="btn-toggle-markets" onclick="toggleMarketsPanel()" title="Toggle Markets List">
               <span id="markets-toggle-icon">📊</span>
-              <span id="markets-toggle-label">Markets ▼</span>
+              <span id="markets-toggle-label">Pairs ▼</span>
             </button>
           </div>
         </div>
 
         <div class="watchlist-chips-scroll" id="watchlist-chips-scroll">
-          <!-- Dynamically populated 20 coin chips in order -->
+          <!-- Dynamically populated: BTC/USDT, ETH/USDT, SOL/USDT -->
         </div>
       </div>
 
-      <!-- ══════ FULL MARKETS EXPLORER PANEL ══════ -->
+      <!-- ══════ MARKETS LIST PANEL ══════ -->
       <div class="markets-panel" id="markets-panel">
-        <!-- SEARCH INPUT WITH VISIBLE LABEL (Requirement I) -->
         <div class="markets-top-row">
           <div class="markets-search-wrap">
-            <label for="market-search-input" class="search-label">Search Markets</label>
+            <label for="market-search-input" class="search-label">Filter Supported Pairs</label>
             <div class="msearch-input-box">
               <span class="msearch-icon">🔍</span>
-              <input type="text" id="market-search-input" placeholder="Search by symbol or name (e.g. SOL, DOGE)..." oninput="handleMarketSearch(this.value)" autocomplete="off" />
+              <input type="text" id="market-search-input" placeholder="Search BTC, ETH, SOL..." oninput="handleMarketSearch(this.value)" autocomplete="off" />
               <button class="msearch-clear hidden" id="msearch-clear" onclick="clearMarketSearch()">✕</button>
             </div>
           </div>
-          <button class="btn-filter-modal" id="btn-filter-modal" onclick="openFilterModal()" title="Sort & Filter Options">
-            <span>⚡ Filters & Sort</span>
-            <span class="filter-indicator-dot hidden" id="filter-indicator-dot"></span>
-          </button>
         </div>
 
-        <!-- CATEGORIES CHIPS ROW -->
         <div class="categories-bar" id="categories-bar">
-          <button class="cat-chip active" data-cat="All" onclick="selectCategory('All', this)">All</button>
-          <button class="cat-chip" data-cat="Majors" onclick="selectCategory('Majors', this)">Majors</button>
-          <button class="cat-chip" data-cat="Layer 1" onclick="selectCategory('Layer 1', this)">Layer 1</button>
-          <button class="cat-chip" data-cat="DeFi" onclick="selectCategory('DeFi', this)">DeFi</button>
-          <button class="cat-chip" data-cat="Meme" onclick="selectCategory('Meme', this)">Meme</button>
-          <button class="cat-chip" data-cat="AI" onclick="selectCategory('AI', this)">AI</button>
-          <button class="cat-chip" data-cat="Gaming" onclick="selectCategory('Gaming', this)">Gaming</button>
-          <button class="cat-chip" data-cat="Exchange" onclick="selectCategory('Exchange', this)">Exchange</button>
+          <button class="cat-chip active" data-cat="All" onclick="selectCategory('All', this)">All Pairs</button>
+          <button class="cat-chip" data-cat="BTC" onclick="selectCategory('BTC', this)">BTC/USDT</button>
+          <button class="cat-chip" data-cat="ETH" onclick="selectCategory('ETH', this)">ETH/USDT</button>
+          <button class="cat-chip" data-cat="SOL" onclick="selectCategory('SOL', this)">SOL/USDT</button>
         </div>
 
-        <!-- MARKETS LIST CONTAINER -->
         <div class="markets-list-wrap">
           <div class="markets-col-header">
-            <span class="mcol mcol-name" onclick="setSortByColumn('name')">Asset / Name <span class="sort-arr" id="sort-arr-name"></span></span>
-            <span class="mcol mcol-spark">24h Trend</span>
-            <span class="mcol mcol-price" onclick="setSortByColumn('price')">Price / 24h Change <span class="sort-arr" id="sort-arr-price"></span></span>
+            <span class="mcol mcol-name">Pair / Asset</span>
+            <span class="mcol mcol-spark">24h Range</span>
+            <span class="mcol mcol-price">Price / 24h Change</span>
           </div>
           <div class="markets-rows-scroll" id="markets-rows-scroll">
-            <!-- Dynamically populated 20 coins with sparklines -->
+            <!-- Dynamically populated 3 pairs -->
           </div>
         </div>
       </div>
 
-      <!-- Coin + stats header -->
+      <!-- Stale Data Warning Banner -->
+      <div id="stale-warning-banner" class="stale-alert-banner hidden">
+        <span>⚠️ Market price feed is stale or delayed. Real-time CoinGecko updates paused due to rate-limit cooldown. Orders are protected.</span>
+      </div>
+
+      <!-- Active Instrument Header -->
       <div class="chart-header">
         <div class="chart-header-left">
-          <div class="active-coin-pill" id="chart-active-coin-pill" title="Active Trading Coin">
+          <div class="active-coin-pill" id="chart-active-coin-pill" title="Active Trading Pair">
             <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" class="chp-icon" id="chp-icon" alt="Coin"/>
-            <span class="chp-symbol" id="chp-symbol">BTC/USD</span>
+            <span class="chp-symbol" id="chp-symbol">BTC/USDT</span>
             <span class="chp-name" id="chp-name">Bitcoin</span>
           </div>
-          <span class="chart-source-badge badge-simulated" id="chart-source-badge">Simulated</span>
+          <span class="chart-source-badge badge-provider" id="chart-source-badge">CoinGecko Feed</span>
         </div>
         <div class="chart-price-info">
           <div class="chart-price-badge-row">
-            <span class="cpi-price" id="chart-price">$—</span>
+            <span class="cpi-price" id="chart-price">$— USDT</span>
             <span class="price-mode-badge live" id="header-price-mode-badge" title="Market Data Status">
               <span class="data-mode-dot"></span>
               <span id="header-price-mode-text">Live</span>
@@ -202,7 +200,7 @@
           </div>
           <span class="cpi-badge" id="chart-change-badge">—</span>
           <div class="cpi-meta">
-            <span class="cpi-meta-item">Vol: <b id="chart-vol">—</b></span>
+            <span class="cpi-meta-item">24h Vol: <b id="chart-vol">—</b></span>
             <span class="cpi-meta-item">MCap: <b id="chart-mcap">—</b></span>
           </div>
         </div>
@@ -220,70 +218,25 @@
           <button class="tf-btn" data-tf="1d"  onclick="selectTF('1d',this)">1D</button>
         </div>
         <div class="chart-mode-group">
-          <button class="cmode-btn active" id="cmode-candle" onclick="setChartMode('candle')" title="Native Candlesticks with Drawing Tools">📊 Candles</button>
-          <button class="cmode-btn" id="cmode-tv" onclick="setChartMode('tv')" title="TradingView Pro Studio with 50+ Tools">🕯️ TV Pro</button>
+          <button class="cmode-btn active" id="cmode-candle" onclick="setChartMode('candle')" title="Native Candlesticks">📊 Candles</button>
           <button class="cmode-btn" id="cmode-line" onclick="setChartMode('line')" title="Simple Line Chart">📈 Line</button>
-        </div>
-      </div>
-
-      <!-- Quick Touch Drawing Toolbar -->
-      <div class="drawing-toolbar" id="drawing-toolbar">
-        <div class="dt-group">
-          <button class="dt-btn active" id="dt-cursor" onclick="setDrawTool('cursor')" title="Hand / Pan">✋</button>
-          <button class="dt-btn" id="dt-trend" onclick="setDrawTool('trend')" title="Trend Line">✏️ Trend</button>
-          <button class="dt-btn" id="dt-horiz" onclick="setDrawTool('horiz')" title="Support / Resistance Line">➖ S/R</button>
-          <button class="dt-btn" id="dt-brush" onclick="setDrawTool('brush')" title="Freehand Brush">🖌️ Brush</button>
-          <button class="dt-btn" id="dt-measure" onclick="setDrawTool('measure')" title="Measure Price Range">📏 Ruler</button>
-        </div>
-        <div class="dt-group dt-colors">
-          <span class="color-dot active" style="background:#f0b90b" onclick="setDrawColor('#f0b90b',this)"></span>
-          <span class="color-dot" style="background:#00f0ff" onclick="setDrawColor('#00f0ff',this)"></span>
-          <span class="color-dot" style="background:#0ecb81" onclick="setDrawColor('#0ecb81',this)"></span>
-          <span class="color-dot" style="background:#f6465d" onclick="setDrawColor('#f6465d',this)"></span>
-          <button class="dt-btn dt-subtle" onclick="undoDrawing()" title="Undo Last Drawing">↩️</button>
-          <button class="dt-btn dt-subtle dt-danger" onclick="clearDrawings()" title="Clear All Drawings">🗑️</button>
         </div>
       </div>
 
       <!-- Chart Viewport -->
       <div class="chart-wrap" id="chart-viewport">
-        <!-- TradingView Pro Widget View -->
-        <div id="tv-chart-container" class="tv-wrap hidden"></div>
-        <!-- Native Candlestick Canvas -->
         <canvas id="candle-chart" class="chart-canvas"></canvas>
-        <!-- Drawing Overlay Canvas -->
         <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
-        <!-- Original Line Chart Canvas -->
         <canvas id="price-chart" class="chart-canvas hidden"></canvas>
-        <!-- Candle Crosshair OHLC Floating Header -->
         <div id="candle-crosshair-bar" class="candle-crosshair-bar hidden"></div>
         <div class="chart-overlay" id="chart-loading">
           <div class="chart-skeleton-view">
-            <div class="sk-grid-lines">
-              <div class="sk-line"></div>
-              <div class="sk-line"></div>
-              <div class="sk-line"></div>
-            </div>
-            <div class="sk-candles-row">
-              <div class="sk-candle h60"></div>
-              <div class="sk-candle h40"></div>
-              <div class="sk-candle h75"></div>
-              <div class="sk-candle h50"></div>
-              <div class="sk-candle h90"></div>
-              <div class="sk-candle h35"></div>
-              <div class="sk-candle h70"></div>
-              <div class="sk-candle h85"></div>
-              <div class="sk-candle h45"></div>
-              <div class="sk-candle h65"></div>
-              <div class="sk-candle h80"></div>
-              <div class="sk-candle h55"></div>
-            </div>
-            <div class="sk-label-pulse">Loading Chart Data…</div>
+            <div class="sk-label-pulse" id="chart-loading-text">Fetching Provider Market Data…</div>
           </div>
         </div>
       </div>
 
-      <!-- Bottom tabs -->
+      <!-- Bottom tabs: Positions | Open Orders | Trade History -->
       <div class="bottom-tabs">
         <button class="btab active" id="tab-btn-positions" onclick="showBottomTab('positions', this)">
           Positions <span class="btab-count" id="pos-count-badge">(0)</span>
@@ -301,7 +254,7 @@
         <div class="panel-scroll">
           <table class="data-table">
             <thead><tr>
-              <th>COIN</th><th>SIDE</th><th>SIZE</th><th>ENTRY</th><th>MARK</th><th>LEV</th><th>MARGIN</th><th>UNREALIZED PNL</th><th>LIQ. PRICE</th><th>ACTION</th>
+              <th>PAIR</th><th>SIDE</th><th>SIZE</th><th>ENTRY</th><th>MARK</th><th>LEV</th><th>MARGIN</th><th>UNREALIZED PNL</th><th>LIQ. PRICE</th><th>ACTION</th>
             </tr></thead>
             <tbody id="pos-tbody">
               <tr>
@@ -322,7 +275,7 @@
         <div class="panel-scroll">
           <table class="data-table">
             <thead><tr>
-              <th>COIN</th><th>SIDE</th><th>TYPE</th><th>PRICE</th><th>SIZE</th><th>CREATED</th><th>ACTION</th>
+              <th>PAIR</th><th>SIDE</th><th>TYPE</th><th>LIMIT PRICE</th><th>SIZE</th><th>CREATED</th><th>ACTION</th>
             </tr></thead>
             <tbody id="orders-tbody">
               <tr>
@@ -343,7 +296,7 @@
         <div class="panel-scroll">
           <table class="data-table">
             <thead><tr>
-              <th>TIME</th><th>COIN</th><th>SIDE</th><th>TYPE</th><th>PRICE</th><th>SIZE</th><th>FEE</th><th>REALIZED PNL</th>
+              <th>TIME</th><th>PAIR</th><th>SIDE</th><th>TYPE</th><th>PRICE</th><th>SIZE</th><th>FEE</th><th>REALIZED PNL</th>
             </tr></thead>
             <tbody id="history-tbody">
               <tr>
@@ -360,36 +313,36 @@
       </div>
     </div>
 
-    <!-- RIGHT SIDEBAR: Order Panel (Delta-Style) -->
+    <!-- RIGHT SIDEBAR: Order Panel -->
     <div class="order-sidebar">
 
       <!-- Stats mini cards -->
       <div class="mini-stats">
         <div class="mstat">
-          <div class="mstat-label">Cash Balance</div>
+          <div class="mstat-label">Virtual USDT Cash</div>
           <div class="mstat-val green" id="stat-balance">$10,000.00</div>
         </div>
         <div class="mstat">
           <div class="mstat-label" id="stat-coin-label">BTC Held</div>
-          <div class="mstat-val" id="stat-coin-val">0.0000</div>
+          <div class="mstat-val" id="stat-coin-val">0.00000000</div>
         </div>
         <div class="mstat">
           <div class="mstat-label">Unrealized PnL</div>
           <div class="mstat-val" id="stat-unrealized-pnl">$0.00</div>
         </div>
         <div class="mstat">
-          <div class="mstat-label">Total Portfolio</div>
+          <div class="mstat-label">Total Equity</div>
           <div class="mstat-val orange" id="stat-total">$10,000.00</div>
         </div>
       </div>
 
-      <!-- DELTA-STYLE UNIFIED TRADE PANEL -->
+      <!-- UNIFIED TRADE PANEL (SPOT & FUTURES) -->
       <div class="order-card delta-trade-card">
-        <!-- Top Category Toggle: Spot | Position -->
+        <!-- Category Toggle: Spot | Futures -->
         <div class="delta-header-row">
           <div class="order-cat-tabs">
             <button class="ocat-btn active" id="ocat-spot" onclick="setOrderCat('spot')">Spot</button>
-            <button class="ocat-btn" id="ocat-position" onclick="setOrderCat('position')">Position</button>
+            <button class="ocat-btn" id="ocat-position" onclick="setOrderCat('position')">Futures</button>
           </div>
           <div class="delta-header-badge" id="delta-header-badge" style="display:none;">
             <span class="badge-lev" id="delta-lev-pill">10x Isolated</span>
@@ -401,23 +354,23 @@
           <div class="tacb-left">
             <span class="tacb-icon" id="tacb-icon">₿</span>
             <div class="tacb-title-col">
-              <span class="tacb-symbol" id="tacb-symbol">BTC/USD</span>
+              <span class="tacb-symbol" id="tacb-symbol">BTC/USDT</span>
               <span class="tacb-name" id="tacb-name">Bitcoin</span>
             </div>
           </div>
           <div class="tacb-right">
-            <span class="tacb-price" id="tacb-price">$83,456.00</span>
-            <span class="tacb-change" id="tacb-change">-0.78%</span>
+            <span class="tacb-price" id="tacb-price">$— USDT</span>
+            <span class="tacb-change" id="tacb-change">—</span>
           </div>
         </div>
 
-        <!-- Side Toggle: Buy (Green) | Sell (Red) -->
+        <!-- Side Toggle: Buy / Long (Green) | Sell / Short (Red) -->
         <div class="trade-side-tabs">
           <button class="side-btn buy-side active" id="side-buy-btn" onclick="setTradeSide('buy')">
-            <span id="side-buy-label">Buy BTC</span>
+            <span id="side-buy-label">Buy / Long BTC</span>
           </button>
           <button class="side-btn sell-side" id="side-sell-btn" onclick="setTradeSide('sell')">
-            <span id="side-sell-label">Sell BTC</span>
+            <span id="side-sell-label">Sell / Short BTC</span>
           </button>
         </div>
 
@@ -427,10 +380,10 @@
           <button class="otype-btn" id="otype-limit" onclick="setOrderType('limit')">Limit</button>
         </div>
 
-        <!-- Limit Price Input (Shown when Limit selected) -->
+        <!-- Limit Price Input -->
         <div class="field-group" id="limit-price-group" style="display:none;">
           <div class="field-label-row">
-            <label for="limit-price-input">Limit Price (USD)</label>
+            <label for="limit-price-input">Limit Price (USDT)</label>
             <button class="field-label-action" type="button" onclick="setLimitPriceToCurrent()">Latest</button>
           </div>
           <div class="input-wrap">
@@ -439,9 +392,8 @@
           </div>
         </div>
 
-        <!-- Position-Only Section: Margin Mode & Leverage -->
+        <!-- Futures Margin Mode & Leverage -->
         <div id="position-controls-section" style="display:none;">
-          <!-- Margin Mode: Isolated | Cross -->
           <div class="field-group">
             <label>Margin Mode</label>
             <div class="margin-mode-tabs">
@@ -450,7 +402,7 @@
             </div>
           </div>
 
-          <!-- Leverage: Slider & +/- Stepper (1x - 100x) -->
+          <!-- Leverage Slider (1x - 100x) -->
           <div class="field-group">
             <div class="field-label-row">
               <label for="leverage-slider">Leverage: <b id="lev-val-display" class="orange">10x</b></label>
@@ -471,13 +423,13 @@
           </div>
         </div>
 
-        <!-- Amount Input with Unit Switch (Coin vs USD) -->
+        <!-- Amount Input with Unit Switch -->
         <div class="field-group">
           <div class="field-label-row">
             <label id="amount-input-label" for="trade-amount-input">Order Amount</label>
             <div class="unit-toggle-chips">
               <button type="button" class="uchip active" id="uchip-coin" onclick="setTradeUnit('coin')">BTC</button>
-              <button type="button" class="uchip" id="uchip-usd" onclick="setTradeUnit('usd')">USD</button>
+              <button type="button" class="uchip" id="uchip-usd" onclick="setTradeUnit('usd')">USDT</button>
             </div>
           </div>
           <div class="input-wrap amount-wrap">
@@ -485,11 +437,11 @@
             <input type="number" id="trade-amount-input" placeholder="0.00" step="any" min="0" oninput="updateTradeCalc()" />
           </div>
           <div class="live-conversion-sub" id="live-conversion-sub">
-            ≈ $0.00 USD
+            ≈ $0.00 USDT
           </div>
         </div>
 
-        <!-- Quick Percentage Buttons (25%, 50%, 75%, MAX) -->
+        <!-- Quick Percentage Buttons -->
         <div class="quick-row">
           <button type="button" class="qbtn" onclick="setQuickPercent(0.25)">25%</button>
           <button type="button" class="qbtn" onclick="setQuickPercent(0.50)">50%</button>
@@ -497,17 +449,16 @@
           <button type="button" class="qbtn" onclick="setQuickPercent(1.00)">MAX</button>
         </div>
 
-        <!-- Take Profit & Stop Loss (Optional with % quick-picks) -->
+        <!-- Take Profit & Stop Loss -->
         <div class="tpsl-section">
           <div class="tpsl-header" onclick="toggleTpSlSection()">
             <span>Take Profit & Stop Loss <small style="color:var(--txt3); font-weight:400;">(Optional)</small></span>
             <span id="tpsl-toggle-arrow">▾</span>
           </div>
           <div class="tpsl-body" id="tpsl-body">
-            <!-- Take Profit -->
             <div class="field-group tpsl-field">
               <div class="field-label-row">
-                <label for="tp-input">Take Profit (USD)</label>
+                <label for="tp-input">Take Profit (USDT)</label>
                 <div class="tpsl-pct-chips">
                   <button type="button" class="tpchip" onclick="setQuickTp(0.05)">5%</button>
                   <button type="button" class="tpchip" onclick="setQuickTp(0.10)">10%</button>
@@ -520,10 +471,9 @@
               </div>
             </div>
 
-            <!-- Stop Loss -->
             <div class="field-group tpsl-field">
               <div class="field-label-row">
-                <label for="sl-input">Stop Loss (USD)</label>
+                <label for="sl-input">Stop Loss (USDT)</label>
                 <div class="tpsl-pct-chips">
                   <button type="button" class="slchip" onclick="setQuickSl(0.05)">5%</button>
                   <button type="button" class="slchip" onclick="setQuickSl(0.10)">10%</button>
@@ -535,24 +485,20 @@
                 <input type="number" id="sl-input" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
               </div>
             </div>
-            <div id="tpsl-val-msg" class="tpsl-val-hint hidden"></div>
           </div>
         </div>
 
-        <!-- SUMMARY BOX (Live Updates) -->
+        <!-- SUMMARY BOX -->
         <div class="order-summary delta-summary">
-          <div class="os-row"><span>Order Value</span><span id="sum-order-val">$0.00</span></div>
-          <div class="os-row"><span>Margin Required</span><span id="sum-margin-req">$0.00</span></div>
-          <div class="os-row"><span>Estimated Fee <small id="sum-fee-rate" style="color:var(--txt3)">(0.05% Taker)</small></span><span id="sum-est-fee">$0.00</span></div>
+          <div class="os-row"><span>Order Value</span><span id="sum-order-val">$0.00 USDT</span></div>
+          <div class="os-row"><span>Margin Required</span><span id="sum-margin-req">$0.00 USDT</span></div>
+          <div class="os-row"><span>Estimated Fee <small id="sum-fee-rate" style="color:var(--txt3)">(0.05% Taker)</small></span><span id="sum-est-fee">$0.00 USDT</span></div>
           <div class="os-row" id="sum-liq-row" style="display:none;">
-            <span>Liquidation Price</span><span id="sum-liq-price" class="liq-price-red">—</span>
+            <span>Est. Liquidation Price</span><span id="sum-liq-price" class="liq-price-red">—</span>
           </div>
-          <div class="os-row"><span>Available Balance</span><span id="sum-avail-cash" class="green">$10,000.00</span></div>
-          <div class="os-row"><span>Active Coin Held</span><span id="sum-coin-held">0.0000 BTC</span></div>
+          <div class="os-row"><span>Available USDT</span><span id="sum-avail-cash" class="green">$10,000.00</span></div>
+          <div class="os-row"><span>Asset Held</span><span id="sum-coin-held">0.00000000 BTC</span></div>
         </div>
-
-        <!-- Validation Warning Message -->
-        <div id="trade-val-msg" class="msg-error hidden"></div>
 
         <!-- SUBMIT BUTTON -->
         <button class="btn-execute delta-submit-btn buy-execute" id="delta-submit-btn" onclick="executeTrade()">
@@ -562,130 +508,45 @@
 
       <!-- Realized PnL Summary -->
       <div class="pnl-card">
-        <div class="order-section-title">Realized PnL Summary</div>
-        <div class="pnl-row"><span>Total Trades</span><span id="pnl-trades">0</span></div>
-        <div class="pnl-row"><span>Positions Closed</span><span id="pnl-pos-closed">0</span></div>
+        <div class="order-section-title">Realized Performance</div>
+        <div class="pnl-row"><span>Total Closed Trades</span><span id="pnl-trades">0</span></div>
         <div class="pnl-row"><span>Win Rate</span><span id="pnl-win-rate">0.0%</span></div>
-        <div class="pnl-row"><span>Net Realized PnL</span><span id="pnl-net" class="pnl-grey">$0.00</span></div>
+        <div class="pnl-row"><span>Net Realized PnL</span><span id="pnl-net" class="pnl-grey">$0.00 USDT</span></div>
       </div>
 
     </div>
   </div>
 </div>
 
-<!-- APK DOWNLOAD MODAL -->
-<div id="apk-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeApkModal()">
+<!-- PARTIAL CLOSE POSITION MODAL -->
+<div id="partial-close-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closePartialCloseModal()">
   <div class="modal-card">
     <div class="modal-header">
-      <div class="modal-title">📱 Install on Android Phone</div>
-      <button class="modal-close" onclick="closeApkModal()">✕</button>
+      <div class="modal-title">Close Position</div>
+      <button class="modal-close" onclick="closePartialCloseModal()">✕</button>
     </div>
     <div class="modal-body">
-      <p style="color:var(--txt2); margin-bottom:14px; font-size:13px; line-height:1.5;">
-        You can install and trade using the native <b>CryptoTrader Pro APK</b> on your phone:
-      </p>
-
-      <div class="apk-download-box">
-        <a href="/apk" class="btn-download-apk" download="CryptoTrader-Pro.apk">
-          ⬇️ Download APK (Direct)
-        </a>
-      </div>
-
-      <div class="apk-guide">
-        <div class="apk-step">
-          <span class="step-num">1</span>
-          <div>Make sure your phone is connected to the same Wi-Fi network.</div>
-        </div>
-        <div class="apk-step">
-          <span class="step-num">2</span>
-          <div>On your phone's browser, open:
-            <div class="apk-url-tag" id="apk-phone-url">http://192.168.1.17:3001/apk</div>
-          </div>
-        </div>
-        <div class="apk-step">
-          <span class="step-num">3</span>
-          <div>Download and install the APK. Enable <i>"Install unknown apps"</i> in phone settings if requested.</div>
+      <div id="pc-pos-info" class="tpsl-pos-info"></div>
+      <div class="field-group" style="margin-top:14px;">
+        <label for="pc-size-input">Close Amount (Coins)</label>
+        <div class="input-wrap">
+          <input type="number" id="pc-size-input" step="any" placeholder="0.00" oninput="updatePartialClosePreview()" />
         </div>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- SERVER SETTINGS MODAL -->
-<div id="settings-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeSettingsModal()">
-  <div class="modal-card">
-    <div class="modal-header">
-      <div class="modal-title">⚙️ Backend Server Connection</div>
-      <button class="modal-close" onclick="closeSettingsModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <p style="color:var(--txt2); font-size:12px; margin-bottom:12px;">
-        When running on Android APK, enter the backend server URL (e.g. <code>http://192.168.1.17:3001/api</code>):
-      </p>
-      <div class="input-field-wrap" style="margin-bottom:12px;">
-        <label for="custom-api-input" class="input-visible-label">Backend Server URL</label>
-        <input type="text" id="custom-api-input" class="trade-input" placeholder="http://192.168.1.17:3001/api" style="width:100%"/>
+      <div class="quick-row" style="margin-top:10px;">
+        <button type="button" class="qbtn" onclick="setPartialClosePct(0.25)">25%</button>
+        <button type="button" class="qbtn" onclick="setPartialClosePct(0.50)">50%</button>
+        <button type="button" class="qbtn" onclick="setPartialClosePct(0.75)">75%</button>
+        <button type="button" class="qbtn" onclick="setPartialClosePct(1.00)">100% (Full)</button>
       </div>
-      <div style="display:flex; gap:10px; justify-content:flex-end;">
-        <button class="btn-subtle" onclick="resetApiUrl()">Reset Default</button>
-        <button class="btn-execute long-execute" style="width:auto; padding:8px 16px; margin:0;" onclick="saveApiUrl()">Save & Reconnect</button>
+      <div class="order-summary" style="margin-top:14px;">
+        <div class="os-row"><span>Estimated Realized PnL</span><span id="pc-est-pnl">$0.00 USDT</span></div>
+        <div class="os-row"><span>Margin Returned</span><span id="pc-est-margin">$0.00 USDT</span></div>
       </div>
-      <hr style="border:none; border-top:1px solid var(--border); margin:16px 0;" />
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <div style="font-weight:600; font-size:13px; color:var(--txt1);">Reset Demo Balance</div>
-          <div style="font-size:11px; color:var(--txt3);">Reset cash balance back to $10,000.00</div>
-        </div>
-        <button class="btn-subtle" onclick="resetDemoBalance()" style="color:var(--orange); border-color:rgba(240,185,11,0.3);">💰 Reset $10k</button>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button type="button" class="btn-subtle" onclick="closePartialCloseModal()">Cancel</button>
+        <button type="button" class="btn-execute long-execute" id="btn-confirm-partial-close" onclick="executePartialClose()">Confirm Close</button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- FILTER & SORT BOTTOM SHEET / MODAL -->
-<div id="filter-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeFilterModal()">
-  <div class="filter-sheet-card">
-    <div class="modal-header">
-      <div class="modal-title">⚡ Market Filters & Sorting</div>
-      <button class="modal-close" onclick="closeFilterModal()">✕</button>
-    </div>
-    <div class="sheet-body">
-      <!-- Sort By -->
-      <div class="sheet-group">
-        <label class="sheet-label">Sort By</label>
-        <div class="sheet-grid" id="sort-by-grid">
-          <button class="sheet-btn active" data-sort="rank" onclick="setSortBy('rank')">Default Rank</button>
-          <button class="sheet-btn" data-sort="name" onclick="setSortBy('name')">Name</button>
-          <button class="sheet-btn" data-sort="price" onclick="setSortBy('price')">Price</button>
-          <button class="sheet-btn" data-sort="change24h" onclick="setSortBy('change24h')">24h Change %</button>
-          <button class="sheet-btn" data-sort="volume24h" onclick="setSortBy('volume24h')">24h Volume</button>
-          <button class="sheet-btn" data-sort="marketCap" onclick="setSortBy('marketCap')">Market Cap</button>
-        </div>
-      </div>
-
-      <!-- Order Direction -->
-      <div class="sheet-group">
-        <label class="sheet-label">Order Direction</label>
-        <div class="sheet-toggle-row">
-          <button class="sheet-dir-btn active" id="order-desc" onclick="setSortOrder('desc')">Descending (High to Low / Z-A) ↓</button>
-          <button class="sheet-dir-btn" id="order-asc" onclick="setSortOrder('asc')">Ascending (Low to High / A-Z) ↑</button>
-        </div>
-      </div>
-
-      <!-- Quick Filters -->
-      <div class="sheet-group">
-        <label class="sheet-label">Quick Filters</label>
-        <div class="sheet-pills-row">
-          <button class="qfilter-pill active" data-qf="all" onclick="setQuickFilter('all')">All</button>
-          <button class="qfilter-pill" data-qf="gainers" onclick="setQuickFilter('gainers')">🔥 Gainers Only</button>
-          <button class="qfilter-pill" data-qf="losers" onclick="setQuickFilter('losers')">❄️ Losers Only</button>
-          <button class="qfilter-pill" data-qf="topVol" onclick="setQuickFilter('topVol')">📊 Top Volume</button>
-        </div>
-      </div>
-    </div>
-    <div class="sheet-footer">
-      <button class="btn-subtle" onclick="resetFilters()">Reset</button>
-      <button class="btn-execute long-execute" style="width:auto; padding:8px 20px; margin:0;" onclick="closeFilterModal()">Done</button>
     </div>
   </div>
 </div>
@@ -700,14 +561,14 @@
     <div class="modal-body">
       <div class="tpsl-pos-info" id="tpsl-pos-info"></div>
       <div class="field-group" style="margin-top:14px;">
-        <label for="tpsl-tp-input">Take Profit Price (USD) <span class="field-opt">(Optional)</span></label>
+        <label for="tpsl-tp-input">Take Profit Price (USDT) <span class="field-opt">(Optional)</span></label>
         <div class="input-wrap">
           <span class="iprefix">$</span>
           <input type="number" id="tpsl-tp-input" step="any" placeholder="e.g. 95000">
         </div>
       </div>
       <div class="field-group" style="margin-top:10px;">
-        <label for="tpsl-sl-input">Stop Loss Price (USD) <span class="field-opt">(Optional)</span></label>
+        <label for="tpsl-sl-input">Stop Loss Price (USDT) <span class="field-opt">(Optional)</span></label>
         <div class="input-wrap">
           <span class="iprefix">$</span>
           <input type="number" id="tpsl-sl-input" step="any" placeholder="e.g. 80000">
@@ -721,42 +582,61 @@
   </div>
 </div>
 
-<!-- ══════════════════════ SETTINGS BOTTOM SHEET (PART 5) ══════════════════════ -->
+<!-- APK DOWNLOAD MODAL -->
+<div id="apk-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeApkModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">📱 Install VTrade APK</div>
+      <button class="modal-close" onclick="closeApkModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--txt2); margin-bottom:14px; font-size:13px; line-height:1.5;">
+        Install the native <b>VTrade Android APK</b> directly on your phone:
+      </p>
+      <div class="apk-download-box">
+        <a href="/apk" class="btn-download-apk" download="VTrade.apk">
+          ⬇️ Download VTrade APK
+        </a>
+      </div>
+      <div class="apk-guide">
+        <div class="apk-step">
+          <span class="step-num">1</span>
+          <div>Make sure your phone is connected to the network.</div>
+        </div>
+        <div class="apk-step">
+          <span class="step-num">2</span>
+          <div>Download and install <b>VTrade.apk</b>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS BOTTOM SHEET -->
 <div id="settings-sheet" class="modal-backdrop hidden" onclick="if(event.target===this)closeSettingsSheet()">
   <div class="settings-sheet-card">
     <div class="modal-header">
-      <div class="modal-title">⚙️ Settings</div>
+      <div class="modal-title">⚙️ VTrade Settings</div>
       <button class="modal-close" onclick="closeSettingsSheet()" aria-label="Close Settings">✕</button>
     </div>
     <div class="settings-sheet-body">
-      <!-- Section 1: Trading Defaults -->
+      <!-- Trading Defaults -->
       <div class="setting-section">
         <div class="setting-section-header">Trading Defaults</div>
-
-        <!-- Default Leverage -->
         <div class="setting-row">
           <div class="setting-label-col">
             <span class="setting-title">Default Leverage</span>
-            <span class="setting-desc">Applies when opening the trading panel</span>
+            <span class="setting-desc">Applies when opening futures trade</span>
           </div>
           <span class="setting-val-badge" id="setting-lev-display">10x</span>
         </div>
         <div class="setting-slider-wrap">
           <input type="range" id="setting-default-leverage" min="1" max="100" value="10" step="1" oninput="handleSettingLeverageChange(this.value)" class="lev-slider" />
-          <div class="setting-slider-labels">
-            <span>1x</span>
-            <span>25x</span>
-            <span>50x</span>
-            <span>75x</span>
-            <span>100x</span>
-          </div>
         </div>
 
-        <!-- Default Order Type -->
         <div class="setting-row" style="margin-top:12px;">
           <div class="setting-label-col">
             <span class="setting-title">Default Order Type</span>
-            <span class="setting-desc">Preferred order type for new orders</span>
           </div>
           <div class="setting-seg-group">
             <button type="button" class="setting-seg-btn set-otype-btn active" data-val="market" onclick="handleSettingOrderType('market')">Market</button>
@@ -764,11 +644,9 @@
           </div>
         </div>
 
-        <!-- Default Margin Mode -->
         <div class="setting-row" style="margin-top:12px;">
           <div class="setting-label-col">
             <span class="setting-title">Default Margin Mode</span>
-            <span class="setting-desc">Position margin risk mode</span>
           </div>
           <div class="setting-seg-group">
             <button type="button" class="setting-seg-btn set-mm-btn active" data-val="isolated" onclick="handleSettingMarginMode('isolated')">Isolated</button>
@@ -777,15 +655,12 @@
         </div>
       </div>
 
-      <!-- Section 2: Display -->
+      <!-- Display -->
       <div class="setting-section">
         <div class="setting-section-header">Display</div>
-
-        <!-- Price Decimals -->
         <div class="setting-row">
           <div class="setting-label-col">
             <span class="setting-title">Price Decimals</span>
-            <span class="setting-desc">Number of decimals for USD price quotes</span>
           </div>
           <div class="setting-seg-group">
             <button type="button" class="setting-seg-btn set-dec-btn active" data-val="auto" onclick="handleSettingDecimals('auto')">Auto</button>
@@ -794,99 +669,45 @@
           </div>
         </div>
 
-        <!-- Default Amount Unit -->
         <div class="setting-row" style="margin-top:12px;">
           <div class="setting-label-col">
-            <span class="setting-title">Default Amount Unit</span>
-            <span class="setting-desc">Order size in USD cash or Coin units</span>
+            <span class="setting-title">Amount Unit</span>
           </div>
           <div class="setting-seg-group">
             <button type="button" class="setting-seg-btn set-unit-btn active" data-val="coin" onclick="handleSettingUnit('coin')">Coin</button>
-            <button type="button" class="setting-seg-btn set-unit-btn" data-val="usd" onclick="handleSettingUnit('usd')">USD</button>
+            <button type="button" class="setting-seg-btn set-unit-btn" data-val="usd" onclick="handleSettingUnit('usd')">USDT</button>
           </div>
-        </div>
-
-        <!-- Compact Numbers -->
-        <div class="setting-row" style="margin-top:12px;">
-          <div class="setting-label-col">
-            <span class="setting-title">Compact Numbers</span>
-            <span class="setting-desc">Abbreviate large volumes (e.g. 1.2M vs 1,200,000)</span>
-          </div>
-          <label class="setting-switch" for="setting-compact-numbers">
-            <input type="checkbox" id="setting-compact-numbers" checked onchange="handleSettingToggle('compactNumbers', this)">
-            <span class="switch-slider"></span>
-          </label>
         </div>
       </div>
 
-      <!-- Section 3: Sound and Feedback -->
+      <!-- Data & Wallet Actions -->
       <div class="setting-section">
-        <div class="setting-section-header">Sound & Feedback</div>
-
-        <!-- Toast Sounds -->
-        <div class="setting-row">
-          <div class="setting-label-col">
-            <span class="setting-title">Toast Sounds</span>
-            <span class="setting-desc">Play audio tone when toasts and alerts appear</span>
-          </div>
-          <label class="setting-switch" for="setting-toast-sound">
-            <input type="checkbox" id="setting-toast-sound" onchange="handleSettingToggle('toastSound', this)">
-            <span class="switch-slider"></span>
-          </label>
-        </div>
-
-        <!-- Vibration -->
-        <div class="setting-row" style="margin-top:12px;">
-          <div class="setting-label-col">
-            <span class="setting-title">Haptic Vibration</span>
-            <span class="setting-desc">Vibrate on order execution and notifications</span>
-          </div>
-          <label class="setting-switch" for="setting-vibration">
-            <input type="checkbox" id="setting-vibration" checked onchange="handleSettingToggle('vibration', this)">
-            <span class="switch-slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Section 4: Data -->
-      <div class="setting-section">
-        <div class="setting-section-header">Data & Storage</div>
-
+        <div class="setting-section-header">Account & Virtual Data</div>
         <div class="setting-action-row">
           <div class="setting-label-col">
             <span class="setting-title">Export Trade History</span>
-            <span class="setting-desc">Export closed trades as CSV spreadsheet</span>
           </div>
           <button type="button" class="btn-subtle" onclick="exportTradeHistoryCsv()">📥 Export CSV</button>
-        </div>
-
-        <div class="setting-action-row" style="margin-top:12px;">
-          <div class="setting-label-col">
-            <span class="setting-title">Clear Trade History</span>
-            <span class="setting-desc">Clear trade log without resetting wallet cash</span>
-          </div>
-          <button type="button" class="btn-subtle" onclick="clearTradeHistoryOnly()" style="color:var(--txt2);">🗑️ Clear Log</button>
         </div>
 
         <div class="setting-action-row" style="margin-top:12px; border-top:1px solid var(--border); padding-top:12px;">
           <div class="setting-label-col">
             <span class="setting-title" style="color:var(--red);">Reset Virtual Wallet</span>
-            <span class="setting-desc">Reset cash to $10,000 and close all positions</span>
+            <span class="setting-desc">Reset cash to $10,000 USDT and cancel open orders</span>
           </div>
           <button type="button" class="btn-danger-outline" onclick="openResetWalletDialog()">⚠️ Reset Wallet</button>
         </div>
       </div>
 
-      <!-- Version Display (Requirement E) -->
       <div class="settings-footer-version">
-        <span class="settings-version-tag" id="settings-app-version">CryptoTrader Pro v1.0.5</span>
-        <span class="settings-version-sub">Paper Trading Simulation &bull; No Real Money</span>
+        <span class="settings-version-tag">VTrade v2.0.0</span>
+        <span class="settings-version-sub">Virtual Paper Trading &bull; Genuine Market Data &bull; No Real Money</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════ SAFE WALLET RESET MODAL (Requirement B) ══════════════════════ -->
+<!-- SAFE WALLET RESET MODAL -->
 <div id="reset-confirm-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeResetWalletDialog()">
   <div class="modal-card">
     <div class="modal-header">
@@ -895,10 +716,10 @@
     </div>
     <div class="modal-body">
       <p style="color:var(--txt1); font-size:14px; font-weight:600; margin-bottom:8px;">
-        This will reset cash to $10,000 and close all positions. Type RESET to confirm.
+        Reset wallet cash to $10,000 USDT. Type RESET to confirm.
       </p>
       <p style="color:var(--txt3); font-size:12px; margin-bottom:14px; line-height:1.5;">
-        All open positions, pending orders, and trade history will be deleted. Your settings will not be changed.
+        All open positions, pending orders, and history will be cleared. Settings will be preserved.
       </p>
       <div class="field-group" style="margin-bottom:16px;">
         <label for="reset-confirm-input">Type RESET to confirm</label>
@@ -918,7 +739,6 @@
 <div id="toast-container" class="toast-container"></div>
 <div id="toast" class="toast hidden"></div>
 
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="settings.js"></script>
 <script src="app.js"></script>

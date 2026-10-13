@@ -1,6 +1,6 @@
 {
   "appId": "com.cryptotrader.pro",
-  "appName": "CryptoTrader Pro",
+  "appName": "VTrade",
   "webDir": "frontend",
   "server": {
     "androidScheme": "http",

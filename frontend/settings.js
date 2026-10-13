@@ -126,7 +126,7 @@ function renderSettingsUI() {
   // 4. Version Display
   const verEl = document.getElementById('settings-app-version');
   if (verEl && typeof APP_VERSION !== 'undefined') {
-    verEl.textContent = `CryptoTrader Pro ${APP_VERSION}`;
+    verEl.textContent = `VTrade ${APP_VERSION}`;
   }
 }
 
@@ -306,7 +306,7 @@ async function exportTradeHistoryCsv() {
 
   const csvContent = [header, ...rows].join('\n');
   const nowStr = new Date().toISOString().slice(0, 10);
-  const fileName = `CryptoTrader_History_${nowStr}.csv`;
+  const fileName = `VTrade_History_${nowStr}.csv`;
 
   // Check Capacitor Filesystem plugin on Android
   const hasCapFilesystem = !!(window.Capacitor?.isNativePlatform?.() && window.Capacitor?.Plugins?.Filesystem);
@@ -354,32 +354,37 @@ async function exportTradeHistoryCsv() {
 async function handleDownloadApk(event) {
   if (event) event.preventDefault();
 
-  const apkUrl = '/downloads/cryptotrader.apk';
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5000);
+  const candidateUrls = ['/apk', '/downloads/VTrade.apk', '/downloads/cryptotrader.apk'];
+  let successfulUrl = null;
 
-  try {
-    const res = await fetch(apkUrl, { method: 'HEAD', signal: controller.signal });
-    clearTimeout(timer);
-    if (res.ok) {
-      // APK is available, initiate download
-      const a = document.createElement('a');
-      a.href = apkUrl;
-      a.download = 'cryptotrader.apk';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      if (typeof showToast === 'function') {
-        showToast('Downloading CryptoTrader Pro APK...', 'success');
+  for (const apkUrl of candidateUrls) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    try {
+      const res = await fetch(apkUrl, { method: 'HEAD', signal: controller.signal });
+      clearTimeout(timer);
+      if (res.ok) {
+        successfulUrl = apkUrl;
+        break;
       }
-    } else {
-      // Requirement D2: If missing, show toast "APK not available yet"
-      if (typeof showToast === 'function') {
-        showToast('APK not available yet', 'error');
-      }
+    } catch (e) {
+      clearTimeout(timer);
     }
-  } catch (err) {
-    clearTimeout(timer);
+  }
+
+  if (successfulUrl) {
+    // APK is available, initiate download
+    const a = document.createElement('a');
+    a.href = successfulUrl;
+    a.download = 'VTrade.apk';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    if (typeof showToast === 'function') {
+      showToast('Downloading VTrade APK...', 'success');
+    }
+  } else {
+    // If missing, show toast
     if (typeof showToast === 'function') {
       showToast('APK not available yet', 'error');
     }

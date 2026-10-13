@@ -443,15 +443,25 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
   color: var(--green);
   border: 1px solid rgba(22, 199, 132, 0.3);
 }
+.data-badge.delayed {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+.data-badge.rate-limited {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+.data-badge.stale {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
 .data-badge.simulated {
   background: rgba(139, 147, 167, 0.15);
   color: var(--txt2);
   border: 1px solid rgba(139, 147, 167, 0.3);
-}
-.data-badge.stale {
-  background: rgba(245, 166, 35, 0.15);
-  color: #f5a623;
-  border: 1px solid rgba(245, 166, 35, 0.4);
 }
 .badge-pulse-dot {
   width: 6px;
@@ -1782,6 +1792,22 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+}
+.btn-partial-close {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  background: rgba(59,130,246,.12);
+  border: 1px solid rgba(59,130,246,.35);
+  border-radius: var(--r8);
+  color: #60a5fa;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-partial-close:hover {
+  background: rgba(59,130,246,.22);
 }
 .btn-tpsl {
   min-height: 44px;

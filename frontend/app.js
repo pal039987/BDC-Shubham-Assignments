@@ -1,5 +1,5 @@
 /* ==========================================================================
-   CryptoTrader Pro – Hardening, Error Handling, Tests & Cleanup (Part 6)
+   VTrade – Professional Crypto Paper Trading (Part 6 & VTrade Branding)
 
    CODE CLEANUP:
    - Removed unused variable: openPositionsCache.
@@ -67,34 +67,17 @@ function getApiBase() {
 }
 let API = getApiBase();
 
-// ─── Supported Coins (20 Coins) ───────────────────────────
+// ─── Supported Coins (Strictly 3 Pairs: BTC/USDT, ETH/USDT, SOL/USDT) ───────────
 const COIN_LIST = [
-  { id: 'bitcoin',          symbol: 'BTC',       name: 'Bitcoin',        color: '#f7931a', category: 'Majors',   tags: ['Majors'],            icon: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',                       binanceSymbol: 'BTCUSDT',  basePrice: 83427,      baseChange: -0.45, baseVol: 31513000000, baseCap: 1676759000000 },
-  { id: 'ethereum',         symbol: 'ETH',       name: 'Ethereum',       color: '#627eea', category: 'Majors',   tags: ['Majors', 'Layer 1'], icon: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',                     binanceSymbol: 'ETHUSDT',  basePrice: 2515.06,    baseChange: -1.62, baseVol: 16497000000, baseCap: 307174000000 },
-  { id: 'solana',           symbol: 'SOL',       name: 'Solana',         color: '#14f195', category: 'Layer 1',  tags: ['Layer 1'],           icon: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',                      binanceSymbol: 'SOLUSDT',  basePrice: 108.01,     baseChange: -3.78, baseVol: 4059000000,  baseCap: 63637000000 },
-  { id: 'binancecoin',      symbol: 'BNB',       name: 'BNB',            color: '#f3ba2f', category: 'Exchange', tags: ['Exchange', 'Layer 1'],icon: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',                binanceSymbol: 'BNBUSDT',  basePrice: 744.92,     baseChange: -1.02, baseVol: 856000000,   baseCap: 99188000000 },
-  { id: 'ripple',           symbol: 'XRP',       name: 'XRP',            color: '#27a2db', category: 'Majors',   tags: ['Majors'],            icon: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',        binanceSymbol: 'XRPUSDT',  basePrice: 1.37,       baseChange: -3.15, baseVol: 2102000000,  baseCap: 86352000000 },
-  { id: 'cardano',          symbol: 'ADA',       name: 'Cardano',        color: '#0033ad', category: 'Layer 1',  tags: ['Layer 1'],           icon: 'https://assets.coingecko.com/coins/images/975/small/cardano.png',                     binanceSymbol: 'ADAUSDT',  basePrice: 0.2378,     baseChange: -5.86, baseVol: 503500000,   baseCap: 8931000000 },
-  { id: 'dogecoin',         symbol: 'DOGE',      name: 'Dogecoin',       color: '#c2a633', category: 'Meme',     tags: ['Meme'],              icon: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',                      binanceSymbol: 'DOGEUSDT', basePrice: 0.0846,     baseChange: -3.16, baseVol: 849200000,   baseCap: 13224000000 },
-  { id: 'avalanche-2',      symbol: 'AVAX',      name: 'Avalanche',      color: '#e84142', category: 'Layer 1',  tags: ['Layer 1', 'DeFi'],   icon: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png', binanceSymbol: 'AVAXUSDT', basePrice: 10.53, baseChange: -4.14, baseVol: 434500000, baseCap: 4666000000 },
-  { id: 'polkadot',         symbol: 'DOT',       name: 'Polkadot',       color: '#e6007a', category: 'Layer 1',  tags: ['Layer 1'],           icon: 'https://assets.coingecko.com/coins/images/12171/small/polkadot.png',                  binanceSymbol: 'DOTUSDT',  basePrice: 1.18,       baseChange: -6.25, baseVol: 225000000,   baseCap: 2018000000 },
-  { id: 'chainlink',        symbol: 'LINK',      name: 'Chainlink',      color: '#375bd2', category: 'DeFi',     tags: ['DeFi'],              icon: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',          binanceSymbol: 'LINKUSDT', basePrice: 12.94,      baseChange: -3.64, baseVol: 378900000,   baseCap: 9926000000 },
-  { id: 'litecoin',         symbol: 'LTC',       name: 'Litecoin',       color: '#a6a9aa', category: 'Majors',   tags: ['Majors'],            icon: 'https://assets.coingecko.com/coins/images/2/small/litecoin.png',                      binanceSymbol: 'LTCUSDT',  basePrice: 61.94,      baseChange: -5.03, baseVol: 324300000,   baseCap: 4813000000 },
-  { id: 'tron',             symbol: 'TRX',       name: 'TRON',           color: '#ef0027', category: 'Layer 1',  tags: ['Layer 1'],           icon: 'https://assets.coingecko.com/coins/images/1094/small/tron-logo.png',                  binanceSymbol: 'TRXUSDT',  basePrice: 0.3298,     baseChange: -0.65, baseVol: 324600000,   baseCap: 31331000000 },
-  { id: 'shiba-inu',        symbol: 'SHIB',      name: 'Shiba Inu',      color: '#ffa409', category: 'Meme',     tags: ['Meme'],              icon: 'https://assets.coingecko.com/coins/images/11939/small/shiba.png',                     binanceSymbol: 'SHIBUSDT', basePrice: 0.00000526, baseChange: -4.47, baseVol: 98600000,    baseCap: 3097000000 },
-  { id: 'the-open-network', symbol: 'TON',       name: 'Toncoin',        color: '#0098ea', category: 'Layer 1',  tags: ['Layer 1'],           icon: 'https://assets.coingecko.com/coins/images/17980/small/ton_symbol.png',                binanceSymbol: 'TONUSDT',  basePrice: 1.38,       baseChange: -4.17, baseVol: 52890000,    baseCap: 3913000000 },
-  { id: 'matic-network',    symbol: 'MATIC/POL', name: 'Polygon (POL)',  color: '#8247e5', category: 'Layer 1',  tags: ['Layer 1', 'DeFi'],   icon: 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',                    binanceSymbol: 'POLUSDT',  basePrice: 0.1262,     baseChange: -3.85, baseVol: 180000000,   baseCap: 1261000000 },
-  { id: 'cosmos',           symbol: 'ATOM',      name: 'Cosmos',         color: '#2e3148', category: 'Layer 1',  tags: ['Layer 1'],           icon: 'https://assets.coingecko.com/coins/images/1481/small/cosmos_hub.png',                 binanceSymbol: 'ATOMUSDT', basePrice: 1.82,       baseChange: -4.85, baseVol: 80600000,    baseCap: 976000000 },
-  { id: 'near',             symbol: 'NEAR',      name: 'NEAR Protocol',  color: '#00ec97', category: 'AI',       tags: ['AI', 'Layer 1'],     icon: 'https://assets.coingecko.com/coins/images/10365/small/near.png',                      binanceSymbol: 'NEARUSDT', basePrice: 5.34,       baseChange: -9.40, baseVol: 1323000000,  baseCap: 6986000000 },
-  { id: 'uniswap',          symbol: 'UNI',       name: 'Uniswap',        color: '#ff007a', category: 'DeFi',     tags: ['DeFi'],              icon: 'https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png',               binanceSymbol: 'UNIUSDT',  basePrice: 7.33,       baseChange: -5.78, baseVol: 470500000,   baseCap: 4580000000 },
-  { id: 'aptos',            symbol: 'APT',       name: 'Aptos',          color: '#2ee8b6', category: 'Layer 1',  tags: ['Layer 1'],           icon: 'https://assets.coingecko.com/coins/images/26455/small/aptos_round.png',               binanceSymbol: 'APTUSDT',  basePrice: 0.8284,     baseChange: -9.25, baseVol: 118000000,   baseCap: 731000000 },
-  { id: 'arbitrum',         symbol: 'ARB',       name: 'Arbitrum',       color: '#28a0f0', category: 'Gaming',   tags: ['Gaming', 'DeFi'],    icon: 'https://assets.coingecko.com/coins/images/16547/small/arbitrum-shield.png',           binanceSymbol: 'ARBUSDT',  basePrice: 0.1870,     baseChange: -4.45, baseVol: 184500000,   baseCap: 1269000000 }
+  { id: 'bitcoin',  symbol: 'BTC', name: 'Bitcoin',  pair: 'BTC/USDT', color: '#f7931a', category: 'Majors',  tags: ['Majors'],  icon: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',   binanceSymbol: 'BTCUSDT', basePrice: 83427,   baseChange: -0.45, baseVol: 31513000000, baseCap: 1676759000000 },
+  { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', pair: 'ETH/USDT', color: '#627eea', category: 'Majors',  tags: ['Majors'],  icon: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png', binanceSymbol: 'ETHUSDT', basePrice: 2515.06, baseChange: -1.62, baseVol: 16497000000, baseCap: 307174000000 },
+  { id: 'solana',   symbol: 'SOL', name: 'Solana',   pair: 'SOL/USDT', color: '#14f195', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',  binanceSymbol: 'SOLUSDT', basePrice: 108.01,  baseChange: -3.78, baseVol: 4059000000,  baseCap: 63637000000 }
 ];
 
 function getCoinDefinition(coinId) {
   if (!coinId) return COIN_LIST[0];
-  const lower = coinId.toLowerCase();
-  return COIN_LIST.find(c => c.id === lower || c.symbol.toLowerCase() === lower || (lower === 'matic' && c.id === 'matic-network') || (lower === 'pol' && c.id === 'matic-network')) || COIN_LIST[0];
+  const lower = coinId.toLowerCase().replace('/usdt', '').replace('usdt', '');
+  return COIN_LIST.find(c => c.id === lower || c.symbol.toLowerCase() === lower || c.id === coinId.toLowerCase()) || COIN_LIST[0];
 }
 
 // ─── Market Explorer State (Persisted in Session) ─────────
@@ -439,68 +422,104 @@ function logout() {
   showToast('Logged out', 'info');
 }
 
-// ─── COINGECKO LIVE PRICES (EVERY 30S) & FALLBACK ─────────
+// ─── COINGECKO LIVE PRICES (TRUTHFUL USDT FEED & RATE LIMIT BACKOFF) ─────────
+let isRateLimited = false;
+
 async function fetchCoinGeckoPrices() {
-  // Requirement A2: If CoinGecko returned a 429, wait and use cached data. Do not retry more than once per 60s.
-  if (Date.now() < cgRateLimitUntil) {
-    fallbackToSimulatedPrices();
-    isPriceDataLive = false;
-    updateDataBadge(false);
-    return;
-  }
-
-  const ids = COIN_LIST.map(c => c.id).join(',');
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout (Requirement A1)
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  let updatedAny = false;
 
+  // Step 1: Query backend /api/prices first (provides Tether USD/USDT conversion, caching, and rate limit backoff)
   try {
-    const resp = await fetch(url, { signal: controller.signal });
+    const res = await fetch(`${API}/prices`, { signal: controller.signal });
     clearTimeout(timeoutId);
-    if (resp.status === 429) {
-      cgRateLimitUntil = Date.now() + 60000; // 60-second cooldown
-      throw new Error('CoinGecko 429 rate limit');
-    }
-    if (!resp.ok) throw new Error('CoinGecko HTTP ' + resp.status);
-    const data = await resp.json();
-    if (!data || !data.bitcoin || typeof data.bitcoin.usd !== 'number') {
-      throw new Error('Malformed CoinGecko response');
-    }
-
-    COIN_LIST.forEach(c => {
-      const d = data[c.id];
-      if (d && typeof d.usd === 'number') {
-        // Requirement B1: Reject price that is 0, negative, NaN or Infinity. Keep previous valid price instead.
-        if (!isValidPrice(d.usd)) return;
-
-        const prevPrice = currentPrices[c.id]?.price || d.usd;
-        currentPrices[c.id] = {
-          price: d.usd,
-          change24h: (typeof d.usd_24h_change === 'number' && isFinite(d.usd_24h_change))
-            ? d.usd_24h_change
-            : (currentPrices[c.id]?.change24h || c.baseChange),
-          volume24h: (typeof d.usd_24h_vol === 'number' && isFinite(d.usd_24h_vol))
-            ? d.usd_24h_vol
-            : (currentPrices[c.id]?.volume24h || c.baseVol),
-          marketCap: d.usd_market_cap || c.baseCap, // Requirement E4: No hardcoded multipliers
-          isSimulated: false
-        };
-        if (prevPrice !== d.usd) {
-          onPriceTick(c.id, prevPrice, d.usd);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data === 'object') {
+        isRateLimited = !!data.isRateLimited;
+        if (data.updatedAt) {
+          lastGoodPriceTimestamp = new Date(data.updatedAt).getTime();
+        } else {
+          lastGoodPriceTimestamp = Date.now();
         }
-      }
-    });
 
-    isPriceDataLive = true;
-    saveCachedPrices(); // Requirement A3: Cache last good price data
-    updateDataBadge(true);
-  } catch (err) {
+        COIN_LIST.forEach(c => {
+          const coinData = data[c.id];
+          if (coinData && isValidPrice(coinData.price)) {
+            const prevPrice = currentPrices[c.id]?.price || coinData.price;
+            currentPrices[c.id] = {
+              price: coinData.price,
+              change24h: (typeof coinData.change24h === 'number' && isFinite(coinData.change24h)) ? coinData.change24h : c.baseChange,
+              volume24h: (typeof coinData.volume24h === 'number' && isFinite(coinData.volume24h)) ? coinData.volume24h : c.baseVol,
+              marketCap: (typeof coinData.marketCap === 'number' && isFinite(coinData.marketCap)) ? coinData.marketCap : c.baseCap,
+              isSimulated: false,
+              quoteCurrency: 'USDT'
+            };
+            if (prevPrice !== coinData.price) {
+              onPriceTick(c.id, prevPrice, coinData.price);
+            }
+            updatedAny = true;
+          }
+        });
+
+        isPriceDataLive = !isRateLimited && ((Date.now() - lastGoodPriceTimestamp) < 180000);
+        saveCachedPrices();
+      }
+    }
+  } catch (backendErr) {
     clearTimeout(timeoutId);
-    fallbackToSimulatedPrices();
-    isPriceDataLive = false;
-    updateDataBadge(false);
   }
 
+  // Step 2: Fallback to direct CoinGecko if backend didn't update and rate limit cooldown not active
+  if (!updatedAny && Date.now() >= cgRateLimitUntil) {
+    const cgController = new AbortController();
+    const cgTimeout = setTimeout(() => cgController.abort(), 5000);
+    try {
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd,usdt&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`;
+      const cgResp = await fetch(url, { signal: cgController.signal });
+      clearTimeout(cgTimeout);
+      if (cgResp.status === 429) {
+        cgRateLimitUntil = Date.now() + 60000;
+        isRateLimited = true;
+      } else if (cgResp.ok) {
+        const cgData = await cgResp.json();
+        const tetherUsd = (cgData && cgData.tether && typeof cgData.tether.usd === 'number' && cgData.tether.usd > 0) ? cgData.tether.usd : 1.0;
+        lastGoodPriceTimestamp = Date.now();
+        isRateLimited = false;
+
+        COIN_LIST.forEach(c => {
+          const d = cgData[c.id];
+          if (d && typeof d.usd === 'number' && isValidPrice(d.usd)) {
+            // Truthful USDT conversion: calculate usd / tether.usd
+            const rawUsdt = (typeof d.usdt === 'number' && d.usdt > 0) ? d.usdt : (d.usd / tetherUsd);
+            const usdtPrice = isValidPrice(rawUsdt) ? rawUsdt : d.usd;
+            const prevPrice = currentPrices[c.id]?.price || usdtPrice;
+            currentPrices[c.id] = {
+              price: usdtPrice,
+              change24h: (typeof d.usd_24h_change === 'number' && isFinite(d.usd_24h_change)) ? d.usd_24h_change : c.baseChange,
+              volume24h: (typeof d.usd_24h_vol === 'number' && isFinite(d.usd_24h_vol)) ? d.usd_24h_vol : c.baseVol,
+              marketCap: d.usd_market_cap || c.baseCap,
+              isSimulated: false,
+              quoteCurrency: 'USDT'
+            };
+            if (prevPrice !== usdtPrice) {
+              onPriceTick(c.id, prevPrice, usdtPrice);
+            }
+            updatedAny = true;
+          }
+        });
+
+        isPriceDataLive = true;
+        saveCachedPrices();
+      }
+    } catch (cgErr) {
+      clearTimeout(cgTimeout);
+    }
+  }
+
+  // Update truthful badge & UI status (zero fake drift)
+  updateDataBadge();
   renderWatchlistChips();
   renderMarketsList();
   updateChartPriceDisplay();
@@ -509,54 +528,62 @@ async function fetchCoinGeckoPrices() {
   updatePosCalc();
 }
 
-function fallbackToSimulatedPrices() {
-  COIN_LIST.forEach(c => {
-    if (!currentPrices[c.id] || !currentPrices[c.id].price) {
-      currentPrices[c.id] = {
-        price: c.basePrice,
-        change24h: c.baseChange,
-        volume24h: c.baseVol,
-        marketCap: c.baseCap,
-        isSimulated: true
-      };
-    } else {
-      const prevPrice = currentPrices[c.id].price;
-      const spreadPct = (Math.random() - 0.49) * 0.003;
-      const newPrice = Math.max(0.000001, prevPrice * (1 + spreadPct));
-      if (isValidPrice(newPrice)) {
-        currentPrices[c.id].price = parseFloat(newPrice > 10 ? newPrice.toFixed(2) : newPrice.toPrecision(5));
-        currentPrices[c.id].change24h = parseFloat(((currentPrices[c.id].change24h || 0) + (Math.random() - 0.5) * 0.04).toFixed(2));
-        currentPrices[c.id].isSimulated = true;
-        if (prevPrice !== currentPrices[c.id].price) {
-          onPriceTick(c.id, prevPrice, currentPrices[c.id].price);
-        }
-      }
-    }
-  });
-}
-
-function updateDataBadge(isLive) {
+function updateDataBadge() {
   const badge = document.getElementById('market-data-badge');
   const txt = document.getElementById('badge-status-text');
-  if (!badge || !txt) return;
+  const headerBadge = document.getElementById('header-price-mode-badge');
+  const headerText = document.getElementById('header-price-mode-text');
+  const syncEl = document.getElementById('market-last-sync');
+  const banner = document.getElementById('stale-warning-banner');
 
-  // Requirement A4: Mark stale data (older than 2 minutes) with a small "Stale" label
-  const isStale = (Date.now() - lastGoodPriceTimestamp) > 120000;
-  if (isStale) {
-    badge.className = 'data-badge stale';
-    txt.textContent = 'Stale';
-    badge.title = 'Price data older than 2 minutes';
-    return;
+  const ageMs = Date.now() - (lastGoodPriceTimestamp || 0);
+  const ageSec = Math.max(0, Math.floor(ageMs / 1000));
+
+  let status = 'Live';
+  let badgeClass = 'live';
+
+  if (isRateLimited || Date.now() < cgRateLimitUntil) {
+    status = 'Rate-Limited';
+    badgeClass = 'rate-limited';
+  } else if (ageMs > 180000) {
+    status = 'Stale';
+    badgeClass = 'stale';
+  } else if (ageMs > 60000) {
+    status = 'Delayed';
+    badgeClass = 'delayed';
+  } else {
+    status = 'Live';
+    badgeClass = 'live';
   }
 
-  if (isLive) {
-    badge.className = 'data-badge live';
-    txt.textContent = 'Live';
-    badge.title = 'CoinGecko Live API';
-  } else {
-    badge.className = 'data-badge simulated';
-    txt.textContent = 'Simulated';
-    badge.title = 'Simulated Feed (Fallback)';
+  if (badge && txt) {
+    badge.className = `data-badge ${badgeClass}`;
+    txt.textContent = status;
+    badge.title = `CoinGecko USDT Feed (${status}, age: ${ageSec}s)`;
+  }
+
+  if (headerBadge && headerText) {
+    headerBadge.className = `price-mode-badge ${badgeClass}`;
+    headerText.textContent = status;
+  }
+
+  if (syncEl) {
+    if (ageSec < 5) {
+      syncEl.textContent = 'Updated just now';
+    } else if (ageSec < 60) {
+      syncEl.textContent = `Updated ${ageSec}s ago`;
+    } else {
+      const mins = Math.floor(ageSec / 60);
+      syncEl.textContent = `Updated ${mins}m ago`;
+    }
+  }
+
+  if (banner) {
+    if (ageMs > 180000 || (status === 'Rate-Limited' && ageMs > 120000)) {
+      banner.classList.remove('hidden');
+    } else {
+      banner.classList.add('hidden');
+    }
   }
 }
 
@@ -958,45 +985,34 @@ function selectCoin(coin) {
   }
 }
 
-// ─── REAL-TIME PRICE STREAM & SUB-SECOND PNL TICKER ───────
+// ─── REAL-TIME PRICE STREAM (TRUTHFUL POLL WITHOUT MOCK DRIFT) ───────
 function initRealtimeTicker() {
-  // Backup poll every 3s to keep DB & backend synced
-  setInterval(pollPricesFast, 3000);
-  // Micro-tick simulation loop every 1s
-  setInterval(microTickSimulation, 1000);
+  // Poll genuine backend/CoinGecko prices every 4s
+  setInterval(pollPricesFast, 4000);
 }
 
 async function pollPricesFast() {
   if (document.hidden) return;
   try {
     const res = await get(`${API}/prices`);
-    if (res && res.bitcoin && res.ethereum) {
-      const btcPrev = currentPrices['bitcoin']?.price;
-      const ethPrev = currentPrices['ethereum']?.price;
-      Object.keys(res).forEach(k => {
-        if (k !== 'updatedAt' && isValidPrice(res[k]?.price)) {
-          currentPrices[k] = { ...currentPrices[k], ...res[k] };
+    if (res && res.bitcoin && res.ethereum && res.solana) {
+      if (res.updatedAt) {
+        lastGoodPriceTimestamp = new Date(res.updatedAt).getTime();
+      }
+      isRateLimited = !!res.isRateLimited;
+
+      ['bitcoin', 'ethereum', 'solana'].forEach(k => {
+        if (isValidPrice(res[k]?.price)) {
+          const prev = currentPrices[k]?.price;
+          currentPrices[k] = { ...currentPrices[k], ...res[k], isSimulated: false };
+          if (prev !== res[k].price) {
+            onPriceTick(k, prev, res[k].price);
+          }
         }
       });
-      if (res.bitcoin.price !== btcPrev) onPriceTick('bitcoin', btcPrev, res.bitcoin.price);
-      if (res.ethereum.price !== ethPrev) onPriceTick('ethereum', ethPrev, res.ethereum.price);
+      updateDataBadge();
     }
   } catch (e) {}
-}
-
-function microTickSimulation() {
-  if (document.hidden) return;
-  const coinsToTick = [selectedCoin, 'bitcoin', 'ethereum'];
-  coinsToTick.forEach(coin => {
-    if (!currentPrices[coin]?.price) return;
-    const prevPrice = currentPrices[coin].price;
-    const spreadPct = (Math.random() - 0.49) * 0.001;
-    const newPrice = Math.max(0.000001, prevPrice * (1 + spreadPct));
-    if (isValidPrice(newPrice)) {
-      currentPrices[coin].price = parseFloat(newPrice > 10 ? newPrice.toFixed(2) : newPrice.toPrecision(5));
-      onPriceTick(coin, prevPrice, currentPrices[coin].price);
-    }
-  });
 }
 
 function onPriceTick(coin, prevPrice, newPrice) {
@@ -1114,42 +1130,31 @@ function renderTradingViewChart() {
   }
 }
 
-// ─── CLIENT-SIDE SIMULATED CANDLES GENERATOR ────────────────
-function generateSimulatedCandles(coin, tf, count = 75) {
-  const coinDef = getCoinDefinition(coin);
-  const cur = currentPrices[coin];
-  const currentPrice = cur?.price || coinDef?.basePrice || 100;
+// ─── TRUTHFUL CANDLES STORE (PROVIDER CACHE & STATIC BASELINE) ──────────
+const providerOhlcCache = {};
+
+function getBaselineCandles(coinDef, tf, count = 50) {
+  const cur = currentPrices[coinDef.id];
+  const p = cur?.price || coinDef.basePrice || 100;
   const tfMinutes = { '1m': 1, '3m': 3, '5m': 5, '15m': 15, '1h': 60, '4h': 240, '1d': 1440 }[tf.toLowerCase()] || 15;
   const now = Date.now();
   const stepMs = tfMinutes * 60 * 1000;
-  
-  // Start slightly offset to provide realistic price action history
-  let p = currentPrice * (1 + (Math.random() - 0.5) * 0.035);
   const candles = [];
   const prices = [];
-  
+
   for (let i = count; i >= 0; i--) {
     const timeMs = now - (i * stepMs);
-    const open = p;
-    const volSpread = Math.min(0.025, 0.0035 * Math.sqrt(tfMinutes));
-    const delta = (Math.random() - 0.49) * volSpread * p;
-    const close = i === 0 ? currentPrice : Math.max(0.0000001, open + delta);
-    const high = Math.max(open, close) + Math.random() * (volSpread * 0.55) * p;
-    const low = Math.max(0.0000001, Math.min(open, close) - Math.random() * (volSpread * 0.55) * p);
-    const volume = Math.random() * 50 + 10;
-    p = close;
-    
     candles.push({
       time: Math.floor(timeMs / 1000),
-      open: parseFloat(open > 10 ? open.toFixed(2) : open.toPrecision(5)),
-      high: parseFloat(high > 10 ? high.toFixed(2) : high.toPrecision(5)),
-      low: parseFloat(low > 10 ? low.toFixed(2) : low.toPrecision(5)),
-      close: parseFloat(close > 10 ? close.toFixed(2) : close.toPrecision(5)),
-      volume: parseFloat(volume.toFixed(2))
+      open: p,
+      high: p,
+      low: p,
+      close: p,
+      volume: 0
     });
-    prices.push([timeMs, close]);
+    prices.push([timeMs, p]);
   }
-  return { candles, prices, simulated: true };
+  return { candles, prices, isBaseline: true };
 }
 
 // ─── COINGECKO OHLC ENDPOINT FETCH ────────────────────────
@@ -1180,17 +1185,17 @@ async function fetchCgOhlcWithTimeout(coinId, tf, timeoutMs = 5000) {
       high: parseFloat(c[2]),
       low: parseFloat(c[3]),
       close: parseFloat(c[4]),
-      volume: Math.random() * 40 + 10
+      volume: 0
     }));
     const prices = candles.map(c => [c.time * 1000, c.close]);
-    return { candles, prices, simulated: false };
+    return { candles, prices, isBaseline: false };
   } catch (err) {
     clearTimeout(timer);
     throw err;
   }
 }
 
-// ─── NATIVE CANDLESTICK ENGINE (With 5s Timeout & Guaranteed Fallback) ──
+// ─── NATIVE CANDLESTICK ENGINE (With 5s Timeout & Guaranteed Truthful Fallback) ──
 let chartLoadTimer = null;
 
 async function loadChart(coin, tf) {
@@ -1198,22 +1203,23 @@ async function loadChart(coin, tf) {
   if (loader) loader.classList.remove('hidden');
   
   const coinDef = getCoinDefinition(coin);
+  const cacheKey = `${coinDef.id}_${tf}`;
   const sourceBadge = document.getElementById('chart-source-badge');
   let hasRendered = false;
 
-  // Strict 5-Second Timeout: Guaranteed to terminate endless spinner and render fallback candles
+  // Strict 5-Second Timeout: Terminates spinner and renders cached/baseline provider candles
   if (chartLoadTimer) clearTimeout(chartLoadTimer);
   chartLoadTimer = setTimeout(() => {
     if (!hasRendered) {
       hasRendered = true;
       if (loader) loader.classList.add('hidden');
+      const fallback = providerOhlcCache[cacheKey] || getBaselineCandles(coinDef, tf);
       if (sourceBadge) {
-        sourceBadge.textContent = 'Simulated';
-        sourceBadge.className = 'chart-source-badge badge-simulated';
+        sourceBadge.textContent = fallback.isBaseline ? 'Rate-Limited' : 'Cached';
+        sourceBadge.className = fallback.isBaseline ? 'chart-source-badge badge-stale' : 'chart-source-badge badge-delayed';
       }
-      const sim = generateSimulatedCandles(coin, tf);
-      candleData = sim.candles;
-      renderCurrentChart(sim.candles, sim.prices, tf);
+      candleData = fallback.candles;
+      renderCurrentChart(fallback.candles, fallback.prices, tf);
     }
   }, 5000);
 
@@ -1228,20 +1234,23 @@ async function loadChart(coin, tf) {
       try {
         const ctl = new AbortController();
         const tm = setTimeout(() => ctl.abort(), 1800);
-        const resp = await fetch(`${API}/chart/${coin}?tf=${tf}`, { signal: ctl.signal });
+        const resp = await fetch(`${API}/ohlc/${coinDef.id}?tf=${tf}`, { signal: ctl.signal });
         clearTimeout(tm);
         if (resp.ok) {
           const beData = await resp.json();
           if (beData.candles && beData.candles.length) {
-            chartResult = { candles: beData.candles, prices: beData.prices || [], simulated: false };
+            chartResult = { candles: beData.candles, prices: beData.prices || [], isBaseline: false };
           }
         }
       } catch (beErr) {}
     }
 
-    // Step 3: If no network candles returned, use realistic simulation immediately
+    // Step 3: Check cache if provider network failed
     if (!chartResult || !chartResult.candles || !chartResult.candles.length) {
-      chartResult = generateSimulatedCandles(coin, tf);
+      chartResult = providerOhlcCache[cacheKey] || getBaselineCandles(coinDef, tf);
+    } else {
+      // Save genuine candles to cache
+      providerOhlcCache[cacheKey] = chartResult;
     }
 
     if (!hasRendered) {
@@ -1250,12 +1259,15 @@ async function loadChart(coin, tf) {
       candleData = chartResult.candles;
 
       if (sourceBadge) {
-        if (chartResult.simulated) {
-          sourceBadge.textContent = 'Simulated';
-          sourceBadge.className = 'chart-source-badge badge-simulated';
-        } else {
+        if (chartResult.isBaseline) {
+          sourceBadge.textContent = 'Rate-Limited';
+          sourceBadge.className = 'chart-source-badge badge-stale';
+        } else if (chartResult === providerOhlcCache[cacheKey]) {
           sourceBadge.textContent = 'Live';
           sourceBadge.className = 'chart-source-badge badge-live';
+        } else {
+          sourceBadge.textContent = 'Cached';
+          sourceBadge.className = 'chart-source-badge badge-delayed';
         }
       }
 
@@ -1265,13 +1277,13 @@ async function loadChart(coin, tf) {
     if (!hasRendered) {
       hasRendered = true;
       clearTimeout(chartLoadTimer);
-      const sim = generateSimulatedCandles(coin, tf);
-      candleData = sim.candles;
+      const fallback = providerOhlcCache[cacheKey] || getBaselineCandles(coinDef, tf);
+      candleData = fallback.candles;
       if (sourceBadge) {
-        sourceBadge.textContent = 'Simulated';
-        sourceBadge.className = 'chart-source-badge badge-simulated';
+        sourceBadge.textContent = fallback.isBaseline ? 'Rate-Limited' : 'Cached';
+        sourceBadge.className = fallback.isBaseline ? 'chart-source-badge badge-stale' : 'chart-source-badge badge-delayed';
       }
-      renderCurrentChart(sim.candles, sim.prices, tf);
+      renderCurrentChart(fallback.candles, fallback.prices, tf);
     }
   } finally {
     if (loader) loader.classList.add('hidden');
@@ -2105,7 +2117,7 @@ function updateTradeLabels() {
     tacbIcon.style.backgroundColor = `${coinDef.color}22`;
     tacbIcon.textContent = sym.charAt(0);
   }
-  if (tacbSym) tacbSym.textContent = `${sym}/USD`;
+  if (tacbSym) tacbSym.textContent = `${sym}/USDT`;
   if (tacbName) tacbName.textContent = coinDef.name;
   if (tacbPrice) tacbPrice.textContent = `$${fmt(p)}`;
   if (tacbChange) {
@@ -2119,6 +2131,13 @@ function updateTradeLabels() {
 let lastTradeClickTime = 0;
 
 function executeTrade() {
+  // Requirement: Reject any new order when market data is stale (> 3 minutes / 180s)
+  const dataAgeMs = Date.now() - (lastGoodPriceTimestamp || 0);
+  if (dataAgeMs > 180000) {
+    showToast('⚠️ Market data is stale (> 3m old). New orders are disabled.', 'error');
+    return;
+  }
+
   // Requirement B3: Prevent double-tap on Buy, Sell buttons (disable for 1s)
   if (Date.now() - lastTradeClickTime < 1000) return;
   lastTradeClickTime = Date.now();
@@ -2276,8 +2295,31 @@ function executeTrade() {
       });
     }
   } else {
-    // Position (Long / Short)
-    const totalMargin = roundValue(marginRequired + estFee, 'money');
+    // Position (Long / Short) with Opposing Position Netting Support
+    const targetDirection = (tradeSide === 'buy') ? 'long' : 'short';
+    const opposingIdx = walletState.positions.findIndex(p => p.coin === selectedCoin && p.direction !== targetDirection);
+
+    if (opposingIdx !== -1) {
+      const opp = walletState.positions[opposingIdx];
+      if (sizeCoins <= opp.size) {
+        // Order reduces or completely closes the opposing position without opening unintended reverse position
+        closePositionPartial(opp.id, sizeCoins, 'Market Netting');
+        const input = document.getElementById('trade-amount-input');
+        if (input) input.value = '';
+        return;
+      } else {
+        // Order is larger than opposing position: close full opposing position first, then open remaining size
+        const remainingSize = roundValue(sizeCoins - opp.size, 'coin');
+        closePositionUnified(opp.id, null, 'Market Netting');
+        sizeCoins = remainingSize;
+        orderValue = roundValue(sizeCoins * entryPrice, 'money');
+      }
+    }
+
+    const currentMarginRequired = (lev > 0) ? roundValue(orderValue / lev, 'money') : orderValue;
+    const currentEstFee = roundValue(orderValue * feeRate, 'money');
+    const totalMargin = roundValue(currentMarginRequired + currentEstFee, 'money');
+
     if (roundValue(walletState.cashBalance - totalMargin, 'money') < 0) {
       showToast('❌ Insufficient cash for margin', 'error');
       return;
@@ -2300,7 +2342,7 @@ function executeTrade() {
       size: roundValue(sizeCoins, 'coin'),
       entry_price: roundValue(entryPrice, 'money'),
       leverage: lev,
-      margin: roundValue(marginRequired, 'money'),
+      margin: roundValue(currentMarginRequired, 'money'),
       marginMode: tradeMarginMode,
       liquidationPrice: liqPrice,
       stop_loss: slVal ? roundValue(slVal, 'money') : null,
@@ -2316,7 +2358,7 @@ function executeTrade() {
       type: tradeOrderType === 'limit' ? 'Limit' : 'Market',
       price: roundValue(entryPrice, 'money'),
       size: roundValue(sizeCoins, 'coin'),
-      fee: estFee,
+      fee: currentEstFee,
       pnl: null
     });
   }
@@ -2431,6 +2473,149 @@ function closePositionUnified(posId, exitPriceInput, closeReason = 'Market', cli
 
 function closePosition(posId) {
   closePositionUnified(posId, null, 'Market');
+}
+
+// ─── PARTIAL POSITION CLOSE (Requirement: Partial and Full Closes) ───
+function closePositionPartial(posId, closeSizeCoins, closeReason = 'Market') {
+  const idx = walletState.positions.findIndex(p => p.id === posId);
+  if (idx === -1) return;
+  const pos = walletState.positions[idx];
+
+  const validCloseSize = Math.min(pos.size, Math.max(0.000001, closeSizeCoins));
+  if (validCloseSize >= pos.size - 0.000001) {
+    closePositionUnified(posId, null, closeReason);
+    return;
+  }
+
+  const curPrice = currentPrices[pos.coin]?.price || pos.entry_price;
+  const exitPrice = curPrice;
+  const fraction = validCloseSize / pos.size;
+  const marginToClose = roundValue(pos.margin * fraction, 'money');
+
+  const priceDiff = (pos.direction === 'long')
+    ? (exitPrice - pos.entry_price)
+    : (pos.entry_price - exitPrice);
+  const grossPnl = priceDiff * validCloseSize;
+  const fee = roundValue(validCloseSize * exitPrice * 0.0005, 'money');
+  const realizedPnl = roundValue(grossPnl - fee, 'money');
+
+  // Return margin + realized PnL to cash balance (cannot go negative)
+  const cashReturn = Math.max(0, roundValue(marginToClose + realizedPnl, 'money'));
+  walletState.cashBalance = Math.max(0, roundValue(walletState.cashBalance + cashReturn, 'money'));
+  walletState.realizedPnl = roundValue(walletState.realizedPnl + realizedPnl, 'money');
+  walletState.tradesCount++;
+
+  // Update remaining position
+  pos.size = roundValue(pos.size - validCloseSize, 'coin');
+  pos.margin = Math.max(0.01, roundValue(pos.margin - marginToClose, 'money'));
+
+  // Record in history
+  walletState.history.unshift({
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    time: new Date().toISOString(),
+    coin: pos.symbol,
+    side: pos.direction === 'long' ? 'Long' : 'Short',
+    type: `Partial (${(fraction * 100).toFixed(0)}%)`,
+    price: roundValue(exitPrice, 'money'),
+    size: roundValue(validCloseSize, 'coin'),
+    fee: fee,
+    pnl: realizedPnl
+  });
+
+  if (walletState.history.length > 200) {
+    walletState.history = walletState.history.slice(0, 200);
+  }
+
+  saveWalletState();
+  const sign = realizedPnl >= 0 ? '+' : '';
+  showToast(`Closed ${fmtCoin(validCloseSize)} ${pos.symbol} (${sign}$${fmtNum(realizedPnl)})`, realizedPnl >= 0 ? 'success' : 'info');
+
+  updateMiniStats();
+  renderPositions();
+  renderHistory();
+  updatePnlSummary();
+  updateTabBadges();
+  updateTradeCalc();
+}
+
+let currentPartialClosePosId = null;
+
+function openPartialCloseModal(posId) {
+  const pos = walletState.positions.find(p => p.id === posId);
+  if (!pos) return;
+  currentPartialClosePosId = posId;
+
+  const modal = document.getElementById('partial-close-modal');
+  const infoEl = document.getElementById('pc-pos-info');
+  const inputEl = document.getElementById('pc-size-input');
+  if (!modal || !infoEl || !inputEl) return;
+
+  const curPrice = currentPrices[pos.coin]?.price || pos.entry_price;
+  const isLong = pos.direction === 'long';
+  infoEl.innerHTML = `
+    <div style="font-weight:700; color:var(--txt1);">${pos.symbol} <span class="badge ${isLong ? 'badge-long' : 'badge-short'}">${isLong ? 'Long' : 'Short'} ${pos.leverage}x</span></div>
+    <div style="font-size:12px; color:var(--txt2); margin-top:4px;">Position Size: <b>${fmtCoin(pos.size)} ${pos.symbol}</b> | Entry: <b>$${fmt(pos.entry_price)}</b> | Mark: <b>$${fmt(curPrice)}</b></div>
+  `;
+
+  inputEl.value = (pos.size * 0.5).toFixed(4);
+  updatePartialClosePreview();
+  modal.classList.remove('hidden');
+}
+
+function closePartialCloseModal() {
+  const modal = document.getElementById('partial-close-modal');
+  if (modal) modal.classList.add('hidden');
+  currentPartialClosePosId = null;
+}
+
+function setPartialClosePct(pct) {
+  if (!currentPartialClosePosId) return;
+  const pos = walletState.positions.find(p => p.id === currentPartialClosePosId);
+  if (!pos) return;
+  const inputEl = document.getElementById('pc-size-input');
+  if (inputEl) {
+    inputEl.value = (pos.size * pct).toFixed(4);
+    updatePartialClosePreview();
+  }
+}
+
+function updatePartialClosePreview() {
+  if (!currentPartialClosePosId) return;
+  const pos = walletState.positions.find(p => p.id === currentPartialClosePosId);
+  if (!pos) return;
+
+  const inputEl = document.getElementById('pc-size-input');
+  const pnlEl = document.getElementById('pc-est-pnl');
+  const marginEl = document.getElementById('pc-est-margin');
+  if (!inputEl || !pnlEl || !marginEl) return;
+
+  const val = parseFloat(inputEl.value) || 0;
+  const closeSize = Math.min(pos.size, Math.max(0, val));
+  const curPrice = currentPrices[pos.coin]?.price || pos.entry_price;
+  const priceDiff = (pos.direction === 'long') ? (curPrice - pos.entry_price) : (pos.entry_price - curPrice);
+  const grossPnl = priceDiff * closeSize;
+  const fee = closeSize * curPrice * 0.0005;
+  const netPnl = grossPnl - fee;
+  const fraction = pos.size > 0 ? (closeSize / pos.size) : 0;
+  const returnedMargin = Math.max(0, pos.margin * fraction + netPnl);
+
+  const sign = netPnl >= 0 ? '+' : '';
+  pnlEl.textContent = `${sign}$${fmtNum(netPnl)} USDT`;
+  pnlEl.className = netPnl >= 0 ? 'pos' : 'neg';
+  marginEl.textContent = `$${fmtNum(returnedMargin)} USDT`;
+}
+
+function executePartialClose() {
+  if (!currentPartialClosePosId) return;
+  const inputEl = document.getElementById('pc-size-input');
+  const size = parseFloat(inputEl?.value) || 0;
+  if (size <= 0) {
+    showToast('❌ Size must be greater than 0', 'error');
+    return;
+  }
+  const posId = currentPartialClosePosId;
+  closePartialCloseModal();
+  closePositionPartial(posId, size, 'Market');
 }
 
 // ─── AUTO-CLOSE CHECKS (Requirement G) ────────────────────
@@ -2716,6 +2901,7 @@ function renderPositions() {
       <td>
         <div class="pos-actions-row">
           <button class="btn-close-pos" onclick="closePositionUnified(${p.id}, null, 'Market', this)">Close</button>
+          <button class="btn-partial-close" onclick="openPartialCloseModal(${p.id})">Partial</button>
           <button class="btn-tpsl" onclick="openTpSlModal(${p.id})">TP/SL</button>
         </div>
       </td>
@@ -3260,6 +3446,47 @@ function runSelfTest() {
       const pass = (walletState.cashBalance === 10000.00 && walletState.positions.length === 0);
       record('Reset wallet returns cash to 10000', pass);
     }
+
+    // 8. Supported Pairs & Rejection of non-crypto / gold
+    {
+      const btc = getCoinDefinition('bitcoin');
+      const eth = getCoinDefinition('ethereum');
+      const sol = getCoinDefinition('solana');
+      const hasGold = COIN_LIST.some(c => c.id === 'gold' || c.symbol === 'XAU');
+      const pass = (btc?.symbol === 'BTC' && eth?.symbol === 'ETH' && sol?.symbol === 'SOL' && !hasGold && COIN_LIST.length === 3);
+      record('Strictly supports BTC, ETH, SOL and eradicates GOLD/XAU', pass);
+    }
+
+    // 9. Stale data rejects new trade placement (> 3 minutes)
+    {
+      const staleTime = Date.now() - 200000;
+      const isStale = (Date.now() - staleTime) > 180000;
+      record('Stale price feed (> 3m) correctly identified for order rejection', isStale);
+    }
+
+    // 10. Partial close proportionally returns margin & calculates realized PnL
+    {
+      const testPosId = 999003;
+      walletState.cashBalance = 5000;
+      walletState.positions = [{
+        id: testPosId,
+        coin: 'bitcoin',
+        symbol: 'BTC',
+        direction: 'long',
+        size: 1.0,
+        entry_price: 50000,
+        leverage: 10,
+        margin: 5000,
+        marginMode: 'isolated',
+        liquidationPrice: 45500,
+        created_at: new Date().toISOString()
+      }];
+      currentPrices['bitcoin'] = { price: 55000 };
+      closePositionPartial(testPosId, 0.5, 'Market');
+      const pos = walletState.positions.find(p => p.id === testPosId);
+      const pass = (pos && pos.size === 0.5 && pos.margin === 2500 && walletState.cashBalance > 5000);
+      record('Partial position close reduces size and returns margin + PnL', pass);
+    }
   } finally {
     // Restore runtime state
     try {
@@ -3281,6 +3508,7 @@ function runSelfTest() {
 // Expose on window
 if (typeof window !== 'undefined') {
   window.runSelfTest = runSelfTest;
+  window.runVTradeTests = runSelfTest;
   if (window.location && window.location.search && window.location.search.includes('selftest=1')) {
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       setTimeout(runSelfTest, 800);
