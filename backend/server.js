@@ -183,14 +183,23 @@ SUPPORTED_COINS.forEach(c => {
 async function fetchPrices() {
   // Step 1: Query Binance 24hr live ticker for real-time orderflow and price ticks
   try {
-    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
+    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDC%22,%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
     const bResp = await fetch(bUrl, { headers: { 'Accept': 'application/json' }, timeout: 3000 });
     if (bResp.ok) {
       const bList = await bResp.json();
       if (Array.isArray(bList) && bList.length >= 3) {
-        const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
+        // BTCUSDC matches Coinbase/TradingView BTC-USD index; BTCUSDT is fallback
+        const symbolMap = { 'BTCUSDC': 'bitcoin', 'BTCUSDT': 'bitcoin_usdt', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
+        let hasBtcUsdc = false;
         bList.forEach(item => {
-          const coinId = symbolMap[item.symbol];
+          if (item.symbol === 'BTCUSDC') hasBtcUsdc = true;
+        });
+
+        bList.forEach(item => {
+          let coinId = symbolMap[item.symbol];
+          if (coinId === 'bitcoin_usdt' && hasBtcUsdc) return; // Prefer BTCUSDC for exact live match
+          if (coinId === 'bitcoin_usdt') coinId = 'bitcoin';
+
           if (coinId) {
             const p = parseFloat(item.lastPrice);
             if (p > 0 && !isNaN(p) && isFinite(p)) {
@@ -339,8 +348,8 @@ async function handleChartRequest(req, res) {
       return res.json(cached.data);
     }
 
-    // Step 1: Try Binance live klines for accurate real-time candles
-    const binanceSymbols = { 'bitcoin': 'BTCUSDT', 'ethereum': 'ETHUSDT', 'solana': 'SOLUSDT' };
+    // Step 1: Try Binance live klines for accurate real-time candles (BTCUSDC matches Coinbase/TradingView BTC-USD)
+    const binanceSymbols = { 'bitcoin': 'BTCUSDC', 'ethereum': 'ETHUSDT', 'solana': 'SOLUSDT' };
     const binanceIntervals = { '1m':'1m', '3m':'3m', '5m':'5m', '15m':'15m', '1h':'1h', '4h':'4h', '1d':'1d', '1w':'1w' };
     const bSymbol = binanceSymbols[coin];
     const bInterval = binanceIntervals[tf] || '15m';

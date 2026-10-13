@@ -1002,7 +1002,7 @@ function initBinanceWebSocket() {
   }
 
   try {
-    const wsUrl = 'wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker';
+    const wsUrl = 'wss://stream.binance.com:9443/stream?streams=btcusdc@ticker/ethusdt@ticker/solusdt@ticker';
     binanceWs = new WebSocket(wsUrl);
 
     binanceWs.onopen = () => {
@@ -1019,7 +1019,7 @@ function initBinanceWebSocket() {
         if (!msg || !msg.data) return;
         const d = msg.data;
         let coinKey = null;
-        if (d.s === 'BTCUSDT') coinKey = 'bitcoin';
+        if (d.s === 'BTCUSDC' || d.s === 'BTCUSDT') coinKey = 'bitcoin';
         else if (d.s === 'ETHUSDT') coinKey = 'ethereum';
         else if (d.s === 'SOLUSDT') coinKey = 'solana';
         if (!coinKey) return;
@@ -1393,6 +1393,38 @@ function renderCurrentChart(candles, prices, tf) {
 
 let candleViewport = { minP: 0, maxP: 0, plotW: 0, plotH: 0, padTop: 18, padRight: 64, padBottom: 22 };
 
+// ─── CHART ZOOM & PAN STATE ──────────────────────────────
+let chartZoom = 1.0;
+let chartPanOffset = 0;
+let isPanningChart = false;
+let panStartX = 0;
+let panStartOffset = 0;
+
+function chartZoomIn() {
+  chartZoom = Math.min(3.2, chartZoom * 1.25);
+  if (chartMode === 'candle' && candleData && candleData.length) {
+    renderCandlestickChart(candleData);
+    renderDrawings();
+  }
+}
+
+function chartZoomOut() {
+  chartZoom = Math.max(0.35, chartZoom / 1.25);
+  if (chartMode === 'candle' && candleData && candleData.length) {
+    renderCandlestickChart(candleData);
+    renderDrawings();
+  }
+}
+
+function chartZoomReset() {
+  chartZoom = 1.0;
+  chartPanOffset = 0;
+  if (chartMode === 'candle' && candleData && candleData.length) {
+    renderCandlestickChart(candleData);
+    renderDrawings();
+  }
+}
+
 function roundPriceForCoin(price, coin) {
   if (price <= 0 || !isFinite(price)) return price;
   if (coin === 'bitcoin') return Math.round(price * 10) / 10;
@@ -1400,9 +1432,19 @@ function roundPriceForCoin(price, coin) {
   return Math.round(price * 100) / 100;
 }
 
-function renderCandlestickChart(candles) {
+function renderCandlestickChart(allCandles) {
   const canvas = document.getElementById('candle-chart');
-  if (!canvas || !candles || !candles.length) return;
+  if (!canvas || !allCandles || !allCandles.length) return;
+
+  // Zoom & Pan candle window slicing
+  const totalN = allCandles.length;
+  const visibleCount = Math.max(12, Math.min(totalN, Math.round(55 / chartZoom)));
+  const maxOffset = Math.max(0, totalN - visibleCount);
+  chartPanOffset = Math.max(0, Math.min(maxOffset, chartPanOffset));
+  const startIdx = Math.max(0, totalN - visibleCount - chartPanOffset);
+  const endIdx = Math.min(totalN, startIdx + visibleCount);
+  const candles = allCandles.slice(startIdx, endIdx);
+
   const ctx = canvas.getContext('2d');
   const rect = canvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
@@ -1479,7 +1521,7 @@ function renderCandlestickChart(candles) {
 
   // Time Axis Bottom Ticks
   const timeSteps = 6;
-  const tGap = Math.floor(candles.length / timeSteps);
+  const tGap = Math.max(1, Math.floor(candles.length / timeSteps));
   ctx.textAlign = 'center';
   for (let i = 0; i < candles.length; i += tGap) {
     const c = candles[i];
@@ -1520,7 +1562,7 @@ function renderCandlestickChart(candles) {
     const bodyH = Math.max(2, Math.abs(closeY - openY));
     ctx.fillRect(x, bodyY, candleW, bodyH);
 
-    // Subtle volume bar at bottom
+    // Volume bar
     const volH = Math.min(22, (c.volume || 10) * 0.3);
     ctx.fillStyle = isBull ? 'rgba(14,203,129,0.18)' : 'rgba(246,70,93,0.18)';
     ctx.fillRect(x, padTop + plotH - volH, candleW, volH);
@@ -1548,7 +1590,7 @@ function renderCandlestickChart(candles) {
     ctx.fillText(`$${fmt(latestPrice)}`, plotW + 5, curY + 3.5);
   }
 
-  // ─── OVERLAY ORDERS & POSITIONS ON CHART (Requirement) ───
+  // ─── OVERLAY ORDERS & POSITIONS ON CHART ───
   curCoinPositions.forEach(p => {
     const isLong = p.direction === 'long';
     
@@ -1791,6 +1833,8 @@ function setupDrawingCanvas() {
 
   let isDrawing = false;
   let startPt = null;
+  let touchStartDist = 0;
+  let touchStartZoom = 1.0;
 
   function getCanvasPos(e) {
     const rect = cvs.getBoundingClientRect();
@@ -1803,6 +1847,15 @@ function setupDrawingCanvas() {
   }
 
   function handleStart(e) {
+    // Two-finger pinch to zoom
+    if (e.touches && e.touches.length === 2) {
+      touchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      touchStartZoom = chartZoom;
+      isDrawing = false;
+      isPanningChart = false;
+      return;
+    }
+
     const pos = getCanvasPos(e);
 
     // Check if user clicked on or touched a TP or SL line / handle to drag
@@ -1814,7 +1867,14 @@ function setupDrawingCanvas() {
       return;
     }
 
-    if (drawTool === 'cursor') return;
+    // If in cursor mode and not on SL/TP, enable horizontal pan through chart
+    if (drawTool === 'cursor') {
+      isPanningChart = true;
+      panStartX = pos.x;
+      panStartOffset = chartPanOffset;
+      return;
+    }
+
     if (e.touches && e.touches.length > 1) return;
     isDrawing = true;
     startPt = pos;
@@ -1835,6 +1895,17 @@ function setupDrawingCanvas() {
   }
 
   function handleMove(e) {
+    // Pinch to zoom gesture
+    if (e.touches && e.touches.length === 2 && touchStartDist > 0) {
+      if (e.cancelable) e.preventDefault();
+      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const factor = dist / touchStartDist;
+      chartZoom = Math.max(0.35, Math.min(3.2, touchStartZoom * factor));
+      renderCandlestickChart(candleData);
+      renderDrawings();
+      return;
+    }
+
     const pos = getCanvasPos(e);
     updateCrosshairBar(pos);
 
@@ -1876,6 +1947,18 @@ function setupDrawingCanvas() {
       return;
     }
 
+    // Chart pan in cursor mode
+    if (isPanningChart && drawTool === 'cursor') {
+      if (e.cancelable) e.preventDefault();
+      const dx = pos.x - panStartX;
+      const candleWidthPixels = (candleViewport.plotW / Math.max(12, Math.round(55 / chartZoom)));
+      const candleDelta = Math.round(dx / candleWidthPixels);
+      chartPanOffset = Math.max(0, panStartOffset + candleDelta);
+      renderCandlestickChart(candleData);
+      renderDrawings();
+      return;
+    }
+
     // Hover detection for cursor mode
     if (drawTool === 'cursor') {
       const nearby = findDraggableLine(pos);
@@ -1901,6 +1984,9 @@ function setupDrawingCanvas() {
   }
 
   function handleEnd() {
+    isPanningChart = false;
+    touchStartDist = 0;
+
     if (draggingOrderLine) {
       const lineInfo = draggingOrderLine;
       draggingOrderLine = null;
@@ -1936,6 +2022,13 @@ function setupDrawingCanvas() {
   cvs.addEventListener('touchmove', handleMove, { passive: false });
   window.addEventListener('touchend', handleEnd);
 
+  // Mouse wheel zoom
+  cvs.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) chartZoomIn();
+    else chartZoomOut();
+  }, { passive: false });
+
   // Resize handler
   window.addEventListener('resize', () => {
     if (chartMode === 'candle' && candleData.length) {
@@ -1945,18 +2038,22 @@ function setupDrawingCanvas() {
   });
 }
 
-// ─── FULLSCREEN CHART TOGGLE ──────────────────────────────
+// ─── FULLSCREEN CHART TOGGLE (With Square Options) ─────────
 function toggleChartFullscreen() {
   const box = document.getElementById('chart-container-box');
   const exitBtn = document.getElementById('btn-exit-fullscreen');
   const fsBtn = document.getElementById('btn-chart-fullscreen');
+  const sqBtn = document.getElementById('square-fs-icon');
   if (!box) return;
 
   const isFs = box.classList.toggle('fullscreen-chart');
   if (exitBtn) exitBtn.classList.toggle('hidden', !isFs);
   if (fsBtn) {
-    fsBtn.innerHTML = isFs ? '⛶ Exit' : '⛶ Fullscreen';
+    fsBtn.innerHTML = isFs ? '<span class="square-icon-box">⤡</span> Exit' : '<span class="square-icon-box">⛶</span> Fullscreen';
     fsBtn.classList.toggle('active', isFs);
+  }
+  if (sqBtn) {
+    sqBtn.textContent = isFs ? '⤡' : '⛶';
   }
 
   setTimeout(() => {
@@ -1965,6 +2062,47 @@ function toggleChartFullscreen() {
       renderDrawings();
     }
   }, 60);
+}
+
+// ─── TRADINGVIEW-STYLE BOTTOM NAVIGATION SWITCHER ──────────
+function switchNavSection(section, btn) {
+  document.querySelectorAll('.tv-bottom-nav .tv-nav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const targetBtn = document.getElementById(`tnav-${section}`);
+    if (targetBtn) targetBtn.classList.add('active');
+  }
+
+  if (section === 'watchlist') {
+    const mkt = document.getElementById('markets-panel');
+    if (mkt) {
+      mkt.classList.remove('hidden');
+      mkt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (section === 'chart') {
+    const chartBox = document.getElementById('chart-container-box');
+    if (chartBox) {
+      chartBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  } else if (section === 'trade') {
+    const tradeEl = document.querySelector('.trade-panel') || document.querySelector('.futures-panel') || document.querySelector('.order-form');
+    if (tradeEl) {
+      tradeEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (section === 'positions') {
+    showBottomTab('positions');
+    const pos = document.getElementById('panel-positions');
+    if (pos) {
+      pos.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (section === 'menu') {
+    if (typeof openSettingsModal === 'function') {
+      openSettingsModal();
+    } else {
+      const setBtn = document.getElementById('btn-header-settings');
+      if (setBtn) setBtn.click();
+    }
+  }
 }
 
 document.addEventListener('keydown', (e) => {

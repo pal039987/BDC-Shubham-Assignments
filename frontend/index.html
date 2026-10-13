@@ -248,6 +248,16 @@
         <!-- Chart Viewport -->
         <div class="chart-wrap" id="chart-viewport">
           <button class="btn-exit-fullscreen hidden" id="btn-exit-fullscreen" onclick="toggleChartFullscreen()">✕ Exit Fullscreen</button>
+          <!-- Floating Square Fullscreen Toggle Button -->
+          <button class="btn-square-fullscreen" id="btn-square-fullscreen" onclick="toggleChartFullscreen()" title="Fullscreen Chart (Square)">
+            <span id="square-fs-icon">⛶</span>
+          </button>
+          <!-- Floating Zoom Controls (+ / − / ↺) -->
+          <div class="chart-zoom-controls" id="chart-zoom-controls">
+            <button class="cz-btn" id="btn-zoom-in" onclick="chartZoomIn()" title="Zoom In (+)">+</button>
+            <button class="cz-btn" id="btn-zoom-out" onclick="chartZoomOut()" title="Zoom Out (−)">−</button>
+            <button class="cz-btn" id="btn-zoom-reset" onclick="chartZoomReset()" title="Reset Zoom View">↺</button>
+          </div>
           <canvas id="candle-chart" class="chart-canvas"></canvas>
           <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
           <canvas id="price-chart" class="chart-canvas hidden"></canvas>
@@ -762,6 +772,33 @@
 <!-- Floating Toast Container -->
 <div id="toast-container" class="toast-container"></div>
 <div id="toast" class="toast hidden"></div>
+
+<!-- Fixed Mobile Bottom Navigation Bar (TradingView Style) -->
+<nav class="tv-bottom-nav" id="tv-bottom-nav">
+  <button class="tv-nav-item" id="tnav-watchlist" onclick="switchNavSection('watchlist', this)" title="Watchlist & Markets">
+    <span class="tv-nav-icon">📊</span>
+    <span class="tv-nav-label">Watchlist</span>
+  </button>
+  <button class="tv-nav-item active" id="tnav-chart" onclick="switchNavSection('chart', this)" title="Interactive Live Chart">
+    <div class="tv-nav-icon-wrap">
+      <span class="tv-nav-icon">📈</span>
+      <span class="tv-nav-dot"></span>
+    </div>
+    <span class="tv-nav-label">Chart</span>
+  </button>
+  <button class="tv-nav-item" id="tnav-trade" onclick="switchNavSection('trade', this)" title="Futures & Spot Trade">
+    <span class="tv-nav-icon">⚡</span>
+    <span class="tv-nav-label">Trade</span>
+  </button>
+  <button class="tv-nav-item" id="tnav-positions" onclick="switchNavSection('positions', this)" title="Open Positions & Orders">
+    <span class="tv-nav-icon">📋</span>
+    <span class="tv-nav-label">Positions</span>
+  </button>
+  <button class="tv-nav-item" id="tnav-menu" onclick="switchNavSection('menu', this)" title="Settings & Wallet">
+    <span class="tv-nav-icon">☰</span>
+    <span class="tv-nav-label">Menu</span>
+  </button>
+</nav>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="settings.js"></script>
