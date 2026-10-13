@@ -1,0 +1,31 @@
+{
+  "appId": "com.cryptotrader.pro",
+  "appName": "CryptoTrader Pro",
+  "webDir": "frontend",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true,
+    "allowNavigation": [
+      "http://localhost:3001",
+      "http://192.168.1.*",
+      "http://192.168.1.17:3001",
+      "https://api.coingecko.com",
+      "https://api.binance.com",
+      "wss://stream.binance.com:*",
+      "https://*.tradingview.com",
+      "https://*.tradingview-widget.com",
+      "https://s3.tradingview.com"
+    ]
+  },
+  "android": {
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0b0e11",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
+}
