@@ -236,34 +236,13 @@
           <button class="tf-btn" data-tf="1d"  onclick="selectTF('1d',this)">1D</button>
         </div>
         <div class="chart-mode-group">
-          <button class="cmode-btn active" id="cmode-tv" onclick="setChartMode('tv')" title="Official TradingView Advanced Chart">TradingView</button>
-          <button class="cmode-btn" id="cmode-candle" onclick="setChartMode('candle')" title="Native Candlesticks">📊 Candles</button>
-          <button class="cmode-btn" id="cmode-line" onclick="setChartMode('line')" title="Simple Line Chart">📈 Line</button>
+          <span class="tv-status-badge live" title="TradingView Official Hosted Chart">● TradingView Pro</span>
           <button class="cmode-btn" id="btn-chart-fullscreen" onclick="toggleChartFullscreen()" title="Fullscreen Chart">⛶ Fullscreen</button>
         </div>
       </div>
 
-      <!-- Chart Container with Left Drawing Tools & Viewport -->
+      <!-- Chart Container with TradingView Hosted Widget Viewport -->
       <div class="chart-container-box" id="chart-container-box">
-        <!-- Left Side Drawing Tools (For Native Candles) -->
-        <div class="chart-toolbar-left hidden" id="chart-toolbar-left">
-          <button class="ctb-btn active" id="dt-cursor" onclick="setDrawTool('cursor')" title="Crosshair / Select">✛</button>
-          <button class="ctb-btn" id="dt-trend" onclick="setDrawTool('trend')" title="Trend Line">╱</button>
-          <button class="ctb-btn" id="dt-horiz" onclick="setDrawTool('horiz')" title="Horizontal Line / S&R">―</button>
-          <button class="ctb-btn" id="dt-brush" onclick="setDrawTool('brush')" title="Brush">✎</button>
-          <button class="ctb-btn" id="dt-measure" onclick="setDrawTool('measure')" title="Price Measure / Ruler">📏</button>
-          <div class="ctb-sep"></div>
-          <div class="ctb-color-row" title="Drawing Color">
-            <span class="color-dot active" style="background:#0ecb81;" onclick="setDrawColor('#0ecb81',this)"></span>
-            <span class="color-dot" style="background:#f6465d;" onclick="setDrawColor('#f6465d',this)"></span>
-            <span class="color-dot" style="background:#3b82f6;" onclick="setDrawColor('#3b82f6',this)"></span>
-            <span class="color-dot" style="background:#f0b90b;" onclick="setDrawColor('#f0b90b',this)"></span>
-          </div>
-          <div class="ctb-sep"></div>
-          <button class="ctb-btn" onclick="undoDrawing()" title="Undo Drawing">↶</button>
-          <button class="ctb-btn" onclick="clearDrawings()" title="Clear Drawings">🗑</button>
-        </div>
-
         <!-- Chart Viewport -->
         <div class="chart-wrap" id="chart-viewport">
           <button class="btn-exit-fullscreen hidden" id="btn-exit-fullscreen" onclick="toggleChartFullscreen()">✕ Exit Fullscreen</button>
@@ -271,30 +250,63 @@
           <button class="btn-square-fullscreen" id="btn-square-fullscreen" onclick="toggleChartFullscreen()" title="Fullscreen Chart (Square)">
             <span id="square-fs-icon">⛶</span>
           </button>
-          <!-- Floating Zoom Controls (+ / − / ↺) for Native Candles -->
-          <div class="chart-zoom-controls hidden" id="chart-zoom-controls">
-            <button class="cz-btn" id="btn-zoom-in" onclick="chartZoomIn()" title="Zoom In (+)">+</button>
-            <button class="cz-btn" id="btn-zoom-out" onclick="chartZoomOut()" title="Zoom Out (−)">−</button>
-            <button class="cz-btn" id="btn-zoom-reset" onclick="chartZoomReset()" title="Reset Zoom View">↺</button>
-          </div>
 
           <!-- ─── TRADINGVIEW HOSTED CHART CONTAINER ─── -->
           <div id="tv-chart-container" class="tv-chart-container">
+            <!-- 1. Active Executed Position HUD (Top of Chart) -->
+            <div id="tv-positions-hud" class="tv-positions-hud hidden">
+              <div class="tv-hud-card" id="tv-hud-card">
+                <div class="tv-hud-left">
+                  <span class="tv-hud-side-badge buy" id="tv-hud-side">LONG 100x</span>
+                  <span class="tv-hud-sym" id="tv-hud-sym">BTC/USDT</span>
+                  <span class="tv-hud-size" id="tv-hud-size">0.0500 BTC</span>
+                </div>
+                <div class="tv-hud-center">
+                  <div class="tv-hud-item">
+                    <span class="tv-hud-lbl">Entry:</span>
+                    <span class="tv-hud-val" id="tv-hud-entry">$83,265.49</span>
+                  </div>
+                  <div class="tv-hud-item">
+                    <span class="tv-hud-lbl">Mark:</span>
+                    <span class="tv-hud-val" id="tv-hud-mark">$83,310.20</span>
+                  </div>
+                  <div class="tv-hud-item">
+                    <span class="tv-hud-lbl">Liq:</span>
+                    <span class="tv-hud-val liq" id="tv-hud-liq">$82,516.10</span>
+                  </div>
+                  <div class="tv-hud-item">
+                    <span class="tv-hud-lbl">Unrealized PnL:</span>
+                    <span class="tv-hud-pnl positive" id="tv-hud-pnl">+$4.47 (+5.3%)</span>
+                  </div>
+                </div>
+                <div class="tv-hud-right">
+                  <button type="button" class="tv-hud-tpsl-btn" onclick="openTpSlForCurrentPosition()" title="Adjust Take Profit & Stop Loss">🎯 TP/SL</button>
+                  <button type="button" class="tv-hud-close-btn" onclick="quickCloseCurrentPosition()" title="Market Close Position">✕ Close</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Open Orders HUD -->
+            <div id="tv-orders-hud" class="tv-orders-hud hidden">
+              <div class="tv-orders-hud-inner" id="tv-orders-hud-inner"></div>
+            </div>
+
             <!-- Loading Indicator -->
             <div id="tv-chart-loading" class="tv-chart-loading">
               <div class="tv-spinner"></div>
               <div class="tv-loading-text">Loading TradingView Hosted Chart…</div>
             </div>
+
             <!-- Error / Offline Fallback -->
             <div id="tv-chart-error" class="tv-chart-error hidden">
               <div class="tv-error-icon">⚠️</div>
               <div class="tv-error-msg" id="tv-error-msg">TradingView Chart is temporarily unavailable</div>
-              <div class="tv-error-sub">Check your internet connection or switch to native candles.</div>
+              <div class="tv-error-sub">Check your internet connection.</div>
               <div class="tv-error-actions">
                 <button class="tv-retry-btn" onclick="retryTradingViewChart()">↻ Retry Connection</button>
-                <button class="tv-fallback-btn" onclick="setChartMode('candle')">Switch to Native Candles</button>
               </div>
             </div>
+
             <!-- Unsupported Symbol Notice -->
             <div id="tv-chart-unsupported" class="tv-chart-unsupported hidden">
               <div class="tv-unsupported-icon">🚫</div>
@@ -306,26 +318,70 @@
                 <button class="tv-pair-pick-btn" onclick="selectCoin('solana')">SOL/USDT</button>
               </div>
             </div>
+
             <!-- Widget DOM Target -->
             <div id="tradingview_widget_box" class="tradingview-widget-box"></div>
+
+            <!-- 2. Quick Order Placement Bar Docked on Chart (Bottom of Chart) -->
+            <div id="tv-quick-trade-bar" class="tv-quick-trade-bar">
+              <div class="tv-qtb-row">
+                <!-- Side Actions -->
+                <div class="tv-qtb-actions">
+                  <button type="button" class="tv-qtb-btn buy" id="tv-qtb-buy-btn" onclick="executeQuickTrade('buy')">
+                    <span class="tv-qtb-btn-icon">▲</span>
+                    <span class="tv-qtb-btn-text">BUY / LONG</span>
+                  </button>
+                  <button type="button" class="tv-qtb-btn sell" id="tv-qtb-sell-btn" onclick="executeQuickTrade('sell')">
+                    <span class="tv-qtb-btn-icon">▼</span>
+                    <span class="tv-qtb-btn-text">SELL / SHORT</span>
+                  </button>
+                </div>
+
+                <!-- Lot Size & Quick % Pills -->
+                <div class="tv-qtb-inputs">
+                  <div class="tv-qtb-input-wrap">
+                    <span class="tv-qtb-input-lbl">Size</span>
+                    <input type="number" id="tv-quick-size-input" class="tv-quick-size-input" placeholder="0.01" step="any" min="0" value="0.01" />
+                    <span class="tv-qtb-unit" id="tv-quick-unit">BTC</span>
+                  </div>
+                  <div class="tv-qtb-pct-chips">
+                    <button type="button" class="tv-pct-chip" onclick="setQuickTradePct(0.25)">25%</button>
+                    <button type="button" class="tv-pct-chip" onclick="setQuickTradePct(0.50)">50%</button>
+                    <button type="button" class="tv-pct-chip" onclick="setQuickTradePct(1.00)">100%</button>
+                  </div>
+                </div>
+
+                <!-- Leverage & Order Type -->
+                <div class="tv-qtb-meta">
+                  <div class="tv-qtb-select-wrap" title="Leverage">
+                    <select id="tv-quick-leverage" class="tv-qtb-select">
+                      <option value="5">5x</option>
+                      <option value="10">10x</option>
+                      <option value="25">25x</option>
+                      <option value="50">50x</option>
+                      <option value="100" selected>100x</option>
+                    </select>
+                  </div>
+                  <div class="tv-qtb-select-wrap" title="Order Type">
+                    <select id="tv-quick-ordertype" class="tv-qtb-select" onchange="toggleQuickLimitInput(this.value)">
+                      <option value="market" selected>Market</option>
+                      <option value="limit">Limit</option>
+                    </select>
+                  </div>
+                  <div class="tv-qtb-limit-wrap hidden" id="tv-quick-limit-wrap">
+                    <input type="number" id="tv-quick-limit-price" class="tv-quick-limit-price" placeholder="Limit Price" step="any" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Attribution & Required Disclosures -->
             <div class="tv-attribution-bar">
               <span class="tv-attr-text">Chart by <a href="https://www.tradingview.com/" target="_blank" rel="noopener nofollow">TradingView</a></span>
               <span class="tv-attr-sep">•</span>
               <span class="tv-attr-text tv-attr-symbol" id="tv-symbol-display">BINANCE:BTCUSDT</span>
               <span class="tv-attr-sep">•</span>
-              <span class="tv-attr-notice" title="Market Data Isolation">Visual Only • Execution via VTrade Engine</span>
-            </div>
-          </div>
-
-          <!-- Native Charts (Hidden when TradingView is active) -->
-          <canvas id="candle-chart" class="chart-canvas hidden"></canvas>
-          <canvas id="drawing-canvas" class="drawing-canvas hidden"></canvas>
-          <canvas id="price-chart" class="chart-canvas hidden"></canvas>
-          <div id="candle-crosshair-bar" class="candle-crosshair-bar hidden"></div>
-          <div class="chart-overlay hidden" id="chart-loading">
-            <div class="chart-skeleton-view">
-              <div class="sk-label-pulse" id="chart-loading-text">Fetching Live Market Candles…</div>
+              <span class="tv-attr-notice" title="Direct order placement & position tracking active">1-Click Chart Trading Active</span>
             </div>
           </div>
         </div>

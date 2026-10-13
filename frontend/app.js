@@ -981,9 +981,8 @@ function selectCoin(coin) {
   loadDrawings();
   loadChart(selectedCoin, currentTF);
 
-  if (chartMode === 'tv') {
-    renderTradingViewChart();
-  }
+  renderTradingViewChart();
+  renderTvChartOverlay();
 }
 
 // ─── REAL-TIME BINANCE WEBSOCKET & FAST TICKER STREAM ───────
@@ -1119,11 +1118,7 @@ function onPriceTick(coin, prevPrice, newPrice) {
       void priceEl.offsetWidth;
       priceEl.classList.add(cls);
     }
-    // Update live price dotted line on native candlestick chart
-    if (chartMode === 'candle' && candleData && candleData.length) {
-      renderCandlestickChart(candleData);
-      renderDrawings();
-    }
+    renderTvChartOverlay();
   }
   updateLivePnL(coin, newPrice);
 }
@@ -1176,78 +1171,24 @@ let currentTvSymbol = null;
 let currentTvInterval = null;
 let tvLoadTimeout = null;
 
-// ─── CHART MODES & TIMEFRAME ──────────────────────────────
+// ─── PURE TRADINGVIEW PRO CHART ───────────────────────────
 function setChartMode(mode) {
-  chartMode = mode;
-  ['tv', 'candle', 'line'].forEach(m => {
-    const btn = document.getElementById(`cmode-${m}`);
-    if (btn) btn.classList.toggle('active', m === mode);
-  });
-
-  const tvWrap        = document.getElementById('tv-chart-container');
-  const candleCvs     = document.getElementById('candle-chart');
-  const drawCvs       = document.getElementById('drawing-canvas');
-  const priceCvs      = document.getElementById('price-chart');
-  const toolbar       = document.getElementById('chart-toolbar-left') || document.getElementById('drawing-toolbar');
-  const crosshair     = document.getElementById('candle-crosshair-bar');
-  const zoomControls  = document.getElementById('chart-zoom-controls');
-  const sourceBadge   = document.getElementById('chart-source-badge');
-
-  if (mode === 'tv') {
-    if (tvWrap) tvWrap.classList.remove('hidden');
-    if (candleCvs) candleCvs.classList.add('hidden');
-    if (drawCvs) drawCvs.classList.add('hidden');
-    if (priceCvs) priceCvs.classList.add('hidden');
-    if (toolbar) toolbar.classList.add('hidden');
-    if (crosshair) crosshair.classList.add('hidden');
-    if (zoomControls) zoomControls.classList.add('hidden');
-    if (sourceBadge) {
-      sourceBadge.textContent = 'TradingView Chart • VTrade Engine';
-      sourceBadge.className = 'chart-source-badge badge-live';
-      sourceBadge.title = 'Visual Chart: TradingView (Binance Feed) | Paper-Trading Engine: VTrade (CoinGecko Feed)';
-    }
-    renderTradingViewChart();
-  } else if (mode === 'candle') {
-    if (tvWrap) tvWrap.classList.add('hidden');
-    if (candleCvs) candleCvs.classList.remove('hidden');
-    if (drawCvs) drawCvs.classList.remove('hidden');
-    if (priceCvs) priceCvs.classList.add('hidden');
-    if (toolbar) toolbar.classList.remove('hidden');
-    if (zoomControls) zoomControls.classList.remove('hidden');
-    if (sourceBadge) {
-      sourceBadge.textContent = 'CoinGecko Feed';
-      sourceBadge.title = 'CoinGecko Real-Time OHLC & Order Book Feed';
-    }
-    if (candleData && candleData.length) {
-      renderCandlestickChart(candleData);
-      renderDrawings();
-    } else {
-      loadChart(selectedCoin, currentTF);
-    }
-  } else { // line
-    if (tvWrap) tvWrap.classList.add('hidden');
-    if (candleCvs) candleCvs.classList.add('hidden');
-    if (drawCvs) drawCvs.classList.add('hidden');
-    if (priceCvs) priceCvs.classList.remove('hidden');
-    if (toolbar) toolbar.classList.add('hidden');
-    if (crosshair) crosshair.classList.add('hidden');
-    if (zoomControls) zoomControls.classList.add('hidden');
-    if (sourceBadge) {
-      sourceBadge.textContent = 'CoinGecko Feed';
-    }
-    loadChart(selectedCoin, currentTF);
+  chartMode = 'tv';
+  const tvWrap = document.getElementById('tv-chart-container');
+  if (tvWrap) tvWrap.classList.remove('hidden');
+  const sourceBadge = document.getElementById('chart-source-badge');
+  if (sourceBadge) {
+    sourceBadge.textContent = 'TradingView Chart • VTrade Engine';
+    sourceBadge.className = 'chart-source-badge badge-live';
   }
+  renderTradingViewChart();
 }
 
 function selectTF(tf, btn) {
   currentTF = tf;
   document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (chartMode === 'tv') {
-    renderTradingViewChart();
-  } else {
-    loadChart(selectedCoin, tf);
-  }
+  renderTradingViewChart();
 }
 
 // ─── TRADINGVIEW ADVANCED CHART WIDGET EMBED ───────────────
@@ -1373,6 +1314,158 @@ function retryTradingViewChart() {
   currentTvSymbol = null;
   currentTvInterval = null;
   renderTradingViewChart(true);
+}
+
+// ─── ON-CHART ORDER PLACEMENT & POSITION HUD OVERLAY ──────
+function renderTvChartOverlay() {
+  const hud = document.getElementById('tv-positions-hud');
+  const ordersHud = document.getElementById('tv-orders-hud');
+  const ordersInner = document.getElementById('tv-orders-hud-inner');
+  const unitLabel = document.getElementById('tv-quick-unit');
+  const coinDef = getCoinDefinition(selectedCoin);
+
+  if (unitLabel) unitLabel.textContent = coinDef.symbol;
+
+  if (hud) {
+    const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+    if (curPos) {
+      hud.classList.remove('hidden');
+      const sideEl = document.getElementById('tv-hud-side');
+      const symEl  = document.getElementById('tv-hud-sym');
+      const sizeEl = document.getElementById('tv-hud-size');
+      const entryEl= document.getElementById('tv-hud-entry');
+      const markEl = document.getElementById('tv-hud-mark');
+      const liqEl  = document.getElementById('tv-hud-liq');
+      const pnlEl  = document.getElementById('tv-hud-pnl');
+
+      const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
+      const priceDiff = (curPos.direction === 'long') ? (curPrice - curPos.entry_price) : (curPos.entry_price - curPrice);
+      const pnl = roundUsd(priceDiff * curPos.size);
+      const pnlPct = (curPos.margin > 0) ? ((pnl / curPos.margin) * 100).toFixed(2) : '0.00';
+      const isPos = pnl >= 0;
+
+      if (sideEl) {
+        sideEl.textContent = `${curPos.direction.toUpperCase()} ${curPos.leverage}x`;
+        sideEl.className = `tv-hud-side-badge ${curPos.direction === 'long' ? 'buy' : 'sell'}`;
+      }
+      if (symEl)  symEl.textContent = coinDef.pair;
+      if (sizeEl) sizeEl.textContent = `${fmtCoin(curPos.size)} ${coinDef.symbol}`;
+      if (entryEl)entryEl.textContent = `$${fmt(curPos.entry_price)}`;
+      if (markEl) markEl.textContent = `$${fmt(curPrice)}`;
+      if (liqEl)  liqEl.textContent = curPos.liquidationPrice ? `$${fmt(curPos.liquidationPrice)}` : '—';
+      if (pnlEl) {
+        pnlEl.textContent = `${isPos ? '+' : ''}$${fmtNum(pnl)} (${isPos ? '+' : ''}${pnlPct}%)`;
+        pnlEl.className = `tv-hud-pnl ${isPos ? 'positive' : 'negative'}`;
+      }
+    } else {
+      hud.classList.add('hidden');
+    }
+  }
+
+  // Open Orders for this coin
+  if (ordersHud && ordersInner) {
+    const curOrders = (walletState?.orders || []).filter(o => o.coin === selectedCoin);
+    if (curOrders.length) {
+      ordersHud.classList.remove('hidden');
+      ordersInner.innerHTML = curOrders.map(o => `
+        <span class="tv-ord-tag">
+          ${o.type || 'LIMIT'} ${String(o.side || 'buy').toUpperCase()} ${fmtCoin(o.size)} ${coinDef.symbol} @ $${fmt(o.price)}
+          <button type="button" class="tv-ord-cancel-btn" onclick="cancelOrder(${o.id})">✕</button>
+        </span>
+      `).join('');
+    } else {
+      ordersHud.classList.add('hidden');
+      ordersInner.innerHTML = '';
+    }
+  }
+}
+
+function executeQuickTrade(side) {
+  tradeCategory = 'position'; // Leverage futures position
+  tradeSide = side; // 'buy' or 'sell'
+
+  const sizeInput = document.getElementById('tv-quick-size-input');
+  const sizeVal = parseFloat(sizeInput?.value) || 0;
+  if (sizeVal <= 0 || isNaN(sizeVal) || !isFinite(sizeVal)) {
+    showToast('❌ Please enter a valid size (> 0)', 'error');
+    if (sizeInput) sizeInput.focus();
+    return;
+  }
+
+  const levSelect = document.getElementById('tv-quick-leverage');
+  if (levSelect) {
+    tradeLeverage = parseInt(levSelect.value, 10) || 10;
+  }
+
+  const ordTypeSelect = document.getElementById('tv-quick-ordertype');
+  tradeOrderType = (ordTypeSelect && ordTypeSelect.value === 'limit') ? 'limit' : 'market';
+
+  if (tradeOrderType === 'limit') {
+    const limitInput = document.getElementById('tv-quick-limit-price');
+    const limitPrice = parseFloat(limitInput?.value) || 0;
+    if (limitPrice <= 0 || isNaN(limitPrice) || !isFinite(limitPrice)) {
+      showToast('❌ Please specify a valid limit price', 'error');
+      if (limitInput) limitInput.focus();
+      return;
+    }
+    const mainLimitInput = document.getElementById('limit-price-input');
+    if (mainLimitInput) mainLimitInput.value = limitPrice;
+  }
+
+  tradeUnit = 'coin';
+  const mainAmountInput = document.getElementById('trade-amount-input');
+  if (mainAmountInput) mainAmountInput.value = sizeVal;
+
+  // Execute trade via VTrade engine
+  executeTrade();
+
+  // Instant update of on-chart HUD
+  setTimeout(renderTvChartOverlay, 120);
+}
+
+function setQuickTradePct(pct) {
+  const coinDef = getCoinDefinition(selectedCoin);
+  const curPrice = currentPrices[selectedCoin]?.price || coinDef.basePrice || 100;
+  const levSelect = document.getElementById('tv-quick-leverage');
+  const lev = parseInt(levSelect?.value, 10) || 10;
+
+  const usableCash = Math.max(0, walletState?.cashBalance || 0);
+  const maxPositionValue = usableCash * lev * 0.95;
+  const orderValue = maxPositionValue * pct;
+  const sizeCoins = curPrice > 0 ? roundValue(orderValue / curPrice, 'coin') : 0;
+
+  const sizeInput = document.getElementById('tv-quick-size-input');
+  if (sizeInput) sizeInput.value = sizeCoins > 0 ? sizeCoins : 0.01;
+}
+
+function toggleQuickLimitInput(orderType) {
+  const wrap = document.getElementById('tv-quick-limit-wrap');
+  if (wrap) {
+    wrap.classList.toggle('hidden', orderType !== 'limit');
+    if (orderType === 'limit') {
+      const curPrice = currentPrices[selectedCoin]?.price || 0;
+      const limitInput = document.getElementById('tv-quick-limit-price');
+      if (limitInput && (!limitInput.value || parseFloat(limitInput.value) <= 0)) {
+        limitInput.value = curPrice;
+      }
+    }
+  }
+}
+
+function quickCloseCurrentPosition() {
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  if (!curPos) {
+    showToast('No active position on ' + selectedCoin, 'info');
+    return;
+  }
+  closePositionUnified(curPos.id, null, 'Market');
+  setTimeout(renderTvChartOverlay, 120);
+}
+
+function openTpSlForCurrentPosition() {
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  if (!curPos) return;
+  openTpSlModal(curPos.id);
 }
 
 // ─── PAIR QUICK MENU TOGGLES ──────────────────────────────
@@ -1556,16 +1649,8 @@ async function loadChart(coin, tf) {
 }
 
 function renderCurrentChart(candles, prices, tf) {
-  if (chartMode === 'tv') {
-    renderTradingViewChart();
-  } else if (chartMode === 'candle') {
-    if (candles && candles.length) {
-      renderCandlestickChart(candles);
-      renderDrawings();
-    }
-  } else {
-    renderLineChart(prices || [], tf);
-  }
+  renderTradingViewChart();
+  renderTvChartOverlay();
 }
 
 let candleViewport = { minP: 0, maxP: 0, plotW: 0, plotH: 0, padTop: 18, padRight: 64, padBottom: 22 };
@@ -2234,10 +2319,8 @@ function toggleChartFullscreen() {
   }
 
   setTimeout(() => {
-    if (chartMode === 'candle' && candleData && candleData.length) {
-      renderCandlestickChart(candleData);
-      renderDrawings();
-    }
+    window.dispatchEvent(new Event('resize'));
+    renderTvChartOverlay();
   }, 60);
 }
 
@@ -3581,6 +3664,7 @@ function updateMiniStats() {
 // ─── RENDER POSITIONS TABLE (Requirement B) ────────────────
 function renderPositions() {
   updateTabBadges();
+  renderTvChartOverlay();
   const tbody = document.getElementById('pos-tbody');
   if (!tbody) return;
   const open = walletState.positions || [];
@@ -3630,6 +3714,7 @@ function renderPositions() {
 // ─── RENDER OPEN ORDERS TABLE (Requirement C) ──────────────
 function renderOrders() {
   updateTabBadges();
+  renderTvChartOverlay();
   const tbody = document.getElementById('orders-tbody');
   if (!tbody) return;
   const pending = walletState.orders || [];
