@@ -220,18 +220,42 @@
         <div class="chart-mode-group">
           <button class="cmode-btn active" id="cmode-candle" onclick="setChartMode('candle')" title="Native Candlesticks">📊 Candles</button>
           <button class="cmode-btn" id="cmode-line" onclick="setChartMode('line')" title="Simple Line Chart">📈 Line</button>
+          <button class="cmode-btn" id="btn-chart-fullscreen" onclick="toggleChartFullscreen()" title="Fullscreen Chart">⛶ Fullscreen</button>
         </div>
       </div>
 
-      <!-- Chart Viewport -->
-      <div class="chart-wrap" id="chart-viewport">
-        <canvas id="candle-chart" class="chart-canvas"></canvas>
-        <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
-        <canvas id="price-chart" class="chart-canvas hidden"></canvas>
-        <div id="candle-crosshair-bar" class="candle-crosshair-bar hidden"></div>
-        <div class="chart-overlay" id="chart-loading">
-          <div class="chart-skeleton-view">
-            <div class="sk-label-pulse" id="chart-loading-text">Fetching Provider Market Data…</div>
+      <!-- Chart Container with Left Drawing Tools & Viewport -->
+      <div class="chart-container-box" id="chart-container-box">
+        <!-- Left Side Drawing Tools -->
+        <div class="chart-toolbar-left" id="chart-toolbar-left">
+          <button class="ctb-btn active" id="dt-cursor" onclick="setDrawTool('cursor')" title="Crosshair / Select">✛</button>
+          <button class="ctb-btn" id="dt-trend" onclick="setDrawTool('trend')" title="Trend Line">╱</button>
+          <button class="ctb-btn" id="dt-horiz" onclick="setDrawTool('horiz')" title="Horizontal Line / S&R">―</button>
+          <button class="ctb-btn" id="dt-brush" onclick="setDrawTool('brush')" title="Brush">✎</button>
+          <button class="ctb-btn" id="dt-measure" onclick="setDrawTool('measure')" title="Price Measure / Ruler">📏</button>
+          <div class="ctb-sep"></div>
+          <div class="ctb-color-row" title="Drawing Color">
+            <span class="color-dot active" style="background:#0ecb81;" onclick="setDrawColor('#0ecb81',this)"></span>
+            <span class="color-dot" style="background:#f6465d;" onclick="setDrawColor('#f6465d',this)"></span>
+            <span class="color-dot" style="background:#3b82f6;" onclick="setDrawColor('#3b82f6',this)"></span>
+            <span class="color-dot" style="background:#f0b90b;" onclick="setDrawColor('#f0b90b',this)"></span>
+          </div>
+          <div class="ctb-sep"></div>
+          <button class="ctb-btn" onclick="undoDrawing()" title="Undo Drawing">↶</button>
+          <button class="ctb-btn" onclick="clearDrawings()" title="Clear Drawings">🗑</button>
+        </div>
+
+        <!-- Chart Viewport -->
+        <div class="chart-wrap" id="chart-viewport">
+          <button class="btn-exit-fullscreen hidden" id="btn-exit-fullscreen" onclick="toggleChartFullscreen()">✕ Exit Fullscreen</button>
+          <canvas id="candle-chart" class="chart-canvas"></canvas>
+          <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
+          <canvas id="price-chart" class="chart-canvas hidden"></canvas>
+          <div id="candle-crosshair-bar" class="candle-crosshair-bar hidden"></div>
+          <div class="chart-overlay" id="chart-loading">
+            <div class="chart-skeleton-view">
+              <div class="sk-label-pulse" id="chart-loading-text">Fetching Live Market Candles…</div>
+            </div>
           </div>
         </div>
       </div>

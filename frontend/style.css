@@ -1091,7 +1091,150 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
   transform: scale(1.15);
 }
 
-/* ── Chart Viewport & Height (Requirement E1) ── */
+/* ── Left-Side Professional Drawing Toolbar & Chart Container Box ── */
+.chart-container-box {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 380px;
+  height: 420px;
+  background: var(--bg0, #0b0e11);
+  border: 1px solid var(--border, #1e2329);
+  border-radius: var(--r8, 8px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.chart-toolbar-left {
+  width: 42px;
+  flex-shrink: 0;
+  background: #12161c;
+  border-right: 1px solid #1e2329;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 3px;
+  gap: 6px;
+  z-index: 10;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.ctb-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #848e9c;
+  font-size: 14px;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  outline: none;
+}
+
+.ctb-btn:hover {
+  background: #1e2329;
+  color: #eaecef;
+  border-color: #2b313a;
+}
+
+.ctb-btn.active {
+  background: rgba(240, 185, 11, 0.18);
+  color: #f0b90b;
+  border-color: #f0b90b;
+}
+
+.ctb-sep {
+  width: 24px;
+  height: 1px;
+  background: #23272e;
+  margin: 3px 0;
+}
+
+.ctb-color-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.ctb-color-row .color-dot {
+  min-width: 14px !important;
+  min-height: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+  cursor: pointer;
+  display: inline-block !important;
+  box-sizing: border-box;
+  transition: transform 0.15s ease;
+}
+
+.ctb-color-row .color-dot::after {
+  display: none !important;
+}
+
+.ctb-color-row .color-dot.active {
+  outline: 2px solid #ffffff;
+  outline-offset: 1px;
+  transform: scale(1.25);
+}
+
+/* ── Fullscreen Chart Mode ── */
+.chart-container-box.fullscreen-chart {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  z-index: 999999 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: #0b0e11 !important;
+}
+
+.btn-exit-fullscreen {
+  position: absolute;
+  top: 10px;
+  right: 74px;
+  z-index: 100;
+  background: rgba(246, 70, 93, 0.9);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  backdrop-filter: blur(6px);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-exit-fullscreen:hover {
+  background: #f6465d;
+  transform: scale(1.05);
+}
+
+.btn-exit-fullscreen.hidden {
+  display: none !important;
+}
+
+/* ── Chart Viewport & Height ── */
 .chart-wrap {
   position: relative;
   flex: 1;
@@ -1113,12 +1256,18 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
   width: 100% !important;
   height: 100% !important;
   z-index: 2;
-  pointer-events: none;
-  touch-action: none;
-}
-.drawing-canvas.active-draw {
   pointer-events: auto;
+  touch-action: none;
   cursor: crosshair;
+}
+.drawing-canvas.cursor-mode {
+  cursor: default;
+}
+.drawing-canvas.drag-handle-hover {
+  cursor: ns-resize !important;
+}
+.drawing-canvas.drag-active {
+  cursor: grabbing !important;
 }
 .candle-crosshair-bar {
   position: absolute;

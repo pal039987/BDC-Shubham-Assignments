@@ -297,7 +297,7 @@ function startPriceRefreshTimer() {
   priceRefreshInterval = setInterval(() => {
     if (document.hidden) return;
     refreshPricesAndCheckPositions();
-  }, 5000);
+  }, 2000);
 }
 
 function stopPriceRefreshTimer() {
@@ -868,7 +868,7 @@ function initMarketExplorer() {
 
   fetchCoinGeckoPrices();
   if (marketDataInterval) clearInterval(marketDataInterval);
-  marketDataInterval = setInterval(fetchCoinGeckoPrices, 30000);
+  marketDataInterval = setInterval(fetchCoinGeckoPrices, 2500);
 }
 
 // ─── PRICES ───────────────────────────────────────────────
@@ -985,10 +985,92 @@ function selectCoin(coin) {
   }
 }
 
-// ─── REAL-TIME PRICE STREAM (TRUTHFUL POLL WITHOUT MOCK DRIFT) ───────
+// ─── REAL-TIME BINANCE WEBSOCKET & FAST TICKER STREAM ───────
+let binanceWs = null;
+let binanceWsReconnectTimer = null;
+
 function initRealtimeTicker() {
-  // Poll genuine backend/CoinGecko prices every 4s
-  setInterval(pollPricesFast, 4000);
+  initBinanceWebSocket();
+  // Continuous fast poll as secondary backup (1.5s interval)
+  setInterval(pollPricesFast, 1500);
+}
+
+function initBinanceWebSocket() {
+  if (binanceWs) {
+    try { binanceWs.close(); } catch(e) {}
+    binanceWs = null;
+  }
+
+  try {
+    const wsUrl = 'wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker';
+    binanceWs = new WebSocket(wsUrl);
+
+    binanceWs.onopen = () => {
+      console.log('Connected to Binance live market stream');
+      const badge = document.getElementById('header-price-mode-badge');
+      if (badge) badge.className = 'price-mode-badge live';
+      const badgeText = document.getElementById('header-price-mode-text');
+      if (badgeText) badgeText.textContent = 'Live (Stream)';
+    };
+
+    binanceWs.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (!msg || !msg.data) return;
+        const d = msg.data;
+        let coinKey = null;
+        if (d.s === 'BTCUSDT') coinKey = 'bitcoin';
+        else if (d.s === 'ETHUSDT') coinKey = 'ethereum';
+        else if (d.s === 'SOLUSDT') coinKey = 'solana';
+        if (!coinKey) return;
+
+        const livePrice = parseFloat(d.c);
+        if (!isValidPrice(livePrice)) return;
+
+        const prevPrice = currentPrices[coinKey]?.price || livePrice;
+        const change24h = parseFloat(d.P) || 0;
+        const volume24h = parseFloat(d.q) || 0;
+        const high24h   = parseFloat(d.h) || 0;
+        const low24h    = parseFloat(d.l) || 0;
+
+        currentPrices[coinKey] = {
+          price: livePrice,
+          change24h: change24h,
+          volume24h: volume24h,
+          high24h: high24h,
+          low24h: low24h,
+          quoteCurrency: 'USDT',
+          isSimulated: false
+        };
+
+        lastGoodPriceTimestamp = Date.now();
+        isPriceDataLive = true;
+
+        // Dynamic candle update for current viewing coin
+        if (selectedCoin === coinKey && chartMode === 'candle' && candleData && candleData.length) {
+          const lastCandle = candleData[candleData.length - 1];
+          if (livePrice > lastCandle.high) lastCandle.high = livePrice;
+          if (livePrice < lastCandle.low) lastCandle.low = livePrice;
+          lastCandle.close = livePrice;
+        }
+
+        onPriceTick(coinKey, prevPrice, livePrice);
+      } catch (err) {}
+    };
+
+    binanceWs.onerror = (err) => {
+      console.warn('Binance WS error, falling back to fast polling', err);
+    };
+
+    binanceWs.onclose = () => {
+      if (binanceWsReconnectTimer) clearTimeout(binanceWsReconnectTimer);
+      binanceWsReconnectTimer = setTimeout(() => {
+        if (!document.hidden) initBinanceWebSocket();
+      }, 3500);
+    };
+  } catch (wsErr) {
+    console.warn('WebSocket init error:', wsErr);
+  }
 }
 
 async function pollPricesFast() {
@@ -1006,6 +1088,12 @@ async function pollPricesFast() {
           const prev = currentPrices[k]?.price;
           currentPrices[k] = { ...currentPrices[k], ...res[k], isSimulated: false };
           if (prev !== res[k].price) {
+            if (selectedCoin === k && chartMode === 'candle' && candleData && candleData.length) {
+              const lastCandle = candleData[candleData.length - 1];
+              if (res[k].price > lastCandle.high) lastCandle.high = res[k].price;
+              if (res[k].price < lastCandle.low) lastCandle.low = res[k].price;
+              lastCandle.close = res[k].price;
+            }
             onPriceTick(k, prev, res[k].price);
           }
         }
@@ -1226,23 +1314,23 @@ async function loadChart(coin, tf) {
   try {
     let chartResult = null;
     
-    // Step 1: Try CoinGecko OHLC API
+    // Step 1: Try backend Binance OHLC API (Fast & genuine)
     try {
-      chartResult = await fetchCgOhlcWithTimeout(coinDef.id, tf, 3200);
-    } catch (cgErr) {
-      // Step 2: Try backend endpoint as secondary option
-      try {
-        const ctl = new AbortController();
-        const tm = setTimeout(() => ctl.abort(), 1800);
-        const resp = await fetch(`${API}/ohlc/${coinDef.id}?tf=${tf}`, { signal: ctl.signal });
-        clearTimeout(tm);
-        if (resp.ok) {
-          const beData = await resp.json();
-          if (beData.candles && beData.candles.length) {
-            chartResult = { candles: beData.candles, prices: beData.prices || [], isBaseline: false };
-          }
+      const ctl = new AbortController();
+      const tm = setTimeout(() => ctl.abort(), 2000);
+      const resp = await fetch(`${API}/ohlc/${coinDef.id}?tf=${tf}`, { signal: ctl.signal });
+      clearTimeout(tm);
+      if (resp.ok) {
+        const beData = await resp.json();
+        if (beData.candles && beData.candles.length) {
+          chartResult = { candles: beData.candles, prices: beData.prices || [], isBaseline: false };
         }
-      } catch (beErr) {}
+      }
+    } catch (beErr) {
+      // Step 2: Try CoinGecko OHLC API as fallback
+      try {
+        chartResult = await fetchCgOhlcWithTimeout(coinDef.id, tf, 2500);
+      } catch (cgErr) {}
     }
 
     // Step 3: Check cache if provider network failed
@@ -1305,6 +1393,13 @@ function renderCurrentChart(candles, prices, tf) {
 
 let candleViewport = { minP: 0, maxP: 0, plotW: 0, plotH: 0, padTop: 18, padRight: 64, padBottom: 22 };
 
+function roundPriceForCoin(price, coin) {
+  if (price <= 0 || !isFinite(price)) return price;
+  if (coin === 'bitcoin') return Math.round(price * 10) / 10;
+  if (coin === 'ethereum') return Math.round(price * 100) / 100;
+  return Math.round(price * 100) / 100;
+}
+
 function renderCandlestickChart(candles) {
   const canvas = document.getElementById('candle-chart');
   if (!canvas || !candles || !candles.length) return;
@@ -1328,6 +1423,24 @@ function renderCandlestickChart(candles) {
     if (c.low < minP) minP = c.low;
     if (c.high > maxP) maxP = c.high;
   });
+
+  // Incorporate positions and orders into price scale bounds gracefully
+  const curCoinPositions = (walletState?.positions || []).filter(p => p.coin === selectedCoin);
+  curCoinPositions.forEach(p => {
+    if (p.entry_price && p.entry_price > minP * 0.75 && p.entry_price < maxP * 1.25) {
+      if (p.entry_price < minP) minP = p.entry_price;
+      if (p.entry_price > maxP) maxP = p.entry_price;
+    }
+    if (p.take_profit && p.take_profit > minP * 0.75 && p.take_profit < maxP * 1.25) {
+      if (p.take_profit < minP) minP = p.take_profit;
+      if (p.take_profit > maxP) maxP = p.take_profit;
+    }
+    if (p.stop_loss && p.stop_loss > minP * 0.75 && p.stop_loss < maxP * 1.25) {
+      if (p.stop_loss < minP) minP = p.stop_loss;
+      if (p.stop_loss > maxP) maxP = p.stop_loss;
+    }
+  });
+
   const pRange = (maxP - minP) || 1;
   const pMargin = pRange * 0.08;
   const adjMin = minP - pMargin;
@@ -1434,9 +1547,172 @@ function renderCandlestickChart(candles) {
     ctx.textAlign = 'left';
     ctx.fillText(`$${fmt(latestPrice)}`, plotW + 5, curY + 3.5);
   }
+
+  // ─── OVERLAY ORDERS & POSITIONS ON CHART (Requirement) ───
+  curCoinPositions.forEach(p => {
+    const isLong = p.direction === 'long';
+    
+    // 1. Position Entry Price Line
+    const entryY = priceToY(p.entry_price);
+    if (entryY >= padTop && entryY <= padTop + plotH) {
+      ctx.save();
+      ctx.strokeStyle = isLong ? '#3b82f6' : '#ec4899';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(0, entryY);
+      ctx.lineTo(plotW, entryY);
+      ctx.stroke();
+
+      ctx.fillStyle = isLong ? '#2563eb' : '#db2777';
+      const entryText = `${isLong ? 'LONG' : 'SHORT'} ${p.leverage}x @ $${fmt(p.entry_price)}`;
+      ctx.font = 'bold 10px Inter, sans-serif';
+      const tw = ctx.measureText(entryText).width + 14;
+      ctx.fillRect(8, entryY - 9, tw, 18);
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'left';
+      ctx.fillText(entryText, 15, entryY + 3.5);
+      ctx.restore();
+    }
+
+    // 2. Take Profit (TP) Line with Circular Handle
+    const tpPrice = p.take_profit || (isLong ? p.entry_price * 1.04 : p.entry_price * 0.96);
+    const hasRealTp = !!p.take_profit;
+    const tpY = priceToY(tpPrice);
+    if (tpY >= padTop && tpY <= padTop + plotH) {
+      ctx.save();
+      ctx.strokeStyle = '#0ecb81';
+      ctx.setLineDash(hasRealTp ? [6, 3] : [2, 4]);
+      ctx.lineWidth = hasRealTp ? 1.6 : 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, tpY);
+      ctx.lineTo(plotW, tpY);
+      ctx.stroke();
+
+      // Circular Handle on right
+      const hX = plotW - 25;
+      ctx.fillStyle = '#0ecb81';
+      ctx.beginPath();
+      ctx.arc(hX, tpY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Badge label
+      const pnlEst = isLong ? (tpPrice - p.entry_price) * p.size : (p.entry_price - tpPrice) * p.size;
+      const pnlSign = pnlEst >= 0 ? '+' : '';
+      const tpTag = hasRealTp 
+        ? `TP: $${fmt(tpPrice)} (${pnlSign}$${fmtNum(pnlEst)}) ↕ DRAG`
+        : `+ Set TP: $${fmt(tpPrice)} ↕ DRAG`;
+      ctx.font = 'bold 10px Inter, sans-serif';
+      const tw = ctx.measureText(tpTag).width + 16;
+      ctx.fillStyle = '#0ecb81';
+      ctx.fillRect(plotW - tw - 40, tpY - 10, tw, 20);
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'left';
+      ctx.fillText(tpTag, plotW - tw - 32, tpY + 4);
+      ctx.restore();
+    }
+
+    // 3. Stop Loss (SL) Line with Circular Handle
+    const slPrice = p.stop_loss || (isLong ? p.entry_price * 0.97 : p.entry_price * 1.03);
+    const hasRealSl = !!p.stop_loss;
+    const slY = priceToY(slPrice);
+    if (slY >= padTop && slY <= padTop + plotH) {
+      ctx.save();
+      ctx.strokeStyle = '#f6465d';
+      ctx.setLineDash(hasRealSl ? [6, 3] : [2, 4]);
+      ctx.lineWidth = hasRealSl ? 1.6 : 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, slY);
+      ctx.lineTo(plotW, slY);
+      ctx.stroke();
+
+      // Circular Handle on right
+      const hX = plotW - 25;
+      ctx.fillStyle = '#f6465d';
+      ctx.beginPath();
+      ctx.arc(hX, slY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Badge label
+      const pnlEst = isLong ? (slPrice - p.entry_price) * p.size : (p.entry_price - slPrice) * p.size;
+      const slTag = hasRealSl 
+        ? `SL: $${fmt(slPrice)} (-$${fmtNum(Math.abs(pnlEst))}) ↕ DRAG`
+        : `+ Set SL: $${fmt(slPrice)} ↕ DRAG`;
+      ctx.font = 'bold 10px Inter, sans-serif';
+      const tw = ctx.measureText(slTag).width + 16;
+      ctx.fillStyle = '#f6465d';
+      ctx.fillRect(plotW - tw - 40, slY - 10, tw, 20);
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      ctx.fillText(slTag, plotW - tw - 32, slY + 4);
+      ctx.restore();
+    }
+
+    // 4. Liquidation Price Line
+    const liqPrice = p.liquidationPrice || p.liq_price;
+    if (liqPrice && liqPrice > 0) {
+      const liqY = priceToY(liqPrice);
+      if (liqY >= padTop && liqY <= padTop + plotH) {
+        ctx.save();
+        ctx.strokeStyle = '#f97316';
+        ctx.setLineDash([3, 4]);
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        ctx.moveTo(0, liqY);
+        ctx.lineTo(plotW, liqY);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ea580c';
+        const liqTag = `LIQ: $${fmt(liqPrice)}`;
+        ctx.font = 'bold 10px Inter, sans-serif';
+        const tw = ctx.measureText(liqTag).width + 12;
+        ctx.fillRect(8, liqY - 9, tw, 18);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'left';
+        ctx.fillText(liqTag, 14, liqY + 3.5);
+        ctx.restore();
+      }
+    }
+  });
+
+  // 5. Open Pending Limit Orders
+  const curCoinOrders = (walletState?.orders || []).filter(o => o.coin === selectedCoin && (o.status === 'open' || !o.status));
+  curCoinOrders.forEach(o => {
+    if (!o.limit_price) return;
+    const ordY = priceToY(o.limit_price);
+    if (ordY >= padTop && ordY <= padTop + plotH) {
+      ctx.save();
+      const isLong = (o.side === 'Buy' || o.side === 'Long' || o.side === 'buy' || o.side === 'long');
+      ctx.strokeStyle = isLong ? '#10b981' : '#f43f5e';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, ordY);
+      ctx.lineTo(plotW, ordY);
+      ctx.stroke();
+
+      ctx.fillStyle = isLong ? 'rgba(16,185,129,0.9)' : 'rgba(244,63,94,0.9)';
+      const ordTag = `LIMIT ${isLong ? 'BUY' : 'SELL'} @ $${fmt(o.limit_price)}`;
+      ctx.font = 'bold 9px Inter, sans-serif';
+      const tw = ctx.measureText(ordTag).width + 12;
+      ctx.fillRect(8, ordY - 8, tw, 16);
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'left';
+      ctx.fillText(ordTag, 14, ordY + 3.5);
+      ctx.restore();
+    }
+  });
 }
 
-// ─── NATIVE DRAWING CANVAS ENGINE ─────────────────────────
+// ─── NATIVE DRAWING CANVAS ENGINE & DRAG-AND-DROP TP/SL ───
+let draggingOrderLine = null;
+
 function setDrawTool(tool) {
   drawTool = tool;
   ['cursor','trend','horiz','brush','measure'].forEach(t => {
@@ -1444,12 +1720,15 @@ function setDrawTool(tool) {
     if (btn) btn.classList.toggle('active', t === tool);
   });
   const cvs = document.getElementById('drawing-canvas');
-  if (cvs) cvs.classList.toggle('active-draw', tool !== 'cursor');
+  if (cvs) {
+    cvs.classList.toggle('cursor-mode', tool === 'cursor');
+    cvs.classList.toggle('active-draw', tool !== 'cursor');
+  }
 }
 
 function setDrawColor(color, el) {
   drawColor = color;
-  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.ctb-color-row .color-dot, .dt-colors .color-dot').forEach(d => d.classList.remove('active'));
   if (el) el.classList.add('active');
 }
 
@@ -1483,6 +1762,27 @@ function clearDrawings() {
   showToast('All drawings cleared', 'info');
 }
 
+function findDraggableLine(pos) {
+  const curCoinPositions = (walletState?.positions || []).filter(p => p.coin === selectedCoin);
+  for (const p of curCoinPositions) {
+    const isLong = p.direction === 'long';
+    // Check Take Profit handle / line
+    const tpPrice = p.take_profit || (isLong ? p.entry_price * 1.04 : p.entry_price * 0.96);
+    const tpY = priceToY(tpPrice);
+    if (Math.abs(pos.y - tpY) <= 15) {
+      return { pos: p, type: 'tp', y: tpY, price: tpPrice };
+    }
+
+    // Check Stop Loss handle / line
+    const slPrice = p.stop_loss || (isLong ? p.entry_price * 0.97 : p.entry_price * 1.03);
+    const slY = priceToY(slPrice);
+    if (Math.abs(pos.y - slY) <= 15) {
+      return { pos: p, type: 'sl', y: slY, price: slPrice };
+    }
+  }
+  return null;
+}
+
 function setupDrawingCanvas() {
   const cvs = document.getElementById('drawing-canvas');
   if (!cvs) return;
@@ -1503,10 +1803,21 @@ function setupDrawingCanvas() {
   }
 
   function handleStart(e) {
+    const pos = getCanvasPos(e);
+
+    // Check if user clicked on or touched a TP or SL line / handle to drag
+    const draggable = findDraggableLine(pos);
+    if (draggable && (drawTool === 'cursor' || pos.x >= (candleViewport.plotW - 60))) {
+      if (e.cancelable) e.preventDefault();
+      draggingOrderLine = { ...draggable };
+      cvs.classList.add('drag-active');
+      return;
+    }
+
     if (drawTool === 'cursor') return;
     if (e.touches && e.touches.length > 1) return;
     isDrawing = true;
-    startPt = getCanvasPos(e);
+    startPt = pos;
 
     if (drawTool === 'brush') {
       activeDrawing = { type: 'brush', points: [startPt], color: drawColor };
@@ -1524,9 +1835,57 @@ function setupDrawingCanvas() {
   }
 
   function handleMove(e) {
-    // Crosshair info display
     const pos = getCanvasPos(e);
     updateCrosshairBar(pos);
+
+    // If dragging TP or SL line
+    if (draggingOrderLine) {
+      if (e.cancelable) e.preventDefault();
+      const curPrice = yToPrice(pos.y);
+      const roundedPrice = roundPriceForCoin(curPrice, selectedCoin);
+      if (roundedPrice > 0) {
+        if (draggingOrderLine.type === 'tp') {
+          draggingOrderLine.pos.take_profit = roundedPrice;
+        } else {
+          draggingOrderLine.pos.stop_loss = roundedPrice;
+        }
+        renderCandlestickChart(candleData);
+        renderDrawings();
+
+        // Render floating drag tooltip
+        const ctx = cvs.getContext('2d');
+        ctx.save();
+        const isLong = draggingOrderLine.pos.direction === 'long';
+        const estPnl = isLong 
+          ? (roundedPrice - draggingOrderLine.pos.entry_price) * draggingOrderLine.pos.size
+          : (draggingOrderLine.pos.entry_price - roundedPrice) * draggingOrderLine.pos.size;
+        const pnlSign = estPnl >= 0 ? '+' : '';
+        const label = `${draggingOrderLine.type.toUpperCase()}: $${fmt(roundedPrice)} (Est. PnL: ${pnlSign}$${fmtNum(estPnl)})`;
+        ctx.font = 'bold 11px Inter, sans-serif';
+        const lw = ctx.measureText(label).width + 20;
+        const rect = cvs.getBoundingClientRect();
+        const tx = Math.min(rect.width - lw - 10, Math.max(10, pos.x + 15));
+        const ty = Math.max(20, pos.y - 15);
+        ctx.fillStyle = draggingOrderLine.type === 'tp' ? '#0ecb81' : '#f6465d';
+        ctx.fillRect(tx, ty, lw, 24);
+        ctx.fillStyle = draggingOrderLine.type === 'tp' ? '#000000' : '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, tx + 10, ty + 16);
+        ctx.restore();
+      }
+      return;
+    }
+
+    // Hover detection for cursor mode
+    if (drawTool === 'cursor') {
+      const nearby = findDraggableLine(pos);
+      if (nearby) {
+        cvs.classList.add('drag-handle-hover');
+      } else {
+        cvs.classList.remove('drag-handle-hover');
+      }
+      return;
+    }
 
     if (!isDrawing || !activeDrawing) return;
     if (e.cancelable) e.preventDefault();
@@ -1542,6 +1901,19 @@ function setupDrawingCanvas() {
   }
 
   function handleEnd() {
+    if (draggingOrderLine) {
+      const lineInfo = draggingOrderLine;
+      draggingOrderLine = null;
+      cvs.classList.remove('drag-active');
+      saveWalletState();
+      const updatedVal = lineInfo.type === 'tp' ? lineInfo.pos.take_profit : lineInfo.pos.stop_loss;
+      showToast(`${lineInfo.type.toUpperCase()} set to $${fmt(updatedVal)}`, 'success');
+      renderPositions();
+      renderCandlestickChart(candleData);
+      renderDrawings();
+      return;
+    }
+
     if (!isDrawing) return;
     isDrawing = false;
     if (activeDrawing) {
@@ -1572,6 +1944,37 @@ function setupDrawingCanvas() {
     }
   });
 }
+
+// ─── FULLSCREEN CHART TOGGLE ──────────────────────────────
+function toggleChartFullscreen() {
+  const box = document.getElementById('chart-container-box');
+  const exitBtn = document.getElementById('btn-exit-fullscreen');
+  const fsBtn = document.getElementById('btn-chart-fullscreen');
+  if (!box) return;
+
+  const isFs = box.classList.toggle('fullscreen-chart');
+  if (exitBtn) exitBtn.classList.toggle('hidden', !isFs);
+  if (fsBtn) {
+    fsBtn.innerHTML = isFs ? '⛶ Exit' : '⛶ Fullscreen';
+    fsBtn.classList.toggle('active', isFs);
+  }
+
+  setTimeout(() => {
+    if (chartMode === 'candle' && candleData && candleData.length) {
+      renderCandlestickChart(candleData);
+      renderDrawings();
+    }
+  }, 60);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const box = document.getElementById('chart-container-box');
+    if (box && box.classList.contains('fullscreen-chart')) {
+      toggleChartFullscreen();
+    }
+  }
+});
 
 function yToPrice(y) {
   const { minP, maxP, plotH, padTop } = candleViewport;

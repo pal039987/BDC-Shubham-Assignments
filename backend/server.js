@@ -181,6 +181,45 @@ SUPPORTED_COINS.forEach(c => {
 });
 
 async function fetchPrices() {
+  // Step 1: Query Binance 24hr live ticker for real-time orderflow and price ticks
+  try {
+    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
+    const bResp = await fetch(bUrl, { headers: { 'Accept': 'application/json' }, timeout: 3000 });
+    if (bResp.ok) {
+      const bList = await bResp.json();
+      if (Array.isArray(bList) && bList.length >= 3) {
+        const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
+        bList.forEach(item => {
+          const coinId = symbolMap[item.symbol];
+          if (coinId) {
+            const p = parseFloat(item.lastPrice);
+            if (p > 0 && !isNaN(p) && isFinite(p)) {
+              priceCache[coinId] = {
+                price: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                usdtPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                usdPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                conversionUsed: false,
+                change24h: parseFloat(parseFloat(item.priceChangePercent).toFixed(2)),
+                marketCap: (priceCache[coinId]?.marketCap || COIN_METADATA[coinId].baseCap),
+                volume24h: parseFloat(item.quoteVolume) || COIN_METADATA[coinId].baseVol,
+                high24h: parseFloat(item.highPrice) || parseFloat((p * 1.02).toFixed(2)),
+                low24h: parseFloat(item.lowPrice) || parseFloat((p * 0.98).toFixed(2)),
+                lastVerified: Date.now()
+              };
+            }
+          }
+        });
+        priceCache.updatedAt = Date.now();
+        priceCache.isRateLimited = false;
+        try { checkPendingOrders(); } catch (e) {}
+        return priceCache;
+      }
+    }
+  } catch (bErr) {
+    // If Binance is unreachable, fall back to CoinGecko
+  }
+
+  // Step 2: CoinGecko Fallback
   const now = Date.now();
   if (now < serverCgRateLimitUntil) {
     priceCache.isRateLimited = true;
@@ -252,14 +291,16 @@ async function fetchPrices() {
     try { checkPendingOrders(); } catch (e) {}
     return priceCache;
   } catch (err) {
-    // If provider is unreachable, do not synthesize mock prices
     return priceCache;
   }
 }
 
+// Background auto-poller every 1500ms so market prices are constantly live
+setInterval(fetchPrices, 1500);
+
 app.get('/api/prices', async (req, res) => {
   try {
-    if (Date.now() - priceCache.updatedAt > 30000) {
+    if (Date.now() - priceCache.updatedAt > 2000) {
       await fetchPrices();
     }
     const isStale = (Date.now() - priceCache.updatedAt) > 180000;
@@ -273,17 +314,17 @@ app.get('/api/prices', async (req, res) => {
       isRateLimited: Date.now() < serverCgRateLimitUntil,
       tetherRate: priceCache.tetherUsdRate,
       supportedPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT'],
-      provider: 'CoinGecko'
+      provider: 'Live Market Feed'
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve market prices' });
   }
 });
 
-// ─── REAL HISTORICAL OHLC CHART (No simulated/fake candles) ───────────────────
+// ─── REAL HISTORICAL OHLC CANDLESTICK CHART ───────────────────
 const chartCache = {};
 
-app.get('/api/chart/:coin', async (req, res) => {
+async function handleChartRequest(req, res) {
   try {
     const rawCoin = (req.params.coin || '').toLowerCase();
     const coin = SUPPORTED_COINS.find(c => c === rawCoin) || (rawCoin === 'btc' ? 'bitcoin' : rawCoin === 'eth' ? 'ethereum' : rawCoin === 'sol' ? 'solana' : null);
@@ -293,36 +334,22 @@ app.get('/api/chart/:coin', async (req, res) => {
     const cacheKey = `${coin}_${tf}`;
     const cached = chartCache[cacheKey];
 
-    // Return fresh cached chart if available within 2 minutes
-    if (cached && (Date.now() - cached.timestamp < 120000)) {
+    // Return fresh cached chart if within 10 seconds
+    if (cached && (Date.now() - cached.timestamp < 10000)) {
       return res.json(cached.data);
     }
 
-    if (Date.now() < serverCgRateLimitUntil) {
-      if (cached) {
-        return res.json({ ...cached.data, isStale: true, isRateLimited: true });
-      }
-      return res.json({
-        symbol: coin,
-        candles: [],
-        status: 'rate_limited',
-        message: 'CoinGecko OHLC rate limited. Live ticker active.'
-      });
-    }
-
-    const days = ['1d', '1w'].includes(tf) ? 30 : ['4h'].includes(tf) ? 7 : 1;
-    const url = `https://api.coingecko.com/api/v3/coins/${coin}/ohlc?vs_currency=usd&days=${days}`;
+    // Step 1: Try Binance live klines for accurate real-time candles
+    const binanceSymbols = { 'bitcoin': 'BTCUSDT', 'ethereum': 'ETHUSDT', 'solana': 'SOLUSDT' };
+    const binanceIntervals = { '1m':'1m', '3m':'3m', '5m':'5m', '15m':'15m', '1h':'1h', '4h':'4h', '1d':'1d', '1w':'1w' };
+    const bSymbol = binanceSymbols[coin];
+    const bInterval = binanceIntervals[tf] || '15m';
 
     try {
-      const resp = await fetch(url, { timeout: 4500 });
-      if (resp.status === 429) {
-        serverCgRateLimitUntil = Date.now() + 60000;
-        if (cached) return res.json({ ...cached.data, isStale: true, isRateLimited: true });
-        return res.json({ symbol: coin, candles: [], status: 'rate_limited' });
-      }
-
-      if (resp.ok) {
-        const klines = await resp.json();
+      const klineUrl = `https://api.binance.com/api/v3/klines?symbol=${bSymbol}&interval=${bInterval}&limit=100`;
+      const kResp = await fetch(klineUrl, { timeout: 3500 });
+      if (kResp.ok) {
+        const klines = await kResp.json();
         if (Array.isArray(klines) && klines.length > 0) {
           const candles = klines.map(k => ({
             time: Math.floor(k[0] / 1000),
@@ -330,16 +357,42 @@ app.get('/api/chart/:coin', async (req, res) => {
             high: parseFloat(k[2]),
             low: parseFloat(k[3]),
             close: parseFloat(k[4]),
-            volume: 0
+            volume: parseFloat(k[5])
           }));
-          const payload = { symbol: coin, pair: COIN_METADATA[coin].pair, candles, isProviderData: true, timestamp: Date.now() };
+          const prices = candles.map(c => [c.time * 1000, c.close]);
+          const payload = { symbol: coin, pair: COIN_METADATA[coin].pair, tf, candles, prices, isProviderData: true, timestamp: Date.now() };
           chartCache[cacheKey] = { timestamp: Date.now(), data: payload };
           return res.json(payload);
         }
       }
-    } catch (apiErr) {
-      // Fallback to last known cached chart data without fabricating
+    } catch (binanceErr) {
+      // Fall through to CoinGecko or cache
     }
+
+    // Step 2: CoinGecko Fallback
+    const days = ['1d', '1w'].includes(tf) ? 30 : ['4h'].includes(tf) ? 7 : 1;
+    const cgUrl = `https://api.coingecko.com/api/v3/coins/${coin}/ohlc?vs_currency=usd&days=${days}`;
+
+    try {
+      const cgResp = await fetch(cgUrl, { timeout: 4500 });
+      if (cgResp.ok) {
+        const cgData = await cgResp.json();
+        if (Array.isArray(cgData) && cgData.length > 0) {
+          const candles = cgData.map(k => ({
+            time: Math.floor(k[0] / 1000),
+            open: parseFloat(k[1]),
+            high: parseFloat(k[2]),
+            low: parseFloat(k[3]),
+            close: parseFloat(k[4]),
+            volume: 0
+          }));
+          const prices = candles.map(c => [c.time * 1000, c.close]);
+          const payload = { symbol: coin, pair: COIN_METADATA[coin].pair, tf, candles, prices, isProviderData: true, timestamp: Date.now() };
+          chartCache[cacheKey] = { timestamp: Date.now(), data: payload };
+          return res.json(payload);
+        }
+      }
+    } catch (cgErr) {}
 
     if (cached) {
       return res.json({ ...cached.data, isStale: true });
@@ -349,13 +402,16 @@ app.get('/api/chart/:coin', async (req, res) => {
       symbol: coin,
       pair: COIN_METADATA[coin].pair,
       candles: [],
-      status: 'unavailable',
-      message: 'Historical candles temporarily unavailable. Real price ticker is active.'
+      prices: [],
+      timestamp: Date.now()
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve chart data' });
   }
-});
+}
+
+app.get('/api/chart/:coin', handleChartRequest);
+app.get('/api/ohlc/:coin', handleChartRequest);
 
 // ─── SPOT TRADING ─────────────────────────────────────────────────────────────
 app.post('/api/trade', authenticateToken, async (req, res) => {
