@@ -3269,3 +3269,728 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   color: var(--txt3);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   GROWW-INSPIRED CRYPTO UI STYLING (Indian Market Layout for Crypto)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Groww Header */
+.groww-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #0f131a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.groww-logo-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 208, 156, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.groww-brand-titles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-icon-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.nav-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Groww Indices Ticker Strip */
+.groww-indices-ticker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: #121722;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.groww-indices-ticker::-webkit-scrollbar {
+  display: none;
+}
+
+.gi-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 2px 4px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+.gi-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gi-sym {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+}
+.gi-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.gi-chg {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.gi-chg.pos {
+  color: #00d09c;
+  background: rgba(0, 208, 156, 0.12);
+}
+.gi-chg.neg {
+  color: #eb5b3c;
+  background: rgba(235, 91, 60, 0.12);
+}
+.gi-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Groww Sub-Navigation Strip */
+.groww-subnav-strip {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 16px;
+  background: #0f131a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.groww-subnav-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.gsub-tab {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 2px 10px 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  transition: all 0.2s ease;
+}
+.gsub-tab:hover {
+  color: #e2e8f0;
+}
+.gsub-tab.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+.gsub-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: #00d09c;
+  border-radius: 2px 2px 0 0;
+}
+
+/* Quick Search Bar Wrap */
+.groww-search-bar-wrap {
+  padding: 10px 14px;
+  background: #141a24;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.groww-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1c2331;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+.groww-search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 13px;
+  outline: none;
+}
+.gs-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* Groww Explore Main Container */
+.groww-explore-container {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 18px 14px 85px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.groww-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.groww-sec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.groww-sec-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+.groww-sec-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: #00d09c;
+  cursor: pointer;
+}
+
+/* Recently Viewed Strip */
+.groww-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 4px 2px;
+  scrollbar-width: none;
+}
+.groww-recent-row::-webkit-scrollbar {
+  display: none;
+}
+
+.grecent-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  min-width: 58px;
+}
+.grecent-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #181e2b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.grecent-icon img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+.grecent-sym {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+.grecent-chg {
+  font-size: 10px;
+  font-weight: 700;
+}
+.grecent-chg.pos { color: #00d09c; }
+.grecent-chg.neg { color: #eb5b3c; }
+.grecent-chg.gold { color: #f7931a; }
+.grecent-chg.live { color: #38bdf8; }
+.grecent-chg.neutral { color: #94a3b8; }
+
+/* 2-Column Cards Grid (Most Traded / Intraday) */
+.groww-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.gcard {
+  background: #151a24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.gcard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 208, 156, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.gcard-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gcard-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #1e2636;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.gcard-badge img {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+}
+.gcard-title-group {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.gcard-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gcard-sub {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+.gcard-tag-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #f7931a;
+  background: rgba(247, 147, 26, 0.12);
+  padding: 1px 5px;
+  border-radius: 4px;
+  width: fit-content;
+}
+.gcard-tag-badge.live {
+  color: #00d09c;
+  background: rgba(0, 208, 156, 0.12);
+}
+
+.gcard-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  margin-top: 4px;
+}
+.gcard-chg {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.gcard-chg.pos { color: #00d09c; }
+.gcard-chg.neg { color: #eb5b3c; }
+
+/* 4th Card: See More */
+.gcard-more {
+  justify-content: space-between;
+  background: #121722;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+}
+.gcard-more-icons {
+  display: flex;
+  gap: 6px;
+}
+.gmini-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1e2636;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+}
+.gmini-badge.btc { color: #f7931a; }
+.gmini-badge.eth { color: #627eea; }
+.gmini-badge.sol { color: #14f195; }
+.gmini-badge.usdt { color: #26a17b; }
+
+.gcard-more-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.gcard-more-sub {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+.gcard-more-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: #00d09c;
+}
+
+/* Products & Tools Strip */
+.groww-tools-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+.gtool-btn {
+  flex: 1;
+  min-width: 58px;
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  outline: none;
+}
+.gtool-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #161b26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+.gtool-btn:hover .gtool-icon-wrap {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.gtool-icon-wrap.cyan { color: #00d09c; background: rgba(0, 208, 156, 0.1); }
+.gtool-icon-wrap.purple { color: #a78bfa; background: rgba(167, 139, 250, 0.1); }
+.gtool-icon-wrap.green { color: #34d399; background: rgba(52, 211, 153, 0.1); }
+.gtool-icon-wrap.orange { color: #f7931a; background: rgba(247, 147, 26, 0.1); }
+.gtool-icon-wrap.blue { color: #60a5fa; background: rgba(96, 165, 250, 0.1); }
+
+.gtool-badge-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #eb5b3c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gtool-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Filter Pills */
+.groww-pills-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gpill-filter {
+  background: #151a24;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.gpill-filter:hover {
+  color: #ffffff;
+}
+.gpill-filter.active {
+  background: #202737;
+  border-color: #ffffff;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Volume Rank List */
+.groww-volume-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gvol-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #151a24;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.gvol-row:hover {
+  background: #1c2230;
+}
+.gvol-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gvol-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.gvol-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.gvol-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+.gvol-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.gvol-price {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.gvol-pct {
+  font-size: 11px;
+  font-weight: 700;
+}
+.gvol-pct.pos { color: #00d09c; }
+.gvol-pct.neg { color: #eb5b3c; }
+
+/* Wallet View Panel */
+.groww-wallet-panel {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 18px 14px 85px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.gwallet-card {
+  background: linear-gradient(135deg, #131b28 0%, #172437 100%);
+  border: 1px solid rgba(0, 208, 156, 0.25);
+  border-radius: 16px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.gwallet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.gwallet-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+.gwallet-balance-val {
+  font-size: 24px;
+  font-weight: 800;
+  color: #00d09c;
+  display: block;
+  margin-top: 4px;
+}
+.gwallet-chip {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f7931a;
+  background: rgba(247, 147, 26, 0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.gwallet-actions {
+  display: flex;
+  gap: 10px;
+}
+.gwallet-btn-reset {
+  flex: 1;
+  background: rgba(235, 91, 60, 0.15);
+  border: 1px solid rgba(235, 91, 60, 0.4);
+  color: #eb5b3c;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gwallet-btn-apk {
+  flex: 1;
+  background: rgba(0, 208, 156, 0.15);
+  border: 1px solid rgba(0, 208, 156, 0.4);
+  color: #00d09c;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gsettings-list {
+  display: flex;
+  flex-direction: column;
+  background: #151a24;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.gsetting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.gsetting-item:last-child {
+  border-bottom: none;
+}
+.gsetting-item:hover {
+  background: #1c2230;
+}
+
+/* Groww Fixed Bottom Navigation Bar */
+.groww-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 58px;
+  background: #0f131a;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 9999;
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.65);
+  user-select: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.gnav-btn {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: #787b86;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.15s ease;
+}
+.gnav-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gnav-badge {
+  position: absolute;
+  top: -3px;
+  right: -6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00d09c;
+}
+.gnav-label {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  color: inherit;
+}
+.gnav-btn:hover {
+  color: #cbd5e1;
+}
+.gnav-btn.active {
+  color: #00d09c;
+}
+.gnav-btn.active .gnav-label {
+  font-weight: 700;
+  color: #00d09c;
+}
+
+/* Ensure no overlap when bottom bar is present */
+body {
+  padding-bottom: 64px !important;
+}
+
+.chart-container-box.fullscreen-chart ~ .groww-bottom-nav,
+body:has(.fullscreen-chart) .groww-bottom-nav {
+  display: none !important;
+}
+
+

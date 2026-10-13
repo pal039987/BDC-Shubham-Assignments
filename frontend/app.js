@@ -368,6 +368,8 @@ async function loadAll() {
   updateTradeLabels();
   updateTradeCalc();
   loadChart(selectedCoin, currentTF);
+  renderGrowwExploreUI();
+  switchMainTab('explore');
 }
 
 // ─── AUTH ─────────────────────────────────────────────────
@@ -892,6 +894,7 @@ async function loadPrices() {
     updatePosCalc();
     renderWatchlistChips();
     renderMarketsList();
+    renderGrowwExploreUI();
   } catch (err) {
     console.error('loadPrices error:', err);
   }
@@ -916,14 +919,18 @@ function updateChartPriceDisplay() {
   const coin = currentPrices[selectedCoin];
   const coinDef = getCoinDefinition(selectedCoin);
   const price = coin?.price || coinDef.basePrice;
-  const chg = coin?.change24h || coinDef.baseChange;
+  const chg = coin?.change24h !== undefined ? coin?.change24h : coinDef.baseChange;
+  const changePrice = coin?.changePrice !== undefined ? coin?.changePrice : ((price * (chg || 0)) / 100);
   const vol = coin?.volume24h || coinDef.baseVol;
   const mcap = coin?.marketCap || coinDef.baseCap;
 
   document.getElementById('chart-price').textContent = `$${fmt(price)}`;
   const badge = document.getElementById('chart-change-badge');
   const sign  = (chg||0) >= 0 ? '+' : '';
-  badge.textContent = `${sign}${(chg||0).toFixed(2)}%`;
+  const priceSign = (changePrice||0) >= 0 ? '+' : '';
+  const absChangePrice = Math.abs(changePrice||0);
+  const priceFormatted = absChangePrice >= 10 ? fmt(absChangePrice) : absChangePrice.toFixed(2);
+  badge.textContent = `${priceSign}$${priceFormatted} (${sign}${(chg||0).toFixed(2)}%)`;
   badge.className   = `cpi-badge ${(chg||0)>=0?'pos':'neg'}`;
   document.getElementById('chart-vol').textContent  = fmtLarge(vol);
   document.getElementById('chart-mcap').textContent = fmtLarge(mcap);
@@ -1002,11 +1009,11 @@ function initBinanceWebSocket() {
   }
 
   try {
-    const wsUrl = 'wss://stream.binance.com:9443/stream?streams=btcusdc@ticker/ethusdt@ticker/solusdt@ticker';
+    const wsUrl = 'wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker';
     binanceWs = new WebSocket(wsUrl);
 
     binanceWs.onopen = () => {
-      console.log('Connected to Binance live market stream');
+      console.log('Connected to Binance live market stream (BTCUSDT, ETHUSDT, SOLUSDT)');
       const badge = document.getElementById('header-price-mode-badge');
       if (badge) badge.className = 'price-mode-badge live';
       const badgeText = document.getElementById('header-price-mode-text');
@@ -1019,7 +1026,7 @@ function initBinanceWebSocket() {
         if (!msg || !msg.data) return;
         const d = msg.data;
         let coinKey = null;
-        if (d.s === 'BTCUSDC' || d.s === 'BTCUSDT') coinKey = 'bitcoin';
+        if (d.s === 'BTCUSDT') coinKey = 'bitcoin';
         else if (d.s === 'ETHUSDT') coinKey = 'ethereum';
         else if (d.s === 'SOLUSDT') coinKey = 'solana';
         if (!coinKey) return;
@@ -1028,13 +1035,19 @@ function initBinanceWebSocket() {
         if (!isValidPrice(livePrice)) return;
 
         const prevPrice = currentPrices[coinKey]?.price || livePrice;
-        const change24h = parseFloat(d.P) || 0;
+        // TradingView calculates daily % change and price change from Daily Session Open (00:00 UTC)
+        const dailyOpen = currentPrices[coinKey]?.dailyOpen || (parseFloat(d.o) || livePrice);
+        const changePrice = dailyOpen > 0 ? (livePrice - dailyOpen) : (parseFloat(d.p) || 0);
+        const change24h = dailyOpen > 0 ? (((livePrice - dailyOpen) / dailyOpen) * 100) : (parseFloat(d.P) || 0);
         const volume24h = parseFloat(d.q) || 0;
         const high24h   = parseFloat(d.h) || 0;
         const low24h    = parseFloat(d.l) || 0;
 
         currentPrices[coinKey] = {
+          ...currentPrices[coinKey],
           price: livePrice,
+          dailyOpen: dailyOpen,
+          changePrice: changePrice,
           change24h: change24h,
           volume24h: volume24h,
           high24h: high24h,
@@ -1121,6 +1134,7 @@ function onPriceTick(coin, prevPrice, newPrice) {
     renderTvChartOverlay();
   }
   updateLivePnL(coin, newPrice);
+  updateGrowwLiveElements(coin);
 }
 
 
@@ -2324,45 +2338,277 @@ function toggleChartFullscreen() {
   }, 60);
 }
 
-// ─── TRADINGVIEW-STYLE BOTTOM NAVIGATION SWITCHER ──────────
+// ─── GROWW-STYLE MAIN TAB NAVIGATION & CRYPTO DASHBOARD ──────────
+let activeMainTab = 'explore';
+let moversFilter = 'gainers';
+
+function formatChangeStr(changePrice, change24h) {
+  const sign = (change24h || 0) >= 0 ? '+' : '';
+  const priceSign = (changePrice || 0) >= 0 ? '+' : '';
+  const absPrice = Math.abs(changePrice || 0);
+  const priceFormatted = absPrice >= 10 ? fmt(absPrice) : absPrice.toFixed(2);
+  return `${priceSign}$${priceFormatted} (${sign}${(change24h || 0).toFixed(2)}%)`;
+}
+
+function switchMainTab(tabName) {
+  activeMainTab = tabName;
+
+  // 1. Update Sub-Navigation strip
+  document.querySelectorAll('.gsub-tab').forEach(b => b.classList.remove('active'));
+  const subBtn = document.getElementById(`gsub-${tabName}`);
+  if (subBtn) subBtn.classList.add('active');
+
+  // 2. Update Fixed Bottom-Nav
+  document.querySelectorAll('.groww-bottom-nav .gnav-btn').forEach(b => b.classList.remove('active'));
+  const navBtn = document.getElementById(`gnav-${tabName}`);
+  if (navBtn) navBtn.classList.add('active');
+
+  // 3. Cache DOM containers
+  const exploreContainer = document.getElementById('groww-explore-container');
+  const chartArea = document.getElementById('chart-area');
+  const chartContainerBox = document.getElementById('chart-container-box');
+  const chartHeader = document.querySelector('.chart-header');
+  const tfRow = document.querySelector('.tf-row');
+  const watchlistSection = document.getElementById('watchlist-section');
+  const marketsPanel = document.getElementById('markets-panel');
+  const orderSidebar = document.querySelector('.order-sidebar');
+  const bottomTabs = document.querySelector('.bottom-tabs');
+  const panelPositions = document.getElementById('panel-positions');
+  const panelOrders = document.getElementById('panel-orders');
+  const panelHistory = document.getElementById('panel-history');
+  const walletPanel = document.getElementById('view-wallet-panel');
+
+  // Hide all sections first
+  if (exploreContainer) exploreContainer.classList.add('hidden');
+  if (chartArea) chartArea.classList.add('hidden');
+  if (orderSidebar) orderSidebar.classList.add('hidden');
+  if (bottomTabs) bottomTabs.classList.add('hidden');
+  if (panelPositions) panelPositions.classList.add('hidden');
+  if (panelOrders) panelOrders.classList.add('hidden');
+  if (panelHistory) panelHistory.classList.add('hidden');
+  if (walletPanel) walletPanel.classList.add('hidden');
+
+  if (tabName === 'explore') {
+    if (exploreContainer) exploreContainer.classList.remove('hidden');
+    renderGrowwExploreUI();
+  } else if (tabName === 'chart') {
+    if (chartArea) chartArea.classList.remove('hidden');
+    if (chartContainerBox) chartContainerBox.classList.remove('hidden');
+    if (chartHeader) chartHeader.classList.remove('hidden');
+    if (tfRow) tfRow.classList.remove('hidden');
+    if (watchlistSection) watchlistSection.classList.remove('hidden');
+    renderTradingViewChart();
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+      renderTvChartOverlay();
+    }, 60);
+  } else if (tabName === 'trade') {
+    if (chartArea) chartArea.classList.remove('hidden');
+    if (chartContainerBox) chartContainerBox.classList.remove('hidden');
+    if (chartHeader) chartHeader.classList.remove('hidden');
+    if (tfRow) tfRow.classList.remove('hidden');
+    if (orderSidebar) orderSidebar.classList.remove('hidden');
+    renderTradingViewChart();
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+      renderTvChartOverlay();
+    }, 60);
+  } else if (tabName === 'positions') {
+    if (chartArea) chartArea.classList.remove('hidden');
+    if (bottomTabs) bottomTabs.classList.remove('hidden');
+    if (panelPositions) panelPositions.classList.remove('hidden');
+    showBottomTab('positions');
+  } else if (tabName === 'orders') {
+    if (chartArea) chartArea.classList.remove('hidden');
+    if (bottomTabs) bottomTabs.classList.remove('hidden');
+    if (panelOrders) panelOrders.classList.remove('hidden');
+    showBottomTab('orders');
+  } else if (tabName === 'wallet') {
+    if (walletPanel) walletPanel.classList.remove('hidden');
+    renderWalletOverview();
+  }
+}
+
+// Backward-compat fallback for any older call
 function switchNavSection(section, btn) {
-  document.querySelectorAll('.tv-bottom-nav .tv-nav-item').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  else {
-    const targetBtn = document.getElementById(`tnav-${section}`);
-    if (targetBtn) targetBtn.classList.add('active');
+  if (section === 'watchlist') switchMainTab('explore');
+  else if (section === 'chart') switchMainTab('chart');
+  else if (section === 'trade') switchMainTab('trade');
+  else if (section === 'positions') switchMainTab('positions');
+  else if (section === 'menu') switchMainTab('wallet');
+}
+
+function updateGrowwLiveElements(coinKey) {
+  const cData = currentPrices[coinKey];
+  if (!cData || !isValidPrice(cData.price)) return;
+  const price = cData.price;
+  const chg = cData.change24h !== undefined ? cData.change24h : 0;
+  const chgPrice = cData.changePrice !== undefined ? cData.changePrice : (price * chg / 100);
+  const isPos = chg >= 0;
+  const sym = coinKey === 'bitcoin' ? 'btc' : coinKey === 'ethereum' ? 'eth' : 'sol';
+
+  // 1. Ticker strip elements
+  const tickPriceEl = document.getElementById(`gi-price-${sym}`);
+  const tickChgEl = document.getElementById(`gi-chg-${sym}`);
+  if (tickPriceEl) tickPriceEl.textContent = `$${fmt(price)}`;
+  if (tickChgEl) {
+    tickChgEl.textContent = `${isPos ? '+' : ''}${chg.toFixed(2)}%`;
+    tickChgEl.className = `gi-chg ${isPos ? 'pos' : 'neg'}`;
   }
 
-  if (section === 'watchlist') {
-    const mkt = document.getElementById('markets-panel');
-    if (mkt) {
-      mkt.classList.remove('hidden');
-      mkt.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  } else if (section === 'chart') {
-    const chartBox = document.getElementById('chart-container-box');
-    if (chartBox) {
-      chartBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  } else if (section === 'trade') {
-    const tradeEl = document.querySelector('.trade-panel') || document.querySelector('.futures-panel') || document.querySelector('.order-form');
-    if (tradeEl) {
-      tradeEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  } else if (section === 'positions') {
-    showBottomTab('positions');
-    const pos = document.getElementById('panel-positions');
-    if (pos) {
-      pos.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  } else if (section === 'menu') {
-    if (typeof openSettingsModal === 'function') {
-      openSettingsModal();
-    } else {
-      const setBtn = document.getElementById('btn-header-settings');
-      if (setBtn) setBtn.click();
+  // 2. Recently viewed
+  const recChgEl = document.getElementById(`grecent-chg-${coinKey}`);
+  if (recChgEl) {
+    recChgEl.textContent = `${isPos ? '+' : ''}${chg.toFixed(2)}%`;
+    recChgEl.className = `grecent-chg ${isPos ? 'pos' : 'neg'}`;
+  }
+
+  // 3. Most traded cards
+  const cardPriceEl = document.getElementById(`gcard-price-${coinKey}`);
+  const cardChgEl = document.getElementById(`gcard-chg-${coinKey}`);
+  if (cardPriceEl) cardPriceEl.textContent = `$${fmt(price)}`;
+  if (cardChgEl) {
+    cardChgEl.textContent = formatChangeStr(chgPrice, chg);
+    cardChgEl.className = `gcard-chg ${isPos ? 'pos' : 'neg'}`;
+  }
+
+  // 4. Intraday cards
+  const intraPriceEl = document.getElementById(`gintra-price-${coinKey}`);
+  const intraChgEl = document.getElementById(`gintra-chg-${coinKey}`);
+  if (intraPriceEl) intraPriceEl.textContent = `$${fmt(price)}`;
+  if (intraChgEl) {
+    intraChgEl.textContent = formatChangeStr(chgPrice, chg);
+    intraChgEl.className = `gcard-chg ${isPos ? 'pos' : 'neg'}`;
+  }
+
+  // 5. Volume list
+  const volPriceEl = document.getElementById(`gvol-price-${coinKey}`);
+  const volPctEl = document.getElementById(`gvol-pct-${coinKey}`);
+  if (volPriceEl) volPriceEl.textContent = `$${fmt(price)}`;
+  if (volPctEl) {
+    volPctEl.textContent = `${isPos ? '+' : ''}${chg.toFixed(2)}%`;
+    volPctEl.className = `gvol-pct ${isPos ? 'pos' : 'neg'}`;
+  }
+}
+
+function setMoversFilter(filter, btn) {
+  moversFilter = filter;
+  document.querySelectorAll('.gpill-filter').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderGrowwMovers();
+}
+
+function renderGrowwMovers() {
+  const container = document.getElementById('groww-movers-container');
+  if (!container) return;
+
+  const coins = COIN_LIST.map(c => {
+    const data = currentPrices[c.id] || {};
+    const price = data.price || c.basePrice;
+    const change24h = data.change24h !== undefined ? data.change24h : c.baseChange;
+    const changePrice = data.changePrice !== undefined ? data.changePrice : (price * change24h / 100);
+    const marketCap = data.marketCap || c.baseCap;
+    return { ...c, price, change24h, changePrice, marketCap };
+  });
+
+  if (moversFilter === 'gainers') {
+    coins.sort((a, b) => b.change24h - a.change24h);
+  } else if (moversFilter === 'losers') {
+    coins.sort((a, b) => a.change24h - b.change24h);
+  } else if (moversFilter === 'largecap') {
+    coins.sort((a, b) => b.marketCap - a.marketCap);
+  }
+
+  container.innerHTML = coins.map(coin => {
+    const isPos = coin.change24h >= 0;
+    return `
+      <div class="gcard" onclick="selectCoin('${coin.id}'); switchMainTab('chart');">
+        <div class="gcard-top">
+          <div class="gcard-badge"><img src="${coin.icon}" alt="${coin.symbol}" /></div>
+          <div class="gcard-title-group">
+            <span class="gcard-name">${coin.name}</span>
+            <span class="gcard-sub">${coin.symbol}/USDT</span>
+          </div>
+        </div>
+        <div class="gcard-price">$${fmt(coin.price)}</div>
+        <div class="gcard-chg ${isPos ? 'pos' : 'neg'}">${formatChangeStr(coin.changePrice, coin.change24h)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderGrowwExploreUI() {
+  ['bitcoin', 'ethereum', 'solana'].forEach(c => updateGrowwLiveElements(c));
+  renderGrowwMovers();
+}
+
+function selectQuickTool(tool) {
+  if (tool === 'futures') {
+    switchMainTab('trade');
+    if (typeof setLeverage === 'function') setLeverage(100);
+  } else if (tool === 'chart') {
+    switchMainTab('chart');
+  } else if (tool === 'portfolio') {
+    switchMainTab('positions');
+  } else if (tool === 'orders') {
+    switchMainTab('orders');
+  } else if (tool === 'reset') {
+    openResetWalletDialog();
+  }
+}
+
+function toggleSearchOverlay() {
+  const wrap = document.getElementById('groww-search-bar-wrap');
+  if (!wrap) return;
+  const isHidden = wrap.classList.toggle('hidden');
+  if (!isHidden) {
+    const inp = document.getElementById('groww-quick-search-input');
+    if (inp) {
+      inp.focus();
+      inp.select();
     }
   }
+}
+
+function handleGrowwSearch(query) {
+  const q = String(query).trim().toLowerCase();
+  if (!q) return;
+  const match = COIN_LIST.find(c => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q));
+  if (match) {
+    selectCoin(match.id);
+    switchMainTab('chart');
+    const wrap = document.getElementById('groww-search-bar-wrap');
+    if (wrap) wrap.classList.add('hidden');
+  }
+}
+
+function renderWalletOverview() {
+  const cashValEl = document.getElementById('gwallet-cash-val');
+  if (cashValEl) cashValEl.textContent = `$${fmt(userBalance)} USDT`;
+
+  const holdingsListEl = document.getElementById('gholdings-list');
+  if (!holdingsListEl) return;
+
+  holdingsListEl.innerHTML = COIN_LIST.map(c => {
+    const amt = userPortfolio[c.id] || 0;
+    const price = currentPrices[c.id]?.price || c.basePrice;
+    const val = amt * price;
+    return `
+      <div class="gvol-row" onclick="selectCoin('${c.id}'); switchMainTab('chart');">
+        <div class="gvol-left">
+          <img src="${c.icon}" class="gvol-icon" alt="${c.symbol}" />
+          <div>
+            <div class="gvol-title">${c.name} (${c.symbol})</div>
+            <div class="gvol-sub">${amt.toFixed(4)} ${c.symbol} • $${fmt(price)}</div>
+          </div>
+        </div>
+        <div class="gvol-right">
+          <div class="gvol-price">$${fmt(val)}</div>
+          <div class="gvol-pct ${amt > 0 ? 'pos' : 'neutral'}">${amt > 0 ? 'Active' : '0.00'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 document.addEventListener('keydown', (e) => {

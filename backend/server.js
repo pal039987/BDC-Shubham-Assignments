@@ -180,35 +180,67 @@ SUPPORTED_COINS.forEach(c => {
   };
 });
 
+// Cache for daily session open prices (00:00 UTC candle open matching TradingView)
+const dailyOpenCache = {
+  bitcoin: 0,
+  ethereum: 0,
+  solana: 0,
+  lastUpdated: 0
+};
+
+async function updateDailyOpenPrices() {
+  const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
+  try {
+    for (const [sym, coinId] of Object.entries(symbolMap)) {
+      const resp = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=1d&limit=1`, { timeout: 4000 });
+      if (resp.ok) {
+        const klines = await resp.json();
+        if (Array.isArray(klines) && klines.length > 0) {
+          const openPrice = parseFloat(klines[0][1]);
+          if (openPrice > 0 && !isNaN(openPrice)) {
+            dailyOpenCache[coinId] = openPrice;
+          }
+        }
+      }
+    }
+    dailyOpenCache.lastUpdated = Date.now();
+  } catch (err) {
+    // Keep last known daily open
+  }
+}
+
 async function fetchPrices() {
   // Step 1: Query Binance 24hr live ticker for real-time orderflow and price ticks
+  // Strictly BTCUSDT, ETHUSDT, SOLUSDT to match TradingView BINANCE:BTCUSDT
   try {
-    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDC%22,%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
+    if (Date.now() - dailyOpenCache.lastUpdated > 5 * 60 * 1000 || !dailyOpenCache.bitcoin) {
+      await updateDailyOpenPrices();
+    }
+    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
     const bResp = await fetch(bUrl, { headers: { 'Accept': 'application/json' }, timeout: 3000 });
     if (bResp.ok) {
       const bList = await bResp.json();
       if (Array.isArray(bList) && bList.length >= 3) {
-        // BTCUSDC matches Coinbase/TradingView BTC-USD index; BTCUSDT is fallback
-        const symbolMap = { 'BTCUSDC': 'bitcoin', 'BTCUSDT': 'bitcoin_usdt', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
-        let hasBtcUsdc = false;
-        bList.forEach(item => {
-          if (item.symbol === 'BTCUSDC') hasBtcUsdc = true;
-        });
+        const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
 
         bList.forEach(item => {
-          let coinId = symbolMap[item.symbol];
-          if (coinId === 'bitcoin_usdt' && hasBtcUsdc) return; // Prefer BTCUSDC for exact live match
-          if (coinId === 'bitcoin_usdt') coinId = 'bitcoin';
-
+          const coinId = symbolMap[item.symbol];
           if (coinId) {
             const p = parseFloat(item.lastPrice);
             if (p > 0 && !isNaN(p) && isFinite(p)) {
+              // TradingView calculates % gain/loss from Daily Session Open (00:00 UTC)
+              const dailyOpen = dailyOpenCache[coinId] || parseFloat(item.openPrice);
+              const changePrice = dailyOpen > 0 ? (p - dailyOpen) : parseFloat(item.priceChange);
+              const change24h = dailyOpen > 0 ? (((p - dailyOpen) / dailyOpen) * 100) : parseFloat(item.priceChangePercent);
+
               priceCache[coinId] = {
                 price: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
                 usdtPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
                 usdPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                dailyOpen: dailyOpen,
+                changePrice: parseFloat(changePrice.toFixed(2)),
                 conversionUsed: false,
-                change24h: parseFloat(parseFloat(item.priceChangePercent).toFixed(2)),
+                change24h: parseFloat(change24h.toFixed(2)),
                 marketCap: (priceCache[coinId]?.marketCap || COIN_METADATA[coinId].baseCap),
                 volume24h: parseFloat(item.quoteVolume) || COIN_METADATA[coinId].baseVol,
                 high24h: parseFloat(item.highPrice) || parseFloat((p * 1.02).toFixed(2)),
@@ -348,8 +380,8 @@ async function handleChartRequest(req, res) {
       return res.json(cached.data);
     }
 
-    // Step 1: Try Binance live klines for accurate real-time candles (BTCUSDC matches Coinbase/TradingView BTC-USD)
-    const binanceSymbols = { 'bitcoin': 'BTCUSDC', 'ethereum': 'ETHUSDT', 'solana': 'SOLUSDT' };
+    // Step 1: Try Binance live klines for accurate real-time candles (BTCUSDT matches TradingView BINANCE:BTCUSDT)
+    const binanceSymbols = { 'bitcoin': 'BTCUSDT', 'ethereum': 'ETHUSDT', 'solana': 'SOLUSDT' };
     const binanceIntervals = { '1m':'1m', '3m':'3m', '5m':'5m', '15m':'15m', '1h':'1h', '4h':'4h', '1d':'1d', '1w':'1w' };
     const bSymbol = binanceSymbols[coin];
     const bInterval = binanceIntervals[tf] || '15m';

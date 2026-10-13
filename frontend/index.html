@@ -82,17 +82,19 @@
 <!-- ══════════════════════ MAIN APP ══════════════════════ -->
 <div id="app" class="app hidden">
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
+  <!-- NAVBAR (Groww Crypto Header Style) -->
+  <nav class="navbar groww-navbar">
     <div class="nav-brand">
-      <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
-        <rect width="40" height="40" rx="9" fill="#0B0F19"/>
-        <path d="M11 13L15.5 11.5L20 28L15.5 28Z" fill="#E2E8F0"/>
-        <path d="M19 25L22 28.5L30.5 10L27 9L22.5 18Z" fill="#10B981"/>
-        <path d="M30.5 10L28 14L25.5 11.5Z" fill="#6EE7B7"/>
-      </svg>
-      <span class="brand-name-sm">VTrade</span>
-      <span class="paper-badge">PAPER TRADING</span>
+      <div class="groww-logo-circle">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" fill="#00d09c" fill-opacity="0.2"/>
+          <path d="M7 13L10 16L17 9" stroke="#00d09c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="groww-brand-titles">
+        <span class="brand-name-sm">Crypto</span>
+        <span class="paper-badge">VTRADE</span>
+      </div>
     </div>
 
     <!-- Hidden ticker elements for background updates -->
@@ -102,23 +104,348 @@
       <span id="nav-balance"></span>
     </div>
 
-    <button class="nav-btn-apk" id="nav-btn-apk" onclick="handleDownloadApk(event)" title="Download VTrade Android APK">📱 Download APK</button>
-
     <div class="nav-right">
+      <button class="nav-icon-btn" id="btn-open-search" onclick="toggleSearchOverlay()" title="Search Supported Pairs">🔍</button>
+      <button class="nav-btn-apk" id="nav-btn-apk" onclick="handleDownloadApk(event)" title="Download VTrade Android APK">📱 APK</button>
       <button class="nav-btn-settings" id="nav-btn-settings" onclick="openSettingsSheet()" title="Settings">⚙️</button>
-      <div class="nav-user-pill">
+      <div class="nav-user-pill" onclick="switchMainTab('wallet')" title="Trader Profile & Balance">
         <div class="user-av" id="user-avatar">V</div>
-        <span id="nav-username">Trader</span>
       </div>
       <button class="btn-logout" onclick="logout()" title="Logout">⎋</button>
     </div>
   </nav>
 
+  <!-- ─── GROWW CRYPTO INDICES TICKER STRIP (BTC, ETH, SOL) ─── -->
+  <div class="groww-indices-ticker" id="groww-indices-ticker">
+    <div class="gi-item" onclick="selectCoin('bitcoin'); switchMainTab('chart');" id="gi-btc" title="Bitcoin / USDT">
+      <span class="gi-sym">BTC</span>
+      <span class="gi-price" id="gi-price-btc">$83,524.00</span>
+      <span class="gi-chg pos" id="gi-chg-btc">+2.05%</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('ethereum'); switchMainTab('chart');" id="gi-eth" title="Ethereum / USDT">
+      <span class="gi-sym">ETH</span>
+      <span class="gi-price" id="gi-price-eth">$2,506.81</span>
+      <span class="gi-chg pos" id="gi-chg-eth">+2.44%</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('solana'); switchMainTab('chart');" id="gi-sol" title="Solana / USDT">
+      <span class="gi-sym">SOL</span>
+      <span class="gi-price" id="gi-price-sol">$106.77</span>
+      <span class="gi-chg pos" id="gi-chg-sol">+0.96%</span>
+    </div>
+  </div>
+
+  <!-- ─── GROWW SUB-NAVIGATION TABS (Explore | Chart | Trade | Positions | Orders) ─── -->
+  <div class="groww-subnav-strip" id="groww-subnav-strip">
+    <button class="gsub-tab active" id="gsub-explore" onclick="switchMainTab('explore')">Explore</button>
+    <button class="gsub-tab" id="gsub-chart" onclick="switchMainTab('chart')">Chart</button>
+    <button class="gsub-tab" id="gsub-trade" onclick="switchMainTab('trade')">Trade</button>
+    <button class="gsub-tab" id="gsub-positions" onclick="switchMainTab('positions')">Positions</button>
+    <button class="gsub-tab" id="gsub-orders" onclick="switchMainTab('orders')">Orders</button>
+  </div>
+
+  <!-- Quick Search Bar Overlay (Toggled from 🔍 icon) -->
+  <div class="groww-search-bar-wrap hidden" id="groww-search-bar-wrap">
+    <div class="groww-search-box">
+      <span class="gs-icon">🔍</span>
+      <input type="text" id="groww-quick-search-input" placeholder="Search BTC, ETH, SOL..." oninput="handleGrowwSearch(this.value)" autocomplete="off" />
+      <button class="gs-close-btn" onclick="toggleSearchOverlay()">✕</button>
+    </div>
+  </div>
+
   <!-- MAIN LAYOUT -->
   <div class="app-body">
 
+    <!-- ══════════════════════ GROWW CRYPTO EXPLORE VIEW ══════════════════════ -->
+    <div class="groww-explore-container" id="groww-explore-container">
+
+      <!-- Recently viewed (Screenshot 3) -->
+      <div class="groww-section">
+        <div class="groww-sec-title">Recently viewed</div>
+        <div class="groww-recent-row" id="groww-recent-row">
+          <div class="grecent-item" onclick="selectCoin('bitcoin'); switchMainTab('chart');">
+            <div class="grecent-icon btc"><img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" alt="BTC"/></div>
+            <span class="grecent-sym">BTC</span>
+            <span class="grecent-chg pos" id="grecent-chg-bitcoin">+2.05%</span>
+          </div>
+          <div class="grecent-item" onclick="selectCoin('ethereum'); switchMainTab('chart');">
+            <div class="grecent-icon eth"><img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" alt="ETH"/></div>
+            <span class="grecent-sym">ETH</span>
+            <span class="grecent-chg pos" id="grecent-chg-ethereum">+2.44%</span>
+          </div>
+          <div class="grecent-item" onclick="selectCoin('solana'); switchMainTab('chart');">
+            <div class="grecent-icon sol"><img src="https://assets.coingecko.com/coins/images/4128/small/solana.png" alt="SOL"/></div>
+            <span class="grecent-sym">SOL</span>
+            <span class="grecent-chg pos" id="grecent-chg-solana">+0.96%</span>
+          </div>
+          <div class="grecent-item" onclick="selectCoin('bitcoin'); switchMainTab('trade');">
+            <div class="grecent-icon fut">⚡</div>
+            <span class="grecent-sym">100x</span>
+            <span class="grecent-chg gold">PRO</span>
+          </div>
+          <div class="grecent-item" onclick="switchMainTab('chart');">
+            <div class="grecent-icon tv">📈</div>
+            <span class="grecent-sym">PRO</span>
+            <span class="grecent-chg live">LIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Most Traded in Crypto (Screenshot 3) -->
+      <div class="groww-section">
+        <div class="groww-sec-title">Most traded in Crypto</div>
+        <div class="groww-cards-grid" id="groww-most-traded-cards">
+          <!-- Card 1: Bitcoin -->
+          <div class="gcard" onclick="selectCoin('bitcoin'); switchMainTab('chart');" id="gcard-bitcoin">
+            <div class="gcard-top">
+              <div class="gcard-badge btc"><img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" alt="BTC"/></div>
+              <div class="gcard-title-group">
+                <span class="gcard-name">Bitcoin</span>
+                <span class="gcard-sub">BTC / USDT</span>
+              </div>
+            </div>
+            <div class="gcard-price" id="gcard-price-bitcoin">$83,524.00</div>
+            <div class="gcard-chg pos" id="gcard-chg-bitcoin">+$1,673.99 (+2.05%)</div>
+          </div>
+
+          <!-- Card 2: Ethereum -->
+          <div class="gcard" onclick="selectCoin('ethereum'); switchMainTab('chart');" id="gcard-ethereum">
+            <div class="gcard-top">
+              <div class="gcard-badge eth"><img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" alt="ETH"/></div>
+              <div class="gcard-title-group">
+                <span class="gcard-name">Ethereum</span>
+                <span class="gcard-sub">ETH / USDT</span>
+              </div>
+            </div>
+            <div class="gcard-price" id="gcard-price-ethereum">$2,506.81</div>
+            <div class="gcard-chg pos" id="gcard-chg-ethereum">+$59.65 (+2.44%)</div>
+          </div>
+
+          <!-- Card 3: Solana -->
+          <div class="gcard" onclick="selectCoin('solana'); switchMainTab('chart');" id="gcard-solana">
+            <div class="gcard-top">
+              <div class="gcard-badge sol"><img src="https://assets.coingecko.com/coins/images/4128/small/solana.png" alt="SOL"/></div>
+              <div class="gcard-title-group">
+                <span class="gcard-name">Solana</span>
+                <span class="gcard-sub">SOL / USDT</span>
+              </div>
+            </div>
+            <div class="gcard-price" id="gcard-price-solana">$106.77</div>
+            <div class="gcard-chg pos" id="gcard-chg-solana">+$1.02 (+0.96%)</div>
+          </div>
+
+          <!-- Card 4: All Coins / Market Overview -->
+          <div class="gcard gcard-more" onclick="switchMainTab('trade');">
+            <div class="gcard-more-icons">
+              <span class="gmini-badge btc">₿</span>
+              <span class="gmini-badge eth">Ξ</span>
+              <span class="gmini-badge sol">◎</span>
+              <span class="gmini-badge usdt">₮</span>
+            </div>
+            <div class="gcard-more-info">
+              <span class="gcard-more-title">All Pairs &amp; Trends</span>
+              <span class="gcard-more-sub">24h Vol: $52.06B</span>
+            </div>
+            <div class="gcard-more-link">See more ›</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products and tools (Screenshot 3 & 4) -->
+      <div class="groww-section">
+        <div class="groww-sec-header">
+          <span class="groww-sec-title">Products and tools</span>
+          <span class="groww-sec-link" onclick="openSettingsSheet()">See more ᐯ</span>
+        </div>
+        <div class="groww-tools-row">
+          <button class="gtool-btn" onclick="selectQuickTool('futures')">
+            <div class="gtool-icon-wrap cyan">⚡</div>
+            <span class="gtool-name">100x Futures</span>
+          </button>
+          <button class="gtool-btn" onclick="selectQuickTool('chart')">
+            <div class="gtool-icon-wrap purple">📈</div>
+            <span class="gtool-name">Pro Chart</span>
+          </button>
+          <button class="gtool-btn" onclick="selectQuickTool('portfolio')">
+            <div class="gtool-icon-wrap green">💼</div>
+            <span class="gtool-name">Holdings</span>
+          </button>
+          <button class="gtool-btn" onclick="selectQuickTool('orders')">
+            <div class="gtool-icon-wrap orange">🎯<span class="gtool-badge-dot">!</span></div>
+            <span class="gtool-name">Orders</span>
+          </button>
+          <button class="gtool-btn" onclick="selectQuickTool('reset')">
+            <div class="gtool-icon-wrap blue">🔄</div>
+            <span class="gtool-name">Reset Wallet</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Top intraday (Screenshot 4) -->
+      <div class="groww-section">
+        <div class="groww-sec-header">
+          <span class="groww-sec-title">Top intraday</span>
+          <span class="groww-sec-link" onclick="switchMainTab('trade')">Intraday screener ›</span>
+        </div>
+        <div class="groww-cards-grid">
+          <div class="gcard" onclick="selectCoin('bitcoin'); switchMainTab('trade');">
+            <div class="gcard-top">
+              <div class="gcard-badge btc"><img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" alt="BTC"/></div>
+              <div class="gcard-title-group">
+                <span class="gcard-name">BTC Intraday</span>
+                <span class="gcard-tag-badge">100x Leverage</span>
+              </div>
+            </div>
+            <div class="gcard-price" id="gintra-price-bitcoin">$83,524.00</div>
+            <div class="gcard-chg pos" id="gintra-chg-bitcoin">+$1,673.99 (+2.05%)</div>
+          </div>
+
+          <div class="gcard" onclick="selectCoin('ethereum'); switchMainTab('trade');">
+            <div class="gcard-top">
+              <div class="gcard-badge eth"><img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" alt="ETH"/></div>
+              <div class="gcard-title-group">
+                <span class="gcard-name">ETH Intraday</span>
+                <span class="gcard-tag-badge">50x Scalp</span>
+              </div>
+            </div>
+            <div class="gcard-price" id="gintra-price-ethereum">$2,506.81</div>
+            <div class="gcard-chg pos" id="gintra-chg-ethereum">+$59.65 (+2.44%)</div>
+          </div>
+
+          <div class="gcard" onclick="selectCoin('solana'); switchMainTab('trade');">
+            <div class="gcard-top">
+              <div class="gcard-badge sol"><img src="https://assets.coingecko.com/coins/images/4128/small/solana.png" alt="SOL"/></div>
+              <div class="gcard-title-group">
+                <span class="gcard-name">SOL Intraday</span>
+                <span class="gcard-tag-badge">25x Fast</span>
+              </div>
+            </div>
+            <div class="gcard-price" id="gintra-price-solana">$106.77</div>
+            <div class="gcard-chg pos" id="gintra-chg-solana">+$1.02 (+0.96%)</div>
+          </div>
+
+          <div class="gcard" onclick="switchMainTab('chart');">
+            <div class="gcard-top">
+              <div class="gcard-badge tv">📊</div>
+              <div class="gcard-title-group">
+                <span class="gcard-name">TradingView Pro</span>
+                <span class="gcard-tag-badge live">Live Ticks</span>
+              </div>
+            </div>
+            <div class="gcard-price">Binance Stream</div>
+            <div class="gcard-chg pos">Multi-TF Realtime ›</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top movers today (Screenshot 4 & 5) -->
+      <div class="groww-section">
+        <div class="groww-sec-title">Top movers today</div>
+        <div class="groww-pills-row">
+          <button class="gpill-filter active" id="gpill-gainers" onclick="setMoversFilter('gainers', this)">Gainers</button>
+          <button class="gpill-filter" id="gpill-losers" onclick="setMoversFilter('losers', this)">Losers</button>
+          <button class="gpill-filter" id="gpill-largecap" onclick="setMoversFilter('largecap', this)">Large cap ᐯ</button>
+        </div>
+        <div class="groww-cards-grid" id="groww-movers-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- High Volume 24h (Screenshot 5) -->
+      <div class="groww-section">
+        <div class="groww-sec-title">Most traded 24h Volume</div>
+        <div class="groww-volume-list">
+          <div class="gvol-row" onclick="selectCoin('bitcoin'); switchMainTab('chart');">
+            <div class="gvol-left">
+              <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" class="gvol-icon" alt="BTC"/>
+              <div>
+                <div class="gvol-title">Bitcoin (BTC/USDT)</div>
+                <div class="gvol-sub">24h Vol: $1.31B • 100x Futures</div>
+              </div>
+            </div>
+            <div class="gvol-right">
+              <div class="gvol-price" id="gvol-price-bitcoin">$83,524.00</div>
+              <div class="gvol-pct pos" id="gvol-pct-bitcoin">+2.05%</div>
+            </div>
+          </div>
+
+          <div class="gvol-row" onclick="selectCoin('ethereum'); switchMainTab('chart');">
+            <div class="gvol-left">
+              <img src="https://assets.coingecko.com/coins/images/279/small/ethereum.png" class="gvol-icon" alt="ETH"/>
+              <div>
+                <div class="gvol-title">Ethereum (ETH/USDT)</div>
+                <div class="gvol-sub">24h Vol: $793M • 50x Futures</div>
+              </div>
+            </div>
+            <div class="gvol-right">
+              <div class="gvol-price" id="gvol-price-ethereum">$2,506.81</div>
+              <div class="gvol-pct pos" id="gvol-pct-ethereum">+2.44%</div>
+            </div>
+          </div>
+
+          <div class="gvol-row" onclick="selectCoin('solana'); switchMainTab('chart');">
+            <div class="gvol-left">
+              <img src="https://assets.coingecko.com/coins/images/4128/small/solana.png" class="gvol-icon" alt="SOL"/>
+              <div>
+                <div class="gvol-title">Solana (SOL/USDT)</div>
+                <div class="gvol-sub">24h Vol: $320M • 25x Futures</div>
+              </div>
+            </div>
+            <div class="gvol-right">
+              <div class="gvol-price" id="gvol-price-solana">$106.77</div>
+              <div class="gvol-pct pos" id="gvol-pct-solana">+0.96%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════ GROWW WALLET & ACCOUNT VIEW ══════════════════════ -->
+    <div class="groww-wallet-panel hidden" id="view-wallet-panel">
+      <div class="gwallet-card">
+        <div class="gwallet-head">
+          <div class="gwallet-title-group">
+            <span class="gwallet-sub">Virtual Trading Account</span>
+            <span class="gwallet-balance-val" id="gwallet-cash-val">$10,000.00 USDT</span>
+          </div>
+          <div class="gwallet-chip">100% Paper Balance</div>
+        </div>
+        <div class="gwallet-actions">
+          <button class="gwallet-btn-reset" onclick="openResetWalletDialog()">🔄 Reset to $10,000 USDT</button>
+          <button class="gwallet-btn-apk" onclick="handleDownloadApk(event)">📱 Download APK</button>
+        </div>
+      </div>
+
+      <div class="groww-section" style="margin-top:20px;">
+        <div class="groww-sec-title">Your Crypto Holdings</div>
+        <div class="gholdings-list" id="gholdings-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="groww-section" style="margin-top:20px;">
+        <div class="groww-sec-title">Account Tools</div>
+        <div class="gsettings-list">
+          <div class="gsetting-item" onclick="openSettingsSheet()">
+            <span>⚙️ App Settings &amp; Data Stream</span>
+            <span>›</span>
+          </div>
+          <div class="gsetting-item" onclick="toggleChartFullscreen()">
+            <span>⛶ Toggle Pro Chart Fullscreen</span>
+            <span>›</span>
+          </div>
+          <div class="gsetting-item" onclick="logout()">
+            <span style="color:var(--red);">⎋ Logout Account</span>
+            <span style="color:var(--red);">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- LEFT SIDEBAR: Chart area -->
-    <div class="chart-area">
+    <div class="chart-area hidden" id="chart-area">
 
       <!-- ══════ WATCHLIST (BTC/USDT, ETH/USDT, SOL/USDT) ══════ -->
       <div class="watchlist-section" id="watchlist-section">
@@ -890,30 +1217,38 @@
 <div id="toast-container" class="toast-container"></div>
 <div id="toast" class="toast hidden"></div>
 
-<!-- Fixed Mobile Bottom Navigation Bar (TradingView Style) -->
-<nav class="tv-bottom-nav" id="tv-bottom-nav">
-  <button class="tv-nav-item" id="tnav-watchlist" onclick="switchNavSection('watchlist', this)" title="Watchlist & Markets">
-    <span class="tv-nav-icon">📊</span>
-    <span class="tv-nav-label">Watchlist</span>
-  </button>
-  <button class="tv-nav-item active" id="tnav-chart" onclick="switchNavSection('chart', this)" title="Interactive Live Chart">
-    <div class="tv-nav-icon-wrap">
-      <span class="tv-nav-icon">📈</span>
-      <span class="tv-nav-dot"></span>
+<!-- Fixed Mobile Bottom Navigation Bar (Groww Crypto Style) -->
+<nav class="groww-bottom-nav" id="groww-bottom-nav">
+  <button class="gnav-btn active" id="gnav-explore" onclick="switchMainTab('explore')" title="Crypto Explore">
+    <div class="gnav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
     </div>
-    <span class="tv-nav-label">Chart</span>
+    <span class="gnav-label">Explore</span>
   </button>
-  <button class="tv-nav-item" id="tnav-trade" onclick="switchNavSection('trade', this)" title="Futures & Spot Trade">
-    <span class="tv-nav-icon">⚡</span>
-    <span class="tv-nav-label">Trade</span>
+  <button class="gnav-btn" id="gnav-chart" onclick="switchMainTab('chart')" title="Interactive Live Chart">
+    <div class="gnav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </div>
+    <span class="gnav-label">Chart</span>
   </button>
-  <button class="tv-nav-item" id="tnav-positions" onclick="switchNavSection('positions', this)" title="Open Positions & Orders">
-    <span class="tv-nav-icon">📋</span>
-    <span class="tv-nav-label">Positions</span>
+  <button class="gnav-btn" id="gnav-trade" onclick="switchMainTab('trade')" title="100x Futures &amp; Spot Trade">
+    <div class="gnav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    </div>
+    <span class="gnav-label">Trade</span>
   </button>
-  <button class="tv-nav-item" id="tnav-menu" onclick="switchNavSection('menu', this)" title="Settings & Wallet">
-    <span class="tv-nav-icon">☰</span>
-    <span class="tv-nav-label">Menu</span>
+  <button class="gnav-btn" id="gnav-positions" onclick="switchMainTab('positions')" title="Open Positions &amp; Orders">
+    <div class="gnav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span class="gnav-badge hidden" id="gnav-pos-badge">0</span>
+    </div>
+    <span class="gnav-label">Positions</span>
+  </button>
+  <button class="gnav-btn" id="gnav-wallet" onclick="switchMainTab('wallet')" title="Virtual Wallet &amp; Settings">
+    <div class="gnav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    </div>
+    <span class="gnav-label">Wallet</span>
   </button>
 </nav>
 
