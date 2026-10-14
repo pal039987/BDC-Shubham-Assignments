@@ -402,9 +402,9 @@
 
     </div>
 
-    <!-- ══════════════════════ GROWW WALLET & ACCOUNT VIEW ══════════════════════ -->
+    <!-- ══════════════════════ GROWW WALLET & ACCOUNT VIEW (Only Total Equity) ══════════════════════ -->
     <div class="groww-wallet-panel hidden" id="view-wallet-panel">
-      <!-- Dynamic Net Equity Card -->
+      <!-- Total Account Net Equity Card Only -->
       <div class="gwallet-card">
         <div class="gwallet-head">
           <div class="gwallet-title-group">
@@ -415,68 +415,9 @@
           <div class="gwallet-chip">100% Real-Time Paper Balance</div>
         </div>
 
-        <!-- Financials Grid -->
-        <div class="gwallet-metrics-grid">
-          <div class="gwallet-m-card">
-            <span class="gwallet-m-lbl">Available Cash Margin</span>
-            <span class="gwallet-m-val green" id="gwallet-cash-val">$10,000.00 USDT</span>
-            <span class="gwallet-m-sub">Free to open new trades</span>
-          </div>
-          <div class="gwallet-m-card">
-            <span class="gwallet-m-lbl">Margin in Active Trades</span>
-            <span class="gwallet-m-val orange" id="gwallet-used-margin-val">$0.00 USDT</span>
-            <span class="gwallet-m-sub">Collateral locked in positions</span>
-          </div>
-          <div class="gwallet-m-card">
-            <span class="gwallet-m-lbl">Unrealized Floating PnL</span>
-            <span class="gwallet-m-val" id="gwallet-unrealized-pnl-val">$0.00 USDT</span>
-            <span class="gwallet-m-sub">Live across open positions</span>
-          </div>
-          <div class="gwallet-m-card">
-            <span class="gwallet-m-lbl">Realized Net Profit</span>
-            <span class="gwallet-m-val" id="gwallet-realized-pnl-val">$0.00 USDT</span>
-            <span class="gwallet-m-sub">Total profit from closed trades</span>
-          </div>
-          <div class="gwallet-m-card">
-            <span class="gwallet-m-lbl">Total Trades Executed</span>
-            <span class="gwallet-m-val" id="gwallet-trades-count-val">0</span>
-            <span class="gwallet-m-sub">Orders filled</span>
-          </div>
-          <div class="gwallet-m-card">
-            <span class="gwallet-m-lbl">Positions Closed</span>
-            <span class="gwallet-m-val" id="gwallet-closed-count-val">0</span>
-            <span class="gwallet-m-sub">Completed trades</span>
-          </div>
-        </div>
-
         <div class="gwallet-actions">
           <button class="gwallet-btn-reset" onclick="openResetWalletDialog()">🔄 Reset to $10,000 USDT</button>
           <button class="gwallet-btn-apk" onclick="handleDownloadApk(event)">📱 Download APK</button>
-        </div>
-      </div>
-
-      <div class="groww-section" style="margin-top:20px;">
-        <div class="groww-sec-title">Your Crypto Holdings</div>
-        <div class="gholdings-list" id="gholdings-list">
-          <!-- Populated dynamically -->
-        </div>
-      </div>
-
-      <div class="groww-section" style="margin-top:20px;">
-        <div class="groww-sec-title">Account Tools</div>
-        <div class="gsettings-list">
-          <div class="gsetting-item" onclick="openSettingsSheet()">
-            <span>⚙️ App Settings &amp; Data Stream</span>
-            <span>›</span>
-          </div>
-          <div class="gsetting-item" onclick="toggleChartFullscreen()">
-            <span>⛶ Toggle Pro Chart Fullscreen</span>
-            <span>›</span>
-          </div>
-          <div class="gsetting-item" onclick="logout()">
-            <span style="color:var(--red);">⎋ Logout Account</span>
-            <span style="color:var(--red);">›</span>
-          </div>
         </div>
       </div>
     </div>
@@ -740,8 +681,9 @@
               <span class="tv-attr-sep">•</span>
               <span class="tv-attr-notice" title="Direct order placement & position tracking active">1-Click Chart Trading Active</span>
             </div>
-          </div>
-        </div> <!-- end chart-container-box -->
+          </div> <!-- end tv-chart-container -->
+        </div> <!-- end chart-viewport -->
+      </div> <!-- end chart-container-box -->
     </div> <!-- end chart-area -->
 
     <!-- ══════════════════════ DEDICATED POSITIONS & ORDERS VIEW (No Chart) ══════════════════════ -->

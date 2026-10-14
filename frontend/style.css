@@ -3243,11 +3243,11 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
     border-bottom: 1px solid var(--border);
     width: 100% !important;
     overflow-x: hidden !important;
-    height: calc(100vh - 120px) !important;
-    min-height: 500px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 !important;
+    height: calc(100vh - 120px);
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
   /* Chart fills full available viewport */
   .chart-wrap {
@@ -4242,5 +4242,21 @@ body {
 body:has(.fullscreen-chart) .groww-bottom-nav {
   display: none !important;
 }
+
+/* ══════════════ STRICT VIEW ISOLATION HIDING RULES ══════════════ */
+.hidden,
+#chart-area.hidden,
+.chart-area.hidden,
+#view-positions-container.hidden,
+.positions-view-panel.hidden,
+#view-trade-panel.hidden,
+.order-sidebar.hidden,
+#view-wallet-panel.hidden,
+.groww-wallet-panel.hidden,
+#groww-explore-container.hidden,
+.groww-explore-container.hidden {
+  display: none !important;
+}
+
 
 

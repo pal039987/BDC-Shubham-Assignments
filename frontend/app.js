@@ -2685,7 +2685,8 @@ function switchMainTab(tabName) {
 
   // 2. Update Fixed Bottom-Nav
   document.querySelectorAll('.groww-bottom-nav .gnav-btn').forEach(b => b.classList.remove('active'));
-  const navBtn = document.getElementById(`gnav-${tabName}`);
+  const navKey = (tabName === 'orders') ? 'positions' : tabName;
+  const navBtn = document.getElementById(`gnav-${navKey}`);
   if (navBtn) navBtn.classList.add('active');
 
   // 3. Cache DOM containers
