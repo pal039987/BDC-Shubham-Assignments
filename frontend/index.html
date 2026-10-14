@@ -404,14 +404,51 @@
 
     <!-- ══════════════════════ GROWW WALLET & ACCOUNT VIEW ══════════════════════ -->
     <div class="groww-wallet-panel hidden" id="view-wallet-panel">
+      <!-- Dynamic Net Equity Card -->
       <div class="gwallet-card">
         <div class="gwallet-head">
           <div class="gwallet-title-group">
-            <span class="gwallet-sub">Virtual Trading Account</span>
-            <span class="gwallet-balance-val" id="gwallet-cash-val">$10,000.00 USDT</span>
+            <span class="gwallet-sub">Total Account Net Equity</span>
+            <span class="gwallet-balance-val" id="gwallet-equity-val">$10,000.00 USDT</span>
+            <span class="gwallet-equity-sub" id="gwallet-equity-breakdown">Updated live after every trade &amp; tick</span>
           </div>
-          <div class="gwallet-chip">100% Paper Balance</div>
+          <div class="gwallet-chip">100% Real-Time Paper Balance</div>
         </div>
+
+        <!-- Financials Grid -->
+        <div class="gwallet-metrics-grid">
+          <div class="gwallet-m-card">
+            <span class="gwallet-m-lbl">Available Cash Margin</span>
+            <span class="gwallet-m-val green" id="gwallet-cash-val">$10,000.00 USDT</span>
+            <span class="gwallet-m-sub">Free to open new trades</span>
+          </div>
+          <div class="gwallet-m-card">
+            <span class="gwallet-m-lbl">Margin in Active Trades</span>
+            <span class="gwallet-m-val orange" id="gwallet-used-margin-val">$0.00 USDT</span>
+            <span class="gwallet-m-sub">Collateral locked in positions</span>
+          </div>
+          <div class="gwallet-m-card">
+            <span class="gwallet-m-lbl">Unrealized Floating PnL</span>
+            <span class="gwallet-m-val" id="gwallet-unrealized-pnl-val">$0.00 USDT</span>
+            <span class="gwallet-m-sub">Live across open positions</span>
+          </div>
+          <div class="gwallet-m-card">
+            <span class="gwallet-m-lbl">Realized Net Profit</span>
+            <span class="gwallet-m-val" id="gwallet-realized-pnl-val">$0.00 USDT</span>
+            <span class="gwallet-m-sub">Total profit from closed trades</span>
+          </div>
+          <div class="gwallet-m-card">
+            <span class="gwallet-m-lbl">Total Trades Executed</span>
+            <span class="gwallet-m-val" id="gwallet-trades-count-val">0</span>
+            <span class="gwallet-m-sub">Orders filled</span>
+          </div>
+          <div class="gwallet-m-card">
+            <span class="gwallet-m-lbl">Positions Closed</span>
+            <span class="gwallet-m-val" id="gwallet-closed-count-val">0</span>
+            <span class="gwallet-m-sub">Completed trades</span>
+          </div>
+        </div>
+
         <div class="gwallet-actions">
           <button class="gwallet-btn-reset" onclick="openResetWalletDialog()">🔄 Reset to $10,000 USDT</button>
           <button class="gwallet-btn-apk" onclick="handleDownloadApk(event)">📱 Download APK</button>
@@ -509,7 +546,7 @@
         <span>⚠️ Market price feed is stale or delayed. Real-time CoinGecko updates paused due to rate-limit cooldown. Orders are protected.</span>
       </div>
 
-      <!-- Active Instrument Header -->
+      <!-- Active Instrument Header with Quick Coin Switcher -->
       <div class="chart-header">
         <div class="chart-header-left">
           <div class="active-coin-pill" id="chart-active-coin-pill" title="Click to Switch Trading Pair" onclick="togglePairQuickMenu()">
@@ -518,6 +555,14 @@
             <span class="chp-name" id="chp-name">Bitcoin</span>
             <span class="chp-caret">▾</span>
           </div>
+
+          <!-- Quick 1-Tap Coin Switcher Chips -->
+          <div class="chart-quick-coins-bar" id="chart-quick-coins-bar">
+            <button type="button" class="cq-coin-btn active" id="cq-bitcoin" onclick="selectCoin('bitcoin')">BTC</button>
+            <button type="button" class="cq-coin-btn" id="cq-ethereum" onclick="selectCoin('ethereum')">ETH</button>
+            <button type="button" class="cq-coin-btn" id="cq-solana" onclick="selectCoin('solana')">SOL</button>
+          </div>
+
           <!-- Quick Pair Selection Dropdown -->
           <div id="chart-pair-quick-menu" class="pair-quick-menu hidden">
             <div class="pq-item" onclick="selectCoin('bitcoin'); closePairQuickMenu();">
@@ -533,7 +578,7 @@
               <span class="pq-name">Solana</span>
             </div>
           </div>
-          <span class="chart-source-badge badge-provider" id="chart-source-badge" title="Visual Chart: TradingView (Binance Feed) | Paper-Trading Engine: VTrade (CoinGecko Feed)">TradingView Chart • VTrade Engine</span>
+          <span class="chart-source-badge badge-provider" id="chart-source-badge" title="Visual Chart: TradingView (Binance Feed) | Paper-Trading Engine: VTrade (CoinGecko Feed)">TradingView Chart</span>
         </div>
         <div class="chart-price-info">
           <div class="chart-price-badge-row">
@@ -572,15 +617,15 @@
       <div class="chart-container-box" id="chart-container-box">
         <!-- Chart Viewport -->
         <div class="chart-wrap" id="chart-viewport">
-          <!-- Simple Exit Fullscreen Button (No Text, Clean X Icon) -->
+          <!-- Simple Exit Fullscreen Button (Clean X Icon) -->
           <button class="btn-exit-fullscreen hidden" id="btn-exit-fullscreen" onclick="toggleChartFullscreen()" title="Exit Fullscreen">✕</button>
           <!-- Floating Square Fullscreen Toggle Button -->
           <button class="btn-square-fullscreen" id="btn-square-fullscreen" onclick="toggleChartFullscreen()" title="Fullscreen Chart (Square)">
             <span id="square-fs-icon">⛶</span>
           </button>
 
-          <!-- ─── FLOATING TOP-LEFT 1-CLICK BUY / SELL WIDGET (Slightly Down from Top) ─── -->
-          <div class="tv-topleft-order-widget" id="tv-topleft-order-widget">
+          <!-- Floating 1-Click Buy / Sell Widget (Hidden by default to keep chart ultra-clean) -->
+          <div class="tv-topleft-order-widget hidden" id="tv-topleft-order-widget">
             <div class="tv-tl-buttons">
               <button type="button" class="tv-tl-btn buy" id="tv-tl-buy-btn" onclick="executeQuickTrade('buy')">
                 <span class="tv-tl-icon">▲</span>
@@ -610,15 +655,44 @@
 
           <!-- ─── TRADINGVIEW HOSTED CHART CONTAINER ─── -->
           <div id="tv-chart-container" class="tv-chart-container">
-            <!-- In-Chart Executed Position Marker & Price Line (TradingView Style, No Blocking Popup) -->
-            <div id="tv-in-chart-position" class="tv-in-chart-position hidden">
-              <div class="tv-icp-line"></div>
-              <div class="tv-icp-tag" id="tv-icp-tag">
-                <span class="tv-icp-side buy" id="tv-icp-side">LONG 100x</span>
-                <span class="tv-icp-entry" id="tv-icp-entry">$83,354.00</span>
-                <span class="tv-icp-pnl pos" id="tv-icp-pnl">+$10.00 (+1.20%)</span>
-                <button type="button" class="tv-icp-tpsl-btn" onclick="openTpSlForCurrentPosition()" title="Adjust Take Profit & Stop Loss">🎯</button>
-                <button type="button" class="tv-icp-close-btn" onclick="quickCloseCurrentPosition()" title="Close Position">✕</button>
+            <!-- ─── TRADINGVIEW IN-CHART ORDERS OVERLAY WITH DRAGGABLE SL / TP (Exact Screenshot Match) ─── -->
+            <div id="tv-chart-orders-overlay" class="tv-chart-orders-overlay hidden">
+              <!-- 1. Take Profit (TP) Line & Draggable Tag (Green) -->
+              <div id="tv-order-tp-line" class="tv-order-line-item tp-item hidden">
+                <div class="tvol-h-line tp-line"></div>
+                <div class="tvol-tag tp-tag" id="tvol-tag-tp" title="Drag vertically to adjust Take Profit">
+                  <span class="tvol-handle">⠿</span>
+                  <span class="tvol-size" id="tvol-tp-size">10</span>
+                  <span class="tvol-val pos" id="tvol-tp-val">+4.90 USD</span>
+                  <button type="button" class="tvol-close-btn" id="tvol-tp-close" onclick="cancelCurrentTp(event)" title="Cancel TP">✕</button>
+                </div>
+                <div class="tvol-axis-badge tp-axis-badge" id="tvol-tp-axis-price">107.54</div>
+              </div>
+
+              <!-- 2. Entry Position Line & Tag (Blue for Long, Red for Short) -->
+              <div id="tv-order-entry-line" class="tv-order-line-item entry-item hidden">
+                <div class="tvol-h-line entry-line"></div>
+                <div class="tvol-tag entry-tag" id="tvol-tag-entry">
+                  <span class="tvol-side-chip" id="tvol-entry-side">LONG</span>
+                  <span class="tvol-size" id="tvol-entry-size">10</span>
+                  <span class="tvol-val" id="tvol-entry-pnl">+0.20 USD</span>
+                  <button type="button" class="tvol-chip-btn add-tp-btn" id="tvol-btn-add-tp" onclick="quickAddTp(event)" title="Set Take Profit">+ TP</button>
+                  <button type="button" class="tvol-chip-btn add-sl-btn" id="tvol-btn-add-sl" onclick="quickAddSl(event)" title="Set Stop Loss">+ SL</button>
+                  <button type="button" class="tvol-close-btn entry-close-btn" id="tvol-entry-close" onclick="quickCloseCurrentPosition(event)" title="Close Position">✕</button>
+                </div>
+                <div class="tvol-axis-badge entry-axis-badge" id="tvol-entry-axis-price">107.05</div>
+              </div>
+
+              <!-- 3. Stop Loss (SL) Line & Draggable Tag (Orange/Red) -->
+              <div id="tv-order-sl-line" class="tv-order-line-item sl-item hidden">
+                <div class="tvol-h-line sl-line"></div>
+                <div class="tvol-tag sl-tag" id="tvol-tag-sl" title="Drag vertically to adjust Stop Loss">
+                  <span class="tvol-handle">⠿</span>
+                  <span class="tvol-size" id="tvol-sl-size">10</span>
+                  <span class="tvol-val neg" id="tvol-sl-val">-1.40 USD</span>
+                  <button type="button" class="tvol-close-btn" id="tvol-sl-close" onclick="cancelCurrentSl(event)" title="Cancel SL">✕</button>
+                </div>
+                <div class="tvol-axis-badge sl-axis-badge" id="tvol-sl-axis-price">106.91</div>
               </div>
             </div>
 
@@ -667,11 +741,21 @@
               <span class="tv-attr-notice" title="Direct order placement & position tracking active">1-Click Chart Trading Active</span>
             </div>
           </div>
+        </div> <!-- end chart-container-box -->
+    </div> <!-- end chart-area -->
+
+    <!-- ══════════════════════ DEDICATED POSITIONS & ORDERS VIEW (No Chart) ══════════════════════ -->
+    <div class="positions-view-panel hidden" id="view-positions-container">
+      <div class="pos-view-header">
+        <div class="pos-vh-left">
+          <div class="pos-vh-title">Active Positions &amp; Orders</div>
+          <div class="pos-vh-sub" id="pos-total-pnl-summary">Unrealized PnL: <span class="pnl-grey">$0.00</span></div>
         </div>
+        <button class="pos-btn-new-trade" onclick="switchMainTab('trade')">+ New Trade</button>
       </div>
 
       <!-- Bottom tabs: Positions | Open Orders | Trade History -->
-      <div class="bottom-tabs">
+      <div class="bottom-tabs pos-view-tabs">
         <button class="btab active" id="tab-btn-positions" onclick="showBottomTab('positions', this)">
           Positions <span class="btab-count" id="pos-count-badge">(0)</span>
         </button>
@@ -684,8 +768,12 @@
       </div>
 
       <!-- Positions Panel -->
-      <div class="bottom-panel" id="panel-positions">
-        <div class="panel-scroll">
+      <div class="bottom-panel pos-view-panel-body" id="panel-positions">
+        <!-- Modern Mobile & Tablet Card Layout -->
+        <div class="pos-cards-list" id="pos-cards-list"></div>
+
+        <!-- Full Desktop Data Table -->
+        <div class="panel-scroll pos-table-scroll">
           <table class="data-table">
             <thead><tr>
               <th>PAIR</th><th>SIDE</th><th>SIZE</th><th>ENTRY</th><th>MARK</th><th>LEV</th><th>MARGIN</th><th>UNREALIZED PNL</th><th>LIQ. PRICE</th><th>ACTION</th>
@@ -745,10 +833,10 @@
           </table>
         </div>
       </div>
-    </div>
+    </div> <!-- end view-positions-container -->
 
-    <!-- RIGHT SIDEBAR: Order Panel -->
-    <div class="order-sidebar">
+    <!-- ══════════════════════ DEDICATED TRADE VIEW DESK (No Chart) ══════════════════════ -->
+    <div class="order-sidebar hidden" id="view-trade-panel">
 
       <!-- Stats mini cards -->
       <div class="mini-stats">

@@ -343,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Immediately kick off live market data streaming directly from Binance
   fetchBinanceDirect();
   initBinanceWebSocket();
+  initDraggableOrders();
   if (token) showApp();
 });
 
@@ -356,6 +357,7 @@ function showApp() {
   initMarketExplorer();
   setChartMode(chartMode);
   initRealtimeTicker();
+  initDraggableOrders();
   loadAll();
   setupDrawingCanvas();
   startPriceRefreshTimer();
@@ -1103,6 +1105,7 @@ function selectCoin(coin) {
 
   renderTradingViewChart();
   renderTvChartOverlay();
+  updateChartQuickCoinChips();
 }
 
 // ─── REAL-TIME BINANCE WEBSOCKET & FAST TICKER STREAM ───────
@@ -1425,107 +1428,287 @@ function retryTradingViewChart() {
   renderTradingViewChart(true);
 }
 
-// ─── ON-CHART ORDER PLACEMENT & POSITION HUD OVERLAY ──────
+let isDraggingTp = false;
+let isDraggingSl = false;
+let activeDragPosId = null;
+
+function getOverlayPriceBounds(curPos) {
+  const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
+  const prices = [curPos.entry_price, curPrice];
+  if (curPos.take_profit && curPos.take_profit > 0) prices.push(curPos.take_profit);
+  if (curPos.stop_loss && curPos.stop_loss > 0) prices.push(curPos.stop_loss);
+
+  let minP = Math.min(...prices);
+  let maxP = Math.max(...prices);
+
+  const minSpan = curPrice * 0.035;
+  if (maxP - minP < minSpan) {
+    const mid = (maxP + minP) / 2;
+    minP = mid - minSpan / 2;
+    maxP = mid + minSpan / 2;
+  }
+  const pad = (maxP - minP) * 0.28;
+  return {
+    minPrice: Math.max(0.0001, minP - pad),
+    maxPrice: maxP + pad
+  };
+}
+
+function priceToTopPercent(price, minP, maxP) {
+  if (maxP <= minP) return 50;
+  const pct = ((maxP - price) / (maxP - minP)) * 100;
+  return Math.max(8, Math.min(92, pct));
+}
+
+function topPercentToPrice(topPct, minP, maxP) {
+  const clamped = Math.max(8, Math.min(92, topPct));
+  return maxP - (clamped / 100) * (maxP - minP);
+}
+
+// ─── ON-CHART ORDER PLACEMENT & POSITION HUD OVERLAY (SCREENSHOT MATCH) ───
 function renderTvChartOverlay() {
-  const inChartPos = document.getElementById('tv-in-chart-position');
-  const hud = document.getElementById('tv-positions-hud');
-  const ordersHud = document.getElementById('tv-orders-hud');
-  const ordersInner = document.getElementById('tv-orders-hud-inner');
+  const overlay = document.getElementById('tv-chart-orders-overlay');
   const unitLabel = document.getElementById('tv-quick-unit');
   const coinDef = getCoinDefinition(selectedCoin);
-
   if (unitLabel) unitLabel.textContent = coinDef.symbol;
 
+  if (!overlay) return;
+
   const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  if (!curPos) {
+    overlay.classList.add('hidden');
+    return;
+  }
+  overlay.classList.remove('hidden');
 
-  // 1. In-Chart Executed Position Marker & Tag (TradingView Style, No Blocking Popup)
-  if (inChartPos) {
-    if (curPos) {
-      inChartPos.classList.remove('hidden');
-      if (curPos.direction === 'short') {
-        inChartPos.classList.add('short-side');
+  activeDragPosId = curPos.id;
+  const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
+  const isLong = curPos.direction === 'long';
+  const bounds = getOverlayPriceBounds(curPos);
+
+  // 1. Entry Position Line & Tag
+  const entryLine = document.getElementById('tv-order-entry-line');
+  const entryTag = document.getElementById('tvol-tag-entry');
+  const entrySide = document.getElementById('tvol-entry-side');
+  const entrySize = document.getElementById('tvol-entry-size');
+  const entryPnl = document.getElementById('tvol-entry-pnl');
+  const entryAxis = document.getElementById('tvol-entry-axis-price');
+  const btnAddTp = document.getElementById('tvol-btn-add-tp');
+  const btnAddSl = document.getElementById('tvol-btn-add-sl');
+
+  if (entryLine) {
+    entryLine.classList.remove('hidden');
+    const entryTop = priceToTopPercent(curPos.entry_price, bounds.minPrice, bounds.maxPrice);
+    entryLine.style.top = `${entryTop}%`;
+    if (isLong) {
+      if (entryTag) entryTag.classList.remove('short-side');
+      if (entryAxis) entryAxis.classList.remove('short-side');
+    } else {
+      if (entryTag) entryTag.classList.add('short-side');
+      if (entryAxis) entryAxis.classList.add('short-side');
+    }
+  }
+
+  const priceDiff = isLong ? (curPrice - curPos.entry_price) : (curPos.entry_price - curPrice);
+  const livePnl = priceDiff * curPos.size;
+  const isPos = livePnl >= 0;
+
+  if (entrySide) entrySide.textContent = `${curPos.direction.toUpperCase()}`;
+  if (entrySize) entrySize.textContent = `${fmtCoin(curPos.size)}`;
+  if (entryPnl) entryPnl.textContent = `${isPos ? '+' : ''}${livePnl.toFixed(2)} USD`;
+  if (entryAxis) entryAxis.textContent = fmt(curPos.entry_price);
+
+  if (btnAddTp) btnAddTp.style.display = (curPos.take_profit && curPos.take_profit > 0) ? 'none' : 'inline-block';
+  if (btnAddSl) btnAddSl.style.display = (curPos.stop_loss && curPos.stop_loss > 0) ? 'none' : 'inline-block';
+
+  // 2. Take Profit (TP) Line & Draggable Tag (Green)
+  const tpLine = document.getElementById('tv-order-tp-line');
+  const tpSize = document.getElementById('tvol-tp-size');
+  const tpVal = document.getElementById('tvol-tp-val');
+  const tpAxis = document.getElementById('tvol-tp-axis-price');
+
+  if (curPos.take_profit && curPos.take_profit > 0) {
+    if (tpLine) {
+      tpLine.classList.remove('hidden');
+      if (!isDraggingTp) {
+        const tpTop = priceToTopPercent(curPos.take_profit, bounds.minPrice, bounds.maxPrice);
+        tpLine.style.top = `${tpTop}%`;
+        const tpProjPnl = isLong
+          ? (curPos.take_profit - curPos.entry_price) * curPos.size
+          : (curPos.entry_price - curPos.take_profit) * curPos.size;
+        if (tpVal) tpVal.textContent = `${tpProjPnl >= 0 ? '+' : ''}${tpProjPnl.toFixed(2)} USD`;
+        if (tpAxis) tpAxis.textContent = fmt(curPos.take_profit);
+        if (tpSize) tpSize.textContent = `${fmtCoin(curPos.size)}`;
+      }
+    }
+  } else {
+    if (tpLine && !isDraggingTp) tpLine.classList.add('hidden');
+  }
+
+  // 3. Stop Loss (SL) Line & Draggable Tag (Orange/Red)
+  const slLine = document.getElementById('tv-order-sl-line');
+  const slSize = document.getElementById('tvol-sl-size');
+  const slVal = document.getElementById('tvol-sl-val');
+  const slAxis = document.getElementById('tvol-sl-axis-price');
+
+  if (curPos.stop_loss && curPos.stop_loss > 0) {
+    if (slLine) {
+      slLine.classList.remove('hidden');
+      if (!isDraggingSl) {
+        const slTop = priceToTopPercent(curPos.stop_loss, bounds.minPrice, bounds.maxPrice);
+        slLine.style.top = `${slTop}%`;
+        const slProjLoss = isLong
+          ? (curPos.stop_loss - curPos.entry_price) * curPos.size
+          : (curPos.entry_price - curPos.stop_loss) * curPos.size;
+        if (slVal) slVal.textContent = `${slProjLoss.toFixed(2)} USD`;
+        if (slAxis) slAxis.textContent = fmt(curPos.stop_loss);
+        if (slSize) slSize.textContent = `${fmtCoin(curPos.size)}`;
+      }
+    }
+  } else {
+    if (slLine && !isDraggingSl) slLine.classList.add('hidden');
+  }
+}
+
+// ─── DRAGGABLE SL / TP INTERACTION (POINTER EVENTS) ─────────
+function initDraggableOrders() {
+  const container = document.getElementById('tv-chart-container');
+  const tpTag = document.getElementById('tvol-tag-tp');
+  const slTag = document.getElementById('tvol-tag-sl');
+  const tpLine = document.getElementById('tv-order-tp-line');
+  const slLine = document.getElementById('tv-order-sl-line');
+
+  if (!container || !tpTag || !slTag) return;
+
+  function handlePointerDown(e, type) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const curPos = (walletState?.positions || []).find(p => p.id === activeDragPosId);
+    if (!curPos) return;
+
+    const isTp = type === 'tp';
+    if (isTp) isDraggingTp = true;
+    else isDraggingSl = true;
+
+    const targetLine = isTp ? tpLine : slLine;
+    const targetTag = isTp ? tpTag : slTag;
+    targetLine.classList.add('is-dragging');
+    targetTag.classList.add('dragging');
+
+    const bounds = getOverlayPriceBounds(curPos);
+    const rect = container.getBoundingClientRect();
+    const isLong = curPos.direction === 'long';
+
+    let lastCalculatedPrice = isTp ? curPos.take_profit : curPos.stop_loss;
+
+    function onPointerMove(ev) {
+      ev.preventDefault();
+      const currentY = Math.max(30, Math.min(rect.height - 30, ev.clientY - rect.top));
+      const topPct = (currentY / rect.height) * 100;
+      targetLine.style.top = `${topPct}%`;
+
+      const price = topPercentToPrice(topPct, bounds.minPrice, bounds.maxPrice);
+      const roundedPrice = roundValue(price, 'money');
+      lastCalculatedPrice = roundedPrice;
+
+      if (isTp) {
+        const pnl = isLong ? (roundedPrice - curPos.entry_price) * curPos.size : (curPos.entry_price - roundedPrice) * curPos.size;
+        const valEl = document.getElementById('tvol-tp-val');
+        const axisEl = document.getElementById('tvol-tp-axis-price');
+        if (valEl) valEl.textContent = `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USD`;
+        if (axisEl) axisEl.textContent = fmt(roundedPrice);
       } else {
-        inChartPos.classList.remove('short-side');
+        const pnl = isLong ? (roundedPrice - curPos.entry_price) * curPos.size : (curPos.entry_price - roundedPrice) * curPos.size;
+        const valEl = document.getElementById('tvol-sl-val');
+        const axisEl = document.getElementById('tvol-sl-axis-price');
+        if (valEl) valEl.textContent = `${pnl.toFixed(2)} USD`;
+        if (axisEl) axisEl.textContent = fmt(roundedPrice);
       }
-
-      const sideEl  = document.getElementById('tv-icp-side');
-      const entryEl = document.getElementById('tv-icp-entry');
-      const pnlEl   = document.getElementById('tv-icp-pnl');
-
-      const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
-      const priceDiff = (curPos.direction === 'long') ? (curPrice - curPos.entry_price) : (curPos.entry_price - curPrice);
-      const pnl = roundUsd(priceDiff * curPos.size);
-      const pnlPct = (curPos.margin > 0) ? ((pnl / curPos.margin) * 100).toFixed(2) : '0.00';
-      const isPos = pnl >= 0;
-
-      if (sideEl) {
-        sideEl.textContent = `${curPos.direction.toUpperCase()} ${curPos.leverage}x`;
-        sideEl.className = `tv-icp-side ${curPos.direction === 'long' ? 'buy' : 'sell'}`;
-      }
-      if (entryEl) {
-        entryEl.textContent = `$${fmt(curPos.entry_price)}`;
-      }
-      if (pnlEl) {
-        pnlEl.textContent = `${isPos ? '+' : ''}$${fmtNum(pnl)} (${isPos ? '+' : ''}${pnlPct}%)`;
-        pnlEl.className = `tv-icp-pnl ${isPos ? 'pos' : 'neg'}`;
-      }
-    } else {
-      inChartPos.classList.add('hidden');
     }
+
+    function onPointerUp(ev) {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+
+      targetLine.classList.remove('is-dragging');
+      targetTag.classList.remove('dragging');
+
+      if (isTp) {
+        isDraggingTp = false;
+        if (lastCalculatedPrice > 0) {
+          curPos.take_profit = lastCalculatedPrice;
+          saveWalletState();
+          renderPositions();
+          showToast(`🎯 Take Profit set to $${fmt(lastCalculatedPrice)}`, 'success');
+        }
+      } else {
+        isDraggingSl = false;
+        if (lastCalculatedPrice > 0) {
+          curPos.stop_loss = lastCalculatedPrice;
+          saveWalletState();
+          renderPositions();
+          showToast(`🛡️ Stop Loss set to $${fmt(lastCalculatedPrice)}`, 'info');
+        }
+      }
+      renderTvChartOverlay();
+    }
+
+    window.addEventListener('pointermove', onPointerMove, { passive: false });
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
   }
 
-  // Backward compatibility fallback if legacy HUD card exists
-  if (hud) {
-    if (curPos) {
-      hud.classList.remove('hidden');
-      const sideEl = document.getElementById('tv-hud-side');
-      const symEl  = document.getElementById('tv-hud-sym');
-      const sizeEl = document.getElementById('tv-hud-size');
-      const entryEl= document.getElementById('tv-hud-entry');
-      const markEl = document.getElementById('tv-hud-mark');
-      const liqEl  = document.getElementById('tv-hud-liq');
-      const pnlEl  = document.getElementById('tv-hud-pnl');
+  tpTag.addEventListener('pointerdown', (e) => handlePointerDown(e, 'tp'));
+  slTag.addEventListener('pointerdown', (e) => handlePointerDown(e, 'sl'));
+}
 
-      const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
-      const priceDiff = (curPos.direction === 'long') ? (curPrice - curPos.entry_price) : (curPos.entry_price - curPrice);
-      const pnl = roundUsd(priceDiff * curPos.size);
-      const pnlPct = (curPos.margin > 0) ? ((pnl / curPos.margin) * 100).toFixed(2) : '0.00';
-      const isPos = pnl >= 0;
+// Quick Actions for On-Chart Tags
+function cancelCurrentTp(event) {
+  if (event) event.stopPropagation();
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  if (!curPos) return;
+  curPos.take_profit = null;
+  saveWalletState();
+  renderPositions();
+  renderTvChartOverlay();
+  showToast('Take Profit removed', 'info');
+}
 
-      if (sideEl) {
-        sideEl.textContent = `${curPos.direction.toUpperCase()} ${curPos.leverage}x`;
-        sideEl.className = `tv-hud-side-badge ${curPos.direction === 'long' ? 'buy' : 'sell'}`;
-      }
-      if (symEl)  symEl.textContent = coinDef.pair;
-      if (sizeEl) sizeEl.textContent = `${fmtCoin(curPos.size)} ${coinDef.symbol}`;
-      if (entryEl)entryEl.textContent = `$${fmt(curPos.entry_price)}`;
-      if (markEl) markEl.textContent = `$${fmt(curPrice)}`;
-      if (liqEl)  liqEl.textContent = curPos.liquidationPrice ? `$${fmt(curPos.liquidationPrice)}` : '—';
-      if (pnlEl) {
-        pnlEl.textContent = `${isPos ? '+' : ''}$${fmtNum(pnl)} (${isPos ? '+' : ''}${pnlPct}%)`;
-        pnlEl.className = `tv-hud-pnl ${isPos ? 'positive' : 'negative'}`;
-      }
-    } else {
-      hud.classList.add('hidden');
-    }
-  }
+function cancelCurrentSl(event) {
+  if (event) event.stopPropagation();
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  if (!curPos) return;
+  curPos.stop_loss = null;
+  saveWalletState();
+  renderPositions();
+  renderTvChartOverlay();
+  showToast('Stop Loss removed', 'info');
+}
 
-  // Open Orders for this coin
-  if (ordersHud && ordersInner) {
-    const curOrders = (walletState?.orders || []).filter(o => o.coin === selectedCoin);
-    if (curOrders.length) {
-      ordersHud.classList.remove('hidden');
-      ordersInner.innerHTML = curOrders.map(o => `
-        <span class="tv-ord-tag">
-          ${o.type || 'LIMIT'} ${String(o.side || 'buy').toUpperCase()} ${fmtCoin(o.size)} ${coinDef.symbol} @ $${fmt(o.price)}
-          <button type="button" class="tv-ord-cancel-btn" onclick="cancelOrder(${o.id})">✕</button>
-        </span>
-      `).join('');
-    } else {
-      ordersHud.classList.add('hidden');
-      ordersInner.innerHTML = '';
-    }
-  }
+function quickAddTp(event) {
+  if (event) event.stopPropagation();
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  if (!curPos) return;
+  const isLong = curPos.direction === 'long';
+  curPos.take_profit = roundValue(isLong ? curPos.entry_price * 1.02 : curPos.entry_price * 0.98, 'money');
+  saveWalletState();
+  renderPositions();
+  renderTvChartOverlay();
+  showToast('🎯 Take Profit added! Drag the green line on chart to adjust price.', 'success');
+}
+
+function quickAddSl(event) {
+  if (event) event.stopPropagation();
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  if (!curPos) return;
+  const isLong = curPos.direction === 'long';
+  curPos.stop_loss = roundValue(isLong ? curPos.entry_price * 0.985 : curPos.entry_price * 1.015, 'money');
+  saveWalletState();
+  renderPositions();
+  renderTvChartOverlay();
+  showToast('🛡️ Stop Loss added! Drag the orange line on chart to adjust price.', 'info');
 }
 
 function executeQuickTrade(side) {
@@ -2486,6 +2669,12 @@ function formatChangeStr(changePrice, change24h) {
   return `${priceSign}$${priceFormatted} (${sign}${(change24h || 0).toFixed(2)}%)`;
 }
 
+function updateChartQuickCoinChips() {
+  document.querySelectorAll('.cq-coin-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById(`cq-${selectedCoin}`);
+  if (activeBtn) activeBtn.classList.add('active');
+}
+
 function switchMainTab(tabName) {
   activeMainTab = tabName;
 
@@ -2500,67 +2689,65 @@ function switchMainTab(tabName) {
   if (navBtn) navBtn.classList.add('active');
 
   // 3. Cache DOM containers
-  const exploreContainer = document.getElementById('groww-explore-container');
-  const chartArea = document.getElementById('chart-area');
-  const chartContainerBox = document.getElementById('chart-container-box');
-  const chartHeader = document.querySelector('.chart-header');
-  const tfRow = document.querySelector('.tf-row');
-  const watchlistSection = document.getElementById('watchlist-section');
-  const marketsPanel = document.getElementById('markets-panel');
-  const orderSidebar = document.querySelector('.order-sidebar');
-  const bottomTabs = document.querySelector('.bottom-tabs');
-  const panelPositions = document.getElementById('panel-positions');
-  const panelOrders = document.getElementById('panel-orders');
-  const panelHistory = document.getElementById('panel-history');
-  const walletPanel = document.getElementById('view-wallet-panel');
+  const exploreContainer   = document.getElementById('groww-explore-container');
+  const chartArea          = document.getElementById('chart-area');
+  const chartContainerBox  = document.getElementById('chart-container-box');
+  const chartHeader        = document.querySelector('.chart-header');
+  const tfRow              = document.querySelector('.tf-row');
+  const watchlistSection   = document.getElementById('watchlist-section');
+  const marketsPanel       = document.getElementById('markets-panel');
+  const positionsContainer = document.getElementById('view-positions-container');
+  const tradePanel         = document.getElementById('view-trade-panel') || document.querySelector('.order-sidebar');
+  const walletPanel        = document.getElementById('view-wallet-panel');
+  const indicesTicker      = document.getElementById('groww-indices-ticker');
 
   // Hide all sections first
-  if (exploreContainer) exploreContainer.classList.add('hidden');
-  if (chartArea) chartArea.classList.add('hidden');
-  if (orderSidebar) orderSidebar.classList.add('hidden');
-  if (bottomTabs) bottomTabs.classList.add('hidden');
-  if (panelPositions) panelPositions.classList.add('hidden');
-  if (panelOrders) panelOrders.classList.add('hidden');
-  if (panelHistory) panelHistory.classList.add('hidden');
-  if (walletPanel) walletPanel.classList.add('hidden');
+  if (exploreContainer)   exploreContainer.classList.add('hidden');
+  if (chartArea)          chartArea.classList.add('hidden');
+  if (positionsContainer) positionsContainer.classList.add('hidden');
+  if (tradePanel)         tradePanel.classList.add('hidden');
+  if (walletPanel)        walletPanel.classList.add('hidden');
+
+  // Strictly keep watchlistSection & marketsPanel hidden on pure chart tab
+  if (watchlistSection)   watchlistSection.classList.add('hidden');
+  if (marketsPanel)       marketsPanel.classList.add('hidden');
 
   if (tabName === 'explore') {
     if (exploreContainer) exploreContainer.classList.remove('hidden');
+    if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderGrowwExploreUI();
   } else if (tabName === 'chart') {
+    // Pure Chart View: ONLY chart + coin switcher
     if (chartArea) chartArea.classList.remove('hidden');
     if (chartContainerBox) chartContainerBox.classList.remove('hidden');
     if (chartHeader) chartHeader.classList.remove('hidden');
     if (tfRow) tfRow.classList.remove('hidden');
-    if (watchlistSection) watchlistSection.classList.remove('hidden');
+    if (indicesTicker) indicesTicker.classList.add('hidden');
+    updateChartQuickCoinChips();
     renderTradingViewChart();
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
       renderTvChartOverlay();
     }, 60);
   } else if (tabName === 'trade') {
-    if (chartArea) chartArea.classList.remove('hidden');
-    if (chartContainerBox) chartContainerBox.classList.remove('hidden');
-    if (chartHeader) chartHeader.classList.remove('hidden');
-    if (tfRow) tfRow.classList.remove('hidden');
-    if (orderSidebar) orderSidebar.classList.remove('hidden');
-    renderTradingViewChart();
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-      renderTvChartOverlay();
-    }, 60);
-  } else if (tabName === 'positions') {
-    if (chartArea) chartArea.classList.remove('hidden');
-    if (bottomTabs) bottomTabs.classList.remove('hidden');
-    if (panelPositions) panelPositions.classList.remove('hidden');
-    showBottomTab('positions');
-  } else if (tabName === 'orders') {
-    if (chartArea) chartArea.classList.remove('hidden');
-    if (bottomTabs) bottomTabs.classList.remove('hidden');
-    if (panelOrders) panelOrders.classList.remove('hidden');
-    showBottomTab('orders');
+    // Pure Trade View: ONLY trade execution desk
+    if (tradePanel) tradePanel.classList.remove('hidden');
+    if (indicesTicker) indicesTicker.classList.remove('hidden');
+    updateMiniStats();
+    updateTradeActiveCoinBanner();
+    updateTradeCalc();
+  } else if (tabName === 'positions' || tabName === 'orders') {
+    // Pure Positions View: ONLY positions details & orders
+    if (positionsContainer) positionsContainer.classList.remove('hidden');
+    if (indicesTicker) indicesTicker.classList.remove('hidden');
+    showBottomTab(tabName === 'orders' ? 'orders' : 'positions');
+    renderPositions();
+    renderOrders();
+    renderHistory();
   } else if (tabName === 'wallet') {
+    // Dynamic Wallet View: real-time updated figures
     if (walletPanel) walletPanel.classList.remove('hidden');
+    if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderWalletOverview();
   }
 }
@@ -2719,14 +2906,70 @@ function handleGrowwSearch(query) {
 }
 
 function renderWalletOverview() {
-  const cashValEl = document.getElementById('gwallet-cash-val');
-  if (cashValEl) cashValEl.textContent = `$${fmt(userBalance)} USDT`;
+  const cash = Math.max(0, walletState?.cashBalance || 0);
+  const openPositions = walletState?.positions || [];
 
+  let totalMarginUsed = 0;
+  let totalUnrealizedPnl = 0;
+
+  openPositions.forEach(p => {
+    totalMarginUsed += (p.margin || 0);
+    const curP = currentPrices[p.coin]?.price || p.entry_price;
+    const diff = (p.direction === 'long') ? (curP - p.entry_price) : (p.entry_price - curP);
+    totalUnrealizedPnl += (diff * p.size);
+  });
+
+  const totalEquity = Math.max(0, cash + totalMarginUsed + totalUnrealizedPnl);
+  const realizedPnl = walletState?.realizedPnl || 0;
+  const tradesCount = walletState?.tradesCount || 0;
+  const closedCount = walletState?.positionsClosed || 0;
+
+  // 1. Primary Net Equity Display
+  const eqEl = document.getElementById('gwallet-equity-val');
+  if (eqEl) eqEl.textContent = `$${fmt(totalEquity)} USDT`;
+
+  const cashValEl = document.getElementById('gwallet-cash-val');
+  if (cashValEl) cashValEl.textContent = `$${fmt(cash)} USDT`;
+
+  const marginValEl = document.getElementById('gwallet-used-margin-val');
+  if (marginValEl) marginValEl.textContent = `$${fmt(totalMarginUsed)} USDT`;
+
+  const unPnlEl = document.getElementById('gwallet-unrealized-pnl-val');
+  if (unPnlEl) {
+    const isPos = totalUnrealizedPnl >= 0;
+    unPnlEl.textContent = `${isPos ? '+' : ''}$${fmtNum(totalUnrealizedPnl)} USDT`;
+    unPnlEl.className = `gwallet-m-val ${isPos ? 'pos' : 'neg'}`;
+  }
+
+  const rlPnlEl = document.getElementById('gwallet-realized-pnl-val');
+  if (rlPnlEl) {
+    const isPos = realizedPnl >= 0;
+    rlPnlEl.textContent = `${isPos ? '+' : ''}$${fmtNum(realizedPnl)} USDT`;
+    rlPnlEl.className = `gwallet-m-val ${isPos ? 'pos' : 'neg'}`;
+  }
+
+  const trdCountEl = document.getElementById('gwallet-trades-count-val');
+  if (trdCountEl) trdCountEl.textContent = `${tradesCount}`;
+
+  const closedCountEl = document.getElementById('gwallet-closed-count-val');
+  if (closedCountEl) closedCountEl.textContent = `${closedCount}`;
+
+  // 2. Synchronize Top Navbar and Global Mini-Stats
+  const navBal = document.getElementById('nav-balance');
+  if (navBal) navBal.textContent = `$${fmt(totalEquity)}`;
+  const statBal = document.getElementById('stat-balance');
+  if (statBal) statBal.textContent = `$${fmt(cash)}`;
+  const statTotal = document.getElementById('stat-total');
+  if (statTotal) statTotal.textContent = `$${fmt(totalEquity)}`;
+  const statUnPnl = document.getElementById('stat-unrealized-pnl');
+  if (statUnPnl) statUnPnl.textContent = `${totalUnrealizedPnl >= 0 ? '+' : ''}$${fmtNum(totalUnrealizedPnl)}`;
+
+  // 3. User Holdings List
   const holdingsListEl = document.getElementById('gholdings-list');
   if (!holdingsListEl) return;
 
   holdingsListEl.innerHTML = COIN_LIST.map(c => {
-    const amt = userPortfolio[c.id] || 0;
+    const amt = (walletState?.holdings && walletState.holdings[c.id]) || 0;
     const price = currentPrices[c.id]?.price || c.basePrice;
     const val = amt * price;
     return `
@@ -4048,49 +4291,128 @@ function renderPositions() {
   updateTabBadges();
   renderTvChartOverlay();
   const tbody = document.getElementById('pos-tbody');
-  if (!tbody) return;
+  const cardsList = document.getElementById('pos-cards-list');
+  const summaryEl = document.getElementById('pos-total-pnl-summary');
   const open = walletState.positions || [];
 
+  let totalUnrealized = 0;
+  open.forEach(p => {
+    const curPrice = currentPrices[p.coin]?.price || p.entry_price;
+    const priceDiff = (p.direction === 'long') ? (curPrice - p.entry_price) : (p.entry_price - curPrice);
+    totalUnrealized += (priceDiff * p.size);
+  });
+
+  if (summaryEl) {
+    const isPos = totalUnrealized >= 0;
+    summaryEl.innerHTML = `Unrealized PnL: <span class="${isPos ? 'pnl-pos' : 'pnl-neg'}" style="font-weight:800;">${isPos ? '+' : ''}$${fmtNum(totalUnrealized)}</span>`;
+  }
+
   if (!open.length) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty-row"><div class="empty-state-box"><span class="empty-icon">📊</span><span class="empty-msg">No open positions</span></div></td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="10" class="empty-row"><div class="empty-state-box"><span class="empty-icon">📊</span><span class="empty-msg">No open positions</span></div></td></tr>`;
+    if (cardsList) cardsList.innerHTML = `<div class="empty-state-box" style="padding:40px 20px;"><span class="empty-icon">📊</span><span class="empty-msg">No active positions</span><button class="pos-btn-new-trade" style="margin-top:16px;" onclick="switchMainTab('trade')">+ Open a New Trade</button></div>`;
     return;
   }
 
-  tbody.innerHTML = open.map(p => {
-    const coinDef = getCoinDefinition(p.coin);
-    const sym = coinDef.symbol;
-    const curPrice = currentPrices[p.coin]?.price || p.entry_price;
-    const priceDiff = (p.direction === 'long') ? (curPrice - p.entry_price) : (p.entry_price - curPrice);
-    const pnl = roundUsd(priceDiff * p.size);
-    const pnlPct = (p.margin > 0) ? ((pnl / p.margin) * 100).toFixed(2) : '0.00';
-    const pnlCls = (pnl > 0) ? 'pnl-pos' : ((pnl < 0) ? 'pnl-neg' : 'pnl-grey');
-    const pnlSign = pnl >= 0 ? '+' : '';
-    const pnlPctSign = pnl >= 0 ? '+' : '';
-    const pnlStr = `${pnlSign}$${fmtNum(pnl)} (${pnlPctSign}${pnlPct}%)`;
+  // Modern Mobile & Responsive Cards
+  if (cardsList) {
+    cardsList.innerHTML = open.map(p => {
+      const coinDef = getCoinDefinition(p.coin);
+      const curPrice = currentPrices[p.coin]?.price || p.entry_price;
+      const priceDiff = (p.direction === 'long') ? (curPrice - p.entry_price) : (p.entry_price - curPrice);
+      const pnl = roundUsd(priceDiff * p.size);
+      const pnlPct = (p.margin > 0) ? ((pnl / p.margin) * 100).toFixed(2) : '0.00';
+      const isPos = pnl >= 0;
+      const sideCls = (p.direction === 'long') ? 'badge-long' : 'badge-short';
+      const sideText = (p.direction === 'long') ? 'LONG' : 'SHORT';
+      const tpStr = p.take_profit ? `$${fmt(p.take_profit)}` : 'None';
+      const slStr = p.stop_loss ? `$${fmt(p.stop_loss)}` : 'None';
 
-    const sideCls = (p.direction === 'long') ? 'badge-long' : 'badge-short';
-    const sideText = (p.direction === 'long') ? 'Long' : 'Short';
-    const liqStr = p.liquidationPrice ? `$${fmt(p.liquidationPrice)}` : '—';
-
-    return `<tr>
-      <td><b>${sym}</b></td>
-      <td><span class="badge ${sideCls}">${sideText}</span></td>
-      <td>${fmtCoin(p.size)}</td>
-      <td>$${fmt(p.entry_price)}</td>
-      <td id="pos-curprice-${p.id}">$${fmt(curPrice)}</td>
-      <td>${p.leverage}x</td>
-      <td>$${fmtNum(p.margin)}</td>
-      <td><span id="pos-pnl-${p.id}" class="${pnlCls}">${pnlStr}</span></td>
-      <td style="color:var(--red); font-weight:600;">${liqStr}</td>
-      <td>
-        <div class="pos-actions-row">
-          <button class="btn-close-pos" onclick="closePositionUnified(${p.id}, null, 'Market', this)">Close</button>
-          <button class="btn-partial-close" onclick="openPartialCloseModal(${p.id})">Partial</button>
-          <button class="btn-tpsl" onclick="openTpSlModal(${p.id})">TP/SL</button>
+      return `
+        <div class="pos-card-item">
+          <div class="pos-card-head">
+            <div class="pos-card-symbol-row">
+              <span class="pos-card-symbol">${coinDef.pair}</span>
+              <span class="badge ${sideCls}">${sideText} ${p.leverage}x</span>
+            </div>
+            <div class="pos-card-pnl-wrap">
+              <div class="pos-card-pnl ${isPos ? 'pnl-pos' : 'pnl-neg'}">${isPos ? '+' : ''}$${fmtNum(pnl)}</div>
+              <div style="font-size:11px; color:${isPos ? 'var(--green)' : 'var(--red)'}; font-weight:700;">${isPos ? '+' : ''}${pnlPct}%</div>
+            </div>
+          </div>
+          <div class="pos-card-grid">
+            <div class="pos-grid-cell">
+              <span class="pos-cell-lbl">Size</span>
+              <span class="pos-cell-val">${fmtCoin(p.size)} ${coinDef.symbol}</span>
+            </div>
+            <div class="pos-grid-cell">
+              <span class="pos-cell-lbl">Entry Price</span>
+              <span class="pos-cell-val">$${fmt(p.entry_price)}</span>
+            </div>
+            <div class="pos-grid-cell">
+              <span class="pos-cell-lbl">Mark Price</span>
+              <span class="pos-cell-val">$${fmt(curPrice)}</span>
+            </div>
+            <div class="pos-grid-cell">
+              <span class="pos-cell-lbl">Margin</span>
+              <span class="pos-cell-val">$${fmtNum(p.margin)}</span>
+            </div>
+            <div class="pos-grid-cell">
+              <span class="pos-cell-lbl">Liq. Price</span>
+              <span class="pos-cell-val" style="color:var(--red);">${p.liquidationPrice ? '$' + fmt(p.liquidationPrice) : '—'}</span>
+            </div>
+            <div class="pos-grid-cell">
+              <span class="pos-cell-lbl">TP / SL</span>
+              <span class="pos-cell-val" style="font-size:11px;">${tpStr} / ${slStr}</span>
+            </div>
+          </div>
+          <div class="pos-card-actions">
+            <button class="btn-card-chart" onclick="selectCoin('${p.coin}'); switchMainTab('chart');">📈 Chart</button>
+            <button class="btn-card-tpsl" onclick="openTpSlModal(${p.id})">🎯 TP/SL</button>
+            <button class="btn-card-close" onclick="closePositionUnified(${p.id}, null, 'Market', this)">✕ Close</button>
+          </div>
         </div>
-      </td>
-    </tr>`;
-  }).join('');
+      `;
+    }).join('');
+  }
+
+  // Desktop Data Table
+  if (tbody) {
+    tbody.innerHTML = open.map(p => {
+      const coinDef = getCoinDefinition(p.coin);
+      const sym = coinDef.symbol;
+      const curPrice = currentPrices[p.coin]?.price || p.entry_price;
+      const priceDiff = (p.direction === 'long') ? (curPrice - p.entry_price) : (p.entry_price - curPrice);
+      const pnl = roundUsd(priceDiff * p.size);
+      const pnlPct = (p.margin > 0) ? ((pnl / p.margin) * 100).toFixed(2) : '0.00';
+      const pnlCls = (pnl > 0) ? 'pnl-pos' : ((pnl < 0) ? 'pnl-neg' : 'pnl-grey');
+      const pnlSign = pnl >= 0 ? '+' : '';
+      const pnlPctSign = pnl >= 0 ? '+' : '';
+      const pnlStr = `${pnlSign}$${fmtNum(pnl)} (${pnlPctSign}${pnlPct}%)`;
+
+      const sideCls = (p.direction === 'long') ? 'badge-long' : 'badge-short';
+      const sideText = (p.direction === 'long') ? 'Long' : 'Short';
+      const liqStr = p.liquidationPrice ? `$${fmt(p.liquidationPrice)}` : '—';
+
+      return `<tr>
+        <td><b>${sym}</b></td>
+        <td><span class="badge ${sideCls}">${sideText}</span></td>
+        <td>${fmtCoin(p.size)}</td>
+        <td>$${fmt(p.entry_price)}</td>
+        <td id="pos-curprice-${p.id}">$${fmt(curPrice)}</td>
+        <td>${p.leverage}x</td>
+        <td>$${fmtNum(p.margin)}</td>
+        <td><span id="pos-pnl-${p.id}" class="${pnlCls}">${pnlStr}</span></td>
+        <td style="color:var(--red); font-weight:600;">${liqStr}</td>
+        <td>
+          <div class="pos-actions-row">
+            <button class="btn-close-pos" onclick="closePositionUnified(${p.id}, null, 'Market', this)">Close</button>
+            <button class="btn-partial-close" onclick="openPartialCloseModal(${p.id})">Partial</button>
+            <button class="btn-tpsl" onclick="openTpSlModal(${p.id})">TP/SL</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 // ─── RENDER OPEN ORDERS TABLE (Requirement C) ──────────────

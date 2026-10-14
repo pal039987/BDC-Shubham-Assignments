@@ -375,13 +375,13 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
 
 /* ══════════════ APP BODY LAYOUT ══════════════ */
 .app-body {
-  display: grid;
-  grid-template-columns: 1fr 340px;
+  display: flex;
+  flex-direction: column;
   min-height: calc(100vh - 60px);
   overflow-x: hidden !important;
   width: 100%;
   box-sizing: border-box;
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-bottom: 70px;
 }
 
 /* ══════════════ WATCHLIST BAR ══════════════ */
@@ -1449,124 +1449,439 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   display: block;
 }
 
-/* ─── 1. In-Chart Executed Position Marker & Price Line (TradingView Native Style) ─── */
-.tv-in-chart-position {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 48%; /* In-chart price line */
-  transform: translateY(-50%);
-  z-index: 45;
-  pointer-events: none;
+/* ─── QUICK COIN SWITCHER BAR (CHART HEADER) ─── */
+.chart-quick-coins-bar {
   display: flex;
   align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-left: 8px;
+}
+.cq-coin-btn {
+  background: transparent;
+  border: none;
+  color: var(--txt2);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cq-coin-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+.cq-coin-btn.active {
+  background: #00d09c;
+  color: #000000;
+  box-shadow: 0 2px 8px rgba(0, 208, 156, 0.35);
 }
 
-.tv-in-chart-position.hidden {
+/* ─── 1. TRADINGVIEW IN-CHART ORDERS OVERLAY WITH DRAGGABLE TP & SL (Screenshot Match) ─── */
+.tv-chart-orders-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 45;
+  overflow: hidden;
+}
+.tv-chart-orders-overlay.hidden {
   display: none !important;
 }
 
-.tv-icp-line {
-  flex: 1;
-  height: 0;
-  border-top: 1.5px dashed rgba(14, 203, 129, 0.7);
+.tv-order-line-item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 50;
+  transition: top 0.04s ease-out;
 }
-.tv-in-chart-position.short-side .tv-icp-line {
-  border-top-color: rgba(246, 70, 93, 0.7);
+.tv-order-line-item.is-dragging {
+  transition: none !important;
+  z-index: 60 !important;
+}
+.tv-order-line-item.hidden {
+  display: none !important;
 }
 
-.tv-icp-tag {
+/* Horizontal line styles */
+.tvol-h-line {
+  flex: 1;
+  height: 0;
+}
+.tp-line {
+  border-top: 1.5px solid #0ecb81;
+}
+.entry-line {
+  border-top: 1.5px solid #3861fb;
+}
+.entry-line.short-side {
+  border-top-color: #f6465d;
+}
+.sl-line {
+  border-top: 1.5px solid #f0883e;
+}
+
+/* Tag Box Styles (TradingView screenshot match) */
+.tvol-tag {
   pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.65);
+  margin-right: 6px;
+  background: rgba(14, 18, 24, 0.94);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.tvol-tag:active, .tvol-tag.dragging {
+  cursor: grabbing !important;
+}
+
+.tvol-handle {
+  color: inherit;
+  opacity: 0.65;
+  font-size: 11px;
+  margin-right: -2px;
+}
+
+/* Take Profit Tag (Green outline, transparent dark background) */
+.tp-tag {
+  border: 1.5px solid #0ecb81;
+  color: #0ecb81;
+}
+.tvol-val.pos {
+  color: #0ecb81;
+}
+
+/* Entry Tag (Solid Blue for Long, Red for Short) */
+.entry-tag {
+  background: #1e53e5;
+  border: 1px solid #3861fb;
+  color: #ffffff;
+  cursor: default;
+}
+.entry-tag.short-side {
+  background: #d62d42;
+  border-color: #f6465d;
+}
+.tvol-side-chip {
+  background: rgba(255, 255, 255, 0.22);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 800;
+}
+.tvol-entry-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 2px;
+}
+
+/* Stop Loss Tag (Orange outline, transparent dark background) */
+.sl-tag {
+  border: 1.5px solid #f0883e;
+  color: #f0883e;
+}
+.tvol-val.neg {
+  color: #f0883e;
+}
+
+/* Buttons inside tags */
+.tvol-close-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0 3px;
+  opacity: 0.85;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.tvol-close-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+.entry-close-btn {
+  color: #ffffff;
+}
+
+.tvol-chip-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tvol-chip-btn:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* Right Axis Price Scale Badges (TradingView style on the right scale) */
+.tvol-axis-badge {
+  pointer-events: none;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: monospace;
+  border-radius: 2px;
+  margin-right: 6px;
+  min-width: 52px;
+  text-align: center;
+}
+.tp-axis-badge {
+  background: #0ecb81;
+  color: #000000;
+}
+.entry-axis-badge {
+  background: #3861fb;
+  color: #ffffff;
+}
+.entry-axis-badge.short-side {
+  background: #f6465d;
+}
+.sl-axis-badge {
+  background: #f0883e;
+  color: #000000;
+}
+
+/* ══════════════ DEDICATED FULL-PAGE POSITIONS VIEW ══════════════ */
+.positions-view-panel {
+  padding: 16px;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.positions-view-panel.hidden {
+  display: none !important;
+}
+
+.pos-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.pos-vh-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--txt1);
+}
+.pos-vh-sub {
+  font-size: 13px;
+  color: var(--txt2);
+  margin-top: 2px;
+}
+.pos-btn-new-trade {
+  background: #00d09c;
+  color: #000;
+  font-weight: 700;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+.pos-btn-new-trade:hover {
+  background: #02b688;
+  transform: translateY(-1px);
+}
+
+/* Modern Position Cards for Mobile & Responsive */
+.pos-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.pos-card-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  transition: border-color 0.15s ease;
+}
+.pos-card-item:hover {
+  border-color: rgba(255,255,255,0.15);
+}
+.pos-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.pos-card-symbol-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(14, 18, 26, 0.92);
-  border: 1px solid rgba(14, 203, 129, 0.6);
-  border-radius: 20px;
-  padding: 4px 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  margin-right: 65px; /* Leave space for price scale */
-  margin-left: 20px;
 }
-.tv-in-chart-position.short-side .tv-icp-tag {
-  border-color: rgba(246, 70, 93, 0.6);
-}
-
-.tv-icp-side {
-  font-size: 11px;
+.pos-card-symbol {
+  font-size: 16px;
   font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 4px;
+  color: var(--txt1);
 }
-.tv-icp-side.buy {
-  background: rgba(14, 203, 129, 0.2);
-  color: #0ecb81;
+.pos-card-pnl-wrap {
+  text-align: right;
 }
-.tv-icp-side.sell {
-  background: rgba(246, 70, 93, 0.2);
-  color: #f6465d;
+.pos-card-pnl {
+  font-size: 16px;
+  font-weight: 800;
 }
-
-.tv-icp-entry {
-  font-size: 11px;
-  font-weight: 700;
-  color: #ffffff;
+.pos-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 12px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
-
-.tv-icp-pnl {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-.tv-icp-pnl.pos {
-  color: #0ecb81;
-  background: rgba(14, 203, 129, 0.12);
-}
-.tv-icp-pnl.neg {
-  color: #f6465d;
-  background: rgba(246, 70, 93, 0.12);
-}
-
-.tv-icp-tpsl-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f0b90b;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
+.pos-grid-cell {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
+  flex-direction: column;
+}
+.pos-cell-lbl {
+  font-size: 11px;
+  color: var(--txt3);
+  text-transform: uppercase;
+}
+.pos-cell-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--txt1);
+  margin-top: 2px;
+}
+.pos-card-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.pos-card-actions button {
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.tv-icp-tpsl-btn:hover {
-  background: rgba(240, 185, 11, 0.25);
-  transform: scale(1.1);
-}
-
-.tv-icp-close-btn {
-  background: rgba(246, 70, 93, 0.2);
+.btn-card-close {
+  background: rgba(246, 70, 93, 0.15);
   border: 1px solid rgba(246, 70, 93, 0.4);
   color: #f6465d;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
 }
-.tv-icp-close-btn:hover {
+.btn-card-close:hover {
   background: #f6465d;
-  color: #ffffff;
+  color: #fff;
+}
+.btn-card-tpsl {
+  background: rgba(240, 185, 11, 0.15);
+  border: 1px solid rgba(240, 185, 11, 0.4);
+  color: #f0b90b;
+}
+.btn-card-tpsl:hover {
+  background: #f0b90b;
+  color: #000;
+}
+.btn-card-chart {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--txt1);
+}
+.btn-card-chart:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ══════════════ DEDICATED TRADE DESK VIEW ══════════════ */
+.order-sidebar#view-trade-panel {
+  width: 100%;
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* ══════════════ DYNAMIC WALLET GRID STYLES ══════════════ */
+.gwallet-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+.gwallet-m-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+}
+.gwallet-m-lbl {
+  font-size: 11px;
+  color: var(--txt3);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.gwallet-m-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--txt1);
+  margin-top: 4px;
+}
+.gwallet-m-val.green {
+  color: #0ecb81;
+}
+.gwallet-m-val.orange {
+  color: #f0883e;
+}
+.gwallet-m-val.pos {
+  color: #0ecb81;
+}
+.gwallet-m-val.neg {
+  color: #f6465d;
+}
+.gwallet-m-sub {
+  font-size: 11px;
+  color: var(--txt3);
+  margin-top: 4px;
+}
+.gwallet-equity-sub {
+  font-size: 12px;
+  color: var(--txt3);
+  margin-top: 4px;
 }
 
 /* Orders HUD */
@@ -2928,13 +3243,18 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
     border-bottom: 1px solid var(--border);
     width: 100% !important;
     overflow-x: hidden !important;
+    height: calc(100vh - 120px) !important;
+    min-height: 500px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
   }
-  /* Chart height 50vh on phones, min 340px, max 520px */
+  /* Chart fills full available viewport */
   .chart-wrap {
-    height: 50vh !important;
-    min-height: 340px !important;
-    max-height: 520px !important;
-    flex: none !important;
+    height: 100% !important;
+    min-height: 420px !important;
+    max-height: none !important;
+    flex: 1 !important;
     width: 100% !important;
   }
   .chart-container-box.fullscreen-chart .chart-wrap {
