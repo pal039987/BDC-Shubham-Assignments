@@ -17,65 +17,147 @@
 </head>
 <body>
 
-<!-- ══════════════════════ AUTH OVERLAY / POPUP MODAL ══════════════════════ -->
+<!-- ══════════════════════ AUTH OVERLAY / SHARK SPLIT-SCREEN MODAL ══════════════════════ -->
 <div id="auth-overlay" class="auth-overlay modal-backdrop hidden" onclick="if(event.target===this)closeAuthModal()">
-  <div class="auth-card">
+  <div class="shark-auth-container">
     <button type="button" class="auth-modal-close" onclick="closeAuthModal()" title="Close dialog">✕</button>
-    <div class="auth-brand">
-      <div class="brand-logo">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-          <rect width="40" height="40" rx="10" fill="#0B0F19"/>
-          <path d="M11 13L15.5 11.5L20 28L15.5 28Z" fill="#E2E8F0"/>
-          <path d="M19 25L22 28.5L30.5 10L27 9L22.5 18Z" fill="#10B981"/>
-          <path d="M30.5 10L28 14L25.5 11.5Z" fill="#6EE7B7"/>
-        </svg>
+
+    <!-- LEFT COLUMN: Shark-style Branding & 3D Lightning Hero -->
+    <div class="shark-auth-left">
+      <div class="shark-auth-brand-head">
+        <div class="shark-brand-mark">
+          <div class="shark-logo-icon">⚡</div>
+          <div class="shark-brand-name-group">
+            <span class="shark-brand-name">VTRADE</span>
+            <span class="shark-brand-tag">EXCHANGE</span>
+          </div>
+        </div>
       </div>
-      <div>
-        <div class="brand-name">VTrade</div>
-        <div class="brand-sub">Professional Virtual Crypto Trading</div>
+
+      <div class="shark-auth-graphic-box">
+        <img src="golden_bolt_hero.jpg" alt="VTrade Blazing Speed" class="shark-3d-bolt-img" />
+      </div>
+
+      <div class="shark-hero-captions">
+        <h2 class="shark-hero-headline">
+          <span class="hero-gold-gradient">Blazing-Fast Trades</span>
+          <span class="hero-white-text">Razor-Thin Spreads</span>
+        </h2>
+        <p class="shark-hero-subtext">
+          Don't miss a beat in the volatile crypto markets.<br/>
+          Our state-of-the-art matching engine executes trades in milliseconds.
+        </p>
       </div>
     </div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
-      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
-    </div>
+    <!-- RIGHT COLUMN: Interactive Sign In / Sign Up Form -->
+    <div class="shark-auth-right">
 
-    <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
-      <div class="form-group">
-        <label>Email Address</label>
-        <div class="input-wrapper"><span class="input-icon">✉</span><input type="email" id="login-email" placeholder="trader@vtrade.com" required /></div>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <div class="input-wrapper"><span class="input-icon">🔒</span><input type="password" id="login-password" placeholder="••••••••" required /></div>
-      </div>
-      <div id="login-error" class="auth-error hidden"></div>
-      <button type="submit" class="btn-primary btn-full" id="login-btn"><span>Sign In</span><div class="btn-loader hidden"></div></button>
-    </form>
+      <!-- VIEW 1: SIGN IN (Welcome Back) -->
+      <div id="login-view" class="shark-form-view">
+        <h1 class="shark-form-title">Welcome Back</h1>
+        <div class="shark-switch-prompt">
+          Are you a New User? <a href="javascript:void(0)" class="shark-cyan-link" onclick="switchTab('register')">Sign Up</a>
+        </div>
 
-    <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
-      <div class="form-group">
-        <label>Username</label>
-        <div class="input-wrapper"><span class="input-icon">👤</span><input type="text" id="reg-username" placeholder="protrader" required /></div>
-      </div>
-      <div class="form-group">
-        <label>Email Address</label>
-        <div class="input-wrapper"><span class="input-icon">✉</span><input type="email" id="reg-email" placeholder="trader@vtrade.com" required /></div>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <div class="input-wrapper"><span class="input-icon">🔒</span><input type="password" id="reg-password" placeholder="Min. 6 characters" minlength="6" required /></div>
-      </div>
-      <div id="reg-error" class="auth-error hidden"></div>
-      <button type="submit" class="btn-primary btn-full" id="reg-btn"><span>Create Account – Free $10,000 USDT</span><div class="btn-loader hidden"></div></button>
-    </form>
+        <button type="button" class="btn-google-auth" onclick="handleGoogleDemoAuth()">
+          <svg width="18" height="18" viewBox="0 0 24 24" class="google-icon">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Sign In with Google</span>
+        </button>
 
-    <div class="auth-features">
-      <div class="auth-feat">📊 Real Market Data</div>
-      <div class="auth-feat">💼 Spot & Futures</div>
-      <div class="auth-feat">🎯 Limit Orders</div>
-      <div class="auth-feat">📱 Android APK</div>
+        <div class="shark-or-divider">
+          <span class="or-line"></span>
+          <span class="or-label">or</span>
+          <span class="or-line"></span>
+        </div>
+
+        <form id="login-form" class="shark-auth-form" onsubmit="handleLogin(event)">
+          <div class="shark-input-group">
+            <input type="email" id="login-email" class="shark-text-input" placeholder="Enter your Email ID" required />
+          </div>
+
+          <div class="shark-input-group password-group">
+            <input type="password" id="login-password" class="shark-text-input" placeholder="Enter your Password" required />
+            <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('login-password', this)" title="Show/Hide Password">👁️</button>
+          </div>
+
+          <div class="shark-form-links-row">
+            <a href="javascript:void(0)" class="shark-forgot-link" onclick="showToast('Password reset demo link sent to registered email!', 'info')">Forgot Password ?</a>
+          </div>
+
+          <div class="shark-compliance-text">
+            By continuing you agree to <a href="javascript:void(0)">Privacy Policy</a> &amp; <a href="javascript:void(0)">Terms &amp; Conditions</a>
+          </div>
+
+          <div id="login-error" class="auth-error hidden"></div>
+
+          <button type="submit" class="btn-shark-login-submit" id="login-btn">
+            <span>Log In</span>
+            <div class="btn-loader hidden"></div>
+          </button>
+        </form>
+      </div>
+
+      <!-- VIEW 2: SIGN UP / CREATE ACCOUNT -->
+      <div id="register-view" class="shark-form-view hidden">
+        <h1 class="shark-form-title">Create Account</h1>
+        <div class="shark-switch-prompt">
+          Already have an Account? <a href="javascript:void(0)" class="shark-cyan-link" onclick="switchTab('login')">Log In</a>
+        </div>
+
+        <button type="button" class="btn-google-auth" onclick="handleGoogleDemoAuth()">
+          <svg width="18" height="18" viewBox="0 0 24 24" class="google-icon">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Sign Up with Google</span>
+        </button>
+
+        <div class="shark-or-divider">
+          <span class="or-line"></span>
+          <span class="or-label">or</span>
+          <span class="or-line"></span>
+        </div>
+
+        <form id="register-form" class="shark-auth-form" onsubmit="handleRegister(event)">
+          <div class="shark-input-group">
+            <input type="text" id="reg-username" class="shark-text-input" placeholder="Enter your Username" required />
+          </div>
+
+          <div class="shark-input-group">
+            <input type="email" id="reg-email" class="shark-text-input" placeholder="Enter your Email ID" required />
+          </div>
+
+          <div class="shark-input-group password-group">
+            <input type="password" id="reg-password" class="shark-text-input" placeholder="Enter your Password (Min. 6 characters)" minlength="6" required />
+            <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('reg-password', this)" title="Show/Hide Password">👁️</button>
+          </div>
+
+          <div class="shark-auth-bonus-pill">
+            <span class="sab-emoji">🎁</span>
+            <span class="sab-text">Includes <strong>$10,000 USDT</strong> Free Virtual Paper Trading Funds</span>
+          </div>
+
+          <div class="shark-compliance-text">
+            By continuing you agree to <a href="javascript:void(0)">Privacy Policy</a> &amp; <a href="javascript:void(0)">Terms &amp; Conditions</a>
+          </div>
+
+          <div id="reg-error" class="auth-error hidden"></div>
+
+          <button type="submit" class="btn-shark-login-submit" id="reg-btn">
+            <span>Create Account</span>
+            <div class="btn-loader hidden"></div>
+          </button>
+        </form>
+      </div>
+
     </div>
   </div>
 </div>

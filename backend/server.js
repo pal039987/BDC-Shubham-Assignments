@@ -842,6 +842,11 @@ app.get('/api/info', (req, res) => {
   });
 });
 
+// SPA routes for Shark Exchange Auth & Exchange
+app.get(['/auth/signin', '/auth/signup', '/login', '/register', '/futures', '/futures/:pair'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
 // Global fallback & error handler
 app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error: ' + (err.message || 'unexpected exception') });

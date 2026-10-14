@@ -363,6 +363,15 @@ document.addEventListener('DOMContentLoaded', () => {
   startFundingCountdown();
 
   loadAll();
+
+  // Auto-open auth modal if URL points to signin/login/register (matches Shark Exchange /auth/signin)
+  const path = window.location.pathname.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+  if (path.includes('/signin') || path.includes('/login') || hash.includes('login') || hash.includes('signin')) {
+    openAuthModal('login');
+  } else if (path.includes('/signup') || path.includes('/register') || hash.includes('register') || hash.includes('signup')) {
+    openAuthModal('register');
+  }
 });
 
 function updateAuthStateUI() {
@@ -432,12 +441,59 @@ async function loadAll() {
 
 // ─── AUTH ─────────────────────────────────────────────────
 function switchTab(tab) {
-  ['login','register'].forEach(t => {
-    const f = document.getElementById(`${t}-form`);
-    const b = document.getElementById(`tab-${t}`);
-    if (f) f.classList.toggle('hidden', t !== tab);
-    if (b) b.classList.toggle('active', t === tab);
-  });
+  const loginView = document.getElementById('login-view');
+  const registerView = document.getElementById('register-view');
+  if (loginView && registerView) {
+    loginView.classList.toggle('hidden', tab !== 'login');
+    registerView.classList.toggle('hidden', tab !== 'register');
+  }
+  const err1 = document.getElementById('login-error');
+  const err2 = document.getElementById('reg-error');
+  if (err1) err1.classList.add('hidden');
+  if (err2) err2.classList.add('hidden');
+}
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (btn) btn.textContent = '🔒';
+  } else {
+    input.type = 'password';
+    if (btn) btn.textContent = '👁️';
+  }
+}
+
+async function handleGoogleDemoAuth() {
+  const btn = event?.currentTarget;
+  if (btn) btn.style.opacity = '0.6';
+  try {
+    const demoPayload = {
+      email: 'google_trader@vtrade.com',
+      password: 'GoogleTraderPassword123!',
+      username: 'GoogleTrader'
+    };
+    let r;
+    try {
+      r = await post(`${API}/auth/login`, { email: demoPayload.email, password: demoPayload.password });
+    } catch (e) {
+      r = await post(`${API}/auth/register`, demoPayload);
+    }
+    saveAuth(r);
+    closeAuthModal();
+    updateAuthStateUI();
+    await loadPortfolio();
+    renderPositions();
+    renderOrders();
+    renderHistory();
+    updatePnlSummary();
+    showToast(`⚡ Signed in with Google as ${r.username}!`, 'success');
+  } catch (err) {
+    showToast(err.message || 'Google Sign-in failed', 'error');
+  } finally {
+    if (btn) btn.style.opacity = '1';
+  }
 }
 
 async function handleLogin(e) {
