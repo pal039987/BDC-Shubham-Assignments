@@ -144,13 +144,47 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
-// ─── SUPPORTED PAIRS CONFIG (Strictly BTC/USDT, ETH/USDT, SOL/USDT) ───────────
-const SUPPORTED_COINS = ['bitcoin', 'ethereum', 'solana'];
+// ─── SUPPORTED PAIRS CONFIG (Popular Coins: BTC, ETH, SOL, BNB, DOGE, XRP, ADA, SUI, AVAX, PEPE, NEAR) ───────────
+const SUPPORTED_COINS = [
+  'bitcoin',
+  'ethereum',
+  'solana',
+  'binancecoin',
+  'dogecoin',
+  'ripple',
+  'cardano',
+  'sui',
+  'avalanche-2',
+  'pepe',
+  'near'
+];
 
 const COIN_METADATA = {
-  'bitcoin':  { symbol: 'BTC', pair: 'BTC/USDT', name: 'Bitcoin',  basePrice: 83427.00, baseCap: 1676759000000, baseVol: 31513000000, baseChange: -0.45 },
-  'ethereum': { symbol: 'ETH', pair: 'ETH/USDT', name: 'Ethereum', basePrice: 2515.00,  baseCap: 307174000000,  baseVol: 16497000000, baseChange: -1.62 },
-  'solana':   { symbol: 'SOL', pair: 'SOL/USDT', name: 'Solana',   basePrice: 108.00,   baseCap: 63637000000,   baseVol: 4059000000,  baseChange: -3.78 }
+  'bitcoin':      { symbol: 'BTC',  pair: 'BTC/USDT',  name: 'Bitcoin',       basePrice: 83800.00, baseCap: 1676759000000, baseVol: 31513000000, baseChange: -0.10 },
+  'ethereum':     { symbol: 'ETH',  pair: 'ETH/USDT',  name: 'Ethereum',      basePrice: 2515.00,  baseCap: 307174000000,  baseVol: 16497000000, baseChange: -1.60 },
+  'solana':       { symbol: 'SOL',  pair: 'SOL/USDT',  name: 'Solana',        basePrice: 107.50,   baseCap: 63637000000,   baseVol: 4059000000,  baseChange: -3.70 },
+  'binancecoin':  { symbol: 'BNB',  pair: 'BNB/USDT',  name: 'BNB',           basePrice: 744.00,   baseCap: 107000000000,  baseVol: 1850000000,  baseChange: -0.14 },
+  'dogecoin':     { symbol: 'DOGE', pair: 'DOGE/USDT', name: 'Dogecoin',      basePrice: 0.085,    baseCap: 12500000000,   baseVol: 850000000,   baseChange: -0.65 },
+  'ripple':       { symbol: 'XRP',  pair: 'XRP/USDT',  name: 'XRP',           basePrice: 1.38,     baseCap: 78000000000,   baseVol: 2450000000,  baseChange: -0.85 },
+  'cardano':      { symbol: 'ADA',  pair: 'ADA/USDT',  name: 'Cardano',       basePrice: 0.236,    baseCap: 8400000000,    baseVol: 420000000,   baseChange: -1.08 },
+  'sui':          { symbol: 'SUI',  pair: 'SUI/USDT',  name: 'Sui',           basePrice: 1.058,    baseCap: 3100000000,    baseVol: 560000000,   baseChange: -1.13 },
+  'avalanche-2':  { symbol: 'AVAX', pair: 'AVAX/USDT', name: 'Avalanche',     basePrice: 10.23,    baseCap: 4100000000,    baseVol: 390000000,   baseChange: -2.10 },
+  'pepe':         { symbol: 'PEPE', pair: 'PEPE/USDT', name: 'Pepe',          basePrice: 0.0000042, baseCap: 1800000000,   baseVol: 650000000,   baseChange: 1.60 },
+  'near':         { symbol: 'NEAR', pair: 'NEAR/USDT', name: 'NEAR Protocol', basePrice: 5.045,    baseCap: 6200000000,    baseVol: 480000000,   baseChange: -1.20 }
+};
+
+const BINANCE_SYMBOL_MAP = {
+  'BTCUSDT': 'bitcoin',
+  'ETHUSDT': 'ethereum',
+  'SOLUSDT': 'solana',
+  'BNBUSDT': 'binancecoin',
+  'DOGEUSDT': 'dogecoin',
+  'XRPUSDT': 'ripple',
+  'ADAUSDT': 'cardano',
+  'SUIUSDT': 'sui',
+  'AVAXUSDT': 'avalanche-2',
+  'PEPEUSDT': 'pepe',
+  'NEARUSDT': 'near'
 };
 
 // ─── PROVIDER-SOURCED PRICE CACHE & COINGECKO INTEGRATION ──────────────────────
@@ -185,13 +219,20 @@ const dailyOpenCache = {
   bitcoin: 0,
   ethereum: 0,
   solana: 0,
+  binancecoin: 0,
+  dogecoin: 0,
+  ripple: 0,
+  cardano: 0,
+  sui: 0,
+  'avalanche-2': 0,
+  pepe: 0,
+  near: 0,
   lastUpdated: 0
 };
 
 async function updateDailyOpenPrices() {
-  const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
   try {
-    const promises = Object.entries(symbolMap).map(async ([sym, coinId]) => {
+    const promises = Object.entries(BINANCE_SYMBOL_MAP).map(async ([sym, coinId]) => {
       try {
         const resp = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=1d&limit=1`, { timeout: 3000 });
         if (resp.ok) {
@@ -214,20 +255,18 @@ async function updateDailyOpenPrices() {
 
 async function fetchPrices() {
   // Step 1: Query Binance 24hr live ticker for real-time orderflow and price ticks
-  // Strictly BTCUSDT, ETHUSDT, SOLUSDT to match TradingView BINANCE:BTCUSDT
   try {
     if (Date.now() - dailyOpenCache.lastUpdated > 5 * 60 * 1000 || !dailyOpenCache.bitcoin) {
       await updateDailyOpenPrices();
     }
-    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
+    const bSymbols = encodeURIComponent(JSON.stringify(Object.keys(BINANCE_SYMBOL_MAP)));
+    const bUrl = `https://api.binance.com/api/v3/ticker/24hr?symbols=${bSymbols}`;
     const bResp = await fetch(bUrl, { headers: { 'Accept': 'application/json' }, timeout: 3000 });
     if (bResp.ok) {
       const bList = await bResp.json();
       if (Array.isArray(bList) && bList.length >= 3) {
-        const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
-
         bList.forEach(item => {
-          const coinId = symbolMap[item.symbol];
+          const coinId = BINANCE_SYMBOL_MAP[item.symbol];
           if (coinId) {
             const p = parseFloat(item.lastPrice);
             if (p > 0 && !isNaN(p) && isFinite(p)) {
@@ -236,18 +275,19 @@ async function fetchPrices() {
               const changePrice = dailyOpen > 0 ? (p - dailyOpen) : parseFloat(item.priceChange);
               const change24h = dailyOpen > 0 ? (((p - dailyOpen) / dailyOpen) * 100) : parseFloat(item.priceChangePercent);
 
+              const decimals = p < 0.001 ? 8 : p < 1 ? 4 : 2;
               priceCache[coinId] = {
-                price: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
-                usdtPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
-                usdPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                price: parseFloat(p.toFixed(decimals)),
+                usdtPrice: parseFloat(p.toFixed(decimals)),
+                usdPrice: parseFloat(p.toFixed(decimals)),
                 dailyOpen: dailyOpen,
-                changePrice: parseFloat(changePrice.toFixed(2)),
+                changePrice: parseFloat(changePrice.toFixed(decimals)),
                 conversionUsed: false,
                 change24h: parseFloat(change24h.toFixed(2)),
                 marketCap: (priceCache[coinId]?.marketCap || COIN_METADATA[coinId].baseCap),
                 volume24h: parseFloat(item.quoteVolume) || COIN_METADATA[coinId].baseVol,
-                high24h: parseFloat(item.highPrice) || parseFloat((p * 1.02).toFixed(2)),
-                low24h: parseFloat(item.lowPrice) || parseFloat((p * 0.98).toFixed(2)),
+                high24h: parseFloat(item.highPrice) || parseFloat((p * 1.02).toFixed(decimals)),
+                low24h: parseFloat(item.lowPrice) || parseFloat((p * 0.98).toFixed(decimals)),
                 lastVerified: Date.now()
               };
             }
@@ -270,7 +310,7 @@ async function fetchPrices() {
     return priceCache;
   }
 
-  const ids = 'bitcoin,ethereum,solana,tether';
+  const ids = [...SUPPORTED_COINS, 'tether'].join(',');
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usdt,usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`;
 
   try {
@@ -357,8 +397,8 @@ app.get('/api/prices', async (req, res) => {
       isStale,
       isRateLimited: Date.now() < serverCgRateLimitUntil,
       tetherRate: priceCache.tetherUsdRate,
-      supportedPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT'],
-      provider: 'Live Market Feed'
+      supportedPairs: SUPPORTED_COINS.map(c => COIN_METADATA[c].pair),
+      provider: 'Live Binance Feed'
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to retrieve market prices' });
@@ -370,10 +410,10 @@ const chartCache = {};
 
 async function handleChartRequest(req, res) {
   try {
-    const rawCoin = (req.params.coin || '').toLowerCase();
-    const coin = SUPPORTED_COINS.find(c => c === rawCoin) || (rawCoin === 'btc' ? 'bitcoin' : rawCoin === 'eth' ? 'ethereum' : rawCoin === 'sol' ? 'solana' : null);
+    const rawCoin = (req.params.coin || '').toLowerCase().replace('/usdt', '').replace('usdt', '');
+    const coin = SUPPORTED_COINS.find(c => c === rawCoin || (COIN_METADATA[c] && COIN_METADATA[c].symbol.toLowerCase() === rawCoin));
     const tf = (req.query.tf || '15m').toLowerCase();
-    if (!coin) return res.status(400).json({ error: 'Invalid coin. Supported: bitcoin, ethereum, solana' });
+    if (!coin) return res.status(400).json({ error: 'Invalid coin. Supported: ' + SUPPORTED_COINS.join(', ') });
 
     const cacheKey = `${coin}_${tf}`;
     const cached = chartCache[cacheKey];
@@ -773,7 +813,7 @@ function getAvailableApkPath() {
   return null;
 }
 
-app.get(['/apk', '/downloads/VTrade.apk', '/downloads/CryptoTrader-Pro.apk', '/downloads/cryptotrader.apk'], (req, res) => {
+app.get(['/apk', '/download/apk', '/downloads/VTrade.apk', '/downloads/CryptoTrader-Pro.apk', '/downloads/cryptotrader.apk'], (req, res) => {
   try {
     const apk = getAvailableApkPath();
     if (apk) {
@@ -785,7 +825,7 @@ app.get(['/apk', '/downloads/VTrade.apk', '/downloads/CryptoTrader-Pro.apk', '/d
   }
 });
 
-app.head(['/apk', '/downloads/VTrade.apk', '/downloads/CryptoTrader-Pro.apk', '/downloads/cryptotrader.apk'], (req, res) => {
+app.head(['/apk', '/download/apk', '/downloads/VTrade.apk', '/downloads/CryptoTrader-Pro.apk', '/downloads/cryptotrader.apk'], (req, res) => {
   const apk = getAvailableApkPath();
   if (apk) return res.status(200).end();
   res.status(404).end();
@@ -795,8 +835,8 @@ app.get('/api/info', (req, res) => {
   res.json({
     appName: 'VTrade',
     version: '2.0.0',
-    supportedPairs: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT'],
-    provider: 'CoinGecko',
+    supportedPairs: SUPPORTED_COINS.map(c => COIN_METADATA[c].pair),
+    provider: 'Binance & CoinGecko',
     status: 'online',
     timestamp: Date.now()
   });

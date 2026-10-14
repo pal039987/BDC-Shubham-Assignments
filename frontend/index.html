@@ -17,24 +17,25 @@
 </head>
 <body>
 
-<!-- ══════════════════════ AUTH OVERLAY ══════════════════════ -->
-<div id="auth-overlay" class="auth-overlay">
-  <div class="auth-brand">
-    <div class="brand-logo">
-      <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
-        <rect width="40" height="40" rx="10" fill="#0B0F19"/>
-        <path d="M11 13L15.5 11.5L20 28L15.5 28Z" fill="#E2E8F0"/>
-        <path d="M19 25L22 28.5L30.5 10L27 9L22.5 18Z" fill="#10B981"/>
-        <path d="M30.5 10L28 14L25.5 11.5Z" fill="#6EE7B7"/>
-      </svg>
-    </div>
-    <div>
-      <div class="brand-name">VTrade</div>
-      <div class="brand-sub">Professional Virtual Crypto Trading</div>
-    </div>
-  </div>
-
+<!-- ══════════════════════ AUTH OVERLAY / POPUP MODAL ══════════════════════ -->
+<div id="auth-overlay" class="auth-overlay modal-backdrop hidden" onclick="if(event.target===this)closeAuthModal()">
   <div class="auth-card">
+    <button type="button" class="auth-modal-close" onclick="closeAuthModal()" title="Close dialog">✕</button>
+    <div class="auth-brand">
+      <div class="brand-logo">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="10" fill="#0B0F19"/>
+          <path d="M11 13L15.5 11.5L20 28L15.5 28Z" fill="#E2E8F0"/>
+          <path d="M19 25L22 28.5L30.5 10L27 9L22.5 18Z" fill="#10B981"/>
+          <path d="M30.5 10L28 14L25.5 11.5Z" fill="#6EE7B7"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">VTrade</div>
+        <div class="brand-sub">Professional Virtual Crypto Trading</div>
+      </div>
+    </div>
+
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
       <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
@@ -79,12 +80,12 @@
   </div>
 </div>
 
-<!-- ══════════════════════ MAIN APP ══════════════════════ -->
-<div id="app" class="app hidden">
+<!-- ══════════════════════ MAIN APP (LIVE EXCHANGE) ══════════════════════ -->
+<div id="app" class="app">
 
-  <!-- NAVBAR (Groww Crypto Header Style) -->
-  <nav class="navbar groww-navbar">
-    <div class="nav-brand">
+  <!-- NAVBAR (Shark Exchange Style) -->
+  <nav class="navbar groww-navbar shark-navbar">
+    <div class="nav-brand" onclick="switchMainTab('chart')">
       <div class="groww-logo-circle">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="10" fill="#00d09c" fill-opacity="0.2"/>
@@ -92,9 +93,19 @@
         </svg>
       </div>
       <div class="groww-brand-titles">
-        <span class="brand-name-sm">Crypto</span>
-        <span class="paper-badge">VTRADE</span>
+        <span class="brand-name-sm">VTRADE</span>
+        <span class="paper-badge">EXCHANGE</span>
       </div>
+    </div>
+
+    <!-- Desktop Exchange Nav Links (Screenshot 1) -->
+    <div class="desktop-nav-links">
+      <button class="dnav-link active" onclick="switchMainTab('chart')">Futures ▾</button>
+      <button class="dnav-link" onclick="switchMainTab('explore')">Markets</button>
+      <button class="dnav-link" onclick="showToast('Options trading coming soon in Beta!', 'info')">Options <span class="dnav-badge">Beta</span></button>
+      <button class="dnav-link" onclick="showToast('Zero fees on VTrade Virtual Paper Trading!', 'info')">Fee</button>
+      <button class="dnav-link" onclick="showToast('30-Day Virtual Paper Trading Challenge active!', 'success')">30 Day Challenge</button>
+      <button class="dnav-link" onclick="handleDownloadApk(event)">📱 Android APK</button>
     </div>
 
     <!-- Hidden ticker elements for background updates -->
@@ -108,38 +119,96 @@
       <button class="nav-icon-btn" id="btn-open-search" onclick="toggleSearchOverlay()" title="Search Supported Pairs">🔍</button>
       <button class="nav-btn-apk" id="nav-btn-apk" onclick="handleDownloadApk(event)" title="Download VTrade Android APK">📱 APK</button>
       <button class="nav-btn-settings" id="nav-btn-settings" onclick="openSettingsSheet()" title="Settings">⚙️</button>
-      <div class="nav-user-pill" onclick="switchMainTab('wallet')" title="Trader Profile & Balance">
-        <div class="user-av" id="user-avatar">V</div>
+
+      <!-- Unauthenticated Guest State (Screenshot 1 Match: Log In & Sign Up) -->
+      <div class="nav-auth-guest" id="nav-guest-group">
+        <button type="button" class="btn-nav-login" onclick="openAuthModal('login')">Log In</button>
+        <button type="button" class="btn-nav-signup" onclick="openAuthModal('register')">Sign Up</button>
       </div>
-      <button class="btn-logout" onclick="logout()" title="Logout">⎋</button>
+
+      <!-- Authenticated User State (When logged in) -->
+      <div class="nav-auth-user hidden" id="nav-user-group">
+        <div class="nav-user-pill" onclick="switchMainTab('wallet')" title="Trader Profile & Balance">
+          <div class="user-av" id="user-avatar">V</div>
+          <span class="nav-user-name" id="nav-username">Trader</span>
+        </div>
+        <button class="btn-logout" onclick="logout()" title="Logout">⎋</button>
+      </div>
     </div>
   </nav>
 
-  <!-- ─── GROWW CRYPTO INDICES TICKER STRIP (BTC, ETH, SOL) ─── -->
+  <!-- ─── HORIZONTAL TICKER STRIP (Popular Coins: BTC, ETH, SOL, BNB, DOGE, XRP, ADA, SUI, AVAX, PEPE, NEAR) ─── -->
   <div class="groww-indices-ticker" id="groww-indices-ticker">
-    <div class="gi-item" onclick="selectCoin('bitcoin'); switchMainTab('chart');" id="gi-btc" title="Bitcoin / USDT">
-      <span class="gi-sym">BTC</span>
-      <span class="gi-price" id="gi-price-btc">--</span>
-      <span class="gi-chg" id="gi-chg-btc">--</span>
+    <div class="gi-item active" onclick="selectCoin('bitcoin'); switchMainTab('chart');" id="gi-bitcoin" title="Bitcoin / USDT">
+      <span class="gi-sym">BTC-USDT</span>
+      <span class="gi-price" id="gi-price-bitcoin">--</span>
+      <span class="gi-chg" id="gi-chg-bitcoin">--</span>
     </div>
     <div class="gi-divider"></div>
-    <div class="gi-item" onclick="selectCoin('ethereum'); switchMainTab('chart');" id="gi-eth" title="Ethereum / USDT">
-      <span class="gi-sym">ETH</span>
-      <span class="gi-price" id="gi-price-eth">--</span>
-      <span class="gi-chg" id="gi-chg-eth">--</span>
+    <div class="gi-item" onclick="selectCoin('ethereum'); switchMainTab('chart');" id="gi-ethereum" title="Ethereum / USDT">
+      <span class="gi-sym">ETH-USDT</span>
+      <span class="gi-price" id="gi-price-ethereum">--</span>
+      <span class="gi-chg" id="gi-chg-ethereum">--</span>
     </div>
     <div class="gi-divider"></div>
-    <div class="gi-item" onclick="selectCoin('solana'); switchMainTab('chart');" id="gi-sol" title="Solana / USDT">
-      <span class="gi-sym">SOL</span>
-      <span class="gi-price" id="gi-price-sol">--</span>
-      <span class="gi-chg" id="gi-chg-sol">--</span>
+    <div class="gi-item" onclick="selectCoin('solana'); switchMainTab('chart');" id="gi-solana" title="Solana / USDT">
+      <span class="gi-sym">SOL-USDT</span>
+      <span class="gi-price" id="gi-price-solana">--</span>
+      <span class="gi-chg" id="gi-chg-solana">--</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('binancecoin'); switchMainTab('chart');" id="gi-binancecoin" title="BNB / USDT">
+      <span class="gi-sym">BNB-USDT</span>
+      <span class="gi-price" id="gi-price-binancecoin">--</span>
+      <span class="gi-chg" id="gi-chg-binancecoin">--</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('dogecoin'); switchMainTab('chart');" id="gi-dogecoin" title="Dogecoin / USDT">
+      <span class="gi-sym">DOGE-USDT</span>
+      <span class="gi-price" id="gi-price-dogecoin">--</span>
+      <span class="gi-chg" id="gi-chg-dogecoin">--</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('ripple'); switchMainTab('chart');" id="gi-ripple" title="XRP / USDT">
+      <span class="gi-sym">XRP-USDT</span>
+      <span class="gi-price" id="gi-price-ripple">--</span>
+      <span class="gi-chg" id="gi-chg-ripple">--</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('cardano'); switchMainTab('chart');" id="gi-cardano" title="Cardano / USDT">
+      <span class="gi-sym">ADA-USDT</span>
+      <span class="gi-price" id="gi-price-cardano">--</span>
+      <span class="gi-chg" id="gi-chg-cardano">--</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('sui'); switchMainTab('chart');" id="gi-sui" title="Sui / USDT">
+      <span class="gi-sym">SUI-USDT</span>
+      <span class="gi-price" id="gi-price-sui">--</span>
+      <span class="gi-chg" id="gi-chg-sui">--</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('avalanche-2'); switchMainTab('chart');" id="gi-avalanche-2" title="Avalanche / USDT">
+      <span class="gi-sym">AVAX-USDT</span>
+      <span class="gi-price" id="gi-price-avalanche-2">--</span>
+      <span class="gi-chg" id="gi-chg-avalanche-2">--</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('pepe'); switchMainTab('chart');" id="gi-pepe" title="Pepe / USDT">
+      <span class="gi-sym">PEPE-USDT</span>
+      <span class="gi-price" id="gi-price-pepe">--</span>
+      <span class="gi-chg" id="gi-chg-pepe">--</span>
+    </div>
+    <div class="gi-divider"></div>
+    <div class="gi-item" onclick="selectCoin('near'); switchMainTab('chart');" id="gi-near" title="NEAR Protocol / USDT">
+      <span class="gi-sym">NEAR-USDT</span>
+      <span class="gi-price" id="gi-price-near">--</span>
+      <span class="gi-chg" id="gi-chg-near">--</span>
     </div>
   </div>
 
-  <!-- ─── GROWW SUB-NAVIGATION TABS (Explore | Chart | Trade | Positions | Orders) ─── -->
   <div class="groww-subnav-strip" id="groww-subnav-strip">
-    <button class="gsub-tab active" id="gsub-explore" onclick="switchMainTab('explore')">Explore</button>
-    <button class="gsub-tab" id="gsub-chart" onclick="switchMainTab('chart')">Chart</button>
+    <button class="gsub-tab" id="gsub-explore" onclick="switchMainTab('explore')">Explore</button>
+    <button class="gsub-tab active" id="gsub-chart" onclick="switchMainTab('chart')">Chart</button>
     <button class="gsub-tab" id="gsub-trade" onclick="switchMainTab('trade')">Trade</button>
     <button class="gsub-tab" id="gsub-positions" onclick="switchMainTab('positions')">Positions</button>
     <button class="gsub-tab" id="gsub-orders" onclick="switchMainTab('orders')">Orders</button>
@@ -487,53 +556,95 @@
         <span>⚠️ Market price feed is stale or delayed. Real-time CoinGecko updates paused due to rate-limit cooldown. Orders are protected.</span>
       </div>
 
-      <!-- Active Instrument Header with Quick Coin Switcher -->
-      <div class="chart-header">
+      <!-- Active Instrument Header with Shark Exchange Style Stats (Screenshot 1) -->
+      <div class="chart-header shark-header">
         <div class="chart-header-left">
           <div class="active-coin-pill" id="chart-active-coin-pill" title="Click to Switch Trading Pair" onclick="togglePairQuickMenu()">
             <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" class="chp-icon" id="chp-icon" alt="Coin"/>
-            <span class="chp-symbol" id="chp-symbol">BTC/USDT</span>
-            <span class="chp-name" id="chp-name">Bitcoin</span>
+            <span class="chp-symbol" id="chp-symbol">BTC-USDT</span>
             <span class="chp-caret">▾</span>
           </div>
 
-          <!-- Quick 1-Tap Coin Switcher Chips -->
-          <div class="chart-quick-coins-bar" id="chart-quick-coins-bar">
-            <button type="button" class="cq-coin-btn active" id="cq-bitcoin" onclick="selectCoin('bitcoin')">BTC</button>
-            <button type="button" class="cq-coin-btn" id="cq-ethereum" onclick="selectCoin('ethereum')">ETH</button>
-            <button type="button" class="cq-coin-btn" id="cq-solana" onclick="selectCoin('solana')">SOL</button>
-          </div>
-
-          <!-- Quick Pair Selection Dropdown -->
+          <!-- Quick Pair Selection Dropdown with all popular coins -->
           <div id="chart-pair-quick-menu" class="pair-quick-menu hidden">
             <div class="pq-item" onclick="selectCoin('bitcoin'); closePairQuickMenu();">
-              <span class="pq-sym">BTC/USDT</span>
-              <span class="pq-name">Bitcoin</span>
+              <span class="pq-sym">BTC-USDT</span><span class="pq-name">Bitcoin</span>
             </div>
             <div class="pq-item" onclick="selectCoin('ethereum'); closePairQuickMenu();">
-              <span class="pq-sym">ETH/USDT</span>
-              <span class="pq-name">Ethereum</span>
+              <span class="pq-sym">ETH-USDT</span><span class="pq-name">Ethereum</span>
             </div>
             <div class="pq-item" onclick="selectCoin('solana'); closePairQuickMenu();">
-              <span class="pq-sym">SOL/USDT</span>
-              <span class="pq-name">Solana</span>
+              <span class="pq-sym">SOL-USDT</span><span class="pq-name">Solana</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('binancecoin'); closePairQuickMenu();">
+              <span class="pq-sym">BNB-USDT</span><span class="pq-name">BNB</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('dogecoin'); closePairQuickMenu();">
+              <span class="pq-sym">DOGE-USDT</span><span class="pq-name">Dogecoin</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('ripple'); closePairQuickMenu();">
+              <span class="pq-sym">XRP-USDT</span><span class="pq-name">XRP</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('cardano'); closePairQuickMenu();">
+              <span class="pq-sym">ADA-USDT</span><span class="pq-name">Cardano</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('sui'); closePairQuickMenu();">
+              <span class="pq-sym">SUI-USDT</span><span class="pq-name">Sui</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('avalanche-2'); closePairQuickMenu();">
+              <span class="pq-sym">AVAX-USDT</span><span class="pq-name">Avalanche</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('pepe'); closePairQuickMenu();">
+              <span class="pq-sym">PEPE-USDT</span><span class="pq-name">Pepe</span>
+            </div>
+            <div class="pq-item" onclick="selectCoin('near'); closePairQuickMenu();">
+              <span class="pq-sym">NEAR-USDT</span><span class="pq-name">NEAR Protocol</span>
             </div>
           </div>
-          <span class="chart-source-badge badge-provider" id="chart-source-badge" title="Visual Chart: TradingView (Binance Feed) | Paper-Trading Engine: VTrade (CoinGecko Feed)">TradingView Chart</span>
+
+          <!-- Price & Rate Box (Screenshot 1) -->
+          <div class="shark-price-box">
+            <span class="shark-live-price" id="chart-price">$83,811.90 USDT</span>
+            <span class="shark-rate-tag" id="chart-inr-rate">1 USDT ≈ ₹92.50</span>
+          </div>
+
+          <!-- Shark Stats Strip: 24h Change, 24h Low, 24h High, 24h Vol, Funding Rate -->
+          <div class="shark-stats-row">
+            <div class="sstat-item">
+              <span class="sstat-lbl">24h Change</span>
+              <span class="sstat-val" id="chart-change-badge">-0.10%</span>
+            </div>
+            <div class="sstat-item">
+              <span class="sstat-lbl">24h Low</span>
+              <span class="sstat-val" id="chart-low-val">82,912.8</span>
+            </div>
+            <div class="sstat-item">
+              <span class="sstat-lbl">24h High</span>
+              <span class="sstat-val" id="chart-high-val">84,117.6</span>
+            </div>
+            <div class="sstat-item">
+              <span class="sstat-lbl">24h Vol (USDT)</span>
+              <span class="sstat-val" id="chart-vol">9.21B</span>
+            </div>
+            <div class="sstat-item funding-box">
+              <span class="sstat-lbl">Funding Rate / Countdown</span>
+              <span class="sstat-val gold" id="chart-funding-rate">0.0022% / <span id="funding-countdown">07:32:08</span></span>
+            </div>
+          </div>
         </div>
-        <div class="chart-price-info">
-          <div class="chart-price-badge-row">
-            <span class="cpi-price" id="chart-price">$— USDT</span>
-            <span class="price-mode-badge live" id="header-price-mode-badge" title="Market Data Status">
-              <span class="data-mode-dot"></span>
-              <span id="header-price-mode-text">Live</span>
-            </span>
+
+        <div class="chart-header-right">
+          <!-- Mark Price / Last Traded Price toggle (Screenshot 1) -->
+          <div class="shark-price-mode-tabs">
+            <button type="button" class="spm-tab active" id="spm-mark" onclick="setPriceMode('mark', this)">Mark Price</button>
+            <button type="button" class="spm-tab" id="spm-last" onclick="setPriceMode('last', this)">Last Traded Price</button>
           </div>
-          <span class="cpi-badge" id="chart-change-badge">—</span>
-          <div class="cpi-meta">
-            <span class="cpi-meta-item">24h Vol: <b id="chart-vol">—</b></span>
-            <span class="cpi-meta-item">MCap: <b id="chart-mcap">—</b></span>
-          </div>
+          <!-- 1-Click Trade Switch (Screenshot 1) -->
+          <label class="one-click-toggle" title="Toggle 1-Click Fast Trading">
+            <span class="oct-label">1-Click Trade</span>
+            <input type="checkbox" id="one-click-toggle-input" onchange="toggle1ClickTrade(this.checked)" />
+            <span class="oct-switch"></span>
+          </label>
         </div>
       </div>
 
@@ -707,6 +818,11 @@
         <button class="btab" id="tab-btn-history" onclick="showBottomTab('history', this)">
           Trade History <span class="btab-count" id="history-count-badge">(0)</span>
         </button>
+      </div>
+
+      <!-- Unauthenticated Guest Prompt (Screenshot 2 Match) -->
+      <div class="unauth-positions-banner" id="unauth-positions-banner">
+        <span class="upb-text"><a href="javascript:void(0)" onclick="openAuthModal('login')">Log In</a> or <a href="javascript:void(0)" onclick="openAuthModal('register')">Register Now</a> to trade.</span>
       </div>
 
       <!-- Positions Panel -->
@@ -964,10 +1080,25 @@
           <div class="os-row"><span>Asset Held</span><span id="sum-coin-held">0.00000000 BTC</span></div>
         </div>
 
-        <!-- SUBMIT BUTTON -->
-        <button class="btn-execute delta-submit-btn buy-execute" id="delta-submit-btn" onclick="executeTrade()">
-          <span id="delta-submit-label">Buy BTC</span>
-        </button>
+        <!-- AUTHENTICATED SUBMIT BUTTON (Shown when logged in) -->
+        <div id="trade-auth-actions" class="hidden">
+          <button class="btn-execute delta-submit-btn buy-execute" id="delta-submit-btn" onclick="executeTrade()">
+            <span id="delta-submit-label">Buy BTC</span>
+          </button>
+        </div>
+
+        <!-- UNAUTHENTICATED GUEST ACTIONS (Screenshot 1 Match: Log In to Trade & Create Account) -->
+        <div id="trade-guest-actions" class="trade-guest-actions">
+          <button type="button" class="btn-trade-login" onclick="openAuthModal('login')">Log In to Trade</button>
+          <div class="trade-guest-prompt">New to VTrade?</div>
+          <button type="button" class="btn-trade-signup" onclick="openAuthModal('register')">Create Account</button>
+
+          <div class="trade-guest-margin-stats">
+            <div class="tgm-row"><span>Margin Ratio</span><span class="tgm-val green">0.00%</span></div>
+            <div class="tgm-row"><span>Maintenance Margin</span><span class="tgm-val">0.0000 USDT</span></div>
+            <div class="tgm-row"><span>Margin Balance</span><span class="tgm-val">0.0000 USDT</span></div>
+          </div>
+        </div>
       </div>
 
       <!-- Realized PnL Summary -->

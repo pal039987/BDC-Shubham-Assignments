@@ -67,11 +67,19 @@ function getApiBase() {
 }
 let API = getApiBase();
 
-// ─── Supported Coins (Strictly 3 Pairs: BTC/USDT, ETH/USDT, SOL/USDT) ───────────
+// ─── Supported Coins (Popular Coins: BTC, ETH, SOL, BNB, DOGE, XRP, ADA, SUI, AVAX, PEPE, NEAR) ───────────
 const COIN_LIST = [
-  { id: 'bitcoin',  symbol: 'BTC', name: 'Bitcoin',  pair: 'BTC/USDT', color: '#f7931a', category: 'Majors',  tags: ['Majors'],  icon: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',   binanceSymbol: 'BTCUSDT', basePrice: 83427,   baseChange: -0.45, baseVol: 31513000000, baseCap: 1676759000000 },
-  { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', pair: 'ETH/USDT', color: '#627eea', category: 'Majors',  tags: ['Majors'],  icon: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png', binanceSymbol: 'ETHUSDT', basePrice: 2515.06, baseChange: -1.62, baseVol: 16497000000, baseCap: 307174000000 },
-  { id: 'solana',   symbol: 'SOL', name: 'Solana',   pair: 'SOL/USDT', color: '#14f195', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',  binanceSymbol: 'SOLUSDT', basePrice: 108.01,  baseChange: -3.78, baseVol: 4059000000,  baseCap: 63637000000 }
+  { id: 'bitcoin',     symbol: 'BTC',  name: 'Bitcoin',       pair: 'BTC/USDT',  color: '#f7931a', category: 'Majors',  tags: ['Majors'],  icon: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',   binanceSymbol: 'BTCUSDT',  basePrice: 83800.00, baseChange: -0.10, baseVol: 31513000000, baseCap: 1676759000000 },
+  { id: 'ethereum',    symbol: 'ETH',  name: 'Ethereum',      pair: 'ETH/USDT',  color: '#627eea', category: 'Majors',  tags: ['Majors'],  icon: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png', binanceSymbol: 'ETHUSDT',  basePrice: 2515.00,  baseChange: -1.60, baseVol: 16497000000, baseCap: 307174000000 },
+  { id: 'solana',      symbol: 'SOL',  name: 'Solana',        pair: 'SOL/USDT',  color: '#14f195', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',  binanceSymbol: 'SOLUSDT',  basePrice: 107.50,   baseChange: -3.70, baseVol: 4059000000,  baseCap: 63637000000 },
+  { id: 'binancecoin', symbol: 'BNB',  name: 'BNB',           pair: 'BNB/USDT',  color: '#f3ba2f', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png', binanceSymbol: 'BNBUSDT', basePrice: 744.00, baseChange: -0.14, baseVol: 1850000000, baseCap: 107000000000 },
+  { id: 'dogecoin',    symbol: 'DOGE', name: 'Dogecoin',      pair: 'DOGE/USDT', color: '#c2a633', category: 'Meme',    tags: ['Meme'],    icon: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',   binanceSymbol: 'DOGEUSDT', basePrice: 0.085,    baseChange: -0.65, baseVol: 850000000,   baseCap: 12500000000 },
+  { id: 'ripple',      symbol: 'XRP',  name: 'XRP',           pair: 'XRP/USDT',  color: '#23292f', category: 'Payment', tags: ['Payment'], icon: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png', binanceSymbol: 'XRPUSDT', basePrice: 1.38, baseChange: -0.85, baseVol: 2450000000, baseCap: 78000000000 },
+  { id: 'cardano',     symbol: 'ADA',  name: 'Cardano',       pair: 'ADA/USDT',  color: '#0033ad', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/975/small/cardano.png',   binanceSymbol: 'ADAUSDT',  basePrice: 0.236,    baseChange: -1.08, baseVol: 420000000,   baseCap: 8400000000 },
+  { id: 'sui',         symbol: 'SUI',  name: 'Sui',           pair: 'SUI/USDT',  color: '#2a82e4', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png', binanceSymbol: 'SUIUSDT', basePrice: 1.058, baseChange: -1.13, baseVol: 560000000, baseCap: 3100000000 },
+  { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche',     pair: 'AVAX/USDT', color: '#e84142', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png', binanceSymbol: 'AVAXUSDT', basePrice: 10.23, baseChange: -2.10, baseVol: 390000000, baseCap: 4100000000 },
+  { id: 'pepe',        symbol: 'PEPE', name: 'Pepe',          pair: 'PEPE/USDT', color: '#4ba35a', category: 'Meme',    tags: ['Meme'],    icon: 'https://assets.coingecko.com/coins/images/29850/small/pepe-token.png', binanceSymbol: 'PEPEUSDT', basePrice: 0.0000042, baseChange: 1.60, baseVol: 650000000, baseCap: 1800000000 },
+  { id: 'near',        symbol: 'NEAR', name: 'NEAR Protocol', pair: 'NEAR/USDT', color: '#000000', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/10365/small/near.png', binanceSymbol: 'NEARUSDT', basePrice: 5.045, baseChange: -1.20, baseVol: 480000000, baseCap: 6200000000 }
 ];
 
 function getCoinDefinition(coinId) {
@@ -340,52 +348,95 @@ document.addEventListener('DOMContentLoaded', () => {
   loadWalletState();
   if (typeof applySettingsToTradePanel === 'function') applySettingsToTradePanel();
   if (typeof initDownloadApkVisibility === 'function') initDownloadApkVisibility();
+
+  updateAuthStateUI();
+
   // Immediately kick off live market data streaming directly from Binance
   fetchBinanceDirect();
   initBinanceWebSocket();
   initDraggableOrders();
-  if (token) showApp();
-});
-
-function showApp() {
-  document.getElementById('auth-overlay').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  document.getElementById('nav-username').textContent = username;
-  document.getElementById('user-avatar').textContent  = username.charAt(0).toUpperCase();
-  if (typeof applySettingsToTradePanel === 'function') applySettingsToTradePanel();
-  if (typeof initDownloadApkVisibility === 'function') initDownloadApkVisibility();
   initMarketExplorer();
   setChartMode(chartMode);
   initRealtimeTicker();
-  initDraggableOrders();
-  loadAll();
   setupDrawingCanvas();
   startPriceRefreshTimer();
+  startFundingCountdown();
+
+  loadAll();
+});
+
+function updateAuthStateUI() {
+  const navGuest = document.getElementById('nav-guest-group');
+  const navUser  = document.getElementById('nav-user-group');
+  const tradeGuest = document.getElementById('trade-guest-actions');
+  const tradeAuth  = document.getElementById('trade-auth-actions');
+  const unauthPos  = document.getElementById('unauth-positions-banner');
+
+  if (token) {
+    if (navGuest) navGuest.classList.add('hidden');
+    if (navUser)  navUser.classList.remove('hidden');
+    const uNameEl = document.getElementById('nav-username');
+    const uAvEl   = document.getElementById('user-avatar');
+    if (uNameEl) uNameEl.textContent = username || 'Trader';
+    if (uAvEl)   uAvEl.textContent   = (username || 'T').charAt(0).toUpperCase();
+
+    if (tradeGuest) tradeGuest.classList.add('hidden');
+    if (tradeAuth)  tradeAuth.classList.remove('hidden');
+    if (unauthPos)  unauthPos.classList.add('hidden');
+  } else {
+    if (navGuest) navGuest.classList.remove('hidden');
+    if (navUser)  navUser.classList.add('hidden');
+
+    if (tradeGuest) tradeGuest.classList.remove('hidden');
+    if (tradeAuth)  tradeAuth.classList.add('hidden');
+    if (unauthPos)  unauthPos.classList.remove('hidden');
+  }
+}
+
+function openAuthModal(tab = 'login') {
+  const overlay = document.getElementById('auth-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+  switchTab(tab);
+}
+
+function closeAuthModal() {
+  const overlay = document.getElementById('auth-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+function showApp() {
+  updateAuthStateUI();
+  closeAuthModal();
 }
 
 async function loadAll() {
   await loadPrices();
-  await loadPortfolio();
-  loadWalletState();
-  updateMiniStats();
-  renderPositions();
-  renderOrders();
-  renderHistory();
-  updatePnlSummary();
-  updateTabBadges();
+  if (token) {
+    await loadPortfolio();
+    loadWalletState();
+    renderPositions();
+    renderOrders();
+    renderHistory();
+    updatePnlSummary();
+  } else {
+    updateMiniStats();
+    updateTabBadges();
+  }
   showBottomTab(activeBottomTab);
   updateTradeLabels();
   updateTradeCalc();
   loadChart(selectedCoin, currentTF);
   renderGrowwExploreUI();
-  switchMainTab('explore');
+  switchMainTab('chart');
 }
 
 // ─── AUTH ─────────────────────────────────────────────────
 function switchTab(tab) {
   ['login','register'].forEach(t => {
-    document.getElementById(`${t}-form`).classList.toggle('hidden', t !== tab);
-    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+    const f = document.getElementById(`${t}-form`);
+    const b = document.getElementById(`tab-${t}`);
+    if (f) f.classList.toggle('hidden', t !== tab);
+    if (b) b.classList.toggle('active', t === tab);
   });
 }
 
@@ -396,7 +447,15 @@ async function handleLogin(e) {
   setLoading(btn, true); err.classList.add('hidden');
   try {
     const r = await post(`${API}/auth/login`, { email: v('login-email'), password: v('login-password') });
-    saveAuth(r); showApp();
+    saveAuth(r);
+    closeAuthModal();
+    updateAuthStateUI();
+    await loadPortfolio();
+    renderPositions();
+    renderOrders();
+    renderHistory();
+    updatePnlSummary();
+    showToast(`Welcome back, ${r.username}!`, 'success');
   } catch(ex) { err.textContent = ex.message; err.classList.remove('hidden'); }
   finally { setLoading(btn, false); }
 }
@@ -408,8 +467,15 @@ async function handleRegister(e) {
   setLoading(btn, true); err.classList.add('hidden');
   try {
     const r = await post(`${API}/auth/register`, { username: v('reg-username'), email: v('reg-email'), password: v('reg-password') });
-    saveAuth(r); showApp();
-    showToast('🎉 Account created! You have $10,000 to trade.', 'success');
+    saveAuth(r);
+    closeAuthModal();
+    updateAuthStateUI();
+    await loadPortfolio();
+    renderPositions();
+    renderOrders();
+    renderHistory();
+    updatePnlSummary();
+    showToast('🎉 Account created! You have $10,000 USDT to trade.', 'success');
   } catch(ex) { err.textContent = ex.message; err.classList.remove('hidden'); }
   finally { setLoading(btn, false); }
 }
@@ -424,11 +490,12 @@ function saveAuth(data) {
 function logout() {
   token = null; username = ''; balance = 10000;
   ['ct_token','ct_username','ct_balance'].forEach(k => safeStorageRemove(k));
-  if (priceChart) { priceChart.destroy(); priceChart = null; }
-  if (marketDataInterval) { clearInterval(marketDataInterval); marketDataInterval = null; }
-  stopPriceRefreshTimer();
-  document.getElementById('auth-overlay').classList.remove('hidden');
-  document.getElementById('app').classList.add('hidden');
+  updateAuthStateUI();
+  renderPositions();
+  renderOrders();
+  renderHistory();
+  updatePnlSummary();
+  updateMiniStats();
   showToast('Logged out', 'info');
 }
 
@@ -440,12 +507,32 @@ let dailyOpenCache = {
   bitcoin: 0,
   ethereum: 0,
   solana: 0,
+  binancecoin: 0,
+  dogecoin: 0,
+  ripple: 0,
+  cardano: 0,
+  sui: 0,
+  'avalanche-2': 0,
+  pepe: 0,
+  near: 0,
   lastUpdated: 0
 };
 
 // Fetches 00:00 UTC session candle open from Binance 1d klines (matches TradingView Daily Watchlist)
 async function updateDailySessionOpenPrices() {
-  const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
+  const symbolMap = {
+    'BTCUSDT': 'bitcoin',
+    'ETHUSDT': 'ethereum',
+    'SOLUSDT': 'solana',
+    'BNBUSDT': 'binancecoin',
+    'DOGEUSDT': 'dogecoin',
+    'XRPUSDT': 'ripple',
+    'ADAUSDT': 'cardano',
+    'SUIUSDT': 'sui',
+    'AVAXUSDT': 'avalanche-2',
+    'PEPEUSDT': 'pepe',
+    'NEARUSDT': 'near'
+  };
   try {
     const promises = Object.entries(symbolMap).map(async ([sym, coinId]) => {
       try {
@@ -472,7 +559,7 @@ async function updateDailySessionOpenPrices() {
   } catch (err) {}
 }
 
-// Fast direct REST fetch to Binance 24hr ticker (works on cellular 5G and Wi-Fi globally)
+// Fast direct REST fetch to Binance 24hr ticker for all 11 popular coins
 async function fetchBinanceDirect() {
   try {
     if (Date.now() - dailyOpenCache.lastUpdated > 15 * 60 * 1000 || !dailyOpenCache.bitcoin) {
@@ -481,14 +568,26 @@ async function fetchBinanceDirect() {
 
     const ctl = new AbortController();
     const tid = setTimeout(() => ctl.abort(), 3500);
-    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
+    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22BNBUSDT%22,%22DOGEUSDT%22,%22XRPUSDT%22,%22ADAUSDT%22,%22SUIUSDT%22,%22AVAXUSDT%22,%22PEPEUSDT%22,%22NEARUSDT%22%5D';
     const resp = await fetch(bUrl, { signal: ctl.signal });
     clearTimeout(tid);
 
     if (resp.ok) {
       const bList = await resp.json();
       if (Array.isArray(bList) && bList.length >= 3) {
-        const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
+        const symbolMap = {
+          'BTCUSDT': 'bitcoin',
+          'ETHUSDT': 'ethereum',
+          'SOLUSDT': 'solana',
+          'BNBUSDT': 'binancecoin',
+          'DOGEUSDT': 'dogecoin',
+          'XRPUSDT': 'ripple',
+          'ADAUSDT': 'cardano',
+          'SUIUSDT': 'sui',
+          'AVAXUSDT': 'avalanche-2',
+          'PEPEUSDT': 'pepe',
+          'NEARUSDT': 'near'
+        };
         let updatedAny = false;
 
         bList.forEach(item => {
@@ -503,11 +602,11 @@ async function fetchBinanceDirect() {
 
               currentPrices[coinId] = {
                 ...currentPrices[coinId],
-                price: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
-                usdtPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
-                usdPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                price: parseFloat(p.toFixed(p > 10 ? 2 : p > 0.01 ? 4 : 8)),
+                usdtPrice: parseFloat(p.toFixed(p > 10 ? 2 : p > 0.01 ? 4 : 8)),
+                usdPrice: parseFloat(p.toFixed(p > 10 ? 2 : p > 0.01 ? 4 : 8)),
                 dailyOpen: dailyOpen,
-                changePrice: parseFloat(changePrice.toFixed(2)),
+                changePrice: parseFloat(changePrice.toFixed(p > 10 ? 2 : 4)),
                 change24h: parseFloat(change24h.toFixed(2)),
                 volume24h: parseFloat(item.quoteVolume) || 0,
                 high24h: parseFloat(item.highPrice) || 0,
@@ -1038,17 +1137,33 @@ function updateChartPriceDisplay() {
   const changePrice = coin?.changePrice !== undefined ? coin?.changePrice : ((price * (chg || 0)) / 100);
   const vol = coin?.volume24h || coinDef.baseVol;
   const mcap = coin?.marketCap || coinDef.baseCap;
+  const lowVal = coin?.low24h || (price * 0.985);
+  const highVal = coin?.high24h || (price * 1.015);
 
-  document.getElementById('chart-price').textContent = `$${fmt(price)}`;
+  const priceEl = document.getElementById('chart-price');
+  if (priceEl) priceEl.textContent = `${fmt(price)} USDT`;
+
+  const inrRateEl = document.getElementById('chart-inr-rate');
+  if (inrRateEl) inrRateEl.textContent = '1 USDT ≈ ₹92.50';
+
   const badge = document.getElementById('chart-change-badge');
   const sign  = (chg||0) >= 0 ? '+' : '';
-  const priceSign = (changePrice||0) >= 0 ? '+' : '';
-  const absChangePrice = Math.abs(changePrice||0);
-  const priceFormatted = absChangePrice >= 10 ? fmt(absChangePrice) : absChangePrice.toFixed(2);
-  badge.textContent = `${priceSign}$${priceFormatted} (${sign}${(chg||0).toFixed(2)}%)`;
-  badge.className   = `cpi-badge ${(chg||0)>=0?'pos':'neg'}`;
-  document.getElementById('chart-vol').textContent  = fmtLarge(vol);
-  document.getElementById('chart-mcap').textContent = fmtLarge(mcap);
+  if (badge) {
+    badge.textContent = `${sign}${(chg||0).toFixed(2)}%`;
+    badge.className   = `sstat-val ${(chg||0)>=0?'pos':'neg'}`;
+  }
+
+  const lowEl = document.getElementById('chart-low-val');
+  if (lowEl) lowEl.textContent = fmt(lowVal);
+
+  const highEl = document.getElementById('chart-high-val');
+  if (highEl) highEl.textContent = fmt(highVal);
+
+  const volEl = document.getElementById('chart-vol');
+  if (volEl) volEl.textContent = fmtLarge(vol);
+
+  const mcapEl = document.getElementById('chart-mcap');
+  if (mcapEl) mcapEl.textContent = fmtLarge(mcap);
 
   // Requirement A4 & G3: Show "Stale", "Live" or "Simulated" badge next to price
   const modeBadge = document.getElementById('header-price-mode-badge');
@@ -1064,6 +1179,55 @@ function updateChartPriceDisplay() {
       modeText.textContent = isLive ? 'Live' : 'Simulated';
     }
   }
+}
+
+// ─── SHARK EXCHANGE QUICK PAIR MENU & CONTROLS ───────────
+function togglePairQuickMenu() {
+  const menu = document.getElementById('chart-pair-quick-menu');
+  if (menu) menu.classList.toggle('hidden');
+}
+function closePairQuickMenu() {
+  const menu = document.getElementById('chart-pair-quick-menu');
+  if (menu) menu.classList.add('hidden');
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('chart-pair-quick-menu');
+  const pill = document.getElementById('chart-active-coin-pill');
+  if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !pill?.contains(e.target)) {
+    menu.classList.add('hidden');
+  }
+});
+
+let currentPriceMode = 'mark';
+function setPriceMode(mode, btn) {
+  currentPriceMode = mode;
+  document.querySelectorAll('.spm-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+let is1ClickTradeEnabled = false;
+function toggle1ClickTrade(enabled) {
+  is1ClickTradeEnabled = enabled;
+  showToast(`1-Click Trade ${enabled ? 'Enabled' : 'Disabled'}`, 'info');
+}
+
+let fundingCountdownTimer = null;
+function startFundingCountdown() {
+  if (fundingCountdownTimer) clearInterval(fundingCountdownTimer);
+  function tick() {
+    const now = new Date();
+    const utcHours = now.getUTCHours();
+    const nextFundingUtc = (Math.floor(utcHours / 8) + 1) * 8;
+    const target = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), nextFundingUtc, 0, 0));
+    let diffSec = Math.max(0, Math.floor((target.getTime() - now.getTime()) / 1000));
+    const h = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+    const s = String(diffSec % 60).padStart(2, '0');
+    const el = document.getElementById('funding-countdown');
+    if (el) el.textContent = `${h}:${m}:${s}`;
+  }
+  tick();
+  fundingCountdownTimer = setInterval(tick, 1000);
 }
 
 // ─── COIN SELECTION ───────────────────────────────────────
@@ -1084,15 +1248,20 @@ function selectCoin(coin) {
   const activeMkt = document.getElementById(`mkt-row-${selectedCoin}`);
   if (activeMkt) activeMkt.classList.add('active');
 
-  // 3. Update Chart Header Active Coin Display
+  // 3. Update Chart Header Active Coin Display (BTC-USDT format matching Screenshot 1)
   const chpIcon = document.getElementById('chp-icon');
   const chpSym  = document.getElementById('chp-symbol');
   const chpName = document.getElementById('chp-name');
   if (chpIcon) chpIcon.src = coinDef.icon;
-  if (chpSym)  chpSym.textContent = coinDef.pair;
+  if (chpSym)  chpSym.textContent = `${coinDef.symbol}-USDT`;
   if (chpName) chpName.textContent = coinDef.name;
 
-  // 4. Update Delta Trade Panel & Mini Stats
+  // 4. Update Ticker strip active chip
+  document.querySelectorAll('.gi-item').forEach(i => i.classList.remove('active'));
+  const activeGi = document.getElementById(`gi-${selectedCoin}`);
+  if (activeGi) activeGi.classList.add('active');
+
+  // 5. Update Delta Trade Panel & Mini Stats
   if (tradeOrderType === 'limit') {
     setLimitPriceToCurrent();
   }
@@ -1125,11 +1294,11 @@ function initBinanceWebSocket() {
   }
 
   try {
-    const wsUrl = 'wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker';
+    const wsUrl = 'wss://stream.binance.com:9443/stream?streams=btcusdt@ticker/ethusdt@ticker/solusdt@ticker/bnbusdt@ticker/dogeusdt@ticker/xrpusdt@ticker/adausdt@ticker/suiusdt@ticker/avaxusdt@ticker/pepeusdt@ticker/nearusdt@ticker';
     binanceWs = new WebSocket(wsUrl);
 
     binanceWs.onopen = () => {
-      console.log('Connected to Binance live market stream (BTCUSDT, ETHUSDT, SOLUSDT)');
+      console.log('Connected to Binance live market stream (11 popular coins)');
       const badge = document.getElementById('header-price-mode-badge');
       if (badge) badge.className = 'price-mode-badge live';
       const badgeText = document.getElementById('header-price-mode-text');
@@ -1141,10 +1310,20 @@ function initBinanceWebSocket() {
         const msg = JSON.parse(event.data);
         if (!msg || !msg.data) return;
         const d = msg.data;
-        let coinKey = null;
-        if (d.s === 'BTCUSDT') coinKey = 'bitcoin';
-        else if (d.s === 'ETHUSDT') coinKey = 'ethereum';
-        else if (d.s === 'SOLUSDT') coinKey = 'solana';
+        const binanceToKey = {
+          'BTCUSDT': 'bitcoin',
+          'ETHUSDT': 'ethereum',
+          'SOLUSDT': 'solana',
+          'BNBUSDT': 'binancecoin',
+          'DOGEUSDT': 'dogecoin',
+          'XRPUSDT': 'ripple',
+          'ADAUSDT': 'cardano',
+          'SUIUSDT': 'sui',
+          'AVAXUSDT': 'avalanche-2',
+          'PEPEUSDT': 'pepe',
+          'NEARUSDT': 'near'
+        };
+        const coinKey = binanceToKey[d.s];
         if (!coinKey) return;
 
         const livePrice = parseFloat(d.c);
@@ -1239,15 +1418,47 @@ function onPriceTick(coin, prevPrice, newPrice) {
 
 // ─── TRADINGVIEW OFFICIAL HOSTED WIDGET INTEGRATION ───────
 const SUPPORTED_TV_SYMBOLS = {
-  'bitcoin': 'BINANCE:BTCUSDT',
-  'btc': 'BINANCE:BTCUSDT',
-  'btc/usdt': 'BINANCE:BTCUSDT',
-  'ethereum': 'BINANCE:ETHUSDT',
-  'eth': 'BINANCE:ETHUSDT',
-  'eth/usdt': 'BINANCE:ETHUSDT',
-  'solana': 'BINANCE:SOLUSDT',
-  'sol': 'BINANCE:SOLUSDT',
-  'sol/usdt': 'BINANCE:SOLUSDT'
+  'bitcoin':     'BINANCE:BTCUSDT',
+  'btc':         'BINANCE:BTCUSDT',
+  'btc/usdt':    'BINANCE:BTCUSDT',
+  'btcusdt':     'BINANCE:BTCUSDT',
+  'ethereum':    'BINANCE:ETHUSDT',
+  'eth':         'BINANCE:ETHUSDT',
+  'eth/usdt':    'BINANCE:ETHUSDT',
+  'ethusdt':     'BINANCE:ETHUSDT',
+  'solana':      'BINANCE:SOLUSDT',
+  'sol':         'BINANCE:SOLUSDT',
+  'sol/usdt':    'BINANCE:SOLUSDT',
+  'solusdt':     'BINANCE:SOLUSDT',
+  'binancecoin': 'BINANCE:BNBUSDT',
+  'bnb':         'BINANCE:BNBUSDT',
+  'bnb/usdt':    'BINANCE:BNBUSDT',
+  'bnbusdt':     'BINANCE:BNBUSDT',
+  'dogecoin':    'BINANCE:DOGEUSDT',
+  'doge':        'BINANCE:DOGEUSDT',
+  'doge/usdt':   'BINANCE:DOGEUSDT',
+  'dogeusdt':    'BINANCE:DOGEUSDT',
+  'ripple':      'BINANCE:XRPUSDT',
+  'xrp':         'BINANCE:XRPUSDT',
+  'xrp/usdt':    'BINANCE:XRPUSDT',
+  'xrpusdt':     'BINANCE:XRPUSDT',
+  'cardano':     'BINANCE:ADAUSDT',
+  'ada':         'BINANCE:ADAUSDT',
+  'ada/usdt':    'BINANCE:ADAUSDT',
+  'adausdt':     'BINANCE:ADAUSDT',
+  'sui':         'BINANCE:SUIUSDT',
+  'sui/usdt':    'BINANCE:SUIUSDT',
+  'suiusdt':     'BINANCE:SUIUSDT',
+  'avalanche-2': 'BINANCE:AVAXUSDT',
+  'avax':        'BINANCE:AVAXUSDT',
+  'avax/usdt':   'BINANCE:AVAXUSDT',
+  'avaxusdt':    'BINANCE:AVAXUSDT',
+  'pepe':        'BINANCE:PEPEUSDT',
+  'pepe/usdt':   'BINANCE:PEPEUSDT',
+  'pepeusdt':    'BINANCE:PEPEUSDT',
+  'near':        'BINANCE:NEARUSDT',
+  'near/usdt':   'BINANCE:NEARUSDT',
+  'nearusdt':    'BINANCE:NEARUSDT'
 };
 
 const TV_INTERVAL_MAP = {
@@ -2713,45 +2924,73 @@ function switchMainTab(tabName) {
   if (watchlistSection)   watchlistSection.classList.add('hidden');
   if (marketsPanel)       marketsPanel.classList.add('hidden');
 
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth > 1024;
+
   if (tabName === 'explore') {
     if (exploreContainer) exploreContainer.classList.remove('hidden');
     if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderGrowwExploreUI();
-  } else if (tabName === 'chart') {
-    // Pure Chart View: ONLY chart + coin switcher
-    if (chartArea) chartArea.classList.remove('hidden');
-    if (chartContainerBox) chartContainerBox.classList.remove('hidden');
-    if (chartHeader) chartHeader.classList.remove('hidden');
-    if (tfRow) tfRow.classList.remove('hidden');
-    if (indicesTicker) indicesTicker.classList.add('hidden');
-    updateChartQuickCoinChips();
-    renderTradingViewChart();
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-      renderTvChartOverlay();
-    }, 60);
-  } else if (tabName === 'trade') {
-    // Pure Trade View: ONLY trade execution desk
-    if (tradePanel) tradePanel.classList.remove('hidden');
-    if (indicesTicker) indicesTicker.classList.remove('hidden');
-    updateMiniStats();
-    updateTradeActiveCoinBanner();
-    updateTradeCalc();
-  } else if (tabName === 'positions' || tabName === 'orders') {
-    // Pure Positions View: ONLY positions details & orders
-    if (positionsContainer) positionsContainer.classList.remove('hidden');
-    if (indicesTicker) indicesTicker.classList.remove('hidden');
-    showBottomTab(tabName === 'orders' ? 'orders' : 'positions');
-    renderPositions();
-    renderOrders();
-    renderHistory();
   } else if (tabName === 'wallet') {
-    // Dynamic Wallet View: real-time updated figures
     if (walletPanel) walletPanel.classList.remove('hidden');
     if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderWalletOverview();
+  } else {
+    // Exchange views (chart, trade, positions, orders)
+    if (indicesTicker) indicesTicker.classList.remove('hidden');
+
+    if (isDesktop) {
+      // Desktop Pro Exchange Layout: Chart + Positions on left, Trade Desk on right (Screenshots 1 & 2)
+      if (chartArea) chartArea.classList.remove('hidden');
+      if (chartContainerBox) chartContainerBox.classList.remove('hidden');
+      if (chartHeader) chartHeader.classList.remove('hidden');
+      if (tfRow) tfRow.classList.remove('hidden');
+      if (positionsContainer) positionsContainer.classList.remove('hidden');
+      if (tradePanel) tradePanel.classList.remove('hidden');
+
+      showBottomTab(tabName === 'orders' ? 'orders' : 'positions');
+      updateMiniStats();
+      updateTradeActiveCoinBanner();
+      updateTradeCalc();
+      renderTradingViewChart();
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+        renderTvChartOverlay();
+      }, 60);
+    } else {
+      // Mobile isolated single-tab mode
+      if (tabName === 'chart') {
+        if (chartArea) chartArea.classList.remove('hidden');
+        if (chartContainerBox) chartContainerBox.classList.remove('hidden');
+        if (chartHeader) chartHeader.classList.remove('hidden');
+        if (tfRow) tfRow.classList.remove('hidden');
+        updateChartQuickCoinChips();
+        renderTradingViewChart();
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+          renderTvChartOverlay();
+        }, 60);
+      } else if (tabName === 'trade') {
+        if (tradePanel) tradePanel.classList.remove('hidden');
+        updateMiniStats();
+        updateTradeActiveCoinBanner();
+        updateTradeCalc();
+      } else if (tabName === 'positions' || tabName === 'orders') {
+        if (positionsContainer) positionsContainer.classList.remove('hidden');
+        showBottomTab(tabName === 'orders' ? 'orders' : 'positions');
+        renderPositions();
+        renderOrders();
+        renderHistory();
+      }
+    }
   }
 }
+
+// Ensure layout updates on window resize
+window.addEventListener('resize', () => {
+  if (['chart', 'trade', 'positions', 'orders'].includes(activeMainTab)) {
+    switchMainTab(activeMainTab);
+  }
+});
 
 // Backward-compat fallback for any older call
 function switchNavSection(section, btn) {
@@ -2769,11 +3008,11 @@ function updateGrowwLiveElements(coinKey) {
   const chg = cData.change24h !== undefined ? cData.change24h : 0;
   const chgPrice = cData.changePrice !== undefined ? cData.changePrice : (price * chg / 100);
   const isPos = chg >= 0;
-  const sym = coinKey === 'bitcoin' ? 'btc' : coinKey === 'ethereum' ? 'eth' : 'sol';
+  const sym = coinKey === 'bitcoin' ? 'btc' : coinKey === 'ethereum' ? 'eth' : coinKey === 'solana' ? 'sol' : coinKey;
 
-  // 1. Ticker strip elements
-  const tickPriceEl = document.getElementById(`gi-price-${sym}`);
-  const tickChgEl = document.getElementById(`gi-chg-${sym}`);
+  // 1. Ticker strip elements (Supports all 11 popular coins)
+  const tickPriceEl = document.getElementById(`gi-price-${coinKey}`) || document.getElementById(`gi-price-${sym}`);
+  const tickChgEl = document.getElementById(`gi-chg-${coinKey}`) || document.getElementById(`gi-chg-${sym}`);
   if (tickPriceEl) tickPriceEl.textContent = `$${fmt(price)}`;
   if (tickChgEl) {
     tickChgEl.textContent = `${isPos ? '+' : ''}${chg.toFixed(2)}%`;
@@ -2862,7 +3101,7 @@ function renderGrowwMovers() {
 }
 
 function renderGrowwExploreUI() {
-  ['bitcoin', 'ethereum', 'solana'].forEach(c => updateGrowwLiveElements(c));
+  COIN_LIST.forEach(c => updateGrowwLiveElements(c.id));
   renderGrowwMovers();
 }
 
@@ -3558,6 +3797,12 @@ function updateTradeLabels() {
 let lastTradeClickTime = 0;
 
 function executeTrade() {
+  if (!token) {
+    openAuthModal('login');
+    showToast('Please log in or register to trade', 'info');
+    return;
+  }
+
   // Requirement: Reject any new order when market data is stale (> 3 minutes / 180s)
   const dataAgeMs = Date.now() - (lastGoodPriceTimestamp || 0);
   if (dataAgeMs > 180000) {
