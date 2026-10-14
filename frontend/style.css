@@ -1216,20 +1216,21 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
 .btn-exit-fullscreen {
   position: absolute;
   top: 10px;
-  right: 74px;
+  right: 12px;
   z-index: 100;
-  background: rgba(246, 70, 93, 0.9);
+  width: 32px;
+  height: 32px;
+  background: rgba(246, 70, 93, 0.92);
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
   backdrop-filter: blur(6px);
   transition: all 0.15s ease;
   user-select: none;
@@ -1237,7 +1238,7 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
 
 .btn-exit-fullscreen:hover {
   background: #f6465d;
-  transform: scale(1.05);
+  transform: scale(1.1);
 }
 
 .btn-exit-fullscreen.hidden {
@@ -1436,7 +1437,7 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   position: relative;
   flex: 1 1 auto;
   width: 100% !important;
-  height: calc(100% - 72px) !important;
+  height: 100% !important;
   min-height: 0;
   background: #0b0e11;
 }
@@ -1448,157 +1449,140 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   display: block;
 }
 
-/* ─── 1. Position & Order HUD Overlay on TradingView ─── */
-.tv-positions-hud {
+/* ─── 1. In-Chart Executed Position Marker & Price Line (TradingView Native Style) ─── */
+.tv-in-chart-position {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  z-index: 25;
+  left: 0;
+  right: 0;
+  top: 48%; /* In-chart price line */
+  transform: translateY(-50%);
+  z-index: 45;
   pointer-events: none;
-}
-
-.tv-hud-card {
-  background: rgba(14, 18, 24, 0.90);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  padding: 7px 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-  pointer-events: auto;
 }
 
-.tv-hud-left {
+.tv-in-chart-position.hidden {
+  display: none !important;
+}
+
+.tv-icp-line {
+  flex: 1;
+  height: 0;
+  border-top: 1.5px dashed rgba(14, 203, 129, 0.7);
+}
+.tv-in-chart-position.short-side .tv-icp-line {
+  border-top-color: rgba(246, 70, 93, 0.7);
+}
+
+.tv-icp-tag {
+  pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 8px;
+  background: rgba(14, 18, 26, 0.92);
+  border: 1px solid rgba(14, 203, 129, 0.6);
+  border-radius: 20px;
+  padding: 4px 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin-right: 65px; /* Leave space for price scale */
+  margin-left: 20px;
+}
+.tv-in-chart-position.short-side .tv-icp-tag {
+  border-color: rgba(246, 70, 93, 0.6);
 }
 
-.tv-hud-side-badge {
+.tv-icp-side {
   font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
+  font-weight: 800;
+  padding: 2px 6px;
   border-radius: 4px;
-  letter-spacing: 0.3px;
 }
-
-.tv-hud-side-badge.buy {
+.tv-icp-side.buy {
   background: rgba(14, 203, 129, 0.2);
   color: #0ecb81;
-  border: 1px solid rgba(14, 203, 129, 0.4);
 }
-
-.tv-hud-side-badge.sell {
+.tv-icp-side.sell {
   background: rgba(246, 70, 93, 0.2);
   color: #f6465d;
-  border: 1px solid rgba(246, 70, 93, 0.4);
 }
 
-.tv-hud-sym {
-  font-size: 12px;
+.tv-icp-entry {
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
 }
 
-.tv-hud-size {
+.tv-icp-pnl {
   font-size: 11px;
-  color: #848e9c;
-}
-
-.tv-hud-center {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.tv-hud-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-}
-
-.tv-hud-lbl {
-  color: #848e9c;
-}
-
-.tv-hud-val {
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.tv-hud-val.liq {
-  color: #f6465d;
-}
-
-.tv-hud-pnl {
   font-weight: 700;
-}
-
-.tv-hud-pnl.positive {
-  color: #0ecb81;
-}
-
-.tv-hud-pnl.negative {
-  color: #f6465d;
-}
-
-.tv-hud-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-
-.tv-hud-tpsl-btn, .tv-hud-close-btn {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
+  padding: 2px 6px;
   border-radius: 4px;
+}
+.tv-icp-pnl.pos {
+  color: #0ecb81;
+  background: rgba(14, 203, 129, 0.12);
+}
+.tv-icp-pnl.neg {
+  color: #f6465d;
+  background: rgba(246, 70, 93, 0.12);
+}
+
+.tv-icp-tpsl-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f0b90b;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
-
-.tv-hud-tpsl-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #eaecef;
+.tv-icp-tpsl-btn:hover {
+  background: rgba(240, 185, 11, 0.25);
+  transform: scale(1.1);
 }
 
-.tv-hud-close-btn {
-  background: rgba(246, 70, 93, 0.85);
-  border: 1px solid #f6465d;
-  color: #ffffff;
+.tv-icp-close-btn {
+  background: rgba(246, 70, 93, 0.2);
+  border: 1px solid rgba(246, 70, 93, 0.4);
+  color: #f6465d;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
-
-.tv-hud-close-btn:hover {
+.tv-icp-close-btn:hover {
   background: #f6465d;
+  color: #ffffff;
 }
 
 /* Orders HUD */
 .tv-orders-hud {
   position: absolute;
-  top: 52px;
-  left: 8px;
-  right: 8px;
+  top: 92px;
+  left: 12px;
   z-index: 24;
   pointer-events: none;
 }
-
 .tv-orders-hud-inner {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   pointer-events: auto;
 }
-
 .tv-ord-tag {
   background: rgba(14, 18, 24, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1610,7 +1594,6 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   align-items: center;
   gap: 6px;
 }
-
 .tv-ord-cancel-btn {
   background: transparent;
   border: none;
@@ -1621,158 +1604,105 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   font-size: 11px;
 }
 
-/* ─── 2. Quick Order Placement Bar Docked on Chart ─── */
-.tv-quick-trade-bar {
+/* ─── 2. Floating Top-Left 1-Click Buy / Sell Widget (Slightly Down from Top) ─── */
+.tv-topleft-order-widget {
   position: absolute;
-  bottom: 24px;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  background: rgba(11, 14, 17, 0.94);
+  top: 48px; /* Slightly down from top-left */
+  left: 52px; /* Positioned cleanly beside TradingView drawing toolbar */
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: rgba(14, 18, 25, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 5px 7px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
 }
 
-.tv-qtb-row {
+.tv-tl-buttons {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.tv-qtb-actions {
-  display: flex;
   gap: 6px;
-  flex: 1;
-  min-width: 180px;
 }
 
-.tv-qtb-btn {
-  flex: 1;
+.tv-tl-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 7px 12px;
-  border-radius: 6px;
-  border: none;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
 }
-
-.tv-qtb-btn.buy {
+.tv-tl-btn.buy {
   background: #0ecb81;
   color: #000000;
 }
-
-.tv-qtb-btn.buy:hover {
+.tv-tl-btn.buy:hover {
   background: #0eb574;
+  transform: translateY(-1px);
 }
-
-.tv-qtb-btn.sell {
+.tv-tl-btn.sell {
   background: #f6465d;
   color: #ffffff;
 }
-
-.tv-qtb-btn.sell:hover {
+.tv-tl-btn.sell:hover {
   background: #e03b51;
+  transform: translateY(-1px);
 }
 
-.tv-qtb-inputs {
+.tv-tl-config-row {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.tv-qtb-input-wrap {
+.tv-tl-cfg-item {
   display: flex;
   align-items: center;
-  background: #1e2329;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  padding: 2px 8px;
-  gap: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  padding: 2px 6px;
 }
-
-.tv-qtb-input-lbl {
+.tv-tl-cfg-label {
   font-size: 10px;
   color: #848e9c;
+  margin-right: 4px;
 }
 
-.tv-quick-size-input {
-  width: 55px;
+.tv-tl-input {
+  width: 44px;
   background: transparent;
   border: none;
   color: #ffffff;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   outline: none;
+  text-align: right;
 }
-
-.tv-qtb-unit {
-  font-size: 10px;
-  color: #848e9c;
-  font-weight: 600;
-}
-
-.tv-qtb-pct-chips {
-  display: flex;
-  gap: 3px;
-}
-
-.tv-pct-chip {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #848e9c;
-  border-radius: 4px;
-  padding: 4px 6px;
+.tv-tl-unit {
   font-size: 10px;
   font-weight: 600;
-  cursor: pointer;
+  color: #94a3b8;
+  margin-left: 3px;
 }
 
-.tv-pct-chip:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-}
-
-.tv-qtb-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tv-qtb-select-wrap {
-  position: relative;
-}
-
-.tv-qtb-select {
-  background: #1e2329;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border-radius: 6px;
-  padding: 5px 8px;
+.tv-tl-select {
+  background: transparent;
+  border: none;
+  color: #f7931a;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   outline: none;
   cursor: pointer;
-}
-
-.tv-quick-limit-price {
-  width: 75px;
-  background: #1e2329;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border-radius: 6px;
-  padding: 5px 8px;
-  font-size: 11px;
-  outline: none;
 }
 
 

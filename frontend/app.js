@@ -220,11 +220,13 @@ function loadCachedPrices() {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed.prices === 'object' && parsed.prices !== null) {
-        lastGoodPriceTimestamp = parsed.timestamp || 0;
+        const cacheAge = Date.now() - (parsed.timestamp || 0);
+        // Only use old timestamp if fresh (< 5 mins), otherwise use Date.now() so UI does not display "Stale" before first fetch
+        lastGoodPriceTimestamp = cacheAge < 300000 ? parsed.timestamp : Date.now();
         Object.keys(parsed.prices).forEach(coinId => {
           const entry = parsed.prices[coinId];
           if (entry && isValidPrice(entry.price)) {
-            currentPrices[coinId] = { ...currentPrices[coinId], ...entry };
+            currentPrices[coinId] = { ...currentPrices[coinId], ...entry, isSimulated: false };
           }
         });
       }
@@ -309,7 +311,9 @@ function stopPriceRefreshTimer() {
 
 async function refreshPricesAndCheckPositions() {
   try {
-    await fetchCoinGeckoPrices();
+    if (Date.now() - lastBinanceTickTime > 3500) {
+      await fetchMarketPricesUnified();
+    }
   } catch (e) {
     console.error('Price refresh error:', e);
   }
@@ -336,6 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadWalletState();
   if (typeof applySettingsToTradePanel === 'function') applySettingsToTradePanel();
   if (typeof initDownloadApkVisibility === 'function') initDownloadApkVisibility();
+  // Immediately kick off live market data streaming directly from Binance
+  fetchBinanceDirect();
+  initBinanceWebSocket();
   if (token) showApp();
 });
 
@@ -348,8 +355,8 @@ function showApp() {
   if (typeof initDownloadApkVisibility === 'function') initDownloadApkVisibility();
   initMarketExplorer();
   setChartMode(chartMode);
-  loadAll();
   initRealtimeTicker();
+  loadAll();
   setupDrawingCanvas();
   startPriceRefreshTimer();
 }
@@ -405,8 +412,6 @@ async function handleRegister(e) {
   finally { setLoading(btn, false); }
 }
 
-let cgRateLimitUntil = 0;
-
 function saveAuth(data) {
   token    = data.token;   username = data.username; balance = data.balance;
   safeStorageSet('ct_token',    token);
@@ -425,110 +430,209 @@ function logout() {
   showToast('Logged out', 'info');
 }
 
-// ─── COINGECKO LIVE PRICES (TRUTHFUL USDT FEED & RATE LIMIT BACKOFF) ─────────
+// ─── BINANCE REAL-TIME MARKET DATA & TRUTHFUL PRICE ENGINE ─────────
 let isRateLimited = false;
+let cgRateLimitUntil = 0;
+let lastBinanceTickTime = 0;
+let dailyOpenCache = {
+  bitcoin: 0,
+  ethereum: 0,
+  solana: 0,
+  lastUpdated: 0
+};
 
-async function fetchCoinGeckoPrices() {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-  let updatedAny = false;
-
-  // Step 1: Query backend /api/prices first (provides Tether USD/USDT conversion, caching, and rate limit backoff)
+// Fetches 00:00 UTC session candle open from Binance 1d klines (matches TradingView Daily Watchlist)
+async function updateDailySessionOpenPrices() {
+  const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
   try {
-    const res = await fetch(`${API}/prices`, { signal: controller.signal });
-    clearTimeout(timeoutId);
+    const promises = Object.entries(symbolMap).map(async ([sym, coinId]) => {
+      try {
+        const ctl = new AbortController();
+        const tid = setTimeout(() => ctl.abort(), 3500);
+        const resp = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=1d&limit=1`, { signal: ctl.signal });
+        clearTimeout(tid);
+        if (resp.ok) {
+          const klines = await resp.json();
+          if (Array.isArray(klines) && klines.length > 0) {
+            const openPrice = parseFloat(klines[0][1]);
+            if (openPrice > 0 && !isNaN(openPrice)) {
+              dailyOpenCache[coinId] = openPrice;
+              if (currentPrices[coinId]) {
+                currentPrices[coinId].dailyOpen = openPrice;
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    });
+    await Promise.all(promises);
+    dailyOpenCache.lastUpdated = Date.now();
+  } catch (err) {}
+}
+
+// Fast direct REST fetch to Binance 24hr ticker (works on cellular 5G and Wi-Fi globally)
+async function fetchBinanceDirect() {
+  try {
+    if (Date.now() - dailyOpenCache.lastUpdated > 15 * 60 * 1000 || !dailyOpenCache.bitcoin) {
+      updateDailySessionOpenPrices().catch(() => {});
+    }
+
+    const ctl = new AbortController();
+    const tid = setTimeout(() => ctl.abort(), 3500);
+    const bUrl = 'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22%5D';
+    const resp = await fetch(bUrl, { signal: ctl.signal });
+    clearTimeout(tid);
+
+    if (resp.ok) {
+      const bList = await resp.json();
+      if (Array.isArray(bList) && bList.length >= 3) {
+        const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
+        let updatedAny = false;
+
+        bList.forEach(item => {
+          const coinId = symbolMap[item.symbol];
+          if (coinId) {
+            const p = parseFloat(item.lastPrice);
+            if (isValidPrice(p)) {
+              const prevPrice = currentPrices[coinId]?.price || p;
+              const dailyOpen = dailyOpenCache[coinId] || parseFloat(item.openPrice) || p;
+              const changePrice = dailyOpen > 0 ? (p - dailyOpen) : (parseFloat(item.priceChange) || 0);
+              const change24h = dailyOpen > 0 ? (((p - dailyOpen) / dailyOpen) * 100) : (parseFloat(item.priceChangePercent) || 0);
+
+              currentPrices[coinId] = {
+                ...currentPrices[coinId],
+                price: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                usdtPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                usdPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
+                dailyOpen: dailyOpen,
+                changePrice: parseFloat(changePrice.toFixed(2)),
+                change24h: parseFloat(change24h.toFixed(2)),
+                volume24h: parseFloat(item.quoteVolume) || 0,
+                high24h: parseFloat(item.highPrice) || 0,
+                low24h: parseFloat(item.lowPrice) || 0,
+                quoteCurrency: 'USDT',
+                isSimulated: false
+              };
+
+              lastGoodPriceTimestamp = Date.now();
+              lastBinanceTickTime = Date.now();
+              isPriceDataLive = true;
+              isRateLimited = false;
+
+              if (prevPrice !== p) {
+                onPriceTick(coinId, prevPrice, p);
+              }
+              updatedAny = true;
+            }
+          }
+        });
+
+        if (updatedAny) {
+          saveCachedPrices();
+          updateDataBadge();
+          updateChartPriceDisplay();
+          updateTickers(currentPrices);
+          renderGrowwExploreUI();
+        }
+        return true;
+      }
+    }
+  } catch (err) {}
+  return false;
+}
+
+// Unified market price fetcher: uses live WebSocket ticks or fast Binance REST
+async function fetchMarketPricesUnified() {
+  if (Date.now() - lastBinanceTickTime < 3500 && isPriceDataLive) {
+    return;
+  }
+  const binanceOk = await fetchBinanceDirect();
+  if (binanceOk) return;
+
+  // Fallback: Backend /api/prices if Binance REST is blocked
+  try {
+    const ctl = new AbortController();
+    const tid = setTimeout(() => ctl.abort(), 2000);
+    const res = await fetch(`${API}/prices`, { signal: ctl.signal });
+    clearTimeout(tid);
     if (res.ok) {
       const data = await res.json();
       if (data && typeof data === 'object') {
-        isRateLimited = !!data.isRateLimited;
-        if (data.updatedAt) {
-          lastGoodPriceTimestamp = new Date(data.updatedAt).getTime();
-        } else {
-          lastGoodPriceTimestamp = Date.now();
-        }
-
+        let updatedAny = false;
         COIN_LIST.forEach(c => {
           const coinData = data[c.id];
           if (coinData && isValidPrice(coinData.price)) {
             const prevPrice = currentPrices[c.id]?.price || coinData.price;
-            currentPrices[c.id] = {
-              price: coinData.price,
-              change24h: (typeof coinData.change24h === 'number' && isFinite(coinData.change24h)) ? coinData.change24h : c.baseChange,
-              volume24h: (typeof coinData.volume24h === 'number' && isFinite(coinData.volume24h)) ? coinData.volume24h : c.baseVol,
-              marketCap: (typeof coinData.marketCap === 'number' && isFinite(coinData.marketCap)) ? coinData.marketCap : c.baseCap,
-              isSimulated: false,
-              quoteCurrency: 'USDT'
-            };
-            if (prevPrice !== coinData.price) {
-              onPriceTick(c.id, prevPrice, coinData.price);
-            }
+            currentPrices[c.id] = { ...currentPrices[c.id], ...coinData, isSimulated: false };
+            if (prevPrice !== coinData.price) onPriceTick(c.id, prevPrice, coinData.price);
             updatedAny = true;
           }
         });
-
-        isPriceDataLive = !isRateLimited && ((Date.now() - lastGoodPriceTimestamp) < 180000);
-        saveCachedPrices();
+        if (updatedAny) {
+          lastGoodPriceTimestamp = Date.now();
+          isPriceDataLive = true;
+          isRateLimited = false;
+          saveCachedPrices();
+          updateDataBadge();
+          return;
+        }
       }
     }
-  } catch (backendErr) {
-    clearTimeout(timeoutId);
+  } catch (backendErr) {}
+
+  // Last-resort fallback: CoinGecko (throttled to at most once every 60 seconds)
+  if (Date.now() >= cgRateLimitUntil) {
+    await fetchCoinGeckoPricesFallback();
   }
+}
 
-  // Step 2: Fallback to direct CoinGecko if backend didn't update and rate limit cooldown not active
-  if (!updatedAny && Date.now() >= cgRateLimitUntil) {
-    const cgController = new AbortController();
-    const cgTimeout = setTimeout(() => cgController.abort(), 5000);
-    try {
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd,usdt&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`;
-      const cgResp = await fetch(url, { signal: cgController.signal });
-      clearTimeout(cgTimeout);
-      if (cgResp.status === 429) {
-        cgRateLimitUntil = Date.now() + 60000;
-        isRateLimited = true;
-      } else if (cgResp.ok) {
-        const cgData = await cgResp.json();
-        const tetherUsd = (cgData && cgData.tether && typeof cgData.tether.usd === 'number' && cgData.tether.usd > 0) ? cgData.tether.usd : 1.0;
-        lastGoodPriceTimestamp = Date.now();
-        isRateLimited = false;
+// Emergency throttled CoinGecko fallback (only used if Binance and local server both fail)
+async function fetchCoinGeckoPricesFallback() {
+  const cgController = new AbortController();
+  const cgTimeout = setTimeout(() => cgController.abort(), 4000);
+  try {
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,tether&vs_currencies=usd,usdt&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`;
+    const cgResp = await fetch(url, { signal: cgController.signal });
+    clearTimeout(cgTimeout);
+    if (cgResp.status === 429) {
+      cgRateLimitUntil = Date.now() + 60000;
+      isRateLimited = true;
+    } else if (cgResp.ok) {
+      const cgData = await cgResp.json();
+      const tetherUsd = (cgData && cgData.tether && typeof cgData.tether.usd === 'number' && cgData.tether.usd > 0) ? cgData.tether.usd : 1.0;
+      lastGoodPriceTimestamp = Date.now();
+      isRateLimited = false;
 
-        COIN_LIST.forEach(c => {
-          const d = cgData[c.id];
-          if (d && typeof d.usd === 'number' && isValidPrice(d.usd)) {
-            // Truthful USDT conversion: calculate usd / tether.usd
-            const rawUsdt = (typeof d.usdt === 'number' && d.usdt > 0) ? d.usdt : (d.usd / tetherUsd);
-            const usdtPrice = isValidPrice(rawUsdt) ? rawUsdt : d.usd;
-            const prevPrice = currentPrices[c.id]?.price || usdtPrice;
-            currentPrices[c.id] = {
-              price: usdtPrice,
-              change24h: (typeof d.usd_24h_change === 'number' && isFinite(d.usd_24h_change)) ? d.usd_24h_change : c.baseChange,
-              volume24h: (typeof d.usd_24h_vol === 'number' && isFinite(d.usd_24h_vol)) ? d.usd_24h_vol : c.baseVol,
-              marketCap: d.usd_market_cap || c.baseCap,
-              isSimulated: false,
-              quoteCurrency: 'USDT'
-            };
-            if (prevPrice !== usdtPrice) {
-              onPriceTick(c.id, prevPrice, usdtPrice);
-            }
-            updatedAny = true;
+      COIN_LIST.forEach(c => {
+        const d = cgData[c.id];
+        if (d && typeof d.usd === 'number' && isValidPrice(d.usd)) {
+          const rawUsdt = (typeof d.usdt === 'number' && d.usdt > 0) ? d.usdt : (d.usd / tetherUsd);
+          const usdtPrice = isValidPrice(rawUsdt) ? rawUsdt : d.usd;
+          const prevPrice = currentPrices[c.id]?.price || usdtPrice;
+          currentPrices[c.id] = {
+            price: usdtPrice,
+            change24h: (typeof d.usd_24h_change === 'number' && isFinite(d.usd_24h_change)) ? d.usd_24h_change : c.baseChange,
+            volume24h: (typeof d.usd_24h_vol === 'number' && isFinite(d.usd_24h_vol)) ? d.usd_24h_vol : c.baseVol,
+            marketCap: d.usd_market_cap || c.baseCap,
+            isSimulated: false,
+            quoteCurrency: 'USDT'
+          };
+          if (prevPrice !== usdtPrice) {
+            onPriceTick(c.id, prevPrice, usdtPrice);
           }
-        });
-
-        isPriceDataLive = true;
-        saveCachedPrices();
-      }
-    } catch (cgErr) {
-      clearTimeout(cgTimeout);
+        }
+      });
+      isPriceDataLive = true;
+      saveCachedPrices();
     }
+  } catch (cgErr) {
+    clearTimeout(cgTimeout);
   }
-
-  // Update truthful badge & UI status (zero fake drift)
   updateDataBadge();
-  renderWatchlistChips();
-  renderMarketsList();
-  updateChartPriceDisplay();
-  updateTickers(currentPrices);
-  updateSpotCalc();
-  updatePosCalc();
+}
+
+function fetchCoinGeckoPrices() {
+  return fetchMarketPricesUnified();
 }
 
 function updateDataBadge() {
@@ -869,24 +973,33 @@ function initMarketExplorer() {
   renderWatchlistChips();
   renderMarketsList();
 
-  fetchCoinGeckoPrices();
-  if (marketDataInterval) clearInterval(marketDataInterval);
-  marketDataInterval = setInterval(fetchCoinGeckoPrices, 2500);
+  fetchMarketPricesUnified();
 }
 
 // ─── PRICES ───────────────────────────────────────────────
 async function loadPrices() {
   try {
-    const data = await get(`${API}/prices`);
-    if (data && typeof data === 'object') {
-      let updated = false;
-      Object.keys(data).forEach(k => {
-        if (k !== 'updatedAt' && isValidPrice(data[k]?.price)) {
-          currentPrices[k] = { ...currentPrices[k], ...data[k] };
-          updated = true;
+    const binanceOk = await fetchBinanceDirect();
+    if (!binanceOk) {
+      try {
+        const ctl = new AbortController();
+        const tid = setTimeout(() => ctl.abort(), 1500);
+        const res = await fetch(`${API}/prices`, { signal: ctl.signal });
+        clearTimeout(tid);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            let updated = false;
+            Object.keys(data).forEach(k => {
+              if (k !== 'updatedAt' && isValidPrice(data[k]?.price)) {
+                currentPrices[k] = { ...currentPrices[k], ...data[k], isSimulated: false };
+                updated = true;
+              }
+            });
+            if (updated) saveCachedPrices();
+          }
         }
-      });
-      if (updated) saveCachedPrices();
+      } catch (e) {}
     }
     updateTickers(currentPrices);
     updateChartPriceDisplay();
@@ -1036,7 +1149,7 @@ function initBinanceWebSocket() {
 
         const prevPrice = currentPrices[coinKey]?.price || livePrice;
         // TradingView calculates daily % change and price change from Daily Session Open (00:00 UTC)
-        const dailyOpen = currentPrices[coinKey]?.dailyOpen || (parseFloat(d.o) || livePrice);
+        const dailyOpen = dailyOpenCache[coinKey] || currentPrices[coinKey]?.dailyOpen || (parseFloat(d.o) || livePrice);
         const changePrice = dailyOpen > 0 ? (livePrice - dailyOpen) : (parseFloat(d.p) || 0);
         const change24h = dailyOpen > 0 ? (((livePrice - dailyOpen) / dailyOpen) * 100) : (parseFloat(d.P) || 0);
         const volume24h = parseFloat(d.q) || 0;
@@ -1057,7 +1170,9 @@ function initBinanceWebSocket() {
         };
 
         lastGoodPriceTimestamp = Date.now();
+        lastBinanceTickTime = Date.now();
         isPriceDataLive = true;
+        isRateLimited = false;
 
         // Dynamic candle update for current viewing coin
         if (selectedCoin === coinKey && chartMode === 'candle' && candleData && candleData.length) {
@@ -1079,7 +1194,7 @@ function initBinanceWebSocket() {
       if (binanceWsReconnectTimer) clearTimeout(binanceWsReconnectTimer);
       binanceWsReconnectTimer = setTimeout(() => {
         if (!document.hidden) initBinanceWebSocket();
-      }, 3500);
+      }, 3000);
     };
   } catch (wsErr) {
     console.warn('WebSocket init error:', wsErr);
@@ -1088,32 +1203,12 @@ function initBinanceWebSocket() {
 
 async function pollPricesFast() {
   if (document.hidden) return;
-  try {
-    const res = await get(`${API}/prices`);
-    if (res && res.bitcoin && res.ethereum && res.solana) {
-      if (res.updatedAt) {
-        lastGoodPriceTimestamp = new Date(res.updatedAt).getTime();
-      }
-      isRateLimited = !!res.isRateLimited;
-
-      ['bitcoin', 'ethereum', 'solana'].forEach(k => {
-        if (isValidPrice(res[k]?.price)) {
-          const prev = currentPrices[k]?.price;
-          currentPrices[k] = { ...currentPrices[k], ...res[k], isSimulated: false };
-          if (prev !== res[k].price) {
-            if (selectedCoin === k && chartMode === 'candle' && candleData && candleData.length) {
-              const lastCandle = candleData[candleData.length - 1];
-              if (res[k].price > lastCandle.high) lastCandle.high = res[k].price;
-              if (res[k].price < lastCandle.low) lastCandle.low = res[k].price;
-              lastCandle.close = res[k].price;
-            }
-            onPriceTick(k, prev, res[k].price);
-          }
-        }
-      });
-      updateDataBadge();
-    }
-  } catch (e) {}
+  // If WebSocket is alive and received a tick within last 3.5 seconds, no REST poll needed
+  if (Date.now() - lastBinanceTickTime < 3500 && isPriceDataLive) {
+    return;
+  }
+  // Otherwise fast REST to Binance directly (works on cellular 5G and Wi-Fi globally)
+  await fetchBinanceDirect();
 }
 
 function onPriceTick(coin, prevPrice, newPrice) {
@@ -1332,6 +1427,7 @@ function retryTradingViewChart() {
 
 // ─── ON-CHART ORDER PLACEMENT & POSITION HUD OVERLAY ──────
 function renderTvChartOverlay() {
+  const inChartPos = document.getElementById('tv-in-chart-position');
   const hud = document.getElementById('tv-positions-hud');
   const ordersHud = document.getElementById('tv-orders-hud');
   const ordersInner = document.getElementById('tv-orders-hud-inner');
@@ -1340,8 +1436,46 @@ function renderTvChartOverlay() {
 
   if (unitLabel) unitLabel.textContent = coinDef.symbol;
 
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+
+  // 1. In-Chart Executed Position Marker & Tag (TradingView Style, No Blocking Popup)
+  if (inChartPos) {
+    if (curPos) {
+      inChartPos.classList.remove('hidden');
+      if (curPos.direction === 'short') {
+        inChartPos.classList.add('short-side');
+      } else {
+        inChartPos.classList.remove('short-side');
+      }
+
+      const sideEl  = document.getElementById('tv-icp-side');
+      const entryEl = document.getElementById('tv-icp-entry');
+      const pnlEl   = document.getElementById('tv-icp-pnl');
+
+      const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
+      const priceDiff = (curPos.direction === 'long') ? (curPrice - curPos.entry_price) : (curPos.entry_price - curPrice);
+      const pnl = roundUsd(priceDiff * curPos.size);
+      const pnlPct = (curPos.margin > 0) ? ((pnl / curPos.margin) * 100).toFixed(2) : '0.00';
+      const isPos = pnl >= 0;
+
+      if (sideEl) {
+        sideEl.textContent = `${curPos.direction.toUpperCase()} ${curPos.leverage}x`;
+        sideEl.className = `tv-icp-side ${curPos.direction === 'long' ? 'buy' : 'sell'}`;
+      }
+      if (entryEl) {
+        entryEl.textContent = `$${fmt(curPos.entry_price)}`;
+      }
+      if (pnlEl) {
+        pnlEl.textContent = `${isPos ? '+' : ''}$${fmtNum(pnl)} (${isPos ? '+' : ''}${pnlPct}%)`;
+        pnlEl.className = `tv-icp-pnl ${isPos ? 'pos' : 'neg'}`;
+      }
+    } else {
+      inChartPos.classList.add('hidden');
+    }
+  }
+
+  // Backward compatibility fallback if legacy HUD card exists
   if (hud) {
-    const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
     if (curPos) {
       hud.classList.remove('hidden');
       const sideEl = document.getElementById('tv-hud-side');
@@ -2320,16 +2454,18 @@ function toggleChartFullscreen() {
   const exitBtn = document.getElementById('btn-exit-fullscreen');
   const fsBtn = document.getElementById('btn-chart-fullscreen');
   const sqBtn = document.getElementById('square-fs-icon');
+  const sqBox = document.getElementById('btn-square-fullscreen');
   if (!box) return;
 
   const isFs = box.classList.toggle('fullscreen-chart');
   if (exitBtn) exitBtn.classList.toggle('hidden', !isFs);
+  if (sqBox) sqBox.classList.toggle('hidden', isFs);
   if (fsBtn) {
-    fsBtn.innerHTML = isFs ? '<span class="square-icon-box">⤡</span> Exit' : '<span class="square-icon-box">⛶</span> Fullscreen';
+    fsBtn.innerHTML = isFs ? '<span class="square-icon-box">✕</span>' : '<span class="square-icon-box">⛶</span> Fullscreen';
     fsBtn.classList.toggle('active', isFs);
   }
   if (sqBtn) {
-    sqBtn.textContent = isFs ? '⤡' : '⛶';
+    sqBtn.textContent = isFs ? '✕' : '⛶';
   }
 
   setTimeout(() => {

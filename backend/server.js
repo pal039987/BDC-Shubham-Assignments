@@ -191,18 +191,21 @@ const dailyOpenCache = {
 async function updateDailyOpenPrices() {
   const symbolMap = { 'BTCUSDT': 'bitcoin', 'ETHUSDT': 'ethereum', 'SOLUSDT': 'solana' };
   try {
-    for (const [sym, coinId] of Object.entries(symbolMap)) {
-      const resp = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=1d&limit=1`, { timeout: 4000 });
-      if (resp.ok) {
-        const klines = await resp.json();
-        if (Array.isArray(klines) && klines.length > 0) {
-          const openPrice = parseFloat(klines[0][1]);
-          if (openPrice > 0 && !isNaN(openPrice)) {
-            dailyOpenCache[coinId] = openPrice;
+    const promises = Object.entries(symbolMap).map(async ([sym, coinId]) => {
+      try {
+        const resp = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=1d&limit=1`, { timeout: 3000 });
+        if (resp.ok) {
+          const klines = await resp.json();
+          if (Array.isArray(klines) && klines.length > 0) {
+            const openPrice = parseFloat(klines[0][1]);
+            if (openPrice > 0 && !isNaN(openPrice)) {
+              dailyOpenCache[coinId] = openPrice;
+            }
           }
         }
-      }
-    }
+      } catch (e) {}
+    });
+    await Promise.all(promises);
     dailyOpenCache.lastUpdated = Date.now();
   } catch (err) {
     // Keep last known daily open
@@ -760,11 +763,9 @@ const apkDir = path.join(__dirname, '../android/app/build/outputs/apk/debug');
 
 function getAvailableApkPath() {
   const candidates = [
-    path.join(__dirname, '../VTrade.apk'),
+    path.join(__dirname, '../downloads/VTrade.apk'),
     path.join(apkDir, 'app-debug.apk'),
-    path.join(__dirname, '../CryptoTrader-Pro.apk'),
-    path.join(__dirname, '../frontend/VTrade.apk'),
-    path.join(__dirname, '../frontend/cryptotrader.apk')
+    path.join(__dirname, '../VTrade.apk')
   ];
   for (const p of candidates) {
     if (fs.existsSync(p)) return p;
