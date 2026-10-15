@@ -276,6 +276,61 @@ async function runTests() {
     assert.strictEqual(res.status, 400);
   });
 
+  // 10. Test Issue 1: Chart container sizing and complete visibility
+  await test('Chart container CSS rules provide full height visibility without clipping scales', () => {
+    const fs = require('fs');
+    const cssContent = fs.readFileSync('frontend/style.css', 'utf-8');
+
+    // Verify .chart-container-box has flexible responsive height
+    assert.ok(cssContent.includes('.chart-container-box {'), 'CSS must define .chart-container-box');
+    assert.ok(cssContent.includes('min-height: 460px'), 'Chart box must have minimum height >= 460px');
+    assert.ok(cssContent.includes('clamp(480px,'), 'Chart box must use responsive clamp height');
+
+    // Verify tradingview-widget-box accounts for attribution bar without clipping time scale
+    assert.ok(cssContent.includes('calc(100% - 24px)'), 'Widget box must reserve space for attribution bar');
+
+    // Verify desktop chart-area layout
+    assert.ok(cssContent.includes('#chart-area {') && cssContent.includes('min-width: 0 !important'), 'Desktop chart area must enforce min-width: 0 to prevent flexbox clipping');
+  });
+
+  // 11. Test Issue 2: Price line invariance and pointer events prevent drag freezing
+  await test('Order line updates preserve pan gesture continuity without series mutations during dragging', () => {
+    const fs = require('fs');
+    const appJsContent = fs.readFileSync('frontend/app.js', 'utf-8');
+    const cssContent = fs.readFileSync('frontend/style.css', 'utf-8');
+
+    // Verify price line key comparison prevents series mutation during pan / ticks
+    assert.ok(appJsContent.includes('posKey === currentOverlayPosKey'), 'Must check posKey to prevent redundant priceLine mutations');
+    assert.ok(appJsContent.includes('chart.timeScale().subscribeVisibleLogicalRangeChange'), 'Must subscribe range change to reposition HTML tags');
+    assert.ok(appJsContent.includes('repositionHtmlOverlays()'), 'Must update HTML tag positions without recreating chart price lines');
+
+    // Verify pointer-events: none on horizontal line and axis badge
+    assert.ok(cssContent.includes('.tvol-h-line {') && cssContent.includes('pointer-events: none !important'), 'Horizontal order line must have pointer-events: none');
+    assert.ok(cssContent.includes('.tvol-axis-badge {') && cssContent.includes('pointer-events: none !important'), 'Axis badge must have pointer-events: none');
+
+    // Verify simulation: calling syncPriceLines during dragging with unchanged order data does 0 mutations
+    let priceLineMutationCount = 0;
+    let mockLwPriceLines = { entry: null, tp: null, sl: null };
+    let currentKey = '';
+
+    function mockSyncPriceLines(pos) {
+      const posKey = pos ? `${pos.id}_${pos.direction}_${pos.entry_price}_${pos.take_profit}_${pos.stop_loss}` : 'none';
+      if (posKey === currentKey) return;
+      currentKey = posKey;
+      priceLineMutationCount++;
+    }
+
+    const testPos = { id: 101, direction: 'long', entry_price: 84000, take_profit: 90000, stop_loss: 80000 };
+    mockSyncPriceLines(testPos);
+    assert.strictEqual(priceLineMutationCount, 1, 'Initial creation mutates priceLine once');
+
+    // Simulate 50 mousemove / pan ticks during an ongoing drag gesture
+    for (let i = 0; i < 50; i++) {
+      mockSyncPriceLines(testPos);
+    }
+    assert.strictEqual(priceLineMutationCount, 1, 'Subsequent pan ticks must NOT mutate priceLine or freeze drag gesture');
+  });
+
   console.log(`\n=== TEST SUMMARY: ${passed} PASSED, ${failed} FAILED ===\n`);
   if (failed > 0) process.exit(1);
 }

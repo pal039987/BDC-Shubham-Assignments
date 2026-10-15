@@ -1453,8 +1453,8 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
   display: flex;
   flex-direction: row;
   width: 100%;
-  min-height: 380px;
-  height: 420px;
+  min-height: 460px;
+  height: clamp(480px, 58vh, 720px);
   background: var(--bg0, #0b0e11);
   border: 1px solid var(--border, #1e2329);
   border-radius: var(--r8, 8px);
@@ -1769,11 +1769,13 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
 /* ── Chart Viewport & Height ── */
 .chart-wrap {
   position: relative;
-  flex: 1;
-  min-height: 380px;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  width: 100%;
   background: var(--bg0);
   overflow: hidden;
-  width: 100%;
 }
 
 /* TradingView Container & Widget Box */
@@ -1791,11 +1793,13 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
 
 .tradingview-widget-box {
   position: relative;
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   width: 100% !important;
-  height: 100% !important;
+  height: calc(100% - 24px) !important;
   min-height: 0;
+  min-width: 0;
   background: #0b0e11;
+  overflow: hidden;
 }
 
 .tradingview-widget-box iframe {
@@ -1843,8 +1847,8 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  pointer-events: none;
+  bottom: 24px;
+  pointer-events: none !important;
   z-index: 45;
   overflow: hidden;
 }
@@ -1859,9 +1863,9 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   display: flex;
   align-items: center;
   transform: translateY(-50%);
-  pointer-events: none;
+  pointer-events: none !important;
   z-index: 50;
-  transition: top 0.04s ease-out;
+  transition: none !important;
 }
 .tv-order-line-item.is-dragging {
   transition: none !important;
@@ -1875,6 +1879,7 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
 .tvol-h-line {
   flex: 1;
   height: 0;
+  pointer-events: none !important;
 }
 .tp-line {
   border-top: 1.5px solid #0ecb81;
@@ -2002,7 +2007,7 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
 
 /* Right Axis Price Scale Badges (TradingView style on the right scale) */
 .tvol-axis-badge {
-  pointer-events: none;
+  pointer-events: none !important;
   padding: 2px 6px;
   font-size: 11px;
   font-weight: 700;
@@ -5230,8 +5235,11 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   #chart-area {
     grid-column: 1 / 2 !important;
     grid-row: 1 / 2 !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
     border-right: 1px solid #1a202c;
+    min-width: 0 !important;
+    min-height: 0 !important;
   }
 
   #view-positions-container {
