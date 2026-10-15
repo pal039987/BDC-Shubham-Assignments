@@ -208,13 +208,36 @@
         <button type="button" class="btn-nav-signup" onclick="openAuthModal('register')">Sign Up</button>
       </div>
 
-      <!-- Authenticated User State (When logged in) -->
+      <!-- Authenticated User State (Screenshot 1 Match: Add Funds + My Profile) -->
       <div class="nav-auth-user hidden" id="nav-user-group">
-        <div class="nav-user-pill" onclick="switchMainTab('wallet')" title="Trader Profile & Balance">
-          <div class="user-av" id="user-avatar">V</div>
-          <span class="nav-user-name" id="nav-username">Trader</span>
+        <button type="button" class="btn-nav-add-funds" id="btn-nav-add-funds" onclick="openResetWalletDialog()" title="Add Virtual USDT Funds">Add Funds</button>
+        <div class="shark-profile-pill" id="shark-profile-pill" onclick="toggleProfileDropdown(event)" title="My Profile & Settings">
+          <div class="user-av" id="user-avatar">F</div>
+          <span class="profile-text">My Profile</span>
+          <span class="profile-caret">▾</span>
         </div>
-        <button class="btn-logout" onclick="logout()" title="Logout">⎋</button>
+        <!-- Profile Dropdown Popup -->
+        <div class="profile-dropdown-menu hidden" id="profile-dropdown-menu">
+          <div class="pdm-header">
+            <div class="pdm-name" id="pdm-username">Trader</div>
+            <div class="pdm-uid">UID: <span id="pdm-uid">83921742</span></div>
+          </div>
+          <div class="pdm-divider"></div>
+          <div class="pdm-balance-row">
+            <span>Virtual Cash:</span>
+            <span class="pdm-bal-val" id="pdm-balance">$10,000.00 USDT</span>
+          </div>
+          <div class="pdm-divider"></div>
+          <button type="button" class="pdm-item" onclick="openResetWalletDialog(); closeProfileDropdown();">
+            <span>🔄 Reset to $10,000 USDT</span>
+          </button>
+          <button type="button" class="pdm-item" onclick="openSettingsSheet(); closeProfileDropdown();">
+            <span>⚙️ Trading Preferences</span>
+          </button>
+          <button type="button" class="pdm-item pdm-logout" onclick="logout(); closeProfileDropdown();">
+            <span>⎋ Log Out</span>
+          </button>
+        </div>
       </div>
     </div>
   </nav>
@@ -224,7 +247,8 @@
     <div class="gi-item active" onclick="selectCoin('bitcoin'); switchMainTab('chart');" id="gi-bitcoin" title="Bitcoin / USDT">
       <span class="gi-sym">BTC-USDT</span>
       <span class="gi-price" id="gi-price-bitcoin">--</span>
-      <span class="gi-chg" id="gi-chg-bitcoin">--</span>
+      <button type="button" class="gi-tab-plus" onclick="event.stopPropagation(); togglePairQuickMenu();" title="Add Trading Pair Tab">+</button>
+      <span class="gi-chg" id="gi-chg-bitcoin" style="display:none;">--</span>
     </div>
     <div class="gi-divider"></div>
     <div class="gi-item" onclick="selectCoin('ethereum'); switchMainTab('chart');" id="gi-ethereum" title="Ethereum / USDT">
@@ -879,27 +903,42 @@
       </div> <!-- end chart-container-box -->
     </div> <!-- end chart-area -->
 
-    <!-- ══════════════════════ DEDICATED POSITIONS & ORDERS VIEW (No Chart) ══════════════════════ -->
+    <!-- ══════════════════════ DEDICATED POSITIONS & ORDERS VIEW (Screenshot 2 & 3 Match) ══════════════════════ -->
     <div class="positions-view-panel hidden" id="view-positions-container">
-      <div class="pos-view-header">
-        <div class="pos-vh-left">
-          <div class="pos-vh-title">Active Positions &amp; Orders</div>
-          <div class="pos-vh-sub" id="pos-total-pnl-summary">Unrealized PnL: <span class="pnl-grey">$0.00</span></div>
+      
+      <!-- Bottom Tabs Bar with Currency Switch (Screenshot 2 & 3 Match) -->
+      <div class="shark-pos-tabs-wrap">
+        <div class="bottom-tabs pos-view-tabs">
+          <button type="button" class="btab active" id="tab-btn-positions" onclick="showBottomTab('positions', this)">
+            Positions
+          </button>
+          <button type="button" class="btab" id="tab-btn-orders" onclick="showBottomTab('orders', this)">
+            Open Orders
+          </button>
+          <button type="button" class="btab" id="tab-btn-order-history" onclick="showBottomTab('order-history', this)">
+            Order History
+          </button>
+          <button type="button" class="btab" id="tab-btn-history" onclick="showBottomTab('history', this)">
+            Trade History
+          </button>
+          <button type="button" class="btab" id="tab-btn-transaction" onclick="showBottomTab('transaction', this)">
+            Transaction
+          </button>
+          <button type="button" class="btab" id="tab-btn-webhooks" onclick="showBottomTab('webhooks', this)">
+            Webhooks
+          </button>
         </div>
-        <button class="pos-btn-new-trade" onclick="switchMainTab('trade')">+ New Trade</button>
-      </div>
 
-      <!-- Bottom tabs: Positions | Open Orders | Trade History -->
-      <div class="bottom-tabs pos-view-tabs">
-        <button class="btab active" id="tab-btn-positions" onclick="showBottomTab('positions', this)">
-          Positions <span class="btab-count" id="pos-count-badge">(0)</span>
-        </button>
-        <button class="btab" id="tab-btn-orders" onclick="showBottomTab('orders', this)">
-          Open Orders <span class="btab-count" id="orders-count-badge">(0)</span>
-        </button>
-        <button class="btab" id="tab-btn-history" onclick="showBottomTab('history', this)">
-          Trade History <span class="btab-count" id="history-count-badge">(0)</span>
-        </button>
+        <div class="pos-currency-switch">
+          <div class="currency-toggle-pill" onclick="toggleCurrencyDropdown(event)">
+            <span id="pos-active-currency">INR | USDT</span>
+            <span class="currency-caret">▾</span>
+          </div>
+          <div class="currency-dropdown-menu hidden" id="currency-dropdown-menu">
+            <div class="cdm-item active" onclick="selectCurrencyView('USDT')">USDT</div>
+            <div class="cdm-item" onclick="selectCurrencyView('INR')">INR (₹)</div>
+          </div>
+        </div>
       </div>
 
       <!-- Unauthenticated Guest Prompt (Screenshot 2 Match) -->
@@ -907,26 +946,26 @@
         <span class="upb-text"><a href="javascript:void(0)" onclick="openAuthModal('login')">Log In</a> or <a href="javascript:void(0)" onclick="openAuthModal('register')">Register Now</a> to trade.</span>
       </div>
 
-      <!-- Positions Panel -->
+      <!-- Positions Panel (Screenshot 2 Table Headers) -->
       <div class="bottom-panel pos-view-panel-body" id="panel-positions">
-        <!-- Modern Mobile & Tablet Card Layout -->
         <div class="pos-cards-list" id="pos-cards-list"></div>
 
-        <!-- Full Desktop Data Table -->
         <div class="panel-scroll pos-table-scroll">
-          <table class="data-table">
+          <table class="data-table shark-data-table">
             <thead><tr>
-              <th>PAIR</th><th>SIDE</th><th>SIZE</th><th>ENTRY</th><th>MARK</th><th>LEV</th><th>MARGIN</th><th>UNREALIZED PNL</th><th>LIQ. PRICE</th><th>ACTION</th>
+              <th>Symbol</th>
+              <th>Info</th>
+              <th>Mark / Entry</th>
+              <th>Liquidation</th>
+              <th>U-P&L</th>
+              <th>Locked Margin</th>
+              <th>Top Up</th>
+              <th>Rev.</th>
+              <th>TP/SL</th>
+              <th>Close All</th>
             </tr></thead>
             <tbody id="pos-tbody">
-              <tr>
-                <td colspan="10" class="empty-row">
-                  <div class="empty-state-box">
-                    <span class="empty-icon">📊</span>
-                    <span class="empty-msg">No open positions</span>
-                  </div>
-                </td>
-              </tr>
+              <!-- Rendered dynamically -->
             </tbody>
           </table>
         </div>
@@ -935,40 +974,68 @@
       <!-- Open Orders Panel -->
       <div class="bottom-panel hidden" id="panel-orders">
         <div class="panel-scroll">
-          <table class="data-table">
+          <table class="data-table shark-data-table">
             <thead><tr>
-              <th>PAIR</th><th>SIDE</th><th>TYPE</th><th>LIMIT PRICE</th><th>SIZE</th><th>CREATED</th><th>ACTION</th>
+              <th>Symbol</th><th>Side</th><th>Type</th><th>Price</th><th>Amount</th><th>Status</th><th>Action</th>
             </tr></thead>
             <tbody id="orders-tbody">
-              <tr>
-                <td colspan="7" class="empty-row">
-                  <div class="empty-state-box">
-                    <span class="empty-icon">📋</span>
-                    <span class="empty-msg">No open orders</span>
-                  </div>
-                </td>
-              </tr>
+              <!-- Rendered dynamically -->
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- History Panel -->
+      <!-- Order History Panel -->
+      <div class="bottom-panel hidden" id="panel-order-history">
+        <div class="panel-scroll">
+          <table class="data-table shark-data-table">
+            <thead><tr>
+              <th>Time</th><th>Symbol</th><th>Side</th><th>Type</th><th>Price</th><th>Filled / Size</th><th>Status</th>
+            </tr></thead>
+            <tbody id="order-history-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Trade History Panel -->
       <div class="bottom-panel hidden" id="panel-history">
         <div class="panel-scroll">
-          <table class="data-table">
+          <table class="data-table shark-data-table">
             <thead><tr>
-              <th>TIME</th><th>PAIR</th><th>SIDE</th><th>TYPE</th><th>PRICE</th><th>SIZE</th><th>FEE</th><th>REALIZED PNL</th>
+              <th>Time</th><th>Symbol</th><th>Side</th><th>Price</th><th>Size</th><th>Fee</th><th>Realized PnL</th>
             </tr></thead>
             <tbody id="history-tbody">
-              <tr>
-                <td colspan="8" class="empty-row">
-                  <div class="empty-state-box">
-                    <span class="empty-icon">📜</span>
-                    <span class="empty-msg">No trades yet</span>
-                  </div>
-                </td>
-              </tr>
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Transaction Panel -->
+      <div class="bottom-panel hidden" id="panel-transaction">
+        <div class="panel-scroll">
+          <table class="data-table shark-data-table">
+            <thead><tr>
+              <th>Time</th><th>Type</th><th>Asset</th><th>Amount</th><th>Balance</th><th>Status</th>
+            </tr></thead>
+            <tbody id="transaction-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Webhooks Panel -->
+      <div class="bottom-panel hidden" id="panel-webhooks">
+        <div class="panel-scroll">
+          <table class="data-table shark-data-table">
+            <thead><tr>
+              <th>Name</th><th>Endpoint</th><th>Trigger</th><th>Secret</th><th>Status</th><th>Action</th>
+            </tr></thead>
+            <tbody id="webhooks-tbody">
+              <!-- Rendered dynamically -->
             </tbody>
           </table>
         </div>
@@ -998,54 +1065,63 @@
         </div>
       </div>
 
-      <!-- UNIFIED TRADE PANEL (SPOT & FUTURES) -->
-      <div class="order-card delta-trade-card">
-        <!-- Category Toggle: Spot | Futures -->
-        <div class="delta-header-row">
-          <div class="order-cat-tabs">
-            <button class="ocat-btn active" id="ocat-spot" onclick="setOrderCat('spot')">Spot</button>
-            <button class="ocat-btn" id="ocat-position" onclick="setOrderCat('position')">Futures</button>
-          </div>
-          <div class="delta-header-badge" id="delta-header-badge" style="display:none;">
-            <span class="badge-lev" id="delta-lev-pill">10x Isolated</span>
-          </div>
+      <!-- UNIFIED TRADE PANEL (Screenshot 1 & 2 Pro Exchange Desk) -->
+      <div class="order-card delta-trade-card shark-trade-card">
+        
+        <!-- Side Toggle: Buy (Green) | Sell (Grey) (Screenshot 1 Match) -->
+        <div class="shark-trade-side-tabs">
+          <button type="button" class="st-side-btn buy-tab active" id="side-buy-btn" onclick="setTradeSide('buy')">
+            <span class="st-check-icon">✓</span> <span id="side-buy-label">Buy</span>
+          </button>
+          <button type="button" class="st-side-btn sell-tab" id="side-sell-btn" onclick="setTradeSide('sell')">
+            <span id="side-sell-label">Sell</span>
+          </button>
         </div>
 
-        <!-- Active Coin Indicator Banner -->
-        <div class="trade-active-coin-banner" id="trade-active-coin-banner">
-          <div class="tacb-left">
-            <span class="tacb-icon" id="tacb-icon">₿</span>
-            <div class="tacb-title-col">
-              <span class="tacb-symbol" id="tacb-symbol">BTC/USDT</span>
-              <span class="tacb-name" id="tacb-name">Bitcoin</span>
+        <!-- Mode & Leverage Row: Isolated Margin Mode ▾ & 150x ▾ (Screenshot 1 Match) -->
+        <div class="mode-lev-row">
+          <button type="button" class="shark-select-btn" id="btn-margin-mode-select" onclick="toggleMarginModeDropdown(event)">
+            <span id="margin-mode-display-label">Isolated Margin Mode</span>
+            <span class="shark-caret">▾</span>
+          </button>
+          <div class="margin-mode-dropdown-menu hidden" id="margin-mode-dropdown-menu">
+            <div class="mm-dropdown-item active" onclick="selectMarginModeMenu('isolated')">Isolated Margin Mode</div>
+            <div class="mm-dropdown-item" onclick="selectMarginModeMenu('cross')">Cross Margin Mode</div>
+          </div>
+
+          <button type="button" class="shark-select-btn" id="btn-leverage-select" onclick="toggleLeverageDropdown(event)">
+            <span id="btn-lev-label">150x</span>
+            <span class="shark-caret">▾</span>
+          </button>
+          <div class="leverage-dropdown-menu hidden" id="leverage-dropdown-menu">
+            <div class="lev-dropdown-title">Select Leverage</div>
+            <div class="lev-dropdown-grid">
+              <button type="button" class="ld-chip" onclick="selectLeverageMenu(1)">1x</button>
+              <button type="button" class="ld-chip" onclick="selectLeverageMenu(5)">5x</button>
+              <button type="button" class="ld-chip" onclick="selectLeverageMenu(10)">10x</button>
+              <button type="button" class="ld-chip" onclick="selectLeverageMenu(25)">25x</button>
+              <button type="button" class="ld-chip" onclick="selectLeverageMenu(50)">50x</button>
+              <button type="button" class="ld-chip" onclick="selectLeverageMenu(100)">100x</button>
+              <button type="button" class="ld-chip active" onclick="selectLeverageMenu(150)">150x</button>
             </div>
           </div>
-          <div class="tacb-right">
-            <span class="tacb-price" id="tacb-price">$— USDT</span>
-            <span class="tacb-change" id="tacb-change">—</span>
+        </div>
+
+        <!-- Order Type: Market | Limit | Stop-L | Stop-M (Screenshot 1 Match) -->
+        <div class="shark-order-types-strip">
+          <div class="sot-tabs">
+            <button type="button" class="sot-tab active" id="otype-market" onclick="setOrderType('market')">Market</button>
+            <button type="button" class="sot-tab" id="otype-limit" onclick="setOrderType('limit')">Limit</button>
+            <button type="button" class="sot-tab" id="otype-stop-l" onclick="setOrderType('stop-l')">Stop-L</button>
+            <button type="button" class="sot-tab" id="otype-stop-m" onclick="setOrderType('stop-m')">Stop-M</button>
           </div>
+          <span class="sot-info-icon" title="Market: instant execution at best available price. Limit: execute at specified price.">ⓘ</span>
         </div>
 
-        <!-- Side Toggle: Buy / Long (Green) | Sell / Short (Red) -->
-        <div class="trade-side-tabs">
-          <button class="side-btn buy-side active" id="side-buy-btn" onclick="setTradeSide('buy')">
-            <span id="side-buy-label">Buy / Long BTC</span>
-          </button>
-          <button class="side-btn sell-side" id="side-sell-btn" onclick="setTradeSide('sell')">
-            <span id="side-sell-label">Sell / Short BTC</span>
-          </button>
-        </div>
-
-        <!-- Order Type: Market | Limit -->
-        <div class="order-type-row">
-          <button class="otype-btn active" id="otype-market" onclick="setOrderType('market')">Market</button>
-          <button class="otype-btn" id="otype-limit" onclick="setOrderType('limit')">Limit</button>
-        </div>
-
-        <!-- Limit Price Input -->
-        <div class="field-group" id="limit-price-group" style="display:none;">
+        <!-- Limit / Trigger Price Input -->
+        <div class="field-group" id="limit-price-group" style="display:none; margin-top:8px;">
           <div class="field-label-row">
-            <label for="limit-price-input">Limit Price (USDT)</label>
+            <label for="limit-price-input" id="limit-price-label">Order Price (USDT)</label>
             <button class="field-label-action" type="button" onclick="setLimitPriceToCurrent()">Latest</button>
           </div>
           <div class="input-wrap">
@@ -1054,119 +1130,140 @@
           </div>
         </div>
 
-        <!-- Futures Margin Mode & Leverage -->
-        <div id="position-controls-section" style="display:none;">
-          <div class="field-group">
-            <label>Margin Mode</label>
-            <div class="margin-mode-tabs">
-              <button class="mm-btn active" id="mm-isolated" type="button" onclick="setMarginMode('isolated')">Isolated</button>
-              <button class="mm-btn" id="mm-cross" type="button" onclick="setMarginMode('cross')">Cross</button>
-            </div>
-          </div>
-
-          <!-- Leverage Slider (1x - 100x) -->
-          <div class="field-group">
-            <div class="field-label-row">
-              <label for="leverage-slider">Leverage: <b id="lev-val-display" class="orange">10x</b></label>
-              <div class="lev-stepper">
-                <button type="button" class="stepper-btn" onclick="adjustLeverage(-1)">−</button>
-                <button type="button" class="stepper-btn" onclick="adjustLeverage(1)">+</button>
-              </div>
-            </div>
-            <input type="range" id="leverage-slider" min="1" max="100" value="10" step="1" oninput="setLeverage(this.value)" class="lev-slider"/>
-            <div class="lev-chips-row">
-              <button type="button" class="lchip" onclick="setLeverage(1)">1x</button>
-              <button type="button" class="lchip" onclick="setLeverage(5)">5x</button>
-              <button type="button" class="lchip active" onclick="setLeverage(10)">10x</button>
-              <button type="button" class="lchip" onclick="setLeverage(25)">25x</button>
-              <button type="button" class="lchip" onclick="setLeverage(50)">50x</button>
-              <button type="button" class="lchip" onclick="setLeverage(100)">100x</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Amount Input with Unit Switch -->
-        <div class="field-group">
+        <!-- Quantity Row: Quantity with BTC | USDT toggle (Screenshot 1 Match) -->
+        <div class="field-group quantity-field-group" style="margin-top:10px;">
           <div class="field-label-row">
-            <label id="amount-input-label" for="trade-amount-input">Order Amount</label>
+            <label id="amount-input-label" for="trade-amount-input">Quantity</label>
             <div class="unit-toggle-chips">
               <button type="button" class="uchip active" id="uchip-coin" onclick="setTradeUnit('coin')">BTC</button>
+              <span class="uchip-divider">|</span>
               <button type="button" class="uchip" id="uchip-usd" onclick="setTradeUnit('usd')">USDT</button>
             </div>
           </div>
           <div class="input-wrap amount-wrap">
-            <span class="iprefix" id="amount-prefix">₿</span>
             <input type="number" id="trade-amount-input" placeholder="0.00" step="any" min="0" oninput="updateTradeCalc()" />
           </div>
-          <div class="live-conversion-sub" id="live-conversion-sub">
+          <div class="live-conversion-sub" id="live-conversion-sub" style="display:none;">
             ≈ $0.00 USDT
           </div>
         </div>
 
-        <!-- Quick Percentage Buttons -->
-        <div class="quick-row">
-          <button type="button" class="qbtn" onclick="setQuickPercent(0.25)">25%</button>
-          <button type="button" class="qbtn" onclick="setQuickPercent(0.50)">50%</button>
-          <button type="button" class="qbtn" onclick="setQuickPercent(0.75)">75%</button>
-          <button type="button" class="qbtn" onclick="setQuickPercent(1.00)">MAX</button>
+        <!-- Quick Chips Row: Min: 0.002 BTC, 25%, 50%, Max (Screenshot 1 Match) -->
+        <div class="shark-chips-row">
+          <button type="button" class="sq-chip" id="chip-min-size" onclick="setMinTradeAmount()">Min : 0.002 BTC</button>
+          <button type="button" class="sq-chip" onclick="setQuickPercent(0.25)">25%</button>
+          <button type="button" class="sq-chip" onclick="setQuickPercent(0.50)">50%</button>
+          <button type="button" class="sq-chip" onclick="setQuickPercent(1.00)">Max</button>
         </div>
 
-        <!-- Take Profit & Stop Loss -->
-        <div class="tpsl-section">
-          <div class="tpsl-header" onclick="toggleTpSlSection()">
-            <span>Take Profit & Stop Loss <small style="color:var(--txt3); font-weight:400;">(Optional)</small></span>
-            <span id="tpsl-toggle-arrow">▾</span>
-          </div>
-          <div class="tpsl-body" id="tpsl-body">
-            <div class="field-group tpsl-field">
-              <div class="field-label-row">
-                <label for="tp-input">Take Profit (USDT)</label>
-                <div class="tpsl-pct-chips">
-                  <button type="button" class="tpchip" onclick="setQuickTp(0.05)">5%</button>
-                  <button type="button" class="tpchip" onclick="setQuickTp(0.10)">10%</button>
-                  <button type="button" class="tpchip" onclick="setQuickTp(0.25)">25%</button>
-                </div>
-              </div>
-              <div class="input-wrap">
-                <span class="iprefix">$</span>
-                <input type="number" id="tp-input" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
+        <!-- Set Stop Loss / Take Profit Checkbox (Screenshot 1 Match) -->
+        <div class="checkbox-tpsl-row">
+          <label class="shark-checkbox-label">
+            <input type="checkbox" id="checkbox-tpsl" onchange="toggleTpSlCheckbox(this.checked)" />
+            <span class="scheck-custom"></span>
+            <span class="scheck-text">Set Stop Loss / Take Profit</span>
+          </label>
+        </div>
+
+        <!-- Take Profit & Stop Loss Fields (Expanded when checked) -->
+        <div class="tpsl-body hidden" id="tpsl-body">
+          <div class="field-group tpsl-field">
+            <div class="field-label-row">
+              <label for="tp-input">Take Profit (USDT)</label>
+              <div class="tpsl-pct-chips">
+                <button type="button" class="tpchip" onclick="setQuickTp(0.05)">5%</button>
+                <button type="button" class="tpchip" onclick="setQuickTp(0.10)">10%</button>
+                <button type="button" class="tpchip" onclick="setQuickTp(0.25)">25%</button>
               </div>
             </div>
+            <div class="input-wrap">
+              <span class="iprefix">$</span>
+              <input type="number" id="tp-input" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
+            </div>
+          </div>
 
-            <div class="field-group tpsl-field">
-              <div class="field-label-row">
-                <label for="sl-input">Stop Loss (USDT)</label>
-                <div class="tpsl-pct-chips">
-                  <button type="button" class="slchip" onclick="setQuickSl(0.05)">5%</button>
-                  <button type="button" class="slchip" onclick="setQuickSl(0.10)">10%</button>
-                  <button type="button" class="slchip" onclick="setQuickSl(0.25)">25%</button>
-                </div>
+          <div class="field-group tpsl-field">
+            <div class="field-label-row">
+              <label for="sl-input">Stop Loss (USDT)</label>
+              <div class="tpsl-pct-chips">
+                <button type="button" class="slchip" onclick="setQuickSl(0.05)">5%</button>
+                <button type="button" class="slchip" onclick="setQuickSl(0.10)">10%</button>
+                <button type="button" class="slchip" onclick="setQuickSl(0.25)">25%</button>
               </div>
-              <div class="input-wrap">
-                <span class="iprefix">$</span>
-                <input type="number" id="sl-input" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
-              </div>
+            </div>
+            <div class="input-wrap">
+              <span class="iprefix">$</span>
+              <input type="number" id="sl-input" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
             </div>
           </div>
         </div>
 
-        <!-- SUMMARY BOX -->
-        <div class="order-summary delta-summary">
-          <div class="os-row"><span>Order Value</span><span id="sum-order-val">$0.00 USDT</span></div>
-          <div class="os-row"><span>Margin Required</span><span id="sum-margin-req">$0.00 USDT</span></div>
-          <div class="os-row"><span>Estimated Fee <small id="sum-fee-rate" style="color:var(--txt3)">(0.05% Taker)</small></span><span id="sum-est-fee">$0.00 USDT</span></div>
-          <div class="os-row" id="sum-liq-row" style="display:none;">
-            <span>Est. Liquidation Price</span><span id="sum-liq-price" class="liq-price-red">—</span>
-          </div>
-          <div class="os-row"><span>Available USDT</span><span id="sum-avail-cash" class="green">$10,000.00</span></div>
-          <div class="os-row"><span>Asset Held</span><span id="sum-coin-held">0.00000000 BTC</span></div>
+        <!-- Hidden summary elements for backward compatibility in calculations -->
+        <div class="delta-summary hidden" style="display:none;">
+          <span id="sum-order-val">$0.00</span>
+          <span id="sum-margin-req">$0.00</span>
+          <span id="sum-est-fee">$0.00</span>
+          <span id="sum-liq-price">—</span>
+          <span id="sum-avail-cash">$10,000.00</span>
+          <span id="sum-coin-held">0.00000000 BTC</span>
         </div>
 
-        <!-- AUTHENTICATED SUBMIT BUTTON (Shown when logged in) -->
-        <div id="trade-auth-actions" class="hidden">
-          <button class="btn-execute delta-submit-btn buy-execute" id="delta-submit-btn" onclick="executeTrade()">
-            <span id="delta-submit-label">Buy BTC</span>
+        <!-- AUTHENTICATED SUBMIT BUTTON & STATS (Screenshot 1 & 2 Match: Shown when logged in) -->
+        <div id="trade-auth-actions" class="trade-auth-actions hidden">
+          <button type="button" class="btn-execute-solid btn-execute-buy-long" id="delta-submit-btn" onclick="executeTrade()">
+            <span id="delta-submit-label">Buy / Long BTC</span>
           </button>
+
+          <!-- Account info rows below button (Screenshot 1 Match) -->
+          <div class="shark-account-stats-box">
+            <div class="sstat-auth-row">
+              <span class="sstat-auth-lbl">Avail. Balance <span class="desk-eye-btn" onclick="toggleBalanceMask()" title="Hide / Show Balance">👁️</span></span>
+              <span class="sstat-auth-val">
+                <span id="desk-avail-bal">$10,000.00 USDT</span>
+                <button type="button" class="desk-plus-btn" onclick="openResetWalletDialog()" title="Add Virtual Funds">+</button>
+              </span>
+            </div>
+            <div class="sstat-auth-row">
+              <span class="sstat-auth-lbl">Margin at Risk</span>
+              <span class="sstat-auth-val" id="desk-margin-risk">0.00 USDT</span>
+            </div>
+            <div class="sstat-auth-row">
+              <span class="sstat-auth-lbl">Est. Fee (Taker 0.04%)</span>
+              <span class="sstat-auth-val" id="desk-est-fee">--</span>
+            </div>
+            <div class="sstat-auth-row">
+              <span class="sstat-auth-lbl">Est. Liquidation Price</span>
+              <span class="sstat-auth-val" id="desk-liq-price">--</span>
+            </div>
+          </div>
+
+          <!-- Margin Ratio Card (Screenshot 2 & 3 Match) -->
+          <div class="margin-ratio-card" id="margin-ratio-card">
+            <div class="mrc-header">
+              <div class="mrc-title-left">
+                <span class="mrc-label">Margin Ratio</span>
+                <span class="mrc-coin-badge" id="mrc-coin-badge">
+                  <span class="mrc-coin-dot">₿</span>
+                  <span id="mrc-coin-symbol">BTC-USDT</span>
+                </span>
+                <span class="mrc-info-icon" title="Margin Ratio = Maintenance Margin / Margin Balance">ⓘ</span>
+              </div>
+            </div>
+            <div class="mrc-pct-val" id="mrc-pct-val">0.00%</div>
+            <div class="mrc-progress-bar">
+              <div class="mrc-progress-fill" id="mrc-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="mrc-footer-row">
+              <div class="mrc-stat-col">
+                <span class="mrc-stat-lbl">Maintenance Margin</span>
+                <span class="mrc-stat-val" id="mrc-maint-margin">0.0000 USDT</span>
+              </div>
+              <div class="mrc-stat-col text-right">
+                <span class="mrc-stat-lbl">Margin Balance</span>
+                <span class="mrc-stat-val" id="mrc-margin-bal">10000.0000 USDT</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- UNAUTHENTICATED GUEST ACTIONS (Screenshot 1 Match: Log In to Trade & Create Account) -->

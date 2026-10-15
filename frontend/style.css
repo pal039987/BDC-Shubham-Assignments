@@ -5200,6 +5200,779 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   }
 }
 
+/* ═════════════════════════════════════════════════════════════════════
+   AUTHENTICATED SHARK EXCHANGE UI STYLES (Screenshot 1, 2, 3 Match)
+   ═════════════════════════════════════════════════════════════════════ */
 
+/* 1. Navbar: Add Funds button & My Profile pill */
+.btn-nav-add-funds {
+  background: #00c2ff;
+  color: #080b11;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.2px;
+  box-shadow: 0 0 10px rgba(0, 194, 255, 0.25);
+}
+.btn-nav-add-funds:hover {
+  background: #38d6ff;
+  box-shadow: 0 0 18px rgba(0, 194, 255, 0.5);
+  transform: translateY(-1px);
+}
+.btn-nav-add-funds:active {
+  transform: translateY(0);
+}
 
+.shark-profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 20px;
+  background: #141924;
+  border: 1px solid #232c3d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+.shark-profile-pill:hover {
+  background: #1a2232;
+  border-color: #3b475e;
+}
+.shark-profile-pill .user-av {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(168, 85, 247, 0.4);
+}
+.shark-profile-pill .profile-text {
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+.shark-profile-pill .profile-caret {
+  color: #848e9c;
+  font-size: 11px;
+}
 
+/* Profile Dropdown Menu */
+.profile-dropdown-menu {
+  position: absolute;
+  top: 54px;
+  right: 16px;
+  width: 260px;
+  background: #111622;
+  border: 1px solid #232d3f;
+  border-radius: 10px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7);
+  padding: 14px;
+  z-index: 1000;
+  animation: fadeInDown 0.18s ease-out;
+}
+.pdm-header {
+  padding-bottom: 8px;
+}
+.pdm-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+.pdm-sub, .pdm-uid {
+  font-size: 11px;
+  color: #727b8a;
+  margin-top: 2px;
+}
+.pdm-divider {
+  height: 1px;
+  background: #1e2636;
+  margin: 10px 0;
+}
+.pdm-balance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #848e9c;
+}
+.pdm-bal-val {
+  color: #0ecb81;
+  font-weight: 700;
+  font-size: 13px;
+}
+.pdm-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #c9d1d9;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 4px;
+}
+.pdm-item:hover {
+  background: #1c2434;
+  color: #ffffff;
+}
+.pdm-logout {
+  color: #f6465d !important;
+}
+.pdm-logout:hover {
+  background: rgba(246, 70, 93, 0.12) !important;
+}
+
+/* Active ticker item + tab button */
+.gi-tab-plus {
+  background: #1a2232;
+  border: 1px solid #28354b;
+  color: #94a3b8;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 6px;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+.gi-tab-plus:hover {
+  background: #00c2ff;
+  color: #080b11;
+  border-color: #00c2ff;
+}
+
+/* 2. Trade Desk: Side Tabs (Buy green check vs Sell) */
+.shark-trade-side-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #1c2333;
+  padding-bottom: 6px;
+}
+.st-side-btn {
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  color: #727b8a;
+  cursor: pointer;
+  padding: 6px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.st-side-btn.buy-tab.active {
+  color: #0ecb81;
+}
+.st-side-btn.buy-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #0ecb81;
+}
+.st-side-btn.sell-tab.active {
+  color: #f6465d;
+}
+.st-side-btn.sell-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #f6465d;
+}
+.st-check-icon {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+/* Mode & Leverage Row (Screenshot 1) */
+.mode-lev-row {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+  margin-bottom: 12px;
+  position: relative;
+}
+.shark-select-btn {
+  background: #181d27;
+  border: 1px solid #232c3d;
+  color: #d1d5db;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.shark-select-btn:hover {
+  background: #1f2635;
+  border-color: #334155;
+  color: #ffffff;
+}
+.shark-caret {
+  font-size: 10px;
+  color: #848e9c;
+  margin-left: 4px;
+}
+
+/* Margin Mode & Leverage Popovers */
+.margin-mode-dropdown-menu,
+.leverage-dropdown-menu {
+  position: absolute;
+  top: 38px;
+  background: #111622;
+  border: 1px solid #263143;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+  animation: fadeInDown 0.15s ease-out;
+}
+.margin-mode-dropdown-menu {
+  left: 0;
+  width: 180px;
+}
+.leverage-dropdown-menu {
+  right: 0;
+  width: 220px;
+}
+.mm-dropdown-item {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.mm-dropdown-item:hover, .mm-dropdown-item.active {
+  background: #1c2434;
+  color: #00c2ff;
+}
+.lev-dropdown-title {
+  font-size: 11px;
+  color: #727b8a;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+.lev-dropdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.ld-chip {
+  background: #181e2b;
+  border: 1px solid #252f42;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ld-chip:hover, .ld-chip.active {
+  background: #00c2ff;
+  color: #080b11;
+  border-color: #00c2ff;
+}
+
+/* Order Types Strip (Screenshot 1) */
+.shark-order-types-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1c2333;
+  margin-bottom: 10px;
+}
+.sot-tabs {
+  display: flex;
+  gap: 16px;
+}
+.sot-tab {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #727b8a;
+  padding: 6px 0;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.sot-tab:hover {
+  color: #cbd5e1;
+}
+.sot-tab.active {
+  color: #00c2ff;
+}
+.sot-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #00c2ff;
+}
+.sot-info-icon {
+  color: #64748b;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px;
+}
+.sot-info-icon:hover {
+  color: #00c2ff;
+}
+
+/* Quantity Row */
+.quantity-field-group .field-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.quantity-field-group label {
+  font-size: 12px;
+  color: #848e9c;
+  font-weight: 600;
+}
+.unit-toggle-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.unit-toggle-chips .uchip {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.unit-toggle-chips .uchip.active {
+  color: #00c2ff;
+}
+.uchip-divider {
+  color: #334155;
+  font-size: 10px;
+}
+
+/* Quick Chips: Min: 0.002 BTC, 25%, 50%, Max (Screenshot 1) */
+.shark-chips-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+.sq-chip {
+  background: #141923;
+  border: 1px solid #1f2736;
+  color: #848e9c;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.sq-chip:hover {
+  background: #1c2333;
+  border-color: #2e3a50;
+  color: #e2e8f0;
+}
+
+/* Set TP / SL Checkbox Row (Screenshot 1) */
+.checkbox-tpsl-row {
+  margin-bottom: 12px;
+}
+.shark-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.shark-checkbox-label input[type="checkbox"] {
+  display: none;
+}
+.scheck-custom {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid #334155;
+  background: #111622;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.shark-checkbox-label input[type="checkbox"]:checked + .scheck-custom {
+  background: #00c2ff;
+  border-color: #00c2ff;
+}
+.shark-checkbox-label input[type="checkbox"]:checked + .scheck-custom::after {
+  content: '✓';
+  color: #080b11;
+  font-size: 10px;
+  font-weight: 900;
+}
+.scheck-text {
+  font-size: 12px;
+  color: #848e9c;
+  font-weight: 500;
+}
+
+/* Solid Execute Buttons (Screenshot 1: Buy / Long BTC vs Sell / Short BTC) */
+.btn-execute-solid {
+  width: 100%;
+  height: 42px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.btn-execute-buy-long {
+  background: #0ecb81;
+  color: #051a11;
+}
+.btn-execute-buy-long:hover {
+  background: #12e091;
+  box-shadow: 0 0 16px rgba(14, 203, 129, 0.4);
+}
+.btn-execute-sell-short {
+  background: #f6465d;
+  color: #ffffff;
+}
+.btn-execute-sell-short:hover {
+  background: #ff526b;
+  box-shadow: 0 0 16px rgba(246, 70, 93, 0.4);
+}
+
+/* Account stats rows below execute button (Screenshot 1) */
+.shark-account-stats-box {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #1a202c;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sstat-auth-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+.sstat-auth-lbl {
+  color: #848e9c;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.desk-eye-btn {
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+}
+.desk-eye-btn:hover {
+  opacity: 1;
+}
+.sstat-auth-val {
+  color: #d1d5db;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.desk-plus-btn {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #00c2ff;
+  background: rgba(0, 194, 255, 0.12);
+  color: #00c2ff;
+  font-size: 11px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+.desk-plus-btn:hover {
+  background: #00c2ff;
+  color: #080b11;
+}
+
+/* 3. Margin Ratio Card (Screenshot 2 & 3 Match) */
+.margin-ratio-card {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #0c1017;
+  border: 1px solid #1c2333;
+  border-radius: 8px;
+}
+.mrc-header {
+  margin-bottom: 8px;
+}
+.mrc-title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mrc-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #848e9c;
+}
+.mrc-coin-badge {
+  background: #141924;
+  border: 1px solid #232c3d;
+  border-radius: 12px;
+  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #d1d5db;
+}
+.mrc-coin-dot {
+  color: #f59e0b;
+  font-size: 11px;
+}
+.mrc-info-icon {
+  color: #64748b;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: auto;
+}
+.mrc-pct-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0ecb81;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.mrc-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #1a2232;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.mrc-progress-fill {
+  height: 100%;
+  background: #0ecb81;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+.mrc-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+.mrc-stat-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mrc-stat-lbl {
+  font-size: 11px;
+  color: #64748b;
+}
+.mrc-stat-val {
+  font-size: 12px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+.text-right {
+  text-align: right;
+}
+
+/* 4. Bottom Positions Panel & Tabs (Screenshot 2 & 3 Match) */
+.shark-pos-tabs-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1c2333;
+  margin-bottom: 12px;
+  padding-bottom: 2px;
+  position: relative;
+}
+.shark-pos-tabs-wrap .pos-view-tabs {
+  border-bottom: none;
+  margin-bottom: 0;
+  gap: 20px;
+}
+.shark-pos-tabs-wrap .btab {
+  font-size: 13px;
+  font-weight: 600;
+  color: #727b8a;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.shark-pos-tabs-wrap .btab:hover {
+  color: #cbd5e1;
+}
+.shark-pos-tabs-wrap .btab.active {
+  color: #00c2ff;
+}
+.shark-pos-tabs-wrap .btab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #00c2ff;
+}
+.pos-currency-switch {
+  position: relative;
+}
+.currency-toggle-pill {
+  background: #141923;
+  border: 1px solid #232c3d;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.currency-toggle-pill:hover {
+  background: #1a2232;
+  border-color: #334155;
+}
+.currency-caret {
+  font-size: 10px;
+  color: #727b8a;
+}
+.currency-dropdown-menu {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  width: 120px;
+  background: #111622;
+  border: 1px solid #232d3f;
+  border-radius: 6px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  z-index: 60;
+}
+.cdm-item {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+.cdm-item:hover, .cdm-item.active {
+  background: #1c2434;
+  color: #00c2ff;
+  font-weight: 600;
+}
+
+/* Shark Positions Table Headers (Screenshot 2 Match) */
+.shark-data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.shark-data-table th {
+  color: #727b8a;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #1c2333;
+  white-space: nowrap;
+}
+.shark-data-table td {
+  padding: 12px 12px;
+  font-size: 13px;
+  color: #e2e8f0;
+  border-bottom: 1px solid #141a24;
+}
+
+/* 5. Empty State Tray Icon & "No data" (Screenshot 2 & 3 Match) */
+.shark-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 20px;
+  gap: 12px;
+}
+.shark-empty-tray-icon {
+  opacity: 0.8;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+.shark-empty-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #727b8a;
+  letter-spacing: 0.1px;
+}

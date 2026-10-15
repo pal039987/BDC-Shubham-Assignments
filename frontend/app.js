@@ -374,6 +374,162 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+let isBalanceMasked = false;
+
+function toggleBalanceMask() {
+  isBalanceMasked = !isBalanceMasked;
+  const availEl = document.getElementById('desk-avail-bal');
+  if (availEl) {
+    if (isBalanceMasked) {
+      availEl.textContent = '******';
+    } else {
+      availEl.textContent = `$${fmtNum(walletState.cashBalance)} USDT`;
+    }
+  }
+}
+
+function toggleProfileDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('profile-dropdown-menu');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function closeProfileDropdown() {
+  const menu = document.getElementById('profile-dropdown-menu');
+  if (menu) menu.classList.add('hidden');
+}
+
+function toggleMarginModeDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('margin-mode-dropdown-menu');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function selectMarginModeMenu(mode) {
+  setMarginMode(mode);
+  const lbl = document.getElementById('margin-mode-display-label');
+  if (lbl) lbl.textContent = mode === 'isolated' ? 'Isolated Margin Mode' : 'Cross Margin Mode';
+  const menu = document.getElementById('margin-mode-dropdown-menu');
+  if (menu) menu.classList.add('hidden');
+  document.querySelectorAll('.mm-dropdown-item').forEach(el => {
+    el.classList.toggle('active', el.textContent.toLowerCase().includes(mode));
+  });
+}
+
+function toggleLeverageDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('leverage-dropdown-menu');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function selectLeverageMenu(lev) {
+  setLeverage(lev);
+  const lbl = document.getElementById('btn-lev-label');
+  if (lbl) lbl.textContent = `${lev}x`;
+  const menu = document.getElementById('leverage-dropdown-menu');
+  if (menu) menu.classList.add('hidden');
+  document.querySelectorAll('.ld-chip').forEach(el => {
+    el.classList.toggle('active', el.textContent === `${lev}x`);
+  });
+}
+
+function toggleCurrencyDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('currency-dropdown-menu');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+let activeCurrencyView = 'USDT';
+function selectCurrencyView(curr) {
+  activeCurrencyView = curr;
+  const activeLabel = document.getElementById('pos-active-currency');
+  if (activeLabel) activeLabel.textContent = curr === 'INR' ? 'INR (₹)' : 'INR | USDT';
+  const menu = document.getElementById('currency-dropdown-menu');
+  if (menu) menu.classList.add('hidden');
+  document.querySelectorAll('.cdm-item').forEach(el => {
+    el.classList.toggle('active', el.textContent.startsWith(curr));
+  });
+  renderPositions();
+}
+
+function toggleTpSlCheckbox(checked) {
+  const body = document.getElementById('tpsl-body');
+  if (body) {
+    if (checked) {
+      body.classList.remove('hidden');
+    } else {
+      body.classList.add('hidden');
+      const tp = document.getElementById('tp-input');
+      const sl = document.getElementById('sl-input');
+      if (tp) tp.value = '';
+      if (sl) sl.value = '';
+      updateTradeCalc();
+    }
+  }
+}
+
+function setMinTradeAmount() {
+  const coinDef = getCoinDefinition(selectedCoin);
+  const curPrice = currentPrices[selectedCoin]?.price || coinDef.basePrice || 100;
+  let minAmount = 0.002;
+  if (coinDef.symbol === 'BTC') minAmount = 0.002;
+  else if (coinDef.symbol === 'ETH') minAmount = 0.02;
+  else if (coinDef.symbol === 'SOL') minAmount = 0.1;
+  else minAmount = parseFloat((100 / curPrice).toFixed(3)) || 1;
+
+  const input = document.getElementById('trade-amount-input');
+  if (input) {
+    if (tradeUnit === 'coin') {
+      input.value = minAmount;
+    } else {
+      input.value = (minAmount * curPrice).toFixed(2);
+    }
+    updateTradeCalc();
+  }
+}
+
+function renderNoDataState(colspan = 10) {
+  return `<tr><td colspan="${colspan}" class="empty-row">
+    <div class="shark-empty-state">
+      <svg class="shark-empty-tray-icon" width="56" height="56" viewBox="0 0 64 64" fill="none">
+        <path d="M12 22L20 44H44L52 22H12Z" stroke="#2c3545" stroke-width="2.5" fill="#141923"/>
+        <path d="M26 34H38" stroke="#3b475c" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M12 22L22 14H42L52 22" stroke="#222a38" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <div class="shark-empty-text">No data</div>
+    </div>
+  </td></tr>`;
+}
+
+function updateMarginRatioStats(ratio, maint, bal) {
+  const pctEl = document.getElementById('mrc-pct-val');
+  const fillEl = document.getElementById('mrc-progress-fill');
+  const maintEl = document.getElementById('mrc-maint-margin');
+  const balEl = document.getElementById('mrc-margin-bal');
+
+  if (pctEl) pctEl.textContent = `${ratio}%`;
+  if (fillEl) fillEl.style.width = `${Math.min(100, Math.max(0, parseFloat(ratio) * 10))}%`;
+  if (maintEl) maintEl.textContent = `${typeof maint === 'number' ? maint.toFixed(4) : maint} USDT`;
+  if (balEl) balEl.textContent = `${typeof bal === 'number' ? bal.toFixed(4) : bal} USDT`;
+
+  // Sync to guest cards as well
+  document.querySelectorAll('.tgm-val.green').forEach(el => el.textContent = `${ratio}%`);
+}
+
+// Window click listener to close menus on click away
+if (typeof window !== 'undefined') {
+  window.addEventListener('click', (e) => {
+    if (!e.target.closest('#nav-user-group')) closeProfileDropdown();
+    if (!e.target.closest('.mode-lev-row')) {
+      document.getElementById('margin-mode-dropdown-menu')?.classList.add('hidden');
+      document.getElementById('leverage-dropdown-menu')?.classList.add('hidden');
+    }
+    if (!e.target.closest('.pos-currency-switch')) {
+      document.getElementById('currency-dropdown-menu')?.classList.add('hidden');
+    }
+  });
+}
+
 function updateAuthStateUI() {
   const navGuest = document.getElementById('nav-guest-group');
   const navUser  = document.getElementById('nav-user-group');
@@ -386,12 +542,25 @@ function updateAuthStateUI() {
     if (navUser)  navUser.classList.remove('hidden');
     const uNameEl = document.getElementById('nav-username');
     const uAvEl   = document.getElementById('user-avatar');
-    if (uNameEl) uNameEl.textContent = username || 'Trader';
-    if (uAvEl)   uAvEl.textContent   = (username || 'T').charAt(0).toUpperCase();
+    const pdmName = document.getElementById('pdm-username');
+    const pdmBal  = document.getElementById('pdm-balance');
+    const deskAvail = document.getElementById('desk-avail-bal');
+
+    const displayName = username || 'Trader';
+    if (uNameEl) uNameEl.textContent = displayName;
+    if (pdmName) pdmName.textContent = displayName;
+    if (uAvEl)   uAvEl.textContent   = displayName.charAt(0).toUpperCase();
+
+    const formattedBal = `$${fmtNum(walletState.cashBalance)} USDT`;
+    if (pdmBal) pdmBal.textContent = formattedBal;
+    if (deskAvail && !isBalanceMasked) deskAvail.textContent = formattedBal;
 
     if (tradeGuest) tradeGuest.classList.add('hidden');
     if (tradeAuth)  tradeAuth.classList.remove('hidden');
     if (unauthPos)  unauthPos.classList.add('hidden');
+
+    updateMiniStats();
+    updateTabBadges();
   } else {
     if (navGuest) navGuest.classList.remove('hidden');
     if (navUser)  navUser.classList.add('hidden');
@@ -3455,16 +3624,36 @@ function renderLineChart(prices, tf) {
   });
 }
 
-// ─── BOTTOM TABS (Requirement A) ──────────────────────────
+// ─── BOTTOM TABS (Requirement A & Screenshot 2 & 3 Match) ───
 function showBottomTab(tab, btn) {
   activeBottomTab = tab || 'positions';
-  ['positions','orders','history'].forEach(t => {
+  const allTabs = ['positions', 'orders', 'order-history', 'history', 'transaction', 'webhooks'];
+  allTabs.forEach(t => {
     const panel = document.getElementById(`panel-${t}`);
     if (panel) panel.classList.toggle('hidden', t !== activeBottomTab);
   });
-  document.querySelectorAll('.btab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.shark-pos-tabs-wrap .btab').forEach(b => b.classList.remove('active'));
   const activeBtn = btn || document.getElementById(`tab-btn-${activeBottomTab}`);
   if (activeBtn) activeBtn.classList.add('active');
+
+  if (activeBottomTab === 'order-history') renderOrderHistory();
+  else if (activeBottomTab === 'transaction') renderTransactions();
+  else if (activeBottomTab === 'webhooks') renderWebhooks();
+}
+
+function renderOrderHistory() {
+  const tbody = document.getElementById('order-history-tbody');
+  if (tbody) tbody.innerHTML = renderNoDataState(7);
+}
+
+function renderTransactions() {
+  const tbody = document.getElementById('transaction-tbody');
+  if (tbody) tbody.innerHTML = renderNoDataState(6);
+}
+
+function renderWebhooks() {
+  const tbody = document.getElementById('webhooks-tbody');
+  if (tbody) tbody.innerHTML = renderNoDataState(6);
 }
 
 function updateTabBadges() {
@@ -3516,11 +3705,9 @@ function setTradeSide(side) {
   }
   if (subBtn) {
     if (side === 'buy') {
-      subBtn.classList.add('buy-execute');
-      subBtn.classList.remove('sell-execute');
+      subBtn.className = 'btn-execute-solid btn-execute-buy-long';
     } else {
-      subBtn.classList.add('sell-execute');
-      subBtn.classList.remove('buy-execute');
+      subBtn.className = 'btn-execute-solid btn-execute-sell-short';
     }
   }
   updateTradeLabels();
@@ -3529,13 +3716,20 @@ function setTradeSide(side) {
 
 function setOrderType(type) {
   tradeOrderType = type;
-  document.getElementById('otype-market')?.classList.toggle('active', type === 'market');
-  document.getElementById('otype-limit')?.classList.toggle('active', type === 'limit');
+  document.querySelectorAll('.sot-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(`otype-${type}`)?.classList.add('active');
   
   const limitField = document.getElementById('limit-price-group');
+  const limitLabel = document.getElementById('limit-price-label');
   if (limitField) {
-    limitField.style.display = type === 'limit' ? 'block' : 'none';
-    if (type === 'limit') {
+    const isLimitOrStop = (type === 'limit' || type === 'stop-l' || type === 'stop-m');
+    limitField.style.display = isLimitOrStop ? 'block' : 'none';
+    if (limitLabel) {
+      if (type === 'stop-l') limitLabel.textContent = 'Stop-Limit Price (USDT)';
+      else if (type === 'stop-m') limitLabel.textContent = 'Stop-Market Price (USDT)';
+      else limitLabel.textContent = 'Order Price (USDT)';
+    }
+    if (isLimitOrStop) {
       setLimitPriceToCurrent();
     }
   }
@@ -3787,6 +3981,19 @@ function updateTradeCalc() {
     }
   }
 
+  // Update Shark Account Stats Box underneath Execute Button (Screenshot 1 Match)
+  const deskAvail = document.getElementById('desk-avail-bal');
+  const deskRisk = document.getElementById('desk-margin-risk');
+  const deskFee = document.getElementById('desk-est-fee');
+  const deskLiq = document.getElementById('desk-liq-price');
+
+  if (deskAvail && !isBalanceMasked) {
+    deskAvail.textContent = `$${fmtNum(walletState.cashBalance)} USDT`;
+  }
+  if (deskRisk) deskRisk.textContent = `$${fmtNum(marginRequired)} USDT`;
+  if (deskFee) deskFee.textContent = orderValue > 0 ? `$${fmtNum(estFee)} USDT` : '--';
+  if (deskLiq) deskLiq.textContent = (orderValue > 0 && liqPrice > 0) ? `$${fmt(liqPrice)}` : '--';
+
   if (submitBtn) {
     submitBtn.disabled = Boolean(disableReason);
   }
@@ -3804,24 +4011,35 @@ function updateTradeLabels() {
   const coinDef = getCoinDefinition(selectedCoin);
   const sym = coinDef.symbol;
   
-  // Side buttons labels
+  // Side buttons labels (Screenshot 1 Match: Buy / Sell)
   const sideBuy = document.getElementById('side-buy-label');
   const sideSell = document.getElementById('side-sell-label');
-  if (sideBuy) sideBuy.textContent = tradeCategory === 'position' ? '↑ Long (Buy)' : `↑ Buy ${sym}`;
-  if (sideSell) sideSell.textContent = tradeCategory === 'position' ? '↓ Short (Sell)' : `↓ Sell ${sym}`;
+  if (sideBuy) sideBuy.textContent = 'Buy';
+  if (sideSell) sideSell.textContent = 'Sell';
   
   // Unit toggle coin chip
   const uchipCoin = document.getElementById('uchip-coin');
   if (uchipCoin) uchipCoin.textContent = sym;
   
-  // Submit button label
+  // Submit button label (Screenshot 1 Match: Buy / Long BTC or Sell / Short BTC)
   const submitLabel = document.getElementById('delta-submit-label');
   if (submitLabel) {
-    if (tradeCategory === 'spot') {
-      submitLabel.textContent = tradeSide === 'buy' ? `Buy ${sym}` : `Sell ${sym}`;
-    } else {
-      submitLabel.textContent = tradeSide === 'buy' ? `Open Long ${tradeLeverage}x` : `Open Short ${tradeLeverage}x`;
-    }
+    submitLabel.textContent = tradeSide === 'buy' ? `Buy / Long ${sym}` : `Sell / Short ${sym}`;
+  }
+
+  // Update Margin Ratio coin badge
+  const mrcCoinSym = document.getElementById('mrc-coin-symbol');
+  if (mrcCoinSym) mrcCoinSym.textContent = `${sym}-USDT`;
+
+  // Update Min size chip label
+  const chipMin = document.getElementById('chip-min-size');
+  if (chipMin) {
+    let minAmount = 0.002;
+    if (sym === 'BTC') minAmount = 0.002;
+    else if (sym === 'ETH') minAmount = 0.02;
+    else if (sym === 'SOL') minAmount = 0.1;
+    else minAmount = parseFloat((100 / (coinDef.basePrice || 100)).toFixed(3)) || 1;
+    chipMin.textContent = `Min : ${minAmount} ${sym}`;
   }
   
   // Active coin banner
@@ -4588,7 +4806,7 @@ function updateMiniStats() {
   if (navBal) navBal.textContent = `$${fmtNum(totalPort)}`;
 }
 
-// ─── RENDER POSITIONS TABLE (Requirement B) ────────────────
+// ─── RENDER POSITIONS TABLE (Requirement B & Screenshot 2 Match) ────────────────
 function renderPositions() {
   updateTabBadges();
   renderTvChartOverlay();
@@ -4610,10 +4828,20 @@ function renderPositions() {
   }
 
   if (!open.length) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="10" class="empty-row"><div class="empty-state-box"><span class="empty-icon">📊</span><span class="empty-msg">No open positions</span></div></td></tr>`;
-    if (cardsList) cardsList.innerHTML = `<div class="empty-state-box" style="padding:40px 20px;"><span class="empty-icon">📊</span><span class="empty-msg">No active positions</span><button class="pos-btn-new-trade" style="margin-top:16px;" onclick="switchMainTab('trade')">+ Open a New Trade</button></div>`;
+    if (tbody) tbody.innerHTML = renderNoDataState(10);
+    if (cardsList) cardsList.innerHTML = `<div class="shark-empty-state"><svg class="shark-empty-tray-icon" width="56" height="56" viewBox="0 0 64 64" fill="none"><path d="M12 22L20 44H44L52 22H12Z" stroke="#2c3545" stroke-width="2.5" fill="#141923"/><path d="M26 34H38" stroke="#3b475c" stroke-width="2.5" stroke-linecap="round"/><path d="M12 22L22 14H42L52 22" stroke="#222a38" stroke-width="2" stroke-linejoin="round"/></svg><div class="shark-empty-text">No data</div></div>`;
+    updateMarginRatioStats('0.00', 0, walletState.cashBalance);
     return;
   }
+
+  // Calculate genuine margin ratio & maintenance margin
+  const totalMaintMargin = open.reduce((acc, p) => acc + (p.margin * 0.005), 0);
+  const marginBal = walletState.cashBalance + totalUnrealized;
+  const marginRatio = marginBal > 0 ? ((totalMaintMargin / marginBal) * 100).toFixed(2) : '0.00';
+  updateMarginRatioStats(marginRatio, totalMaintMargin, marginBal);
+
+  const inrMult = activeCurrencyView === 'INR' ? usdToInrRate : 1;
+  const currSym = activeCurrencyView === 'INR' ? '₹' : '$';
 
   // Modern Mobile & Responsive Cards
   if (cardsList) {
@@ -4626,8 +4854,8 @@ function renderPositions() {
       const isPos = pnl >= 0;
       const sideCls = (p.direction === 'long') ? 'badge-long' : 'badge-short';
       const sideText = (p.direction === 'long') ? 'LONG' : 'SHORT';
-      const tpStr = p.take_profit ? `$${fmt(p.take_profit)}` : 'None';
-      const slStr = p.stop_loss ? `$${fmt(p.stop_loss)}` : 'None';
+      const tpStr = p.take_profit ? `${currSym}${fmt(p.take_profit * inrMult)}` : 'None';
+      const slStr = p.stop_loss ? `${currSym}${fmt(p.stop_loss * inrMult)}` : 'None';
 
       return `
         <div class="pos-card-item">
@@ -4637,7 +4865,7 @@ function renderPositions() {
               <span class="badge ${sideCls}">${sideText} ${p.leverage}x</span>
             </div>
             <div class="pos-card-pnl-wrap">
-              <div class="pos-card-pnl ${isPos ? 'pnl-pos' : 'pnl-neg'}">${isPos ? '+' : ''}$${fmtNum(pnl)}</div>
+              <div class="pos-card-pnl ${isPos ? 'pnl-pos' : 'pnl-neg'}">${isPos ? '+' : ''}${currSym}${fmtNum(pnl * inrMult)}</div>
               <div style="font-size:11px; color:${isPos ? 'var(--green)' : 'var(--red)'}; font-weight:700;">${isPos ? '+' : ''}${pnlPct}%</div>
             </div>
           </div>
@@ -4648,19 +4876,19 @@ function renderPositions() {
             </div>
             <div class="pos-grid-cell">
               <span class="pos-cell-lbl">Entry Price</span>
-              <span class="pos-cell-val">$${fmt(p.entry_price)}</span>
+              <span class="pos-cell-val">${currSym}${fmt(p.entry_price * inrMult)}</span>
             </div>
             <div class="pos-grid-cell">
               <span class="pos-cell-lbl">Mark Price</span>
-              <span class="pos-cell-val">$${fmt(curPrice)}</span>
+              <span class="pos-cell-val">${currSym}${fmt(curPrice * inrMult)}</span>
             </div>
             <div class="pos-grid-cell">
               <span class="pos-cell-lbl">Margin</span>
-              <span class="pos-cell-val">$${fmtNum(p.margin)}</span>
+              <span class="pos-cell-val">${currSym}${fmtNum(p.margin * inrMult)}</span>
             </div>
             <div class="pos-grid-cell">
               <span class="pos-cell-lbl">Liq. Price</span>
-              <span class="pos-cell-val" style="color:var(--red);">${p.liquidationPrice ? '$' + fmt(p.liquidationPrice) : '—'}</span>
+              <span class="pos-cell-val" style="color:var(--red);">${p.liquidationPrice ? (currSym + fmt(p.liquidationPrice * inrMult)) : '—'}</span>
             </div>
             <div class="pos-grid-cell">
               <span class="pos-cell-lbl">TP / SL</span>
@@ -4677,7 +4905,7 @@ function renderPositions() {
     }).join('');
   }
 
-  // Desktop Data Table
+  // Desktop Data Table (Screenshot 2 Match: Symbol | Info | Mark / Entry | Liquidation | U-P&L | Locked Margin | Top Up | Rev. | TP/SL | Close All)
   if (tbody) {
     tbody.innerHTML = open.map(p => {
       const coinDef = getCoinDefinition(p.coin);
@@ -4689,32 +4917,93 @@ function renderPositions() {
       const pnlCls = (pnl > 0) ? 'pnl-pos' : ((pnl < 0) ? 'pnl-neg' : 'pnl-grey');
       const pnlSign = pnl >= 0 ? '+' : '';
       const pnlPctSign = pnl >= 0 ? '+' : '';
-      const pnlStr = `${pnlSign}$${fmtNum(pnl)} (${pnlPctSign}${pnlPct}%)`;
-
       const sideCls = (p.direction === 'long') ? 'badge-long' : 'badge-short';
       const sideText = (p.direction === 'long') ? 'Long' : 'Short';
-      const liqStr = p.liquidationPrice ? `$${fmt(p.liquidationPrice)}` : '—';
+      const liqStr = p.liquidationPrice ? `${currSym}${fmt(p.liquidationPrice * inrMult)}` : '—';
 
       return `<tr>
-        <td><b>${sym}</b></td>
-        <td><span class="badge ${sideCls}">${sideText}</span></td>
-        <td>${fmtCoin(p.size)}</td>
-        <td>$${fmt(p.entry_price)}</td>
-        <td id="pos-curprice-${p.id}">$${fmt(curPrice)}</td>
-        <td>${p.leverage}x</td>
-        <td>$${fmtNum(p.margin)}</td>
-        <td><span id="pos-pnl-${p.id}" class="${pnlCls}">${pnlStr}</span></td>
-        <td style="color:var(--red); font-weight:600;">${liqStr}</td>
         <td>
-          <div class="pos-actions-row">
-            <button class="btn-close-pos" onclick="closePositionUnified(${p.id}, null, 'Market', this)">Close</button>
-            <button class="btn-partial-close" onclick="openPartialCloseModal(${p.id})">Partial</button>
-            <button class="btn-tpsl" onclick="openTpSlModal(${p.id})">TP/SL</button>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="badge ${sideCls}">${sideText}</span>
+            <b>${sym}-USDT</b>
+          </div>
+        </td>
+        <td><span style="color:#94a3b8; font-size:12px;">Isolated ${p.leverage}x</span></td>
+        <td>
+          <div style="font-size:12px; line-height:1.4;">
+            <div>${currSym}${fmt(curPrice * inrMult)}</div>
+            <div style="color:#727b8a; font-size:11px;">${currSym}${fmt(p.entry_price * inrMult)}</div>
+          </div>
+        </td>
+        <td><span style="color:#f6465d; font-weight:600; font-size:12px;">${liqStr}</span></td>
+        <td>
+          <div style="font-size:12px; line-height:1.4;">
+            <span class="${pnlCls}" style="font-weight:700;">${pnlSign}${currSym}${fmtNum(pnl * inrMult)}</span>
+            <div style="font-size:11px; color:${pnl > 0 ? '#0ecb81' : (pnl < 0 ? '#f6465d' : '#848e9c')};">(${pnlPctSign}${pnlPct}%)</div>
+          </div>
+        </td>
+        <td><span style="font-size:12px; font-weight:600;">${currSym}${fmtNum(p.margin * inrMult)}</span></td>
+        <td>
+          <button type="button" onclick="showToast('Virtual margin auto-allocated from available balance', 'info')" style="padding:4px 8px; font-size:11px; font-weight:600; border-radius:4px; background:#181f2b; border:1px solid #283446; color:#00c2ff; cursor:pointer;">+ Top Up</button>
+        </td>
+        <td>
+          <button type="button" onclick="reversePositionUnified(${p.id})" style="padding:4px 8px; font-size:11px; font-weight:600; border-radius:4px; background:#181f2b; border:1px solid #283446; color:#e2e8f0; cursor:pointer;" title="Reverse position direction">Rev.</button>
+        </td>
+        <td>
+          <button type="button" onclick="openTpSlModal(${p.id})" style="padding:4px 8px; font-size:11px; font-weight:600; border-radius:4px; background:#181f2b; border:1px solid #283446; color:#e2e8f0; cursor:pointer;">${p.take_profit || p.stop_loss ? 'Edit' : 'Add'}</button>
+        </td>
+        <td>
+          <div style="display:flex; gap:4px;">
+            <button type="button" onclick="closePositionUnified(${p.id}, null, 'Market', this)" style="padding:4px 10px; font-size:11px; font-weight:700; border-radius:4px; background:rgba(246,70,93,0.15); border:1px solid #f6465d; color:#f6465d; cursor:pointer;">Market</button>
+            <button type="button" onclick="openPartialCloseModal(${p.id})" style="padding:4px 8px; font-size:11px; font-weight:600; border-radius:4px; background:#181f2b; border:1px solid #283446; color:#94a3b8; cursor:pointer;">Partial</button>
           </div>
         </td>
       </tr>`;
     }).join('');
   }
+}
+
+async function reversePositionUnified(posId) {
+  const pos = (walletState.positions || []).find(p => p.id === posId);
+  if (!pos) return;
+  const newDirection = pos.direction === 'long' ? 'short' : 'long';
+  showToast(`Reversing position to ${newDirection.toUpperCase()}...`, 'info');
+  await closePositionUnified(posId, null, 'Market');
+  setTimeout(async () => {
+    try {
+      tradeSide = newDirection === 'long' ? 'buy' : 'sell';
+      selectedCoin = pos.coin;
+      tradeLeverage = pos.leverage || 10;
+      const curPrice = currentPrices[pos.coin]?.price || pos.entry_price;
+      if (token) {
+        await post(`${API}/positions`, {
+          coin: pos.coin,
+          direction: newDirection,
+          size: pos.size,
+          leverage: pos.leverage || 10,
+          margin: pos.margin
+        });
+        await loadPortfolio();
+      } else {
+        walletState.positions.push({
+          id: Date.now(),
+          coin: pos.coin,
+          direction: newDirection,
+          size: pos.size,
+          entry_price: curPrice,
+          leverage: pos.leverage || 10,
+          margin: pos.margin,
+          status: 'open',
+          createdAt: new Date().toISOString()
+        });
+        saveWalletState();
+      }
+      renderPositions();
+      showToast(`Position reversed to ${newDirection.toUpperCase()}!`, 'success');
+    } catch(err) {
+      showToast(err.message || 'Reverse position failed', 'error');
+    }
+  }, 250);
 }
 
 // ─── RENDER OPEN ORDERS TABLE (Requirement C) ──────────────
@@ -4726,7 +5015,7 @@ function renderOrders() {
   const pending = walletState.orders || [];
 
   if (!pending.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-row"><div class="empty-state-box"><span class="empty-icon">📋</span><span class="empty-msg">No open orders</span></div></td></tr>`;
+    tbody.innerHTML = renderNoDataState(7);
     return;
   }
 
@@ -4764,7 +5053,7 @@ function renderHistory() {
   const hist = walletState.history || [];
 
   if (!hist.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-row"><div class="empty-state-box"><span class="empty-icon">📜</span><span class="empty-msg">No trades yet</span></div></td></tr>`;
+    tbody.innerHTML = renderNoDataState(8);
     return;
   }
 
