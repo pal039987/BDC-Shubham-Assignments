@@ -1,0 +1,14 @@
+[
+  {"customer_id": "C101", "name": "Aarav Shah", "tier": "Regular", "flags": []},
+  {"customer_id": "C102", "name": "Priya Nair", "tier": "Plus", "flags": []},
+  {"customer_id": "C103", "name": "Rohan Mehta", "tier": "Premium", "flags": []},
+  {"customer_id": "C104", "name": "Sneha Iyer", "tier": "Regular", "flags": []},
+  {"customer_id": "C105", "name": "Vikram Rao", "tier": "Regular", "flags": ["fraud_review"]},
+  {"customer_id": "C106", "name": "Ananya Gupta", "tier": "Premium", "flags": []},
+  {"customer_id": "C107", "name": "Karan Patel", "tier": "Plus", "flags": []},
+  {"customer_id": "C108", "name": "Meera Joshi", "tier": "Regular", "flags": []},
+  {"customer_id": "C109", "name": "Imran Khan", "tier": "Premium", "flags": ["fraud_review"]},
+  {"customer_id": "C110", "name": "Divya Menon", "tier": "Plus", "flags": []},
+  {"customer_id": "C111", "name": "Harsh Desai", "tier": "Regular", "flags": []},
+  {"customer_id": "C112", "name": "Neha Kulkarni", "tier": "Premium", "flags": []}
+]

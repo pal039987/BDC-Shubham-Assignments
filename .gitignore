@@ -7,6 +7,9 @@ week1/git-practice/
 
 .env
 .env.*
+!.env.example
+*.db
+*.sqlite
 venv/
 **/venv/
 __pycache__/
@@ -22,3 +25,20 @@ week9/exercise/outputs/lora_adapter/
 week9/exercise/outputs/*.png
 week9/exercise/.dvc/cache/
 week9/exercise/.dvc/tmp/
+
+# Android / Gradle generated files
+**/.gradle/
+**/build/
+**/local.properties
+**/captures/
+**/.externalNativeBuild/
+**/.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Android signing files
+*.jks
+*.keystore
+my-upload-key.jks

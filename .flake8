@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 130
+ignore = E501,W503,E402,E302,E305,W293,E226,E741
+exclude = .git,__pycache__,venv,.venv,shopsphere_data,ai_logs
