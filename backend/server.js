@@ -575,45 +575,135 @@ app.post('/api/trade', authenticateToken, async (req, res) => {
 });
 
 // ─── FUTURES POSITIONS (LONG / SHORT) ─────────────────────────────────────────
-app.post('/api/positions/open', authenticateToken, async (req, res) => {
+app.post(['/api/positions/open', '/api/positions'], authenticateToken, async (req, res) => {
   try {
-    const { coin, direction, size, leverage = 1, stopLoss, takeProfit } = req.body;
+    let { coin, direction, size, amount, leverage = 1, orderType = 'market', limitPrice, stopLoss, takeProfit } = req.body;
+    size = size || amount;
+    if (typeof size === 'string') size = parseFloat(size);
+    if (typeof leverage === 'string') leverage = parseInt(leverage, 10);
+    if (typeof limitPrice === 'string') limitPrice = parseFloat(limitPrice);
+
     if (!coin || !direction || !size || typeof size !== 'number' || size <= 0 || !isFinite(size)) {
       return res.status(400).json({ error: 'Position size must be greater than 0' });
     }
-    if (leverage < 1 || leverage > 100 || !isFinite(leverage)) {
-      return res.status(400).json({ error: 'Leverage must be between 1 and 100' });
+    if (leverage < 1 || leverage > 150 || !isFinite(leverage)) {
+      return res.status(400).json({ error: 'Leverage must be between 1 and 150' });
     }
     if (!SUPPORTED_COINS.includes(coin)) {
-      return res.status(400).json({ error: 'Invalid coin. VTrade supports BTC/USDT, ETH/USDT, and SOL/USDT only' });
+      return res.status(400).json({ error: `Invalid coin. VTrade supports ${SUPPORTED_COINS.map(c => COIN_METADATA[c]?.pair || c).join(', ')}` });
     }
-    if (!['long', 'short'].includes(direction)) return res.status(400).json({ error: 'Invalid direction' });
+    direction = direction.toLowerCase();
+    if (direction === 'buy') direction = 'long';
+    if (direction === 'sell') direction = 'short';
+    if (!['long', 'short'].includes(direction)) return res.status(400).json({ error: 'Invalid direction (must be long or short)' });
 
-    // Price safety check
+    // Price safety check (Requirement: Reject orders if data is > 3m old)
     if (priceCache.updatedAt > 0 && (Date.now() - priceCache.updatedAt > 180000)) {
       return res.status(400).json({ error: 'Market data is stale (> 3m old). Order rejected for safety.' });
     }
 
     if (Date.now() - priceCache.updatedAt > 30000) await fetchPrices();
-    const entryPrice = priceCache[coin]?.price || COIN_METADATA[coin]?.basePrice;
-    if (!entryPrice || entryPrice <= 0 || !isFinite(entryPrice)) {
+    const marketPrice = priceCache[coin]?.price || COIN_METADATA[coin]?.basePrice;
+    if (!marketPrice || marketPrice <= 0 || !isFinite(marketPrice)) {
       return res.status(500).json({ error: 'Price currently unavailable' });
     }
 
+    // Handle Limit Order for Futures / Positions
+    if (orderType === 'limit' && limitPrice && limitPrice > 0 && isFinite(limitPrice)) {
+      const margin = parseFloat(((size * limitPrice) / leverage).toFixed(2));
+      const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+      if (user.balance < margin) {
+        return res.status(400).json({ error: `Insufficient USDT balance for limit margin ($${user.balance.toFixed(2)} available, $${margin.toFixed(2)} required)` });
+      }
+
+      db.prepare(`INSERT INTO orders (user_id, coin, type, direction, amount, price, trigger_price, status)
+                  VALUES (?, ?, 'limit', ?, ?, ?, ?, 'pending')`).run(req.user.id, coin, direction, size, limitPrice, limitPrice);
+      return res.json({
+        success: true,
+        message: `Limit ${direction.toUpperCase()} order placed at $${limitPrice.toLocaleString()} USDT`,
+        orderType: 'limit',
+        status: 'pending',
+        direction,
+        size,
+        limitPrice
+      });
+    }
+
+    // Market Execution
+    const entryPrice = marketPrice;
+
+    // Opposing Position Netting (Requirement 6 & Test 9: Net opposing futures positions without unintentional opposing exposure)
+    const opposingDir = (direction === 'long') ? 'short' : 'long';
+    const opp = db.prepare("SELECT * FROM positions WHERE user_id = ? AND coin = ? AND direction = ? AND status = 'open' ORDER BY created_at ASC LIMIT 1").get(req.user.id, coin, opposingDir);
+
+    if (opp) {
+      if (size <= opp.size) {
+        // Order reduces or completely closes the opposing position
+        const closeSize = size;
+        const priceDiff = (opp.direction === 'long') ? (entryPrice - opp.entry_price) : (opp.entry_price - entryPrice);
+        const pnl = parseFloat((priceDiff * closeSize).toFixed(2));
+        const fraction = closeSize / opp.size;
+        const marginPortion = parseFloat((opp.margin * fraction).toFixed(2));
+        const returnAmount = Math.max(0, marginPortion + pnl);
+
+        db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(returnAmount, req.user.id);
+        if (closeSize >= opp.size - 0.0000001) {
+          db.prepare("UPDATE positions SET status = 'closed', size = 0, close_price = ?, pnl = ?, closed_at = CURRENT_TIMESTAMP WHERE id = ?").run(entryPrice, pnl, opp.id);
+        } else {
+          db.prepare('UPDATE positions SET size = size - ?, margin = margin - ? WHERE id = ?').run(closeSize, marginPortion, opp.id);
+        }
+        db.prepare('INSERT INTO trades (user_id, coin, type, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)').run(req.user.id, coin, direction, closeSize, entryPrice, parseFloat((closeSize * entryPrice).toFixed(2)));
+
+        const newUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+        return res.json({
+          success: true,
+          message: `Opposing ${opp.direction.toUpperCase()} reduced by ${closeSize} ${COIN_METADATA[coin].symbol} at $${entryPrice.toLocaleString()} USDT (Market Netting)`,
+          netted: true,
+          direction,
+          pnl,
+          balance: newUser.balance,
+          entryPrice
+        });
+      } else {
+        // Order is larger than opposing position: close full opposing position first, then open remainder
+        const oppSize = opp.size;
+        const priceDiff = (opp.direction === 'long') ? (entryPrice - opp.entry_price) : (opp.entry_price - entryPrice);
+        const pnl = parseFloat((priceDiff * oppSize).toFixed(2));
+        const returnAmount = Math.max(0, opp.margin + pnl);
+
+        db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(returnAmount, req.user.id);
+        db.prepare("UPDATE positions SET status = 'closed', size = 0, close_price = ?, pnl = ?, closed_at = CURRENT_TIMESTAMP WHERE id = ?").run(entryPrice, pnl, opp.id);
+        db.prepare('INSERT INTO trades (user_id, coin, type, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)').run(req.user.id, coin, direction, oppSize, entryPrice, parseFloat((oppSize * entryPrice).toFixed(2)));
+
+        size = parseFloat((size - oppSize).toFixed(8));
+      }
+    }
+
+    // Open remaining position size
     const margin = parseFloat(((size * entryPrice) / leverage).toFixed(2));
     const user = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
 
-    if (user.balance < margin) return res.status(400).json({ error: 'Insufficient USDT margin' });
+    if (user.balance < margin) {
+      return res.status(400).json({ error: `Insufficient USDT margin ($${user.balance.toFixed(2)} available, $${margin.toFixed(2)} required)` });
+    }
 
     db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(margin, req.user.id);
-    db.prepare(`INSERT INTO positions (user_id, coin, direction, size, entry_price, leverage, margin, stop_loss, take_profit)
+    const insRes = db.prepare(`INSERT INTO positions (user_id, coin, direction, size, entry_price, leverage, margin, stop_loss, take_profit)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(req.user.id, coin, direction, size, entryPrice, leverage, margin, stopLoss || null, takeProfit || null);
+
+    db.prepare('INSERT INTO trades (user_id, coin, type, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)').run(req.user.id, coin, direction, size, entryPrice, parseFloat((size * entryPrice).toFixed(2)));
 
     const newUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
     res.json({
       success: true,
-      message: `${direction.toUpperCase()} position opened on ${COIN_METADATA[coin].pair} at $${entryPrice.toLocaleString()}`,
-      balance: newUser.balance
+      message: `${direction === 'long' ? 'Long' : 'Short'} order filled successfully on ${COIN_METADATA[coin].pair} at $${entryPrice.toLocaleString()} USDT`,
+      balance: newUser.balance,
+      direction,
+      size,
+      leverage,
+      margin,
+      entryPrice,
+      positionId: insRes.lastInsertRowid
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to open position: ' + (err.message || 'unknown') });
@@ -623,7 +713,7 @@ app.post('/api/positions/open', authenticateToken, async (req, res) => {
 app.post('/api/positions/close/:id', authenticateToken, async (req, res) => {
   try {
     const pos = db.prepare('SELECT * FROM positions WHERE id = ? AND user_id = ? AND status = ?').get(req.params.id, req.user.id, 'open');
-    if (!pos) return res.status(404).json({ error: 'Position not found' });
+    if (!pos) return res.status(404).json({ error: 'Position not found or already closed' });
 
     if (Date.now() - priceCache.updatedAt > 30000) await fetchPrices();
     const closePrice = priceCache[pos.coin]?.price || COIN_METADATA[pos.coin]?.basePrice;
@@ -631,24 +721,52 @@ app.post('/api/positions/close/:id', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'Price unavailable' });
     }
 
-    const priceDiff = closePrice - pos.entry_price;
-    const pnl = parseFloat((pos.direction === 'long' ? priceDiff * pos.size : -priceDiff * pos.size).toFixed(2));
-    const returnAmount = Math.max(0, pos.margin + pnl);
+    let reqSize = req.body?.size || req.body?.amount;
+    if (typeof reqSize === 'string') reqSize = parseFloat(reqSize);
+    const isPartial = reqSize && reqSize > 0 && reqSize < (pos.size - 0.0000001);
+    const actualCloseSize = isPartial ? reqSize : pos.size;
+    const fraction = actualCloseSize / pos.size;
+    const marginPortion = parseFloat((pos.margin * fraction).toFixed(2));
 
-    db.prepare(`UPDATE positions SET status = 'closed', close_price = ?, pnl = ?, closed_at = CURRENT_TIMESTAMP WHERE id = ?`).run(closePrice, pnl, pos.id);
+    const priceDiff = closePrice - pos.entry_price;
+    const pnl = parseFloat(((pos.direction === 'long' ? priceDiff : -priceDiff) * actualCloseSize).toFixed(2));
+    const returnAmount = Math.max(0, marginPortion + pnl);
+
+    if (isPartial) {
+      db.prepare(`UPDATE positions SET size = size - ?, margin = margin - ? WHERE id = ?`).run(actualCloseSize, marginPortion, pos.id);
+    } else {
+      db.prepare(`UPDATE positions SET status = 'closed', size = 0, close_price = ?, pnl = ?, closed_at = CURRENT_TIMESTAMP WHERE id = ?`).run(closePrice, pnl, pos.id);
+    }
+
     db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(returnAmount, req.user.id);
+    db.prepare('INSERT INTO trades (user_id, coin, type, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)').run(req.user.id, pos.coin, 'close_' + pos.direction, actualCloseSize, closePrice, parseFloat((actualCloseSize * closePrice).toFixed(2)));
 
     const newUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
     res.json({
       success: true,
-      message: `Position closed at $${closePrice.toLocaleString()} USDT. PnL: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`,
+      message: `${isPartial ? 'Position partially closed' : 'Position closed'} at $${closePrice.toLocaleString()} USDT. PnL: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`,
       pnl,
       balance: newUser.balance,
-      closePrice
+      closePrice,
+      closedSize: actualCloseSize,
+      isPartial
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to close position: ' + (err.message || 'unknown') });
   }
+});
+
+// Unified POST /api/orders route (accepts both market and limit orders)
+app.post('/api/orders', authenticateToken, async (req, res) => {
+  const { category, type, orderType } = req.body;
+  if (category === 'spot' || type === 'buy' || type === 'sell') {
+    // Route to spot trading handler
+    req.url = '/api/trade';
+    return app._router.handle(req, res);
+  }
+  // Otherwise route to positions handler
+  req.url = '/api/positions/open';
+  return app._router.handle(req, res);
 });
 
 app.get('/api/positions', authenticateToken, async (req, res) => {
@@ -709,14 +827,20 @@ function checkPendingOrders() {
 
       let shouldFill = false;
       if (order.type === 'limit') {
-        if (order.direction === 'buy'  && price <= tp) shouldFill = true;
-        if (order.direction === 'sell' && price >= tp) shouldFill = true;
+        if ((order.direction === 'buy' || order.direction === 'long')  && price <= tp) shouldFill = true;
+        if ((order.direction === 'sell' || order.direction === 'short') && price >= tp) shouldFill = true;
       }
 
       if (shouldFill) {
         const total = parseFloat((order.amount * price).toFixed(2));
         db.prepare(`UPDATE orders SET status = 'filled', filled_price = ?, total = ?, filled_at = CURRENT_TIMESTAMP WHERE id = ?`).run(price, total, order.id);
-        if (order.direction === 'buy') {
+        if (order.direction === 'long' || order.direction === 'short') {
+          const lev = 10;
+          const margin = parseFloat(((order.amount * price) / lev).toFixed(2));
+          db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(margin, order.user_id);
+          db.prepare(`INSERT INTO positions (user_id, coin, direction, size, entry_price, leverage, margin, status)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`).run(order.user_id, order.coin, order.direction, order.amount, price, lev, margin);
+        } else if (order.direction === 'buy') {
           db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(total, order.user_id);
           db.prepare(`INSERT INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, ?, ?)
                       ON CONFLICT(user_id, coin) DO UPDATE SET amount = amount + ?, avg_entry_price = (avg_entry_price + ?)/2`)

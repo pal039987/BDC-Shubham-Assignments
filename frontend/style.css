@@ -5697,6 +5697,30 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   background: #ff526b;
   box-shadow: 0 0 16px rgba(246, 70, 93, 0.4);
 }
+.btn-execute-solid.btn-loading {
+  opacity: 0.75;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: btnSpin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes btnSpin {
+  to { transform: rotate(360deg); }
+}
+.input-error-highlight {
+  border-color: #f6465d !important;
+  box-shadow: 0 0 8px rgba(246, 70, 93, 0.6) !important;
+  transition: all 0.2s ease;
+}
 
 /* Account stats rows below execute button (Screenshot 1) */
 .shark-account-stats-box {

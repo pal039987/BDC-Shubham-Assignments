@@ -270,7 +270,7 @@ let activeDrawing = null;
 let candleData   = [];
 
 // Delta-Style Trade Panel State
-let tradeCategory   = 'spot';     // 'spot' | 'position'
+let tradeCategory   = 'position'; // 'position' (default for leverage/margin desk) | 'spot'
 let tradeSide       = 'buy';      // 'buy' | 'sell'
 let tradeOrderType  = 'market';   // 'market' | 'limit'
 let tradeUnit       = 'coin';     // 'coin' | 'usd'
@@ -3994,8 +3994,9 @@ function updateTradeCalc() {
   if (deskFee) deskFee.textContent = orderValue > 0 ? `$${fmtNum(estFee)} USDT` : '--';
   if (deskLiq) deskLiq.textContent = (orderValue > 0 && liqPrice > 0) ? `$${fmt(liqPrice)}` : '--';
 
+  // Do NOT disable button on zero input so clicks trigger friendly validation feedback
   if (submitBtn) {
-    submitBtn.disabled = Boolean(disableReason);
+    submitBtn.disabled = Boolean(isOrderSubmitting);
   }
   if (valMsg) {
     if (disableReason && inputVal > 0) {
@@ -4011,11 +4012,11 @@ function updateTradeLabels() {
   const coinDef = getCoinDefinition(selectedCoin);
   const sym = coinDef.symbol;
   
-  // Side buttons labels (Screenshot 1 Match: Buy / Sell)
+  // Side buttons labels (Long / Buy vs Sell / Short)
   const sideBuy = document.getElementById('side-buy-label');
   const sideSell = document.getElementById('side-sell-label');
-  if (sideBuy) sideBuy.textContent = 'Buy';
-  if (sideSell) sideSell.textContent = 'Sell';
+  if (sideBuy) sideBuy.textContent = 'Long / Buy';
+  if (sideSell) sideSell.textContent = 'Sell / Short';
   
   // Unit toggle coin chip
   const uchipCoin = document.getElementById('uchip-coin');
@@ -4066,11 +4067,135 @@ function updateTradeLabels() {
   }
 }
 
-// ─── TRADE EXECUTION (Requirement B & C & D) ───────────────────
-// ─── TRADE EXECUTION (Requirement B & C & D) ───────────────────
-let lastTradeClickTime = 0;
+// ─── ORDER SUBMISSION STATE & BUTTON SPINNER ───────────────────
+let isOrderSubmitting = false;
 
-function executeTrade() {
+function setOrderButtonsLoading(isLoading) {
+  isOrderSubmitting = isLoading;
+  const submitBtn = document.getElementById('delta-submit-btn');
+  const submitLabel = document.getElementById('delta-submit-label');
+  const tvBuyBtn = document.getElementById('tv-tl-buy-btn');
+  const tvSellBtn = document.getElementById('tv-tl-sell-btn');
+
+  if (submitBtn) {
+    submitBtn.disabled = isLoading;
+    submitBtn.classList.toggle('btn-loading', isLoading);
+    if (isLoading) {
+      if (submitLabel) {
+        submitBtn.dataset.originalText = submitLabel.textContent;
+        submitLabel.innerHTML = '<span class="btn-spinner"></span> Processing Order...';
+      }
+    } else {
+      if (submitLabel && submitBtn.dataset.originalText) {
+        submitLabel.textContent = submitBtn.dataset.originalText;
+      }
+      updateTradeLabels();
+    }
+  }
+
+  if (tvBuyBtn) tvBuyBtn.disabled = isLoading;
+  if (tvSellBtn) tvSellBtn.disabled = isLoading;
+}
+
+// ─── SYNCHRONIZE STATE WITH BACKEND (Requirement 8) ───────────
+async function syncWithBackend() {
+  if (!token) return;
+  try {
+    const [portRes, posRes, ordRes, tradeRes] = await Promise.all([
+      authGet(`${API}/portfolio`).catch(e => { console.warn('Sync portfolio:', e); return null; }),
+      authGet(`${API}/positions`).catch(e => { console.warn('Sync positions:', e); return null; }),
+      authGet(`${API}/orders`).catch(e => { console.warn('Sync orders:', e); return null; }),
+      authGet(`${API}/trades`).catch(e => { console.warn('Sync trades:', e); return null; })
+    ]);
+
+    if (portRes && typeof portRes.balance === 'number') {
+      walletState.cashBalance = roundValue(portRes.balance, 'money');
+      balance = walletState.cashBalance;
+      if (Array.isArray(portRes.holdings)) {
+        portRes.holdings.forEach(h => {
+          if (h && h.coin) {
+            walletState.holdings[h.coin] = roundValue(h.amount, 'coin');
+          }
+        });
+      }
+    }
+
+    if (Array.isArray(posRes)) {
+      walletState.positions = posRes.map(p => {
+        const coinDef = getCoinDefinition(p.coin);
+        return {
+          id: p.id,
+          coin: p.coin,
+          symbol: coinDef ? coinDef.symbol : p.coin.toUpperCase(),
+          direction: p.direction,
+          size: roundValue(p.size, 'coin'),
+          entry_price: roundValue(p.entry_price, 'money'),
+          leverage: p.leverage || 1,
+          margin: roundValue(p.margin, 'money'),
+          marginMode: p.margin_mode || tradeMarginMode || 'isolated',
+          liquidationPrice: p.liquidationPrice ? roundValue(p.liquidationPrice, 'money') : null,
+          stop_loss: p.stop_loss ? roundValue(p.stop_loss, 'money') : null,
+          take_profit: p.take_profit ? roundValue(p.take_profit, 'money') : null,
+          created_at: p.created_at
+        };
+      });
+    }
+
+    if (Array.isArray(ordRes)) {
+      walletState.orders = ordRes.map(o => {
+        const coinDef = getCoinDefinition(o.coin);
+        return {
+          id: o.id,
+          coin: o.coin,
+          symbol: coinDef ? coinDef.symbol : o.coin.toUpperCase(),
+          side: o.direction === 'long' ? 'Long' : o.direction === 'short' ? 'Short' : (o.direction === 'buy' ? 'Buy' : 'Sell'),
+          category: (o.direction === 'long' || o.direction === 'short') ? 'position' : 'spot',
+          type: o.type === 'limit' ? 'Limit' : 'Market',
+          price: roundValue(o.price, 'money'),
+          size: roundValue(o.amount, 'coin'),
+          leverage: 10,
+          margin: roundValue((o.amount * o.price) / 10, 'money'),
+          status: o.status,
+          createdAt: o.created_at
+        };
+      });
+    }
+
+    if (Array.isArray(tradeRes)) {
+      walletState.history = tradeRes.map(t => {
+        const coinDef = getCoinDefinition(t.coin);
+        const tSide = t.type ? (t.type.includes('long') ? 'Long' : t.type.includes('short') ? 'Short' : t.type.includes('buy') ? 'Buy' : 'Sell') : 'Trade';
+        return {
+          id: t.id,
+          time: t.created_at,
+          coin: coinDef ? coinDef.symbol : t.coin.toUpperCase(),
+          side: tSide,
+          type: 'Market',
+          price: roundValue(t.price, 'money'),
+          size: roundValue(t.amount, 'coin'),
+          fee: roundValue((t.total * 0.0005), 'money'),
+          pnl: null
+        };
+      });
+    }
+
+    saveWalletState();
+  } catch (err) {
+    console.error('Failed to sync state with backend:', err);
+  } finally {
+    updateMiniStats();
+    renderPositions();
+    renderOrders();
+    renderHistory();
+    updatePnlSummary();
+    updateTabBadges();
+    updateTradeCalc();
+    updateAuthStateUI();
+  }
+}
+
+// ─── TRADE EXECUTION (Requirement B & C & D) ───────────────────
+async function executeTrade() {
   if (!token) {
     openAuthModal('login');
     showToast('Please log in or register to trade', 'info');
@@ -4084,25 +4209,25 @@ function executeTrade() {
     return;
   }
 
-  // Requirement B3: Prevent double-tap on Buy, Sell buttons (disable for 1s)
-  if (Date.now() - lastTradeClickTime < 1000) return;
-  lastTradeClickTime = Date.now();
+  // Prevent duplicate submissions while in-flight (Requirement 9)
+  if (isOrderSubmitting) return;
 
-  const submitBtn = document.getElementById('delta-submit-btn');
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    setTimeout(() => { if (submitBtn) submitBtn.disabled = false; }, 1000);
+  const inputEl = document.getElementById('trade-amount-input');
+  const inputVal = parseFloat(inputEl?.value) || 0;
+
+  // Requirement B2: Reject any order with size 0 or negative size with clear feedback
+  if (inputVal <= 0 || isNaN(inputVal) || !isFinite(inputVal)) {
+    showToast('❌ Please enter an order quantity greater than 0', 'error');
+    if (inputEl) {
+      inputEl.focus();
+      inputEl.classList.add('input-error-highlight');
+      setTimeout(() => inputEl.classList.remove('input-error-highlight'), 1600);
+    }
+    return;
   }
 
   const coinDef = getCoinDefinition(selectedCoin);
   const curPrice = currentPrices[selectedCoin]?.price || coinDef.basePrice || 100;
-  const inputVal = parseFloat(v('trade-amount-input')) || 0;
-
-  // Requirement B2: Reject any order with size 0 or negative size
-  if (inputVal <= 0 || isNaN(inputVal) || !isFinite(inputVal)) {
-    showToast('❌ Order size must be greater than 0', 'error');
-    return;
-  }
 
   const rawEntry = (tradeOrderType === 'limit' && parseFloat(v('limit-price-input')) > 0)
     ? parseFloat(v('limit-price-input'))
@@ -4130,10 +4255,10 @@ function executeTrade() {
     return;
   }
 
-  // Requirement B2: Reject leverage outside 1 to 100
+  // Requirement B2: Reject leverage outside 1 to 150
   if (tradeCategory === 'position') {
-    if (tradeLeverage < 1 || tradeLeverage > 100 || isNaN(tradeLeverage) || !isFinite(tradeLeverage)) {
-      showToast('❌ Leverage must be between 1x and 100x', 'error');
+    if (tradeLeverage < 1 || tradeLeverage > 150 || isNaN(tradeLeverage) || !isFinite(tradeLeverage)) {
+      showToast('❌ Leverage must be between 1x and 150x', 'error');
       return;
     }
   }
@@ -4143,196 +4268,111 @@ function executeTrade() {
   const feeRate = (tradeOrderType === 'market') ? 0.0005 : 0.0002;
   const estFee = roundValue(orderValue * feeRate, 'money');
 
-  // Check if Limit order should queue or fill immediately
-  if (tradeOrderType === 'limit') {
-    const isImmediate = (tradeSide === 'buy') ? (curPrice <= entryPrice) : (curPrice >= entryPrice);
-
-    if (!isImmediate) {
-      // Validate balance prior to queuing (Requirement B5: Cash can never go negative)
-      if (tradeCategory === 'position') {
-        if (roundValue(walletState.cashBalance - (marginRequired + estFee), 'money') < 0) {
-          showToast('❌ Insufficient cash for margin', 'error');
-          return;
-        }
-      } else {
-        if (tradeSide === 'buy' && roundValue(walletState.cashBalance - (orderValue + estFee), 'money') < 0) {
-          showToast('❌ Insufficient cash balance', 'error');
-          return;
-        }
-        if (tradeSide === 'sell' && sizeCoins > (walletState.holdings[selectedCoin] || 0)) {
-          showToast(`❌ Insufficient ${coinDef.symbol} holding`, 'error');
-          return;
-        }
-      }
-
-      // Add to Open Orders Tab (Requirement C3: cap orders at 100)
-      walletState.orders.unshift({
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        coin: selectedCoin,
-        symbol: coinDef.symbol,
-        side: tradeCategory === 'position' ? (tradeSide === 'buy' ? 'Long' : 'Short') : (tradeSide === 'buy' ? 'Buy' : 'Sell'),
-        category: tradeCategory,
-        type: 'Limit',
-        price: roundValue(entryPrice, 'money'),
-        size: roundValue(sizeCoins, 'coin'),
-        leverage: lev,
-        margin: roundValue(marginRequired, 'money'),
-        marginMode: tradeMarginMode,
-        tp: parseFloat(v('tp-input')) || null,
-        sl: parseFloat(v('sl-input')) || null,
-        createdAt: new Date().toISOString()
-      });
-
-      if (walletState.orders.length > 100) {
-        walletState.orders = walletState.orders.slice(0, 100);
-      }
-
-      saveWalletState();
-      showToast(`Limit order placed for ${coinDef.symbol} at $${fmt(entryPrice)}`, 'info');
-
-      const input = document.getElementById('trade-amount-input');
-      if (input) input.value = '';
-
-      renderOrders();
-      updateTabBadges();
+  // Check TP / SL validity if entered
+  const tpVal = parseFloat(v('tp-input')) || 0;
+  const slVal = parseFloat(v('sl-input')) || 0;
+  if (tpVal > 0) {
+    if (tradeSide === 'buy' && tpVal <= entryPrice) {
+      showToast(`❌ Take Profit ($${fmt(tpVal)}) must be above entry ($${fmt(entryPrice)})`, 'error');
+      return;
+    } else if (tradeSide === 'sell' && tpVal >= entryPrice) {
+      showToast(`❌ Take Profit ($${fmt(tpVal)}) must be below entry ($${fmt(entryPrice)})`, 'error');
+      return;
+    }
+  }
+  if (slVal > 0) {
+    if (tradeSide === 'buy' && slVal >= entryPrice) {
+      showToast(`❌ Stop Loss ($${fmt(slVal)}) must be below entry ($${fmt(entryPrice)})`, 'error');
+      return;
+    } else if (tradeSide === 'sell' && slVal <= entryPrice) {
+      showToast(`❌ Stop Loss ($${fmt(slVal)}) must be above entry ($${fmt(entryPrice)})`, 'error');
       return;
     }
   }
 
-  // Execute Immediate Trade (Spot or Position)
-  if (tradeCategory === 'spot') {
-    if (tradeSide === 'buy') {
-      const totalCost = roundValue(orderValue + estFee, 'money');
-      if (roundValue(walletState.cashBalance - totalCost, 'money') < 0) {
-        showToast('❌ Insufficient cash balance', 'error');
-        return;
-      }
-      walletState.cashBalance = Math.max(0, roundValue(walletState.cashBalance - totalCost, 'money'));
-      walletState.holdings[selectedCoin] = roundValue((walletState.holdings[selectedCoin] || 0) + sizeCoins, 'coin');
-      walletState.history.unshift({
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        time: new Date().toISOString(),
-        coin: coinDef.symbol,
-        side: 'Buy',
-        type: tradeOrderType === 'limit' ? 'Limit' : 'Market',
-        price: roundValue(entryPrice, 'money'),
-        size: roundValue(sizeCoins, 'coin'),
-        fee: estFee,
-        pnl: null
-      });
-    } else {
-      // Spot sell
-      if (sizeCoins > (walletState.holdings[selectedCoin] || 0)) {
-        showToast(`❌ Insufficient ${coinDef.symbol} holding`, 'error');
-        return;
-      }
-      walletState.holdings[selectedCoin] = roundValue((walletState.holdings[selectedCoin] || 0) - sizeCoins, 'coin');
-      walletState.cashBalance = roundValue(walletState.cashBalance + (orderValue - estFee), 'money');
-      walletState.history.unshift({
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        time: new Date().toISOString(),
-        coin: coinDef.symbol,
-        side: 'Sell',
-        type: tradeOrderType === 'limit' ? 'Limit' : 'Market',
-        price: roundValue(entryPrice, 'money'),
-        size: roundValue(sizeCoins, 'coin'),
-        fee: estFee,
-        pnl: null
-      });
+  // Pre-validate cash balance before dispatching
+  if (tradeCategory === 'position') {
+    if (roundValue(walletState.cashBalance - (marginRequired + estFee), 'money') < 0) {
+      showToast(`❌ Insufficient cash for margin ($${fmtNum(walletState.cashBalance)} available, $${fmtNum(marginRequired + estFee)} required)`, 'error');
+      return;
     }
   } else {
-    // Position (Long / Short) with Opposing Position Netting Support
-    const targetDirection = (tradeSide === 'buy') ? 'long' : 'short';
-    const opposingIdx = walletState.positions.findIndex(p => p.coin === selectedCoin && p.direction !== targetDirection);
-
-    if (opposingIdx !== -1) {
-      const opp = walletState.positions[opposingIdx];
-      if (sizeCoins <= opp.size) {
-        // Order reduces or completely closes the opposing position without opening unintended reverse position
-        closePositionPartial(opp.id, sizeCoins, 'Market Netting');
-        const input = document.getElementById('trade-amount-input');
-        if (input) input.value = '';
-        return;
-      } else {
-        // Order is larger than opposing position: close full opposing position first, then open remaining size
-        const remainingSize = roundValue(sizeCoins - opp.size, 'coin');
-        closePositionUnified(opp.id, null, 'Market Netting');
-        sizeCoins = remainingSize;
-        orderValue = roundValue(sizeCoins * entryPrice, 'money');
-      }
-    }
-
-    const currentMarginRequired = (lev > 0) ? roundValue(orderValue / lev, 'money') : orderValue;
-    const currentEstFee = roundValue(orderValue * feeRate, 'money');
-    const totalMargin = roundValue(currentMarginRequired + currentEstFee, 'money');
-
-    if (roundValue(walletState.cashBalance - totalMargin, 'money') < 0) {
-      showToast('❌ Insufficient cash for margin', 'error');
+    if (tradeSide === 'buy' && roundValue(walletState.cashBalance - (orderValue + estFee), 'money') < 0) {
+      showToast(`❌ Insufficient cash balance ($${fmtNum(walletState.cashBalance)} available)`, 'error');
       return;
     }
-    walletState.cashBalance = Math.max(0, roundValue(walletState.cashBalance - totalMargin, 'money'));
-
-    let liqPrice = (tradeSide === 'buy')
-      ? entryPrice * (1 - (1 / lev) * 0.9)
-      : entryPrice * (1 + (1 / lev) * 0.9);
-    liqPrice = Math.max(0.0000001, roundValue(liqPrice, 'money'));
-
-    const tpVal = parseFloat(v('tp-input')) || null;
-    const slVal = parseFloat(v('sl-input')) || null;
-
-    walletState.positions.unshift({
-      id: Date.now() + Math.floor(Math.random() * 1000),
-      coin: selectedCoin,
-      symbol: coinDef.symbol,
-      direction: tradeSide === 'buy' ? 'long' : 'short',
-      size: roundValue(sizeCoins, 'coin'),
-      entry_price: roundValue(entryPrice, 'money'),
-      leverage: lev,
-      margin: roundValue(currentMarginRequired, 'money'),
-      marginMode: tradeMarginMode,
-      liquidationPrice: liqPrice,
-      stop_loss: slVal ? roundValue(slVal, 'money') : null,
-      take_profit: tpVal ? roundValue(tpVal, 'money') : null,
-      created_at: new Date().toISOString()
-    });
-
-    walletState.history.unshift({
-      id: Date.now() + Math.floor(Math.random() * 1000),
-      time: new Date().toISOString(),
-      coin: coinDef.symbol,
-      side: tradeSide === 'buy' ? 'Long' : 'Short',
-      type: tradeOrderType === 'limit' ? 'Limit' : 'Market',
-      price: roundValue(entryPrice, 'money'),
-      size: roundValue(sizeCoins, 'coin'),
-      fee: currentEstFee,
-      pnl: null
-    });
+    if (tradeSide === 'sell' && sizeCoins > (walletState.holdings[selectedCoin] || 0)) {
+      showToast(`❌ Insufficient ${coinDef.symbol} holding (${(walletState.holdings[selectedCoin]||0).toFixed(4)} held)`, 'error');
+      return;
+    }
   }
 
-  // Requirement C3: Keep last 200 history records
-  if (walletState.history.length > 200) {
-    walletState.history = walletState.history.slice(0, 200);
+  // Set loading state on submit button and disable duplicate clicks
+  setOrderButtonsLoading(true);
+
+  try {
+    const isLimit = (tradeOrderType === 'limit');
+    let res;
+
+    if (tradeCategory === 'position') {
+      const direction = (tradeSide === 'buy') ? 'long' : 'short';
+      const payload = {
+        coin: selectedCoin,
+        direction: direction,
+        size: sizeCoins,
+        leverage: lev,
+        orderType: tradeOrderType,
+        limitPrice: isLimit ? entryPrice : undefined,
+        stopLoss: slVal > 0 ? slVal : undefined,
+        takeProfit: tpVal > 0 ? tpVal : undefined
+      };
+      res = await authPost(`${API}/positions/open`, payload);
+    } else {
+      // Spot trade
+      const payload = {
+        coin: selectedCoin,
+        type: tradeSide,
+        amount: sizeCoins,
+        orderType: tradeOrderType,
+        limitPrice: isLimit ? entryPrice : undefined
+      };
+      res = await authPost(`${API}/trade`, payload);
+    }
+
+    // Success Toast matching actual backend status (Requirement 7)
+    if (res.orderType === 'limit' || res.status === 'pending') {
+      showToast(res.message || `Limit ${tradeSide === 'buy' ? 'Long' : 'Short'} order placed at $${fmt(entryPrice)} USDT`, 'info');
+    } else if (res.netted) {
+      showToast(res.message || `Position reduced by ${sizeCoins} ${coinDef.symbol} (Netting)`, 'success');
+    } else {
+      const orderAction = tradeCategory === 'position'
+        ? (tradeSide === 'buy' ? 'Long order filled successfully' : 'Short order filled successfully')
+        : (tradeSide === 'buy' ? 'Buy order placed successfully' : 'Sell order placed successfully');
+      showToast(`${orderAction} on ${coinDef.pair} at $${fmt(entryPrice)}`, 'success');
+    }
+
+    // Clear quantity input
+    if (inputEl) inputEl.value = '';
+
+    // Synchronize UI with backend (Requirement 8)
+    await syncWithBackend();
+
+  } catch (err) {
+    console.error('Order placement failed:', err);
+    let errMsg = err.message || 'Order execution failed';
+    if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError')) {
+      errMsg = 'Backend temporarily unavailable. Please check localhost server.';
+    }
+    showToast(`❌ ${errMsg}`, 'error');
+  } finally {
+    setOrderButtonsLoading(false);
   }
-
-  saveWalletState();
-  showToast(`Filled at $${fmt(entryPrice)}`, 'success');
-
-  const input = document.getElementById('trade-amount-input');
-  if (input) input.value = '';
-
-  updateMiniStats();
-  renderPositions();
-  renderOrders();
-  renderHistory();
-  updatePnlSummary();
-  updateTabBadges();
-  updateTradeCalc();
 }
 
 // ─── UNIFIED CLOSE LOGIC (Requirement F & H & B3) ───────────
 let closingPositionIds = new Set();
 
-function closePositionUnified(posId, exitPriceInput, closeReason = 'Market', clickedBtn = null) {
+async function closePositionUnified(posId, exitPriceInput, closeReason = 'Market', clickedBtn = null) {
   // Requirement B3: Prevent double-tap on close (1-second debounce and disable button)
   if (closingPositionIds.has(posId)) return;
   closingPositionIds.add(posId);
@@ -4350,6 +4390,23 @@ function closePositionUnified(posId, exitPriceInput, closeReason = 'Market', cli
 
   const curPrice = currentPrices[pos.coin]?.price || pos.entry_price;
   let exitPrice = exitPriceInput != null ? Number(exitPriceInput) : curPrice;
+
+  // If authenticated, sync closure with backend engine
+  if (token) {
+    try {
+      const res = await authPost(`${API}/positions/close/${posId}`, {
+        closePrice: exitPrice,
+        size: pos.size
+      });
+      if (res && res.success) {
+        showToast(res.message || `${pos.symbol} position closed`, res.pnl >= 0 ? 'success' : 'info');
+        await syncWithBackend();
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend position close failed, applying local fallback:', err);
+    }
+  }
 
   let fee = 0;
   let realizedPnl = 0;
@@ -4422,19 +4479,36 @@ function closePosition(posId) {
 }
 
 // ─── PARTIAL POSITION CLOSE (Requirement: Partial and Full Closes) ───
-function closePositionPartial(posId, closeSizeCoins, closeReason = 'Market') {
+async function closePositionPartial(posId, closeSizeCoins, closeReason = 'Market') {
   const idx = walletState.positions.findIndex(p => p.id === posId);
   if (idx === -1) return;
   const pos = walletState.positions[idx];
 
   const validCloseSize = Math.min(pos.size, Math.max(0.000001, closeSizeCoins));
   if (validCloseSize >= pos.size - 0.000001) {
-    closePositionUnified(posId, null, closeReason);
+    await closePositionUnified(posId, null, closeReason);
     return;
   }
 
   const curPrice = currentPrices[pos.coin]?.price || pos.entry_price;
   const exitPrice = curPrice;
+
+  if (token) {
+    try {
+      const res = await authPost(`${API}/positions/close/${posId}`, {
+        closePrice: exitPrice,
+        size: validCloseSize
+      });
+      if (res && res.success) {
+        showToast(res.message || `Closed ${fmtCoin(validCloseSize)} ${pos.symbol}`, res.pnl >= 0 ? 'success' : 'info');
+        await syncWithBackend();
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend partial close failed, applying local fallback:', err);
+    }
+  }
+
   const fraction = validCloseSize / pos.size;
   const marginToClose = roundValue(pos.margin * fraction, 'money');
 
@@ -5199,7 +5273,11 @@ function saveTpSlEdit() {
 async function loadTradeHistory() { renderHistory(); }
 async function loadPortfolio() {
   loadWalletState();
-  updateMiniStats();
+  if (token) {
+    await syncWithBackend();
+  } else {
+    updateMiniStats();
+  }
 }
 function updateSpotCalc() { updateTradeCalc(); }
 function updatePosCalc() { updateTradeCalc(); }
