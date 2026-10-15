@@ -126,7 +126,8 @@ class ShopSphereTools:
         ctx: Optional[ToolContext] = None,
         ticket_id: str = "T-UNKNOWN",
         customer_id: Optional[str] = None,
-        trace_id: Optional[str] = None
+        trace_id: Optional[str] = None,
+        ticket_created_at: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Simulated refund execution; evaluates hard guardrails before issuing.
@@ -150,14 +151,15 @@ class ShopSphereTools:
 
         auto_refund_enabled = ctx.auto_refund_enabled if ctx else settings.AUTO_REFUND_ENABLED
 
-        # EVALUATE HARD GUARDRAILS (Rule 1, 2, 3, kill switch)
+        # EVALUATE HARD GUARDRAILS (Rule 1, 2, 3, kill switch, claim window)
         guardrail_res: GuardrailResult = check_refund_guardrails(
             order=order,
             customer=customer,
             requested_amount=amount,
             requested_item_ids=item_ids,
             prior_refunds_in_run=prior_refunds_in_run,
-            auto_refund_enabled=auto_refund_enabled
+            auto_refund_enabled=auto_refund_enabled,
+            ticket_created_at=ticket_created_at
         )
 
         if not guardrail_res.allowed:

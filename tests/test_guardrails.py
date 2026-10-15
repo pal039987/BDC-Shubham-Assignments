@@ -209,3 +209,63 @@ def test_audit_action_log_detects_violations():
     res_dirty = audit_action_log(dirty_log, orders, customers)
     assert res_dirty["violation_count"] == 1
     assert res_dirty["violations"][0]["rule"] == "RULE_1_LIMIT"
+
+# ==============================================================================
+# STAGE 2 INCIDENT REGRESSION TESTS (INC-01 Claim Window)
+# ==============================================================================
+def test_incident_regression_expired_claim_window(regular_customer):
+    """
+    Regression test for Stage 2 Incident (INC-01):
+    Order ORD-1037:
+      - order_date: 2026-08-10 (falls under 2026 Refund Policy: 15-day window)
+      - delivery_date: 2026-08-14
+      - ticket created_at: 2026-09-05 (22 days post-delivery)
+    Must be blocked and escalated because 22 > 15 days.
+    """
+    order = {
+        "order_id": "ORD-1037",
+        "customer_id": "C102",
+        "order_date": "2026-08-10",
+        "delivery_status": "delivered",
+        "delivery_date": "2026-08-14",
+        "amount": 2800,
+        "items": [{"item_id": "I-1", "name": "Smart speaker", "price": 2800}],
+        "prior_refunds": []
+    }
+    res = check_refund_guardrails(
+        order=order,
+        customer=regular_customer,
+        requested_amount=2800.0,
+        requested_item_ids=["I-1"],
+        prior_refunds_in_run=[],
+        ticket_created_at="2026-09-05T11:02:00+05:30"
+    )
+    assert res.allowed is False
+    assert res.rule_violated == "CLAIM_WINDOW_EXPIRED"
+    assert res.action_required == "escalate"
+
+def test_incident_regression_within_claim_window(regular_customer):
+    """
+    Test that an order under 2026 policy within 15 days is allowed.
+    """
+    order = {
+        "order_id": "ORD-VALID",
+        "customer_id": "C102",
+        "order_date": "2026-08-10",
+        "delivery_status": "delivered",
+        "delivery_date": "2026-08-25",
+        "amount": 2800,
+        "items": [{"item_id": "I-1", "name": "Smart speaker", "price": 2800}],
+        "prior_refunds": []
+    }
+    res = check_refund_guardrails(
+        order=order,
+        customer=regular_customer,
+        requested_amount=2800.0,
+        requested_item_ids=["I-1"],
+        prior_refunds_in_run=[],
+        ticket_created_at="2026-09-05T11:02:00+05:30"
+    )
+    assert res.allowed is True
+    assert res.rule_violated is None
+    assert res.action_required == "issue_refund"

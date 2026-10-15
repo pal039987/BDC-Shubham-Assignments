@@ -149,7 +149,8 @@ class ShopSphereAgent:
                         ctx=ctx,
                         ticket_id=ticket_id,
                         customer_id=customer_id,
-                        trace_id=trace_id
+                        trace_id=trace_id,
+                        ticket_created_at=created_at
                     )
                 elif res.get("final_action") == "escalate":
                     summary = res.get("reply", "Escalated")
@@ -355,7 +356,8 @@ Respond ONLY with a JSON object adhering to this schema:
                         requested_amount=req_amount,
                         requested_item_ids=item_ids,
                         prior_refunds_in_run=run_refunds_for_orders,
-                        auto_refund_enabled=ctx.auto_refund_enabled
+                        auto_refund_enabled=ctx.auto_refund_enabled,
+                        ticket_created_at=created_at
                     )
 
                 if not gr_res.allowed:
@@ -392,7 +394,8 @@ Respond ONLY with a JSON object adhering to this schema:
                             ctx=ctx,
                             ticket_id=ticket_id,
                             customer_id=customer_id,
-                            trace_id=trace_id
+                            trace_id=trace_id,
+                            ticket_created_at=created_at
                         )
                         tool_calls_record.append({
                             "tool": "issue_refund",

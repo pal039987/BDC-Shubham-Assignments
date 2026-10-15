@@ -25,7 +25,8 @@ class MetricsTracker:
             "RULE_2_CAP": 0,
             "RULE_2_DUPLICATE": 0,
             "RULE_3_FRAUD": 0,
-            "KILL_SWITCH": 0
+            "KILL_SWITCH": 0,
+            "CLAIM_WINDOW_EXPIRED": 0
         }
         self.escalations_count = 0
 

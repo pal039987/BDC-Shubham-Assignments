@@ -17,7 +17,8 @@ def check_refund_guardrails(
     requested_amount: float,
     requested_item_ids: List[str],
     prior_refunds_in_run: List[Dict[str, Any]],
-    auto_refund_enabled: bool = True
+    auto_refund_enabled: bool = True,
+    ticket_created_at: Optional[str] = None
 ) -> GuardrailResult:
     """
     Enforces hard guardrails before issuing any refund.
@@ -27,6 +28,7 @@ def check_refund_guardrails(
       - Rule 1: Refund limit > Rs 5,000 -> escalate
       - Rule 2 (Duplicate): Item already refunded in prior_refunds or in this run -> escalate
       - Rule 2 (Cap): Cumulative refunds exceed order amount -> escalate
+      - Claim Window: Claim raised outside policy window (15 days for >=2026-07-01, 30 days for older) -> escalate
     """
     # 0. Kill Switch
     if not auto_refund_enabled:
@@ -92,6 +94,27 @@ def check_refund_guardrails(
             message=f"Cumulative refund (Rs {total_already_refunded:.2f} + Rs {requested_amount:.2f} = Rs {total_already_refunded + requested_amount:.2f}) exceeds total order amount Rs {order_amount:.2f}. Escalation required.",
             action_required="escalate"
         )
+
+    # 5. Claim Window Guardrail (Policy Version Enforcement)
+    # Lost shipments under Shipping Policy do not have the 15-day item claim window
+    delivery_date_str = order.get("delivery_date")
+    order_date_str = order.get("order_date")
+    if ticket_created_at and delivery_date_str and order.get("delivery_status") != "lost":
+        try:
+            from datetime import date
+            ticket_date = date.fromisoformat(ticket_created_at[:10])
+            delivery_date = date.fromisoformat(delivery_date_str[:10])
+            elapsed_days = (ticket_date - delivery_date).days
+            window_days = 15 if (order_date_str and order_date_str >= "2026-07-01") else 30
+            if elapsed_days > window_days:
+                return GuardrailResult(
+                    allowed=False,
+                    rule_violated="CLAIM_WINDOW_EXPIRED",
+                    message=f"Claim raised {elapsed_days} days after delivery exceeds {window_days}-day window for order placed on {order_date_str}. Escalation required.",
+                    action_required="escalate"
+                )
+        except Exception:
+            pass
 
     # All checks passed
     return GuardrailResult(
