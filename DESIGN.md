@@ -1,145 +1,29 @@
-# ShopSphere Support Agent: System Design & Architecture Document
+# ShopSphere Support Agent: System Architecture & LLMOps Design
 
-## 1. Executive Summary & Architecture Overview
+## 1. Architecture & Framework Choice
+ShopSphere handles ~4,000 tickets/day. Rather than heavy, non-deterministic multi-agent frameworks (LangGraph, CrewAI) that introduce latency, complex state drift, and high token overhead, we implemented a **modular, 2-phase agent pipeline** using Python, FastAPI, and Google Gemini (`gemini-3.8-flash`):
+1. **Deterministic Investigation Phase**: The agent extracts entities (`order_id`, `customer_id`), executes internal tools (`get_order`, `get_customer`, `search_policy`), and gathers structured ground truth before prompting the LLM.
+2. **Constrained Decision Phase**: The LLM synthesizes policy rules, customer intent, and multilingual replies into a strictly validated JSON schema.
+3. **Hard Code Guardrail Layer**: Code-level interceptors strictly enforce hard business invariants (amount limits by tier, order caps, duplicate prevention, fraud flags, kill switch, claim windows) that the LLM cannot bypass under any circumstances.
 
-ShopSphere is an Indian e-commerce enterprise handling approximately 4,000 customer support tickets daily. In customer support for e-commerce, the risk of unauthorized refunds, policy hallucination, and data leakage is paramount.
+## 2. Deployment & LLMOps Choices
+- **Centralized Configuration**: All limits (`REFUND_LIMIT_PREMIUM=8000`, `REFUND_LIMIT_REGULAR=5000`) reside in [`src/config.py`](file:///home/bdcadmin/BDC-Shubham/src/config.py) via Pydantic settings, allowing instant adjustments without code edits.
+- **Containerization**: Multi-stage, slim `python:3.12-slim` Docker image tagged by version (`shopsphere-agent:v1`, `shopsphere-agent:v2`), running as non-root `appuser` with a Docker `HEALTHCHECK`.
+- **Zero-Downtime Rollback**: `docker-compose.yml` binds `AGENT_VERSION` and `PROMPT_VERSION` dynamically. Running `AGENT_VERSION=v1 PROMPT_VERSION=v1 docker compose up -d --force-recreate agent` rolls back the running service to v1 in <5 seconds.
+- **Observability & Tracing**: Self-hosted **Arize Phoenix** (ports 6006, 4317, 4318) receives OpenTelemetry spans for every ticket, LLM call, tool invocation, and guardrail check.
+- **Quality Gate in CI**: Deterministic offline replay (`recorded_responses/responses_v2.json`) tests all 33 tickets in GitHub Actions in <2 seconds without requiring a secret `GEMINI_API_KEY`. The gate exits non-zero if accuracy falls below 90% or if any guardrail violation occurs.
 
-The **ShopSphere Support Agent (v1)** is an enterprise-grade, auditable AI service built to process support tickets end-to-end with high accuracy, hard guardrails, OpenTelemetry tracing, and automated quality gating.
+## 3. Key Trade-offs
+- **Deterministic Tool Calling vs. Full LLM Autonomy**: We chose a deterministic investigation pipeline over free-form ReAct loops. While ReAct is more flexible, deterministic lookup is faster (<8s vs 20s+), uses 60% fewer tokens, and prevents infinite tool-calling loops.
+- **Passage-Level Retrieval vs. Naive Chunking**: Chunking markdown policies without headers loses crucial scope clauses (the root cause of the Stage 2 incident). We preserve section headers (`## Scope and effective date`) with each passage.
+- **SQLite with WAL vs. External PostgreSQL**: For a self-contained evaluation deployable via `docker compose up` in <10 minutes, SQLite on a persistent Docker volume delivers reliable persistence with zero external infrastructure overhead.
 
-### System Architecture Diagram
-```
-                     +----------------------------+
-                     |  Customer Support Ticket   |
-                     +--------------+-------------+
-                                    |
-                                    v
-                     +----------------------------+
-                     |  FastAPI / CLI Entrypoint  |
-                     +--------------+-------------+
-                                    |
-                 +------------------+------------------+
-                 |                                     |
-                 v                                     v
-   +---------------------------+         +---------------------------+
-   |   OpenTelemetry Tracing   |         |    Prometheus Metrics     |
-   |   (Arize Phoenix 6006)    |         |    (/metrics, JSON)       |
-   +---------------------------+         +---------------------------+
-                 |                                     |
-                 +------------------+------------------+
-                                    |
-                                    v
-                     +----------------------------+
-                     |   ShopSphere Core Agent    |
-                     |  (Gemini 3.8 Flash Engine) |
-                     +--------------+-------------+
-                                    |
-            +-----------------------+-----------------------+
-            |                                               |
-            v                                               v
-+-----------------------+                       +-----------------------+
-|    Internal Tools     |                       |    Hard Guardrails    |
-| - get_customer        |                       | - Rule 1: Limit <=5k  |
-| - get_order           |                       | - Rule 2: Order Cap   |
-| - search_policy       |                       | - Rule 2: Duplicate   |
-| - issue_refund        |                       | - Rule 3: Fraud Flag  |
-| - escalate_to_human   |                       | - Kill Switch Check   |
-+-----------+-----------+                       +-----------+-----------+
-            |                                               |
-            +-----------------------+-----------------------+
-                                    |
-                                    v
-                     +----------------------------+
-                     |     SQLite Persistence     |
-                     |   (action_log, escalations)|
-                     +--------------+-------------+
-                                    |
-                                    v
-                     +----------------------------+
-                     |   Structured Output JSON   |
-                     +----------------------------+
-```
+## 4. Known Failures & Mitigations
+- **Naive Semantic Chunking (Stage 2 Incident)**: In agent v0, text chunking separated claim windows from effective date scopes, causing an LLM to grant a 30-day window to an expired 2026 order. *Mitigation*: We added hard code checks for `(ticket_date - delivery_date) <= window` directly inside `check_refund_guardrails`.
+- **Prompt Injections (T-05, T-21, B-08)**: Customers asserting fake system notes or falsely claiming "I qualify as Premium". *Mitigation*: Customer tier is always fetched from the database, never from prompt text; prompts explicitly treat ticket text as untrusted data.
 
----
-
-## 2. Agent Framework Rationale & Tradeoffs
-
-### Evaluated Alternatives
-1. **LangGraph / LangChain**: High abstraction, state graph overhead, complex dependency tree, and potential latency overhead on per-ticket resolution.
-2. **CrewAI**: Designed for multi-agent conversational role-play; adds unnecessary inter-agent message passing that complicates latency SLAs and auditability for deterministic e-commerce actions.
-3. **Native Gemini with Structured Output & Functional Guardrail Pipeline (Chosen Architecture)**.
-
-### Architectural Justification
-We implemented the core agent using **Google Gemini (google-genai SDK)** paired with a deterministic tool-investigation pipeline and hard code guardrails:
-- **Zero Hallucination on State Transitions**: State decisions (e.g. claim window calculation, item duplication checks) are validated by Python code rather than relying solely on LLM graph transitions.
-- **Ultra-Low Latency**: Processing average latency is kept minimal without graph serialization overhead.
-- **Deterministic Guardrails**: Guardrail enforcement runs strictly before any refund action can be recorded or executed.
-- **Debuggability & Clean-Machine Portability**: Standard Python 3.12 with clean dependencies ensures rapid container startup (<2 seconds) and zero hidden failure modes during live review.
-
----
-
-## 3. Tool Architecture & Policy Retrieval
-
-The agent implements the 5 required internal tools:
-1. `get_order(order_id)`: Fetches full order lifecycle, tracking history, items, and historical `prior_refunds`.
-2. `get_customer(customer_id)`: Returns customer profile, membership tier (`Regular`, `Plus`, `Premium`), and security flags (`fraud_review`).
-3. `search_policy(query)`: Indexes and searches passages from markdown policies (`policies/refund_policy_2026.md`, `policies/refund_policy_2025.md`, `policies/shipping_policy.md`, `policies/loyalty_program.md`), attributing sources.
-4. `issue_refund(order_id, item_ids, amount, reason)`: Simulated execution gated by `check_refund_guardrails()`.
-5. `escalate_to_human(ticket_id, summary, reason)`: Records structured handoffs in the database and review queue.
-
-### Temporal Logic (Fixed Reference Date)
-- Fixed reference date: **`2026-10-01`**. The system clock is never used.
-- **2026 Refund Policy**: Orders placed on or after `2026-07-01` have a **15-calendar-day claim window** from `delivery_date`.
-- **2025 Refund Policy**: Orders placed before `2026-07-01` have a **30-calendar-day claim window** from `delivery_date`.
-- Day count formula: `(ticket_created_date - delivery_date).days <= window`.
-
----
-
-## 4. Guardrails & Safety Architecture
-
-### Hard Guardrails (Rules 1 to 3)
-Hard checks are enforced in `src/guardrails.py` in code before any refund can be issued:
-1. **Rule 1 (Refund Limit)**: Maximum auto-refund is **Rs 5,000.00**. Any refund request exceeding Rs 5,000 is automatically blocked and escalated to a human.
-2. **Rule 2 (Refund Cap & Duplicate Check)**:
-   - Cumulative refunds on an order (`prior_refunds` + refunds issued earlier in this run) must never exceed total order `amount`.
-   - A refund request for an item that has already been refunded (either in historical `prior_refunds` or earlier in the active run) is immediately blocked and escalated.
-3. **Rule 3 (Fraud Review Check)**: Customers with the `fraud_review` flag may receive order status inquiries, but any refund or account change request must be escalated.
-4. **Kill Switch (`AUTO_REFUND_ENABLED=false`)**: When disabled via environment variable, all refunds are instantly escalated without code changes.
-
-### Action Log Quality Audit
-Guardrail violations are evaluated **directly from the action log in the database**, independent of the LLM's raw text generation.
-
-### Soft Guardrails & Layered Defenses (Rules 4 and 5)
-- **Rule 4 (Data vs. Instructions)**: Customer ticket text is encapsulated in `<ticket_text>` XML tags and treated strictly as untrusted user data. Prompt injections (e.g. system notes, fake pre-approvals in T-05, instruction overrides in T-21) are flagged and sanitized.
-- **Rule 5 (No Invented Policy)**: When inquiries fall outside documented policy (e.g. corporate bulk gifting in T-13, delay compensation in T-25), the agent states that no policy covers this and escalates.
-- **Unsupported Actions**: Change of mind returns, order cancellations, and address changes have no tool and are escalated.
-
----
-
-## 5. Observability, Tracing & AgentOps
-
-### Distributed Tracing
-- OpenTelemetry SDK instruments every ticket run with:
-  - Root span: `ticket:<ticket_id>` (carrying trace_id, agent_version, prompt_version).
-  - Sub-spans: `tool:get_customer`, `tool:get_order`, `tool:search_policy`, `llm:gemini_generate`, `guardrails:refund_check`, `tool:issue_refund` / `tool:escalate_to_human`.
-- Self-hosted **Arize Phoenix** container running on port `6006` with OTLP HTTP receiver on port `4318`.
-
-### Operational Metrics
-Exposed via `GET /metrics` in Prometheus format and JSON:
-- Total tickets processed and action distribution (`reply_only`, `issue_refund`, `escalate`, `request_more_info`).
-- Latency percentiles (min, max, average).
-- Token usage (prompt tokens, output tokens) and estimated cost using Gemini published pricing ($0.10/1M input, $0.40/1M output).
-- Guardrail blocks counter by rule type (`RULE_1_LIMIT`, `RULE_2_CAP`, `RULE_2_DUPLICATE`, `RULE_3_FRAUD`, `KILL_SWITCH`).
-- Escalation rate gauge.
-
----
-
-## 6. CI/CD & LLMOps Quality Gate
-
-### Offline Replay Mechanism
-To allow automated CI testing without requiring API keys or incurring external API rate limits, all 25 ticket responses are recorded into `recorded_responses/responses.json`. In replay mode (`--replay`), the agent reproduces outputs deterministically while executing tools and guardrails.
-
-### Evaluation Gate
-The evaluation script `eval.py` (`make eval`) acts as a deployment quality gate:
-- Validates action accuracy against `labels.json` (threshold >= 90%).
-- Computes guardrail violations from the action log (must be exactly 0).
-- Exits non-zero if either condition fails, halting broken releases in CI.
+## 5. What We Would Change Before Real Production
+1. **Asynchronous Task Queue**: Replace synchronous FastAPI request handling with Celery/Redis or AWS SQS to handle the 4,000 daily tickets in asynchronous worker pools with DLQs (dead-letter queues).
+2. **PostgreSQL + Read Replicas**: Migrate from SQLite to Amazon RDS PostgreSQL / Cloud SQL with connection pooling (PgBouncer).
+3. **Semantic Caching**: Deploy Redis-based semantic caching (e.g. GPTCache) for frequent status queries (`"where is my order?"`), slashing token costs by ~30%.
+4. **Human Review Dashboard**: Build an internal React/Next.js dashboard consuming `GET /v1/escalations` with one-click approval workflows for senior agents.

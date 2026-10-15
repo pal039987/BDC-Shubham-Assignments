@@ -4,6 +4,8 @@ Guardrails module for ShopSphere: hard checks in code that run before any refund
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 
+from src.config import settings
+
 @dataclass
 class GuardrailResult:
     allowed: bool
@@ -18,14 +20,15 @@ def check_refund_guardrails(
     requested_item_ids: List[str],
     prior_refunds_in_run: List[Dict[str, Any]],
     auto_refund_enabled: bool = True,
-    ticket_created_at: Optional[str] = None
+    ticket_created_at: Optional[str] = None,
+    agent_version: Optional[str] = None
 ) -> GuardrailResult:
     """
     Enforces hard guardrails before issuing any refund.
     Rules:
       - Kill switch: AUTO_REFUND_ENABLED=false -> escalate
       - Rule 3: Customer flagged 'fraud_review' -> escalate
-      - Rule 1: Refund limit > Rs 5,000 -> escalate
+      - Rule 1: Refund limit based on customer tier from config -> escalate
       - Rule 2 (Duplicate): Item already refunded in prior_refunds or in this run -> escalate
       - Rule 2 (Cap): Cumulative refunds exceed order amount -> escalate
       - Claim Window: Claim raised outside policy window (15 days for >=2026-07-01, 30 days for older) -> escalate
@@ -49,12 +52,14 @@ def check_refund_guardrails(
             action_required="escalate"
         )
 
-    # 2. Rule 1: Refund Limit
-    if requested_amount > 5000.0:
+    # 2. Rule 1: Refund Limit (Centralized Config by Tier)
+    tier = customer.get("tier", "Regular")
+    limit = settings.get_refund_limit(tier=tier, version=agent_version)
+    if requested_amount > limit:
         return GuardrailResult(
             allowed=False,
             rule_violated="RULE_1_LIMIT",
-            message=f"Refund amount Rs {requested_amount:.2f} exceeds auto-issue threshold of Rs 5,000.00. Escalation required.",
+            message=f"Refund amount Rs {requested_amount:.2f} exceeds auto-issue threshold of Rs {limit:.2f} for {tier} tier. Escalation required.",
             action_required="escalate"
         )
 
@@ -149,11 +154,13 @@ def audit_action_log(
         customer = customers_map.get(customer_id) or customers_map.get(order.get("customer_id", ""), {})
 
         # Rule 1 Violation Check
-        if amount > 5000.0:
+        tier = customer.get("tier", "Regular")
+        tier_limit = settings.get_refund_limit(tier=tier)
+        if amount > tier_limit:
             violations.append({
                 "rule": "RULE_1_LIMIT",
                 "action": action,
-                "reason": f"Refund of Rs {amount} exceeds Rs 5,000 limit."
+                "reason": f"Refund of Rs {amount} exceeds Rs {tier_limit} limit for tier {tier}."
             })
 
         # Rule 3 Violation Check

@@ -35,10 +35,26 @@ class Settings(BaseSettings):
         except (PermissionError, OSError):
             return self.BASE_DIR / "shopsphere.db"
     
-    # Prompt & Agent Versions
-    PROMPT_VERSION: str = os.getenv("PROMPT_VERSION", "v1")
-    AGENT_VERSION: str = os.getenv("AGENT_VERSION", "v1")
-    
+    # Prompt & Agent Versions (default v2, configurable to v1 for rollback)
+    PROMPT_VERSION: str = os.getenv("PROMPT_VERSION", "v2")
+    AGENT_VERSION: str = os.getenv("AGENT_VERSION", "v2")
+
+    # Business Limits (centralized configuration)
+    REFUND_LIMIT_REGULAR: float = float(os.getenv("REFUND_LIMIT_REGULAR", "5000.0"))
+    REFUND_LIMIT_PLUS: float = float(os.getenv("REFUND_LIMIT_PLUS", "5000.0"))
+    REFUND_LIMIT_PREMIUM: float = float(os.getenv("REFUND_LIMIT_PREMIUM", "8000.0"))
+    REFUND_LIMIT_V1: float = 5000.0
+
+    def get_refund_limit(self, tier: str = "Regular", version: str = None) -> float:
+        """Returns auto-refund limit based on customer tier and agent version."""
+        ver = version or self.AGENT_VERSION
+        if ver == "v1":
+            return self.REFUND_LIMIT_V1
+        t = (tier or "Regular").strip().capitalize()
+        if t == "Premium":
+            return self.REFUND_LIMIT_PREMIUM
+        return self.REFUND_LIMIT_REGULAR
+
     # Fixed Reference Date for ShopSphere Test (NEVER use system clock)
     FIXED_TODAY_DATE: str = "2026-10-01"
     

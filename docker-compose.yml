@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: shopsphere-agent:v1
+    image: shopsphere-agent:${AGENT_VERSION:-v2}
     container_name: shopsphere-agent
     ports:
       - "8000:8000"
@@ -11,8 +11,8 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - AUTO_REFUND_ENABLED=${AUTO_REFUND_ENABLED:-true}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.8-flash}
-      - AGENT_VERSION=v1
-      - PROMPT_VERSION=v1
+      - AGENT_VERSION=${AGENT_VERSION:-v2}
+      - PROMPT_VERSION=${PROMPT_VERSION:-v2}
       - DB_PATH=/data/shopsphere.db
       - DATA_DIR=/app/shopsphere_data
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://phoenix:4318

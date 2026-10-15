@@ -18,3 +18,21 @@ def test_eval_gate_on_recorded_responses(tmp_path):
         out_file=report_file
     )
     assert passed is True, "Eval quality gate failed on recorded responses!"
+
+def test_eval_gate_on_batch2_recorded_responses(tmp_path):
+    results_file = Path("eval_results_batch2.json")
+    labels_file = Path("labels_batch2.json")
+    db_path = tmp_path / "eval_b2.db"
+    report_file = tmp_path / "test_report_b2.json"
+
+    assert results_file.exists(), "eval_results_batch2.json must exist"
+    assert labels_file.exists(), "labels_batch2.json must exist"
+
+    passed = evaluate(
+        results_file=results_file,
+        labels_file=labels_file,
+        db_path=db_path,
+        threshold=95.0,
+        out_file=report_file
+    )
+    assert passed is True, "Eval quality gate failed on batch 2 recorded responses!"

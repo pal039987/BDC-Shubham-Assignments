@@ -40,6 +40,15 @@ def fraud_customer():
         "flags": ["fraud_review"]
     }
 
+@pytest.fixture
+def premium_customer():
+    return {
+        "customer_id": "C-TEST-PREM",
+        "name": "Premium User",
+        "tier": "Premium",
+        "flags": []
+    }
+
 # ==============================================================================
 # RULE 1: REFUND LIMIT TESTS
 # ==============================================================================
@@ -269,3 +278,108 @@ def test_incident_regression_within_claim_window(regular_customer):
     assert res.allowed is True
     assert res.rule_violated is None
     assert res.action_required == "issue_refund"
+
+# ==============================================================================
+# STAGE 3 OCTOBER 2026 AMENDMENT TESTS (Tier Limits & Fraud Flag)
+# ==============================================================================
+def test_amendment_premium_limit_up_to_8000_allowed(premium_customer):
+    """Premium customers can receive refunds up to Rs 8,000 under amendment."""
+    order = {
+        "order_id": "ORD-PREM-1",
+        "customer_id": "C103",
+        "order_date": "2026-09-20",
+        "delivery_status": "delivered",
+        "delivery_date": "2026-09-25",
+        "amount": 7500,
+        "items": [{"item_id": "I-1", "name": "Tablet", "price": 7500}],
+        "prior_refunds": []
+    }
+    res = check_refund_guardrails(
+        order=order,
+        customer=premium_customer,
+        requested_amount=7500.0,
+        requested_item_ids=["I-1"],
+        prior_refunds_in_run=[],
+        ticket_created_at="2026-10-01T10:00:00+05:30",
+        agent_version="v2"
+    )
+    assert res.allowed is True
+    assert res.rule_violated is None
+    assert res.action_required == "issue_refund"
+
+def test_amendment_premium_limit_over_8000_blocked(premium_customer):
+    """Premium customers requesting > Rs 8,000 must be escalated."""
+    order = {
+        "order_id": "ORD-PREM-2",
+        "customer_id": "C103",
+        "order_date": "2026-09-20",
+        "delivery_status": "delivered",
+        "delivery_date": "2026-09-25",
+        "amount": 8500,
+        "items": [{"item_id": "I-1", "name": "Vacuum", "price": 8500}],
+        "prior_refunds": []
+    }
+    res = check_refund_guardrails(
+        order=order,
+        customer=premium_customer,
+        requested_amount=8500.0,
+        requested_item_ids=["I-1"],
+        prior_refunds_in_run=[],
+        ticket_created_at="2026-10-01T10:00:00+05:30",
+        agent_version="v2"
+    )
+    assert res.allowed is False
+    assert res.rule_violated == "RULE_1_LIMIT"
+    assert res.action_required == "escalate"
+
+def test_amendment_plus_tier_limit_stays_5000_blocked():
+    """Plus tier customers still have Rs 5,000 limit; Rs 7,000 must escalate."""
+    plus_customer = {"customer_id": "C102", "name": "Priya", "tier": "Plus", "flags": []}
+    order = {
+        "order_id": "ORD-PLUS-1",
+        "customer_id": "C102",
+        "order_date": "2026-09-20",
+        "delivery_status": "delivered",
+        "delivery_date": "2026-09-25",
+        "amount": 7000,
+        "items": [{"item_id": "I-1", "name": "Mattress", "price": 7000}],
+        "prior_refunds": []
+    }
+    res = check_refund_guardrails(
+        order=order,
+        customer=plus_customer,
+        requested_amount=7000.0,
+        requested_item_ids=["I-1"],
+        prior_refunds_in_run=[],
+        ticket_created_at="2026-10-01T10:00:00+05:30",
+        agent_version="v2"
+    )
+    assert res.allowed is False
+    assert res.rule_violated == "RULE_1_LIMIT"
+    assert res.action_required == "escalate"
+
+def test_amendment_premium_with_fraud_flag_blocked():
+    """Premium customer with fraud_review flag MUST escalate even under Rs 8,000 limit."""
+    fraud_premium = {"customer_id": "C109", "name": "Imran", "tier": "Premium", "flags": ["fraud_review"]}
+    order = {
+        "order_id": "ORD-FRAUD-PREM",
+        "customer_id": "C109",
+        "order_date": "2026-09-20",
+        "delivery_status": "delivered",
+        "delivery_date": "2026-09-25",
+        "amount": 7000,
+        "items": [{"item_id": "I-1", "name": "Controllers", "price": 7000}],
+        "prior_refunds": []
+    }
+    res = check_refund_guardrails(
+        order=order,
+        customer=fraud_premium,
+        requested_amount=7000.0,
+        requested_item_ids=["I-1"],
+        prior_refunds_in_run=[],
+        ticket_created_at="2026-10-01T10:00:00+05:30",
+        agent_version="v2"
+    )
+    assert res.allowed is False
+    assert res.rule_violated == "RULE_3_FRAUD"
+    assert res.action_required == "escalate"

@@ -33,7 +33,8 @@ def main():
     parser.add_argument("--db-path", default=None, help="Path to SQLite database file")
     parser.add_argument("--replay", default=None, help="Path to replay responses JSON file")
     parser.add_argument("--record", default=None, help="Path to record responses JSON file")
-    parser.add_argument("--prompt-version", default=settings.PROMPT_VERSION, help="Prompt version (e.g. v1)")
+    parser.add_argument("--prompt-version", default=settings.PROMPT_VERSION, help="Prompt version (e.g. v1 or v2)")
+    parser.add_argument("--agent-version", default=settings.AGENT_VERSION, help="Agent version (e.g. v1 or v2)")
     args = parser.parse_args()
 
     tickets_path = Path(args.tickets)
@@ -55,7 +56,11 @@ def main():
 
     # Initialize tools & agent
     tools = ShopSphereTools(data_dir=data_dir)
-    agent = ShopSphereAgent(tools=tools, prompt_version=args.prompt_version)
+    agent = ShopSphereAgent(
+        tools=tools,
+        prompt_version=args.prompt_version,
+        agent_version=args.agent_version
+    )
 
     # Replay or Record setup
     replay_file = args.replay or settings.REPLAY_FILE

@@ -14,15 +14,17 @@ test:
 	$(PYTHON) -m pytest tests/ -v
 
 eval:
-	@rm -f eval.db
-	$(PYTHON) run.py --tickets shopsphere_data/tickets.json --out eval_results.json --replay recorded_responses/responses.json --db-path eval.db
+	@rm -f eval.db eval_b2.db
+	$(PYTHON) run.py --tickets shopsphere_data/tickets.json --out eval_results.json --replay recorded_responses/responses.json --db-path eval.db --agent-version v1 --prompt-version v1
 	$(PYTHON) eval.py --results eval_results.json --labels labels.json --db-path eval.db --threshold 90.0
+	$(PYTHON) run.py --tickets shopsphere_data/tickets_batch2.json --out eval_results_batch2.json --replay recorded_responses/responses_v2.json --db-path eval_b2.db --agent-version v2 --prompt-version v2
+	$(PYTHON) eval.py --results eval_results_batch2.json --labels labels_batch2.json --db-path eval_b2.db --threshold 90.0
 
 run:
 	$(PYTHON) run.py --tickets shopsphere_data/tickets.json --out eval_results.json
 
 docker-build:
-	docker build -t shopsphere-agent:v1 .
+	docker build -t shopsphere-agent:v2 -t shopsphere-agent:v1 .
 
 docker-up:
 	docker compose up -d
