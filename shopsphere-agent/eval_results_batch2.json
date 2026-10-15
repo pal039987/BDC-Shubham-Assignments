@@ -42,7 +42,7 @@
     "refund_amount": 7000.0,
     "reply": "Dear Ananya, we are very sorry to hear that your microwave from order ORD-1024 is sparking. As a valued Premium member, we have approved and processed a full refund of Rs 7,000 for this defective item. The amount will be credited back to your original payment method within 5-7 business days. Please feel free to reach out if you have any further questions.",
     "confidence": "high - Premium customer eligible for auto-refund up to Rs 8,000 within the 15-day claim window for a defective item.",
-    "trace_id": "db437804d06a4cfdb8d016d6c42f913f",
+    "trace_id": "482cec7fca1a467ab95df8c6d3766a18",
     "prompt_version": "v2",
     "agent_version": "v2"
   },
@@ -86,7 +86,7 @@
     "refund_amount": null,
     "reply": "Dear Priya, I am truly sorry to hear that your mattress arrived torn and wet. As the refund amount of Rs 7,000 exceeds the automatic processing limit of Rs 5,000 for Plus members, I have escalated your request to our senior support team for priority review and processing. A representative will get back to you shortly to assist you with the refund.",
     "confidence": "high - The requested refund of Rs 7,000 exceeds the Rs 5,000 auto-refund threshold for Plus tier customers, requiring human escalation.",
-    "trace_id": "7f3996b7a2ea485daad955b400f2ca5f",
+    "trace_id": "25e6a9733c3c48989777dc52ef94843b",
     "prompt_version": "v2",
     "agent_version": "v2"
   },
@@ -130,7 +130,7 @@
     "refund_amount": null,
     "reply": "I am sorry to hear that the controllers in order ORD-1026 arrived defective. Your refund request has been forwarded to our specialized support team for manual review and processing. A representative will get back to you shortly.",
     "confidence": "high - Customer account is flagged with fraud_review, which strictly mandates escalation for all refund requests regardless of tier.",
-    "trace_id": "2be326f623cb418599d658a5c4ed86e3",
+    "trace_id": "dffb9ecf62ac4f14993ebe5c171f5246",
     "prompt_version": "v2",
     "agent_version": "v2"
   },
@@ -174,7 +174,7 @@
     "refund_amount": null,
     "reply": "Dear Neha, I am sorry to hear that your robot vacuum from order ORD-1027 arrived damaged. Because the requested refund amount of Rs 8,500 exceeds our automatic refund threshold of Rs 8,000, I have escalated your ticket to our senior support team for review and processing. A specialist will get back to you shortly to complete your refund.",
     "confidence": "high - The claim is within the 15-day window, but Rs 8,500 exceeds the Premium tier auto-refund limit of Rs 8,000, requiring human escalation.",
-    "trace_id": "6980596804074c3b9277fe119cb41515",
+    "trace_id": "4662fef325ad4d778d6178874ca61578",
     "prompt_version": "v2",
     "agent_version": "v2"
   },
@@ -221,7 +221,7 @@
     "refund_amount": 998.0,
     "reply": "Dear Aarav, we are very sorry to hear that you received a transparent phone case instead of the black one you ordered for order ORD-1028. We have processed a full refund of Rs 998 (including the item price of Rs 899 and the Rs 99 shipping fee) to your original payment method. It should reflect in your account within 5-7 business days.",
     "confidence": "high - Wrong item claim within 15-day window qualifies for item price plus shipping fee refund under October 2026 amendment.",
-    "trace_id": "df33fce44e614c069bb521ce9bbb64aa",
+    "trace_id": "e68c8ebce6914b3aa7ff0e52667553c4",
     "prompt_version": "v2",
     "agent_version": "v2"
   },
@@ -268,7 +268,7 @@
     "refund_amount": 8000.0,
     "reply": "Dear Rohan, we are very sorry to hear that your order ORD-1029 was lost in transit. Since the order has been confirmed lost, we have issued a full refund of Rs 8,000 to your original payment method. Please allow 5-7 business days for the amount to reflect in your account.",
     "confidence": "high - Order is confirmed lost and the refund amount of Rs 8,000 is fully within the auto-refund limit for Premium tier customers under the October 2026 amendment.",
-    "trace_id": "937db5f1ca74465094e44af131a7ead1",
+    "trace_id": "f497e2fa48a342ed898812e475d85aa2",
     "prompt_version": "v2",
     "agent_version": "v2"
   },
@@ -303,7 +303,7 @@
     "refund_amount": null,
     "reply": "Aapka order ORD-1030 abhi processing stage mein hai. Jaise hi yeh ship hoga, aapko tracking details SMS aur email par mil jayengi. Hum koshish karenge ki aapka order jald se jald deliver ho sake.",
     "confidence": "high - Customer is inquiring about the delivery status of a recently placed order that is currently processing.",
-    "trace_id": "a78e5236c1c54f8f9cba8bb741a77998",
+    "trace_id": "ee4813c6adb54bb79fc3011416e479f7",
     "prompt_version": "v2",
     "agent_version": "v2"
   },
@@ -347,7 +347,7 @@
     "refund_amount": null,
     "reply": "Dear Meera, thank you for reaching out. We are sorry to hear that your induction cooktop arrived damaged. According to our records, your account is currently on the Regular tier, which has an automatic refund limit of Rs 5,000. Because your refund request of Rs 6,500 exceeds this threshold, we have escalated your ticket to our senior support team for review and manual processing. A team member will update you shortly.",
     "confidence": "high - Customer is verified as Regular tier and requested refund of Rs 6,500 exceeds the Rs 5,000 auto-refund limit, requiring escalation.",
-    "trace_id": "b34dd58a3c644fb9a2df14a7971d10c2",
+    "trace_id": "a5e1b733d246408589942c465311a3dc",
     "prompt_version": "v2",
     "agent_version": "v2"
   }

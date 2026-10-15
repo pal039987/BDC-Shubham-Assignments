@@ -5,33 +5,28 @@ PYTHON ?= python3
 all: test eval
 
 install:
-	$(PYTHON) -m pip install -r requirements.txt
+	$(MAKE) -C shopsphere-agent install PYTHON="$(PYTHON)"
 
 lint:
-	$(PYTHON) -m flake8 src tests run.py server.py eval.py --max-line-length=130 --ignore=E501,W503,E402,E302,E305,W293,E226,E741
+	$(MAKE) -C shopsphere-agent lint PYTHON="$(PYTHON)"
 
 test:
-	$(PYTHON) -m pytest tests/ -v
+	$(MAKE) -C shopsphere-agent test PYTHON="$(PYTHON)"
 
 eval:
-	@rm -f eval.db eval_b2.db
-	$(PYTHON) run.py --tickets shopsphere_data/tickets.json --out eval_results.json --replay recorded_responses/responses.json --db-path eval.db --agent-version v1 --prompt-version v1
-	$(PYTHON) eval.py --results eval_results.json --labels labels.json --db-path eval.db --threshold 90.0
-	$(PYTHON) run.py --tickets shopsphere_data/tickets_batch2.json --out eval_results_batch2.json --replay recorded_responses/responses_v2.json --db-path eval_b2.db --agent-version v2 --prompt-version v2
-	$(PYTHON) eval.py --results eval_results_batch2.json --labels labels_batch2.json --db-path eval_b2.db --threshold 90.0
+	$(MAKE) -C shopsphere-agent eval PYTHON="$(PYTHON)"
 
 run:
-	$(PYTHON) run.py --tickets shopsphere_data/tickets.json --out eval_results.json
+	$(MAKE) -C shopsphere-agent run PYTHON="$(PYTHON)"
 
 docker-build:
-	docker build -t shopsphere-agent:v2 -t shopsphere-agent:v1 .
+	$(MAKE) -C shopsphere-agent docker-build
 
 docker-up:
-	docker compose up -d
+	$(MAKE) -C shopsphere-agent docker-up
 
 docker-down:
-	docker compose down
+	$(MAKE) -C shopsphere-agent docker-down
 
 clean:
-	rm -f eval.db eval_report.json *.pyc
-	find . -type d -name "__pycache__" -exec rm -rf {} +
+	$(MAKE) -C shopsphere-agent clean
