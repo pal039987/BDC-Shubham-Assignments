@@ -355,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchBinanceDirect();
   initBinanceWebSocket();
   initDraggableOrders();
+  init1ClickTrade();
   initMarketExplorer();
   setChartMode(chartMode);
   initRealtimeTicker();
@@ -1431,9 +1432,81 @@ function setPriceMode(mode, btn) {
 }
 
 let is1ClickTradeEnabled = false;
+
+function init1ClickTrade() {
+  try {
+    const saved = safeStorageGet('vtrade_1click_enabled');
+    if (saved === '1') is1ClickTradeEnabled = true;
+  } catch(e) {}
+  const checkbox = document.getElementById('one-click-toggle-input');
+  if (checkbox) checkbox.checked = is1ClickTradeEnabled;
+  const widget = document.getElementById('tv-topleft-order-widget');
+  if (widget) {
+    widget.classList.toggle('hidden', !is1ClickTradeEnabled);
+  }
+  update1ClickPrices();
+  sync1ClickTradeSizeWithMain();
+}
+
 function toggle1ClickTrade(enabled) {
-  is1ClickTradeEnabled = enabled;
-  showToast(`1-Click Trade ${enabled ? 'Enabled' : 'Disabled'}`, 'info');
+  is1ClickTradeEnabled = !!enabled;
+  const widget = document.getElementById('tv-topleft-order-widget');
+  const checkbox = document.getElementById('one-click-toggle-input');
+  if (checkbox) checkbox.checked = is1ClickTradeEnabled;
+
+  if (widget) {
+    if (is1ClickTradeEnabled) {
+      widget.classList.remove('hidden');
+      update1ClickPrices();
+      sync1ClickTradeSizeWithMain();
+    } else {
+      widget.classList.add('hidden');
+    }
+  }
+
+  try {
+    safeStorageSet('vtrade_1click_enabled', is1ClickTradeEnabled ? '1' : '0');
+  } catch(e) {}
+
+  showToast(`1-Click Trade ${is1ClickTradeEnabled ? 'Enabled' : 'Disabled'}`, 'info');
+}
+
+function update1ClickPrices() {
+  const sellPriceEl = document.getElementById('tv-tl-sell-price');
+  const buyPriceEl = document.getElementById('tv-tl-buy-price');
+  const unitEl = document.getElementById('tv-quick-unit');
+  const coinDef = getCoinDefinition(selectedCoin);
+
+  if (unitEl && coinDef) {
+    unitEl.textContent = coinDef.symbol;
+  }
+
+  const curPrice = currentPrices[selectedCoin]?.price || coinDef?.basePrice || 0;
+  if (curPrice > 0) {
+    const formatted = `$${fmt(curPrice)}`;
+    if (sellPriceEl) sellPriceEl.textContent = formatted;
+    if (buyPriceEl) buyPriceEl.textContent = formatted;
+  } else {
+    if (sellPriceEl) sellPriceEl.textContent = '$—';
+    if (buyPriceEl) buyPriceEl.textContent = '$—';
+  }
+}
+
+function sync1ClickTradeSizeWithMain() {
+  const mainInput = document.getElementById('trade-amount-input');
+  const quickInput = document.getElementById('tv-quick-size-input');
+  if (mainInput && quickInput && parseFloat(mainInput.value) > 0) {
+    quickInput.value = mainInput.value;
+  }
+}
+
+function syncQuickTradeSize(val) {
+  const num = parseFloat(val);
+  const mainInput = document.getElementById('trade-amount-input');
+  if (mainInput && !isNaN(num) && num > 0) {
+    mainInput.value = val;
+    if (typeof updateTradeCalc === 'function') updateTradeCalc();
+  }
 }
 
 let fundingCountdownTimer = null;
@@ -1494,12 +1567,14 @@ function selectCoin(coin) {
   updateTradeCalc();
   updateMiniStats();
   updateChartPriceDisplay();
+  clearAllPriceLines();
   loadDrawings();
   loadChart(selectedCoin, currentTF);
 
   renderTradingViewChart();
   renderTvChartOverlay();
   updateChartQuickCoinChips();
+  update1ClickPrices();
 }
 
 // ─── REAL-TIME BINANCE WEBSOCKET & FAST TICKER STREAM ───────
@@ -1739,21 +1814,487 @@ function selectTF(tf, btn) {
   renderTradingViewChart();
 }
 
-// ─── TRADINGVIEW ADVANCED CHART WIDGET EMBED ───────────────
+// ─── TRADINGVIEW LIGHTWEIGHT CHARTS PRO INTEGRATION ───────
+let lwChart = null;
+let lwSeries = null;
+let lwPriceLines = {
+  entry: null,
+  tp: null,
+  sl: null,
+  limits: []
+};
+let isLwDraggingTp = false;
+let isLwDraggingSl = false;
+let lwActiveDragPosId = null;
+let isQuickTrading = false;
+
+function initLightweightChart() {
+  const container = document.getElementById('tradingview_widget_box');
+  if (!container) return null;
+
+  if (typeof LightweightCharts === 'undefined') {
+    console.warn('LightweightCharts library not loaded, attempting fallback');
+    return null;
+  }
+
+  if (lwChart && lwSeries) return { chart: lwChart, series: lwSeries };
+
+  container.innerHTML = '';
+
+  const w = container.clientWidth || 800;
+  const h = container.clientHeight || 500;
+
+  try {
+    const chart = LightweightCharts.createChart(container, {
+      width: w,
+      height: h,
+      layout: {
+        background: { type: 'solid', color: '#0b0e11' },
+        textColor: '#848e9c',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace',
+        fontSize: 11
+      },
+      grid: {
+        vertLines: { color: 'rgba(42, 49, 61, 0.35)', style: 2 },
+        horzLines: { color: 'rgba(42, 49, 61, 0.35)', style: 2 }
+      },
+      crosshair: {
+        mode: 1 // CrosshairMode.Normal
+      },
+      rightPriceScale: {
+        borderColor: 'rgba(42, 49, 61, 0.65)',
+        scaleMargins: { top: 0.12, bottom: 0.12 },
+        autoScale: true
+      },
+      timeScale: {
+        borderColor: 'rgba(42, 49, 61, 0.65)',
+        timeVisible: true,
+        secondsVisible: false,
+        rightOffset: 6,
+        barSpacing: 8
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: true
+      },
+      handleScale: {
+        axisPressedMouseMove: true,
+        mouseWheel: true,
+        pinch: true
+      }
+    });
+
+    const series = chart.addSeries(LightweightCharts.CandlestickSeries, {
+      upColor: '#0ecb81',
+      downColor: '#f6465d',
+      borderVisible: false,
+      wickUpColor: '#0ecb81',
+      wickDownColor: '#f6465d'
+    });
+
+    lwChart = chart;
+    lwSeries = series;
+
+    // Reposition interactive overlays whenever chart timeScale or priceScale moves
+    chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+      repositionChartOverlays();
+    });
+
+    // Resize observer
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          if (entry.contentRect && lwChart) {
+            const nw = Math.floor(entry.contentRect.width);
+            const nh = Math.floor(entry.contentRect.height);
+            if (nw > 50 && nh > 50) {
+              lwChart.resize(nw, nh);
+              repositionChartOverlays();
+            }
+          }
+        }
+      });
+      ro.observe(container);
+    }
+
+    return { chart: lwChart, series: lwSeries };
+  } catch(e) {
+    console.error('Failed to initialize Lightweight Charts:', e);
+    return null;
+  }
+}
+
+function updateChartCandles(candles) {
+  if (!lwSeries) initLightweightChart();
+  if (!lwSeries || !candles || !candles.length) return;
+
+  const formatted = candles.map(c => ({
+    time: typeof c.time === 'number' ? Math.floor(c.time) : Math.floor(new Date(c.time).getTime() / 1000),
+    open: parseFloat(c.open),
+    high: parseFloat(c.high),
+    low: parseFloat(c.low),
+    close: parseFloat(c.close)
+  })).filter(c => !isNaN(c.time) && !isNaN(c.close)).sort((a, b) => a.time - b.time);
+
+  // Deduplicate timestamps
+  const unique = [];
+  let prevT = null;
+  for (const bar of formatted) {
+    if (bar.time !== prevT) {
+      unique.push(bar);
+      prevT = bar.time;
+    }
+  }
+
+  if (unique.length) {
+    try {
+      lwSeries.setData(unique);
+      lwChart.timeScale().fitContent();
+    } catch(err) {
+      console.warn('Error setting chart candle data:', err);
+    }
+  }
+  repositionChartOverlays();
+}
+
+function updateChartTick(price) {
+  if (!lwSeries || !candleData || !candleData.length) return;
+  const lastBar = candleData[candleData.length - 1];
+  if (!lastBar) return;
+
+  const updatedBar = {
+    time: lastBar.time,
+    open: lastBar.open,
+    high: Math.max(lastBar.high, price),
+    low: Math.min(lastBar.low, price),
+    close: price
+  };
+  lastBar.high = updatedBar.high;
+  lastBar.low = updatedBar.low;
+  lastBar.close = updatedBar.close;
+
+  try {
+    lwSeries.update(updatedBar);
+  } catch(e) {}
+  repositionChartOverlays();
+  update1ClickPrices();
+}
+
+function clearAllPriceLines() {
+  if (lwSeries) {
+    if (lwPriceLines.entry) {
+      try { lwSeries.removePriceLine(lwPriceLines.entry); } catch(e) {}
+      lwPriceLines.entry = null;
+    }
+    if (lwPriceLines.tp) {
+      try { lwSeries.removePriceLine(lwPriceLines.tp); } catch(e) {}
+      lwPriceLines.tp = null;
+    }
+    if (lwPriceLines.sl) {
+      try { lwSeries.removePriceLine(lwPriceLines.sl); } catch(e) {}
+      lwPriceLines.sl = null;
+    }
+    if (Array.isArray(lwPriceLines.limits)) {
+      lwPriceLines.limits.forEach(item => {
+        try { lwSeries.removePriceLine(item.line); } catch(e) {}
+      });
+      lwPriceLines.limits = [];
+    }
+  }
+  const limWrap = document.getElementById('tv-order-limits-container');
+  if (limWrap) limWrap.innerHTML = '';
+}
+
+function repositionChartOverlays() {
+  const overlay = document.getElementById('tv-chart-orders-overlay');
+  const unitLabel = document.getElementById('tv-quick-unit');
+  const coinDef = getCoinDefinition(selectedCoin);
+  if (unitLabel && coinDef) unitLabel.textContent = coinDef.symbol;
+
+  if (!overlay) return;
+
+  // Filter positions and pending orders strictly for the selected coin
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin && (p.status === 'open' || !p.status) && p.size > 0);
+  const curCoinOrders = (walletState?.orders || []).filter(o => o.coin === selectedCoin && (o.status === 'pending' || o.status === 'open'));
+
+  if (!curPos && curCoinOrders.length === 0) {
+    overlay.classList.add('hidden');
+    clearAllPriceLines();
+    return;
+  }
+  overlay.classList.remove('hidden');
+
+  const containerBox = document.getElementById('tv-chart-container');
+  const chartHeight = containerBox?.clientHeight || 500;
+
+  // 1. Entry Position Line & Tag
+  const entryLine = document.getElementById('tv-order-entry-line');
+  if (curPos && curPos.entry_price > 0) {
+    activeDragPosId = curPos.id;
+    const isLong = curPos.direction === 'long';
+    const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
+    const priceDiff = isLong ? (curPrice - curPos.entry_price) : (curPos.entry_price - curPrice);
+    const livePnl = priceDiff * curPos.size;
+    const isPos = livePnl >= 0;
+
+    // Update or create native dashed price line on chart
+    if (lwSeries) {
+      if (!lwPriceLines.entry) {
+        lwPriceLines.entry = lwSeries.createPriceLine({
+          price: curPos.entry_price,
+          color: isLong ? '#3861fb' : '#f6465d',
+          lineWidth: 1.5,
+          lineStyle: 2, // Dashed
+          axisLabelVisible: true,
+          title: `${curPos.direction.toUpperCase()} ${curPos.leverage || 10}x`
+        });
+      } else {
+        lwPriceLines.entry.applyOptions({
+          price: curPos.entry_price,
+          color: isLong ? '#3861fb' : '#f6465d',
+          title: `${curPos.direction.toUpperCase()} ${curPos.leverage || 10}x`
+        });
+      }
+    }
+
+    if (entryLine) {
+      entryLine.classList.remove('hidden');
+      let y = null;
+      if (lwSeries) {
+        y = lwSeries.priceToCoordinate(curPos.entry_price);
+      }
+      if (y != null && y >= 0 && y <= chartHeight) {
+        entryLine.style.display = 'flex';
+        entryLine.style.top = `${y}px`;
+      } else if (y == null) {
+        entryLine.style.display = 'flex';
+        entryLine.style.top = '48%';
+      } else {
+        entryLine.style.display = 'none';
+      }
+
+      const entrySide = document.getElementById('tvol-entry-side');
+      const entrySize = document.getElementById('tvol-entry-size');
+      const entryPnl = document.getElementById('tvol-entry-pnl');
+      const entryAxis = document.getElementById('tvol-entry-axis-price');
+      const entryTag = document.getElementById('tvol-tag-entry');
+      const btnAddTp = document.getElementById('tvol-btn-add-tp');
+      const btnAddSl = document.getElementById('tvol-btn-add-sl');
+
+      if (entrySide) entrySide.textContent = curPos.direction.toUpperCase();
+      if (entrySize) entrySize.textContent = fmtCoin(curPos.size);
+      if (entryPnl) {
+        entryPnl.textContent = `${isPos ? '+' : ''}${livePnl.toFixed(2)} USD`;
+        entryPnl.className = `tvol-val ${isPos ? 'pos' : 'neg'}`;
+      }
+      if (entryAxis) entryAxis.textContent = fmt(curPos.entry_price);
+      if (entryTag) entryTag.classList.toggle('short-side', !isLong);
+      if (btnAddTp) btnAddTp.style.display = (curPos.take_profit && curPos.take_profit > 0) ? 'none' : 'inline-block';
+      if (btnAddSl) btnAddSl.style.display = (curPos.stop_loss && curPos.stop_loss > 0) ? 'none' : 'inline-block';
+    }
+  } else {
+    if (lwPriceLines.entry && lwSeries) {
+      try { lwSeries.removePriceLine(lwPriceLines.entry); } catch(e) {}
+      lwPriceLines.entry = null;
+    }
+    if (entryLine) entryLine.classList.add('hidden');
+  }
+
+  // 2. Take Profit (TP) Line & Draggable Tag (Green)
+  const tpLine = document.getElementById('tv-order-tp-line');
+  if (curPos && curPos.take_profit && curPos.take_profit > 0) {
+    if (lwSeries) {
+      if (!lwPriceLines.tp) {
+        lwPriceLines.tp = lwSeries.createPriceLine({
+          price: curPos.take_profit,
+          color: '#0ecb81',
+          lineWidth: 1.5,
+          lineStyle: 2, // Dashed
+          axisLabelVisible: true,
+          title: 'TP'
+        });
+      } else {
+        lwPriceLines.tp.applyOptions({ price: curPos.take_profit });
+      }
+    }
+
+    if (tpLine && !isLwDraggingTp) {
+      tpLine.classList.remove('hidden');
+      let y = null;
+      if (lwSeries) {
+        y = lwSeries.priceToCoordinate(curPos.take_profit);
+      }
+      if (y != null && y >= 0 && y <= chartHeight) {
+        tpLine.style.display = 'flex';
+        tpLine.style.top = `${y}px`;
+      } else if (y == null) {
+        tpLine.style.display = 'flex';
+        tpLine.style.top = '28%';
+      } else {
+        tpLine.style.display = 'none';
+      }
+
+      const isLong = curPos.direction === 'long';
+      const tpProjPnl = isLong
+        ? (curPos.take_profit - curPos.entry_price) * curPos.size
+        : (curPos.entry_price - curPos.take_profit) * curPos.size;
+      const tpVal = document.getElementById('tvol-tp-val');
+      const tpAxis = document.getElementById('tvol-tp-axis-price');
+      const tpSize = document.getElementById('tvol-tp-size');
+      if (tpVal) tpVal.textContent = `${tpProjPnl >= 0 ? '+' : ''}${tpProjPnl.toFixed(2)} USD`;
+      if (tpAxis) tpAxis.textContent = fmt(curPos.take_profit);
+      if (tpSize) tpSize.textContent = fmtCoin(curPos.size);
+    }
+  } else {
+    if (lwPriceLines.tp && lwSeries) {
+      try { lwSeries.removePriceLine(lwPriceLines.tp); } catch(e) {}
+      lwPriceLines.tp = null;
+    }
+    if (tpLine && !isLwDraggingTp) tpLine.classList.add('hidden');
+  }
+
+  // 3. Stop Loss (SL) Line & Draggable Tag (Orange/Red)
+  const slLine = document.getElementById('tv-order-sl-line');
+  if (curPos && curPos.stop_loss && curPos.stop_loss > 0) {
+    if (lwSeries) {
+      if (!lwPriceLines.sl) {
+        lwPriceLines.sl = lwSeries.createPriceLine({
+          price: curPos.stop_loss,
+          color: '#f0883e',
+          lineWidth: 1.5,
+          lineStyle: 2, // Dashed
+          axisLabelVisible: true,
+          title: 'SL'
+        });
+      } else {
+        lwPriceLines.sl.applyOptions({ price: curPos.stop_loss });
+      }
+    }
+
+    if (slLine && !isLwDraggingSl) {
+      slLine.classList.remove('hidden');
+      let y = null;
+      if (lwSeries) {
+        y = lwSeries.priceToCoordinate(curPos.stop_loss);
+      }
+      if (y != null && y >= 0 && y <= chartHeight) {
+        slLine.style.display = 'flex';
+        slLine.style.top = `${y}px`;
+      } else if (y == null) {
+        slLine.style.display = 'flex';
+        slLine.style.top = '68%';
+      } else {
+        slLine.style.display = 'none';
+      }
+
+      const isLong = curPos.direction === 'long';
+      const slProjLoss = isLong
+        ? (curPos.stop_loss - curPos.entry_price) * curPos.size
+        : (curPos.entry_price - curPos.stop_loss) * curPos.size;
+      const slVal = document.getElementById('tvol-sl-val');
+      const slAxis = document.getElementById('tvol-sl-axis-price');
+      const slSize = document.getElementById('tvol-sl-size');
+      if (slVal) slVal.textContent = `${slProjLoss.toFixed(2)} USD`;
+      if (slAxis) slAxis.textContent = fmt(curPos.stop_loss);
+      if (slSize) slSize.textContent = fmtCoin(curPos.size);
+    }
+  } else {
+    if (lwPriceLines.sl && lwSeries) {
+      try { lwSeries.removePriceLine(lwPriceLines.sl); } catch(e) {}
+      lwPriceLines.sl = null;
+    }
+    if (slLine && !isLwDraggingSl) slLine.classList.add('hidden');
+  }
+
+  // 4. Pending Limit Orders Lines
+  renderPendingLimitLines(curCoinOrders);
+}
+
+function renderPendingLimitLines(curCoinOrders) {
+  const limWrap = document.getElementById('tv-order-limits-container');
+  if (!limWrap) return;
+  limWrap.innerHTML = '';
+
+  // Clean old limit lines from chart
+  if (lwSeries && Array.isArray(lwPriceLines.limits)) {
+    lwPriceLines.limits.forEach(item => {
+      try { lwSeries.removePriceLine(item.line); } catch(e) {}
+    });
+  }
+  lwPriceLines.limits = [];
+
+  if (!curCoinOrders || !curCoinOrders.length) return;
+
+  const containerBox = document.getElementById('tv-chart-container');
+  const chartHeight = containerBox?.clientHeight || 500;
+
+  curCoinOrders.forEach(ord => {
+    if (!ord.limit_price || ord.limit_price <= 0) return;
+    const isLong = (ord.side === 'Buy' || ord.side === 'Long' || ord.side === 'buy' || ord.side === 'long');
+    const color = isLong ? '#0ecb81' : '#f6465d';
+
+    if (lwSeries) {
+      try {
+        const line = lwSeries.createPriceLine({
+          price: ord.limit_price,
+          color: color,
+          lineWidth: 1.5,
+          lineStyle: 1, // Dotted
+          axisLabelVisible: true,
+          title: `LIMIT ${isLong ? 'BUY' : 'SELL'}`
+        });
+        lwPriceLines.limits.push({ id: ord.id, line });
+      } catch(e) {}
+    }
+
+    let y = null;
+    if (lwSeries) {
+      y = lwSeries.priceToCoordinate(ord.limit_price);
+    }
+
+    const item = document.createElement('div');
+    item.className = 'tv-limit-order-item';
+    item.id = `tv-limit-item-${ord.id}`;
+    if (y != null && y >= 0 && y <= chartHeight) {
+      item.style.display = 'flex';
+      item.style.top = `${y}px`;
+    } else if (y == null) {
+      item.style.display = 'flex';
+      item.style.top = '50%';
+    } else {
+      item.style.display = 'none';
+    }
+
+    item.innerHTML = `
+      <div class="tvol-h-line" style="border-top: 1.5px dotted ${color};"></div>
+      <div class="tv-limit-tag ${isLong ? 'buy' : 'sell'}">
+        <span>LIMIT ${isLong ? 'BUY' : 'SELL'}</span>
+        <span>${fmtCoin(ord.size)}</span>
+        <span>@ $${fmt(ord.limit_price)}</span>
+        <button type="button" class="tv-limit-cancel-btn" onclick="cancelLimitOrder(${ord.id}, event)" title="Cancel Order">✕</button>
+      </div>
+      <div class="tvol-axis-badge" style="background:${color}; color:#000;">${fmt(ord.limit_price)}</div>
+    `;
+    limWrap.appendChild(item);
+  });
+}
+
+function renderTvChartOverlay() {
+  repositionChartOverlays();
+}
+
 function renderTradingViewChart(force = false) {
   const container = document.getElementById('tv-chart-container');
   const widgetBox = document.getElementById('tradingview_widget_box');
   const loadingEl = document.getElementById('tv-chart-loading');
   const errorEl   = document.getElementById('tv-chart-error');
-  const errorMsg  = document.getElementById('tv-error-msg');
   const unsuppEl  = document.getElementById('tv-chart-unsupported');
   const symDisp   = document.getElementById('tv-symbol-display');
   if (!container || !widgetBox) return;
 
   const tvSymbol = getTradingViewSymbol(selectedCoin);
-  const tvInterval = getTradingViewInterval(currentTF);
-
-  // 1. Strict pair validation
   if (!tvSymbol) {
     widgetBox.innerHTML = '';
     if (loadingEl) loadingEl.classList.add('hidden');
@@ -1762,248 +2303,23 @@ function renderTradingViewChart(force = false) {
     return;
   }
   if (unsuppEl) unsuppEl.classList.add('hidden');
-
-  // 2. Offline check
-  if (!navigator.onLine) {
-    if (loadingEl) loadingEl.classList.add('hidden');
-    if (errorEl) {
-      errorEl.classList.remove('hidden');
-      if (errorMsg) errorMsg.textContent = 'Offline: TradingView chart requires internet connection';
-    }
-    return;
-  }
-
-  // 3. Avoid redundant reloads
-  if (!force && tvWidgetInstance && currentTvSymbol === tvSymbol && currentTvInterval === tvInterval) {
-    return;
-  }
-
-  currentTvSymbol = tvSymbol;
-  currentTvInterval = tvInterval;
-
-  if (loadingEl) loadingEl.classList.remove('hidden');
+  if (loadingEl) loadingEl.classList.add('hidden');
   if (errorEl) errorEl.classList.add('hidden');
   if (symDisp) symDisp.textContent = tvSymbol;
 
-  clearTimeout(tvLoadTimeout);
-  tvLoadTimeout = setTimeout(() => {
-    if (loadingEl && !loadingEl.classList.contains('hidden')) {
-      loadingEl.classList.add('hidden');
-      if (errorEl) {
-        errorEl.classList.remove('hidden');
-        if (errorMsg) errorMsg.textContent = 'Connection timeout loading TradingView chart';
-      }
-    }
-  }, 12000);
+  // Initialize Lightweight Charts
+  initLightweightChart();
 
-  function createWidget() {
-    try {
-      widgetBox.innerHTML = '';
-      tvWidgetInstance = new TradingView.widget({
-        autosize: true,
-        symbol: tvSymbol,
-        interval: tvInterval,
-        timezone: "Asia/Kolkata",
-        theme: "dark",
-        style: "1", // 1 = Candlestick
-        locale: "en",
-        toolbar_bg: "#0b0e11",
-        enable_publishing: false,
-        hide_side_toolbar: false, // Left side drawing tools
-        allow_symbol_change: false, // Symbol controlled strictly by VTrade
-        save_image: false,
-        container_id: "tradingview_widget_box",
-        hide_volume: false,
-        withdateranges: true,
-        details: false,
-        hotlist: false,
-        calendar: false
-      });
+  // Load genuine candles for selected coin and timeframe
+  loadChart(selectedCoin, currentTF);
 
-      // Dismiss loading overlay smoothly after widget loads
-      setTimeout(() => {
-        if (loadingEl) loadingEl.classList.add('hidden');
-        clearTimeout(tvLoadTimeout);
-      }, 1400);
-    } catch(e) {
-      console.error('TradingView Widget init error:', e);
-      if (loadingEl) loadingEl.classList.add('hidden');
-      if (errorEl) {
-        errorEl.classList.remove('hidden');
-        if (errorMsg) errorMsg.textContent = 'Failed to load TradingView chart: ' + (e.message || 'Error');
-      }
-    }
-  }
-
-  if (typeof TradingView !== 'undefined' && TradingView.widget) {
-    createWidget();
-  } else {
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.async = true;
-    script.onload = () => {
-      if (typeof TradingView !== 'undefined' && TradingView.widget) {
-        createWidget();
-      }
-    };
-    script.onerror = () => {
-      clearTimeout(tvLoadTimeout);
-      if (loadingEl) loadingEl.classList.add('hidden');
-      if (errorEl) {
-        errorEl.classList.remove('hidden');
-        if (errorMsg) errorMsg.textContent = 'Failed to load TradingView resources from CDN';
-      }
-    };
-    document.head.appendChild(script);
-  }
+  // Synchronize 1-Click panel prices
+  update1ClickPrices();
+  repositionChartOverlays();
 }
 
 function retryTradingViewChart() {
-  currentTvSymbol = null;
-  currentTvInterval = null;
   renderTradingViewChart(true);
-}
-
-let isDraggingTp = false;
-let isDraggingSl = false;
-let activeDragPosId = null;
-
-function getOverlayPriceBounds(curPos) {
-  const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
-  const prices = [curPos.entry_price, curPrice];
-  if (curPos.take_profit && curPos.take_profit > 0) prices.push(curPos.take_profit);
-  if (curPos.stop_loss && curPos.stop_loss > 0) prices.push(curPos.stop_loss);
-
-  let minP = Math.min(...prices);
-  let maxP = Math.max(...prices);
-
-  const minSpan = curPrice * 0.035;
-  if (maxP - minP < minSpan) {
-    const mid = (maxP + minP) / 2;
-    minP = mid - minSpan / 2;
-    maxP = mid + minSpan / 2;
-  }
-  const pad = (maxP - minP) * 0.28;
-  return {
-    minPrice: Math.max(0.0001, minP - pad),
-    maxPrice: maxP + pad
-  };
-}
-
-function priceToTopPercent(price, minP, maxP) {
-  if (maxP <= minP) return 50;
-  const pct = ((maxP - price) / (maxP - minP)) * 100;
-  return Math.max(8, Math.min(92, pct));
-}
-
-function topPercentToPrice(topPct, minP, maxP) {
-  const clamped = Math.max(8, Math.min(92, topPct));
-  return maxP - (clamped / 100) * (maxP - minP);
-}
-
-// ─── ON-CHART ORDER PLACEMENT & POSITION HUD OVERLAY (SCREENSHOT MATCH) ───
-function renderTvChartOverlay() {
-  const overlay = document.getElementById('tv-chart-orders-overlay');
-  const unitLabel = document.getElementById('tv-quick-unit');
-  const coinDef = getCoinDefinition(selectedCoin);
-  if (unitLabel) unitLabel.textContent = coinDef.symbol;
-
-  if (!overlay) return;
-
-  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
-  if (!curPos) {
-    overlay.classList.add('hidden');
-    return;
-  }
-  overlay.classList.remove('hidden');
-
-  activeDragPosId = curPos.id;
-  const curPrice = currentPrices[curPos.coin]?.price || curPos.entry_price;
-  const isLong = curPos.direction === 'long';
-  const bounds = getOverlayPriceBounds(curPos);
-
-  // 1. Entry Position Line & Tag
-  const entryLine = document.getElementById('tv-order-entry-line');
-  const entryTag = document.getElementById('tvol-tag-entry');
-  const entrySide = document.getElementById('tvol-entry-side');
-  const entrySize = document.getElementById('tvol-entry-size');
-  const entryPnl = document.getElementById('tvol-entry-pnl');
-  const entryAxis = document.getElementById('tvol-entry-axis-price');
-  const btnAddTp = document.getElementById('tvol-btn-add-tp');
-  const btnAddSl = document.getElementById('tvol-btn-add-sl');
-
-  if (entryLine) {
-    entryLine.classList.remove('hidden');
-    const entryTop = priceToTopPercent(curPos.entry_price, bounds.minPrice, bounds.maxPrice);
-    entryLine.style.top = `${entryTop}%`;
-    if (isLong) {
-      if (entryTag) entryTag.classList.remove('short-side');
-      if (entryAxis) entryAxis.classList.remove('short-side');
-    } else {
-      if (entryTag) entryTag.classList.add('short-side');
-      if (entryAxis) entryAxis.classList.add('short-side');
-    }
-  }
-
-  const priceDiff = isLong ? (curPrice - curPos.entry_price) : (curPos.entry_price - curPrice);
-  const livePnl = priceDiff * curPos.size;
-  const isPos = livePnl >= 0;
-
-  if (entrySide) entrySide.textContent = `${curPos.direction.toUpperCase()}`;
-  if (entrySize) entrySize.textContent = `${fmtCoin(curPos.size)}`;
-  if (entryPnl) entryPnl.textContent = `${isPos ? '+' : ''}${livePnl.toFixed(2)} USD`;
-  if (entryAxis) entryAxis.textContent = fmt(curPos.entry_price);
-
-  if (btnAddTp) btnAddTp.style.display = (curPos.take_profit && curPos.take_profit > 0) ? 'none' : 'inline-block';
-  if (btnAddSl) btnAddSl.style.display = (curPos.stop_loss && curPos.stop_loss > 0) ? 'none' : 'inline-block';
-
-  // 2. Take Profit (TP) Line & Draggable Tag (Green)
-  const tpLine = document.getElementById('tv-order-tp-line');
-  const tpSize = document.getElementById('tvol-tp-size');
-  const tpVal = document.getElementById('tvol-tp-val');
-  const tpAxis = document.getElementById('tvol-tp-axis-price');
-
-  if (curPos.take_profit && curPos.take_profit > 0) {
-    if (tpLine) {
-      tpLine.classList.remove('hidden');
-      if (!isDraggingTp) {
-        const tpTop = priceToTopPercent(curPos.take_profit, bounds.minPrice, bounds.maxPrice);
-        tpLine.style.top = `${tpTop}%`;
-        const tpProjPnl = isLong
-          ? (curPos.take_profit - curPos.entry_price) * curPos.size
-          : (curPos.entry_price - curPos.take_profit) * curPos.size;
-        if (tpVal) tpVal.textContent = `${tpProjPnl >= 0 ? '+' : ''}${tpProjPnl.toFixed(2)} USD`;
-        if (tpAxis) tpAxis.textContent = fmt(curPos.take_profit);
-        if (tpSize) tpSize.textContent = `${fmtCoin(curPos.size)}`;
-      }
-    }
-  } else {
-    if (tpLine && !isDraggingTp) tpLine.classList.add('hidden');
-  }
-
-  // 3. Stop Loss (SL) Line & Draggable Tag (Orange/Red)
-  const slLine = document.getElementById('tv-order-sl-line');
-  const slSize = document.getElementById('tvol-sl-size');
-  const slVal = document.getElementById('tvol-sl-val');
-  const slAxis = document.getElementById('tvol-sl-axis-price');
-
-  if (curPos.stop_loss && curPos.stop_loss > 0) {
-    if (slLine) {
-      slLine.classList.remove('hidden');
-      if (!isDraggingSl) {
-        const slTop = priceToTopPercent(curPos.stop_loss, bounds.minPrice, bounds.maxPrice);
-        slLine.style.top = `${slTop}%`;
-        const slProjLoss = isLong
-          ? (curPos.stop_loss - curPos.entry_price) * curPos.size
-          : (curPos.entry_price - curPos.stop_loss) * curPos.size;
-        if (slVal) slVal.textContent = `${slProjLoss.toFixed(2)} USD`;
-        if (slAxis) slAxis.textContent = fmt(curPos.stop_loss);
-        if (slSize) slSize.textContent = `${fmtCoin(curPos.size)}`;
-      }
-    }
-  } else {
-    if (slLine && !isDraggingSl) slLine.classList.add('hidden');
-  }
 }
 
 // ─── DRAGGABLE SL / TP INTERACTION (POINTER EVENTS) ─────────
@@ -2014,56 +2330,55 @@ function initDraggableOrders() {
   const tpLine = document.getElementById('tv-order-tp-line');
   const slLine = document.getElementById('tv-order-sl-line');
 
-  if (!container || !tpTag || !slTag) return;
+  if (!container || !tpTag || !slTag || !tpLine || !slLine) return;
 
   function handlePointerDown(e, type) {
+    // Only explicit user drag of that order line tag may initiate adjustment
     e.stopPropagation();
     e.preventDefault();
 
-    const curPos = (walletState?.positions || []).find(p => p.id === activeDragPosId);
+    const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin && (p.status === 'open' || !p.status));
     if (!curPos) return;
 
-    const isTp = type === 'tp';
-    if (isTp) isDraggingTp = true;
-    else isDraggingSl = true;
+    const isTp = (type === 'tp');
+    if (isTp) isLwDraggingTp = true;
+    else isLwDraggingSl = true;
 
     const targetLine = isTp ? tpLine : slLine;
     const targetTag = isTp ? tpTag : slTag;
     targetLine.classList.add('is-dragging');
     targetTag.classList.add('dragging');
 
-    const bounds = getOverlayPriceBounds(curPos);
     const rect = container.getBoundingClientRect();
-    const isLong = curPos.direction === 'long';
-
-    let lastCalculatedPrice = isTp ? curPos.take_profit : curPos.stop_loss;
+    const isLong = (curPos.direction === 'long');
+    let lastPrice = isTp ? curPos.take_profit : curPos.stop_loss;
 
     function onPointerMove(ev) {
       ev.preventDefault();
-      const currentY = Math.max(30, Math.min(rect.height - 30, ev.clientY - rect.top));
-      const topPct = (currentY / rect.height) * 100;
-      targetLine.style.top = `${topPct}%`;
+      const currentY = ev.clientY - rect.top;
+      targetLine.style.top = `${currentY}px`;
 
-      const price = topPercentToPrice(topPct, bounds.minPrice, bounds.maxPrice);
-      const roundedPrice = roundValue(price, 'money');
-      lastCalculatedPrice = roundedPrice;
+      if (lwSeries) {
+        const p = lwSeries.coordinateToPrice(currentY);
+        if (p && p > 0) {
+          const roundedPrice = roundPriceForCoin(p, selectedCoin);
+          lastPrice = roundedPrice;
 
-      if (isTp) {
-        const pnl = isLong ? (roundedPrice - curPos.entry_price) * curPos.size : (curPos.entry_price - roundedPrice) * curPos.size;
-        const valEl = document.getElementById('tvol-tp-val');
-        const axisEl = document.getElementById('tvol-tp-axis-price');
-        if (valEl) valEl.textContent = `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USD`;
-        if (axisEl) axisEl.textContent = fmt(roundedPrice);
-      } else {
-        const pnl = isLong ? (roundedPrice - curPos.entry_price) * curPos.size : (curPos.entry_price - roundedPrice) * curPos.size;
-        const valEl = document.getElementById('tvol-sl-val');
-        const axisEl = document.getElementById('tvol-sl-axis-price');
-        if (valEl) valEl.textContent = `${pnl.toFixed(2)} USD`;
-        if (axisEl) axisEl.textContent = fmt(roundedPrice);
+          const pnl = isLong
+            ? (roundedPrice - curPos.entry_price) * curPos.size
+            : (curPos.entry_price - roundedPrice) * curPos.size;
+          const valEl = document.getElementById(isTp ? 'tvol-tp-val' : 'tvol-sl-val');
+          const axisEl = document.getElementById(isTp ? 'tvol-tp-axis-price' : 'tvol-sl-axis-price');
+          if (valEl) valEl.textContent = `${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USD`;
+          if (axisEl) axisEl.textContent = fmt(roundedPrice);
+
+          if (isTp && lwPriceLines.tp) lwPriceLines.tp.applyOptions({ price: roundedPrice });
+          else if (!isTp && lwPriceLines.sl) lwPriceLines.sl.applyOptions({ price: roundedPrice });
+        }
       }
     }
 
-    function onPointerUp(ev) {
+    async function onPointerUp() {
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
@@ -2071,24 +2386,30 @@ function initDraggableOrders() {
       targetLine.classList.remove('is-dragging');
       targetTag.classList.remove('dragging');
 
-      if (isTp) {
-        isDraggingTp = false;
-        if (lastCalculatedPrice > 0) {
-          curPos.take_profit = lastCalculatedPrice;
-          saveWalletState();
-          renderPositions();
-          showToast(`🎯 Take Profit set to $${fmt(lastCalculatedPrice)}`, 'success');
+      if (isTp) isLwDraggingTp = false;
+      else isLwDraggingSl = false;
+
+      if (lastPrice && lastPrice > 0) {
+        if (isTp) curPos.take_profit = lastPrice;
+        else curPos.stop_loss = lastPrice;
+
+        saveWalletState();
+        renderPositions();
+
+        if (token && curPos.id) {
+          try {
+            await authPost(`/api/positions/${curPos.id}/tpsl`, {
+              take_profit: curPos.take_profit,
+              stop_loss: curPos.stop_loss
+            });
+          } catch(err) {
+            console.error('Failed to sync TP/SL to backend:', err);
+          }
         }
-      } else {
-        isDraggingSl = false;
-        if (lastCalculatedPrice > 0) {
-          curPos.stop_loss = lastCalculatedPrice;
-          saveWalletState();
-          renderPositions();
-          showToast(`🛡️ Stop Loss set to $${fmt(lastCalculatedPrice)}`, 'info');
-        }
+
+        showToast(isTp ? `🎯 Take Profit set to $${fmt(lastPrice)}` : `🛡️ Stop Loss set to $${fmt(lastPrice)}`, 'success');
       }
-      renderTvChartOverlay();
+      repositionChartOverlays();
     }
 
     window.addEventListener('pointermove', onPointerMove, { passive: false });
@@ -2096,141 +2417,182 @@ function initDraggableOrders() {
     window.addEventListener('pointercancel', onPointerUp);
   }
 
-  tpTag.addEventListener('pointerdown', (e) => handlePointerDown(e, 'tp'));
-  slTag.addEventListener('pointerdown', (e) => handlePointerDown(e, 'sl'));
+  // Use property assignment to avoid duplicate event listeners on re-initialization
+  tpTag.onpointerdown = (e) => handlePointerDown(e, 'tp');
+  slTag.onpointerdown = (e) => handlePointerDown(e, 'sl');
 }
 
 // Quick Actions for On-Chart Tags
-function cancelCurrentTp(event) {
+async function cancelCurrentTp(event) {
   if (event) event.stopPropagation();
-  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin && (p.status === 'open' || !p.status));
   if (!curPos) return;
   curPos.take_profit = null;
   saveWalletState();
+  if (token && curPos.id) {
+    try {
+      await authPost(`/api/positions/${curPos.id}/tpsl`, { take_profit: null, stop_loss: curPos.stop_loss });
+    } catch(e) {}
+  }
   renderPositions();
-  renderTvChartOverlay();
+  repositionChartOverlays();
   showToast('Take Profit removed', 'info');
 }
 
-function cancelCurrentSl(event) {
+async function cancelCurrentSl(event) {
   if (event) event.stopPropagation();
-  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin && (p.status === 'open' || !p.status));
   if (!curPos) return;
   curPos.stop_loss = null;
   saveWalletState();
+  if (token && curPos.id) {
+    try {
+      await authPost(`/api/positions/${curPos.id}/tpsl`, { take_profit: curPos.take_profit, stop_loss: null });
+    } catch(e) {}
+  }
   renderPositions();
-  renderTvChartOverlay();
+  repositionChartOverlays();
   showToast('Stop Loss removed', 'info');
 }
 
-function quickAddTp(event) {
+async function quickAddTp(event) {
   if (event) event.stopPropagation();
-  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin && (p.status === 'open' || !p.status));
   if (!curPos) return;
   const isLong = curPos.direction === 'long';
-  curPos.take_profit = roundValue(isLong ? curPos.entry_price * 1.02 : curPos.entry_price * 0.98, 'money');
+  curPos.take_profit = roundPriceForCoin(isLong ? curPos.entry_price * 1.02 : curPos.entry_price * 0.98, selectedCoin);
   saveWalletState();
+  if (token && curPos.id) {
+    try {
+      await authPost(`/api/positions/${curPos.id}/tpsl`, { take_profit: curPos.take_profit, stop_loss: curPos.stop_loss });
+    } catch(e) {}
+  }
   renderPositions();
-  renderTvChartOverlay();
+  repositionChartOverlays();
   showToast('🎯 Take Profit added! Drag the green line on chart to adjust price.', 'success');
 }
 
-function quickAddSl(event) {
+async function quickAddSl(event) {
   if (event) event.stopPropagation();
-  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin && (p.status === 'open' || !p.status));
   if (!curPos) return;
   const isLong = curPos.direction === 'long';
-  curPos.stop_loss = roundValue(isLong ? curPos.entry_price * 0.985 : curPos.entry_price * 1.015, 'money');
+  curPos.stop_loss = roundPriceForCoin(isLong ? curPos.entry_price * 0.985 : curPos.entry_price * 1.015, selectedCoin);
   saveWalletState();
+  if (token && curPos.id) {
+    try {
+      await authPost(`/api/positions/${curPos.id}/tpsl`, { take_profit: curPos.take_profit, stop_loss: curPos.stop_loss });
+    } catch(e) {}
+  }
   renderPositions();
-  renderTvChartOverlay();
+  repositionChartOverlays();
   showToast('🛡️ Stop Loss added! Drag the orange line on chart to adjust price.', 'info');
 }
 
-function executeQuickTrade(side) {
-  tradeCategory = 'position'; // Leverage futures position
-  tradeSide = side; // 'buy' or 'sell'
+async function cancelLimitOrder(orderId, event) {
+  if (event) event.stopPropagation();
+  if (!orderId) return;
 
-  const sizeInput = document.getElementById('tv-quick-size-input');
-  const sizeVal = parseFloat(sizeInput?.value) || 0;
-  if (sizeVal <= 0 || isNaN(sizeVal) || !isFinite(sizeVal)) {
-    showToast('❌ Please enter a valid size (> 0)', 'error');
-    if (sizeInput) sizeInput.focus();
+  try {
+    const res = await authFetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Order cancelled', 'info');
+      await syncWithBackend();
+      renderOpenOrders();
+      repositionChartOverlays();
+    } else {
+      showToast(data.error || 'Failed to cancel order', 'error');
+    }
+  } catch(err) {
+    showToast('Failed to cancel order', 'error');
+  }
+}
+
+// ─── 1-CLICK TRADING PANEL ORDER EXECUTION ────────────────
+async function executeQuickTrade(side) {
+  if (isQuickTrading) return; // Prevent double-clicks
+
+  if (!token) {
+    showToast('Please sign in or create an account to paper-trade', 'error');
+    openAuthModal('login');
     return;
   }
 
-  const levSelect = document.getElementById('tv-quick-leverage');
-  if (levSelect) {
-    tradeLeverage = parseInt(levSelect.value, 10) || 10;
+  const quickInput = document.getElementById('tv-quick-size-input');
+  const mainInput = document.getElementById('trade-amount-input');
+  let sizeVal = parseFloat(quickInput?.value) || parseFloat(mainInput?.value) || 0;
+
+  if (sizeVal <= 0 || isNaN(sizeVal) || !isFinite(sizeVal)) {
+    showToast('❌ Please enter a valid size (> 0)', 'error');
+    if (quickInput) quickInput.focus();
+    return;
   }
 
-  const ordTypeSelect = document.getElementById('tv-quick-ordertype');
-  tradeOrderType = (ordTypeSelect && ordTypeSelect.value === 'limit') ? 'limit' : 'market';
-
-  if (tradeOrderType === 'limit') {
-    const limitInput = document.getElementById('tv-quick-limit-price');
-    const limitPrice = parseFloat(limitInput?.value) || 0;
-    if (limitPrice <= 0 || isNaN(limitPrice) || !isFinite(limitPrice)) {
-      showToast('❌ Please specify a valid limit price', 'error');
-      if (limitInput) limitInput.focus();
-      return;
-    }
-    const mainLimitInput = document.getElementById('limit-price-input');
-    if (mainLimitInput) mainLimitInput.value = limitPrice;
-  }
-
-  tradeUnit = 'coin';
-  const mainAmountInput = document.getElementById('trade-amount-input');
-  if (mainAmountInput) mainAmountInput.value = sizeVal;
-
-  // Execute trade via VTrade engine
-  executeTrade();
-
-  // Instant update of on-chart HUD
-  setTimeout(renderTvChartOverlay, 120);
-}
-
-function setQuickTradePct(pct) {
   const coinDef = getCoinDefinition(selectedCoin);
-  const curPrice = currentPrices[selectedCoin]?.price || coinDef.basePrice || 100;
-  const levSelect = document.getElementById('tv-quick-leverage');
-  const lev = parseInt(levSelect?.value, 10) || 10;
+  const curPrice = currentPrices[selectedCoin]?.price;
+  if (!curPrice || curPrice <= 0) {
+    showToast('❌ Market price is currently unavailable', 'error');
+    return;
+  }
 
-  const usableCash = Math.max(0, walletState?.cashBalance || 0);
-  const maxPositionValue = usableCash * lev * 0.95;
-  const orderValue = maxPositionValue * pct;
-  const sizeCoins = curPrice > 0 ? roundValue(orderValue / curPrice, 'coin') : 0;
+  const levSelect = document.getElementById('trade-leverage-select') || document.getElementById('tv-quick-leverage');
+  const leverage = parseInt(levSelect?.value, 10) || tradeLeverage || 10;
+  const direction = (side === 'buy' || side === 'long') ? 'long' : 'short';
 
-  const sizeInput = document.getElementById('tv-quick-size-input');
-  if (sizeInput) sizeInput.value = sizeCoins > 0 ? sizeCoins : 0.01;
-}
+  const btn = document.getElementById(side === 'buy' ? 'tv-tl-buy-btn' : 'tv-tl-sell-btn');
+  isQuickTrading = true;
+  if (btn) btn.classList.add('loading');
 
-function toggleQuickLimitInput(orderType) {
-  const wrap = document.getElementById('tv-quick-limit-wrap');
-  if (wrap) {
-    wrap.classList.toggle('hidden', orderType !== 'limit');
-    if (orderType === 'limit') {
-      const curPrice = currentPrices[selectedCoin]?.price || 0;
-      const limitInput = document.getElementById('tv-quick-limit-price');
-      if (limitInput && (!limitInput.value || parseFloat(limitInput.value) <= 0)) {
-        limitInput.value = curPrice;
+  try {
+    const res = await authPost('/api/positions/open', {
+      coin: selectedCoin,
+      direction: direction,
+      size: sizeVal,
+      leverage: leverage,
+      order_type: 'market'
+    });
+
+    if (res.error) {
+      showToast(res.error, 'error');
+    } else {
+      const actionName = direction === 'long' ? 'Buy' : 'Sell';
+      if (res.status === 'open' || res.id || res.position) {
+        const fillPrice = res.entry_price || curPrice;
+        showToast(`${actionName} order filled successfully at $${fmt(fillPrice)}`, 'success');
+      } else if (res.status === 'pending') {
+        showToast(`${actionName} order accepted: pending fill`, 'info');
+      } else {
+        showToast(`${actionName} order executed successfully`, 'success');
       }
+
+      await syncWithBackend();
+      renderPositions();
+      renderOpenOrders();
+      updateMiniStats();
+      repositionChartOverlays();
     }
+  } catch(err) {
+    console.error('1-Click trade error:', err);
+    showToast(`Order failed: ${err.message || 'Network error'}`, 'error');
+  } finally {
+    isQuickTrading = false;
+    if (btn) btn.classList.remove('loading');
   }
 }
 
 function quickCloseCurrentPosition() {
-  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin && (p.status === 'open' || !p.status));
   if (!curPos) {
     showToast('No active position on ' + selectedCoin, 'info');
     return;
   }
   closePositionUnified(curPos.id, null, 'Market');
-  setTimeout(renderTvChartOverlay, 120);
+  setTimeout(repositionChartOverlays, 120);
 }
 
 function openTpSlForCurrentPosition() {
-  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin);
+  const curPos = (walletState?.positions || []).find(p => p.coin === selectedCoin && (p.status === 'open' || !p.status));
   if (!curPos) return;
   openTpSlModal(curPos.id);
 }
@@ -2416,8 +2778,9 @@ async function loadChart(coin, tf) {
 }
 
 function renderCurrentChart(candles, prices, tf) {
-  renderTradingViewChart();
-  renderTvChartOverlay();
+  updateChartCandles(candles);
+  repositionChartOverlays();
+  update1ClickPrices();
 }
 
 let candleViewport = { minP: 0, maxP: 0, plotW: 0, plotH: 0, padTop: 18, padRight: 64, padBottom: 22 };
@@ -2887,9 +3250,9 @@ function setupDrawingCanvas() {
 
     const pos = getCanvasPos(e);
 
-    // Check if user clicked on or touched a TP or SL line / handle to drag
+    // Only drag order line if clicking specifically on the handle tag on the right edge
     const draggable = findDraggableLine(pos);
-    if (draggable && (drawTool === 'cursor' || pos.x >= (candleViewport.plotW - 60))) {
+    if (draggable && pos.x >= (candleViewport.plotW - 60) && Math.abs(pos.y - draggable.y) <= 12) {
       if (e.cancelable) e.preventDefault();
       draggingOrderLine = { ...draggable };
       cvs.classList.add('drag-active');
@@ -3890,6 +4253,12 @@ function updateTradeCalc() {
     } else {
       convSub.textContent = `≈ ${sizeCoins.toFixed(6)} ${coinDef.symbol}`;
     }
+  }
+
+  // Synchronize compact 1-Click trade size input
+  const quickInput = document.getElementById('tv-quick-size-input');
+  if (quickInput && document.activeElement !== quickInput && sizeCoins > 0) {
+    quickInput.value = roundValue(sizeCoins, 'coin');
   }
 
   const lev = tradeCategory === 'position' ? tradeLeverage : 1;

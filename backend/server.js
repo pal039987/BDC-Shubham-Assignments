@@ -498,7 +498,7 @@ app.get('/api/chart/:coin', handleChartRequest);
 app.get('/api/ohlc/:coin', handleChartRequest);
 
 // ─── SPOT TRADING ─────────────────────────────────────────────────────────────
-app.post('/api/trade', authenticateToken, async (req, res) => {
+async function handleSpotTrade(req, res) {
   try {
     const { coin, type, amount, orderType = 'market', limitPrice } = req.body;
     if (!coin || !type || !amount || typeof amount !== 'number' || amount <= 0 || !isFinite(amount)) {
@@ -528,9 +528,15 @@ app.post('/api/trade', authenticateToken, async (req, res) => {
         return res.status(400).json({ error: 'Insufficient balance for limit order' });
       }
 
-      db.prepare(`INSERT INTO orders (user_id, coin, type, direction, amount, price, trigger_price, status)
+      const insRes = db.prepare(`INSERT INTO orders (user_id, coin, type, direction, amount, price, trigger_price, status)
                   VALUES (?, ?, 'limit', ?, ?, ?, ?, 'pending')`).run(req.user.id, coin, type, amount, limitPrice, limitPrice);
-      return res.json({ success: true, message: `Limit ${type.toUpperCase()} order placed at $${limitPrice.toLocaleString()} USDT`, orderType: 'limit' });
+      return res.json({
+        success: true,
+        id: insRes.lastInsertRowid,
+        orderId: insRes.lastInsertRowid,
+        message: `Limit ${type.toUpperCase()} order placed at $${limitPrice.toLocaleString()} USDT`,
+        orderType: 'limit'
+      });
     }
 
     // Immediate Market order execution
@@ -572,13 +578,15 @@ app.post('/api/trade', authenticateToken, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Trade execution failed: ' + (err.message || 'unknown') });
   }
-});
+}
+app.post('/api/trade', authenticateToken, handleSpotTrade);
 
 // ─── FUTURES POSITIONS (LONG / SHORT) ─────────────────────────────────────────
-app.post(['/api/positions/open', '/api/positions'], authenticateToken, async (req, res) => {
+async function handlePositionsOpen(req, res) {
   try {
-    let { coin, direction, size, amount, leverage = 1, orderType = 'market', limitPrice, stopLoss, takeProfit } = req.body;
+    let { coin, direction, size, amount, leverage = 1, orderType = 'market', limitPrice, price, stopLoss, takeProfit } = req.body;
     size = size || amount;
+    limitPrice = limitPrice || price;
     if (typeof size === 'string') size = parseFloat(size);
     if (typeof leverage === 'string') leverage = parseInt(leverage, 10);
     if (typeof limitPrice === 'string') limitPrice = parseFloat(limitPrice);
@@ -616,10 +624,12 @@ app.post(['/api/positions/open', '/api/positions'], authenticateToken, async (re
         return res.status(400).json({ error: `Insufficient USDT balance for limit margin ($${user.balance.toFixed(2)} available, $${margin.toFixed(2)} required)` });
       }
 
-      db.prepare(`INSERT INTO orders (user_id, coin, type, direction, amount, price, trigger_price, status)
+      const insRes = db.prepare(`INSERT INTO orders (user_id, coin, type, direction, amount, price, trigger_price, status)
                   VALUES (?, ?, 'limit', ?, ?, ?, ?, 'pending')`).run(req.user.id, coin, direction, size, limitPrice, limitPrice);
       return res.json({
         success: true,
+        id: insRes.lastInsertRowid,
+        orderId: insRes.lastInsertRowid,
         message: `Limit ${direction.toUpperCase()} order placed at $${limitPrice.toLocaleString()} USDT`,
         orderType: 'limit',
         status: 'pending',
@@ -698,17 +708,21 @@ app.post(['/api/positions/open', '/api/positions'], authenticateToken, async (re
       success: true,
       message: `${direction === 'long' ? 'Long' : 'Short'} order filled successfully on ${COIN_METADATA[coin].pair} at $${entryPrice.toLocaleString()} USDT`,
       balance: newUser.balance,
+      id: insRes.lastInsertRowid,
+      positionId: insRes.lastInsertRowid,
+      coin,
       direction,
       size,
       leverage,
       margin,
-      entryPrice,
-      positionId: insRes.lastInsertRowid
+      entry_price: entryPrice,
+      entryPrice
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to open position: ' + (err.message || 'unknown') });
   }
-});
+}
+app.post(['/api/positions/open', '/api/positions'], authenticateToken, handlePositionsOpen);
 
 app.post('/api/positions/close/:id', authenticateToken, async (req, res) => {
   try {
@@ -758,15 +772,29 @@ app.post('/api/positions/close/:id', authenticateToken, async (req, res) => {
 
 // Unified POST /api/orders route (accepts both market and limit orders)
 app.post('/api/orders', authenticateToken, async (req, res) => {
-  const { category, type, orderType } = req.body;
-  if (category === 'spot' || type === 'buy' || type === 'sell') {
-    // Route to spot trading handler
-    req.url = '/api/trade';
-    return app._router.handle(req, res);
+  const category = req.body.category;
+  const side = (req.body.side || '').toLowerCase();
+  const direction = (req.body.direction || '').toLowerCase();
+  const rawType = (req.body.type || '').toLowerCase();
+
+  // Normalize field names across spot and futures conventions
+  req.body.size = req.body.size != null ? req.body.size : req.body.amount;
+  req.body.amount = req.body.size;
+  req.body.limitPrice = req.body.limitPrice != null ? req.body.limitPrice : req.body.price;
+  req.body.price = req.body.limitPrice;
+
+  if (rawType === 'limit' || req.body.orderType === 'limit') {
+    req.body.orderType = 'limit';
   }
-  // Otherwise route to positions handler
-  req.url = '/api/positions/open';
-  return app._router.handle(req, res);
+
+  if (category === 'spot' || (!direction && (side === 'buy' || side === 'sell' || rawType === 'buy' || rawType === 'sell'))) {
+    req.body.type = side || (rawType === 'buy' || rawType === 'sell' ? rawType : 'buy');
+    return handleSpotTrade(req, res);
+  }
+
+  // Futures / positions
+  req.body.direction = direction || (side === 'buy' ? 'long' : (side === 'sell' ? 'short' : (rawType === 'buy' ? 'long' : 'short')));
+  return handlePositionsOpen(req, res);
 });
 
 app.get('/api/positions', authenticateToken, async (req, res) => {
@@ -792,6 +820,23 @@ app.get('/api/positions', authenticateToken, async (req, res) => {
     res.json(enriched);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch positions' });
+  }
+});
+
+app.post('/api/positions/:id/tpsl', authenticateToken, async (req, res) => {
+  try {
+    const posId = parseInt(req.params.id, 10);
+    const { take_profit, stop_loss } = req.body;
+    const pos = db.prepare("SELECT * FROM positions WHERE id = ? AND user_id = ? AND status = 'open'").get(posId, req.user.id);
+    if (!pos) return res.status(404).json({ error: 'Position not found' });
+
+    const tp = (take_profit != null && !isNaN(parseFloat(take_profit)) && parseFloat(take_profit) > 0) ? parseFloat(take_profit) : null;
+    const sl = (stop_loss != null && !isNaN(parseFloat(stop_loss)) && parseFloat(stop_loss) > 0) ? parseFloat(stop_loss) : null;
+
+    db.prepare('UPDATE positions SET take_profit = ?, stop_loss = ? WHERE id = ?').run(tp, sl, posId);
+    res.json({ success: true, position_id: posId, take_profit: tp, stop_loss: sl });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update TP/SL' });
   }
 });
 

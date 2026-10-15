@@ -2275,105 +2275,185 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
   font-size: 11px;
 }
 
-/* ─── 2. Floating Top-Left 1-Click Buy / Sell Widget (Slightly Down from Top) ─── */
+/* ─── 2. Floating Top-Left 1-Click Buy / Sell Widget (TradingView Style Match) ─── */
 .tv-topleft-order-widget {
   position: absolute;
-  top: 48px; /* Slightly down from top-left */
-  left: 52px; /* Positioned cleanly beside TradingView drawing toolbar */
-  z-index: 60;
+  top: 10px;
+  left: 10px;
+  z-index: 55;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(18, 24, 38, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 3px;
+  gap: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  user-select: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.tv-topleft-order-widget.hidden {
+  display: none !important;
+}
+
+.tv-quick-btn {
+  border: none;
+  border-radius: 4px;
+  padding: 5px 12px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  background: rgba(14, 18, 25, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 5px 7px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
-}
-
-.tv-tl-buttons {
-  display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.tv-tl-btn {
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 11.5px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
+  min-width: 82px;
+  transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
 }
-.tv-tl-btn.buy {
-  background: #0ecb81;
-  color: #000000;
-}
-.tv-tl-btn.buy:hover {
-  background: #0eb574;
-  transform: translateY(-1px);
-}
-.tv-tl-btn.sell {
+.tv-quick-btn.sell {
   background: #f6465d;
   color: #ffffff;
 }
-.tv-tl-btn.sell:hover {
+.tv-quick-btn.sell:hover:not(:disabled) {
   background: #e03b51;
-  transform: translateY(-1px);
+}
+.tv-quick-btn.buy {
+  background: #0ecb81;
+  color: #0b0e11;
+}
+.tv-quick-btn.buy:hover:not(:disabled) {
+  background: #0db774;
+}
+.tv-quick-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.tv-quick-btn:disabled, .tv-quick-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.tv-tl-config-row {
+.tv-qb-side {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+.tv-qb-price {
+  font-size: 10.5px;
+  font-weight: 700;
+  opacity: 0.95;
+  line-height: 1.2;
+}
+
+.tv-quick-qty-box {
   display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+  padding: 4px 6px;
+  gap: 4px;
+  min-width: 72px;
+}
+.tv-qb-input {
+  width: 54px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f0f3f8;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  padding: 0;
+}
+.tv-qb-input::-webkit-inner-spin-button,
+.tv-qb-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.tv-qb-unit {
+  font-size: 10px;
+  font-weight: 700;
+  color: #848e9c;
+}
+
+/* Loading state for 1-Click buttons */
+.tv-quick-btn.loading {
+  pointer-events: none;
+  opacity: 0.8;
+  position: relative;
+}
+.tv-quick-btn.loading .tv-qb-side,
+.tv-quick-btn.loading .tv-qb-price {
+  visibility: hidden;
+}
+.tv-quick-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: tvSpin 0.6s linear infinite;
+}
+.tv-quick-btn.buy.loading::after {
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  border-top-color: #000000;
+}
+
+/* Dynamic Limit Orders on Chart Overlay */
+.tv-order-limits-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.tv-limit-order-item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 48;
+}
+.tv-limit-tag {
+  pointer-events: auto;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-
-.tv-tl-cfg-item {
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-  padding: 2px 6px;
-}
-.tv-tl-cfg-label {
-  font-size: 10px;
-  color: #848e9c;
-  margin-right: 4px;
-}
-
-.tv-tl-input {
-  width: 44px;
-  background: transparent;
-  border: none;
-  color: #ffffff;
+  padding: 3px 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
   font-size: 11px;
   font-weight: 700;
-  outline: none;
-  text-align: right;
+  border-radius: 4px;
+  background: rgba(14, 18, 24, 0.94);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.65);
+  margin-right: 6px;
 }
-.tv-tl-unit {
-  font-size: 10px;
-  font-weight: 600;
-  color: #94a3b8;
-  margin-left: 3px;
+.tv-limit-tag.buy {
+  border: 1.5px solid #0ecb81;
+  color: #0ecb81;
 }
-
-.tv-tl-select {
+.tv-limit-tag.sell {
+  border: 1.5px solid #f6465d;
+  color: #f6465d;
+}
+.tv-limit-cancel-btn {
   background: transparent;
   border: none;
-  color: #f7931a;
+  color: inherit;
   font-size: 11px;
-  font-weight: 700;
-  outline: none;
+  font-weight: 800;
   cursor: pointer;
+  padding: 0 2px;
+  opacity: 0.8;
+}
+.tv-limit-cancel-btn:hover {
+  opacity: 1;
 }
 
 

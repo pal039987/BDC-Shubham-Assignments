@@ -12,7 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <!-- Official TradingView Hosted Widget Script -->
+  <!-- Official TradingView Lightweight Charts & Hosted Widget Scripts -->
+  <script src="lightweight-charts.js"></script>
   <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
@@ -782,33 +783,20 @@
             <span id="square-fs-icon">⛶</span>
           </button>
 
-          <!-- Floating 1-Click Buy / Sell Widget (Hidden by default to keep chart ultra-clean) -->
+          <!-- Floating 1-Click Buy / Sell Compact Panel (TradingView Style) -->
           <div class="tv-topleft-order-widget hidden" id="tv-topleft-order-widget">
-            <div class="tv-tl-buttons">
-              <button type="button" class="tv-tl-btn buy" id="tv-tl-buy-btn" onclick="executeQuickTrade('buy')">
-                <span class="tv-tl-icon">▲</span>
-                <span class="tv-tl-text">BUY / LONG</span>
-              </button>
-              <button type="button" class="tv-tl-btn sell" id="tv-tl-sell-btn" onclick="executeQuickTrade('sell')">
-                <span class="tv-tl-icon">▼</span>
-                <span class="tv-tl-text">SELL / SHORT</span>
-              </button>
+            <button type="button" class="tv-quick-btn sell" id="tv-tl-sell-btn" onclick="executeQuickTrade('sell')" title="Execute 1-Click Market Sell / Short">
+              <span class="tv-qb-side">SELL</span>
+              <span class="tv-qb-price" id="tv-tl-sell-price">$—</span>
+            </button>
+            <div class="tv-quick-qty-box" title="Order Quantity (Synchronized with main trade desk)">
+              <input type="number" id="tv-quick-size-input" class="tv-qb-input" placeholder="0.01" value="0.01" step="any" min="0.0001" oninput="syncQuickTradeSize(this.value)" />
+              <span class="tv-qb-unit" id="tv-quick-unit">BTC</span>
             </div>
-            <div class="tv-tl-config-row">
-              <div class="tv-tl-cfg-item" title="Trade Size">
-                <span class="tv-tl-cfg-label">Size</span>
-                <input type="number" id="tv-quick-size-input" class="tv-tl-input" placeholder="0.01" value="0.01" step="any" min="0" />
-                <span class="tv-tl-unit" id="tv-quick-unit">BTC</span>
-              </div>
-              <div class="tv-tl-cfg-item" title="Leverage">
-                <select id="tv-quick-leverage" class="tv-tl-select">
-                  <option value="10">10x</option>
-                  <option value="25">25x</option>
-                  <option value="50">50x</option>
-                  <option value="100" selected>100x</option>
-                </select>
-              </div>
-            </div>
+            <button type="button" class="tv-quick-btn buy" id="tv-tl-buy-btn" onclick="executeQuickTrade('buy')" title="Execute 1-Click Market Buy / Long">
+              <span class="tv-qb-side">BUY</span>
+              <span class="tv-qb-price" id="tv-tl-buy-price">$—</span>
+            </button>
           </div>
 
           <!-- ─── TRADINGVIEW HOSTED CHART CONTAINER ─── -->
@@ -852,6 +840,9 @@
                 </div>
                 <div class="tvol-axis-badge sl-axis-badge" id="tvol-sl-axis-price">106.91</div>
               </div>
+
+              <!-- 4. Dynamic Pending Limit Orders Overlay Items Container -->
+              <div id="tv-order-limits-container" class="tv-order-limits-container"></div>
             </div>
 
             <!-- Open Orders HUD Tag -->
