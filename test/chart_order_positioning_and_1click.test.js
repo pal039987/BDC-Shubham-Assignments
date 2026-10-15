@@ -283,7 +283,7 @@ async function runTests() {
 
     // Verify .chart-container-box has flexible responsive height
     assert.ok(cssContent.includes('.chart-container-box {'), 'CSS must define .chart-container-box');
-    assert.ok(cssContent.includes('min-height: 460px'), 'Chart box must have minimum height >= 460px');
+    assert.ok(cssContent.includes('min-height: 480px') || cssContent.includes('min-height: 460px'), 'Chart box must have minimum height >= 460px');
     assert.ok(cssContent.includes('clamp(480px,'), 'Chart box must use responsive clamp height');
 
     // Verify tradingview-widget-box accounts for attribution bar without clipping time scale
@@ -329,6 +329,34 @@ async function runTests() {
       mockSyncPriceLines(testPos);
     }
     assert.strictEqual(priceLineMutationCount, 1, 'Subsequent pan ticks must NOT mutate priceLine or freeze drag gesture');
+  });
+
+  // 12. Test Issue 2: renderOpenOrders definition & post-trade error isolation
+  await test('renderOpenOrders is defined and post-trade UI updates do not produce false failure toasts', () => {
+    const fs = require('fs');
+    const appJsContent = fs.readFileSync('frontend/app.js', 'utf-8');
+
+    // Verify renderOpenOrders alias is explicitly defined
+    assert.ok(appJsContent.includes('window.renderOpenOrders = renderOrders;'), 'renderOpenOrders alias must be exposed globally');
+
+    // Verify cancelLimitOrder calls renderOrders
+    assert.ok(!appJsContent.includes('cancelLimitOrder') || !appJsContent.match(/cancelLimitOrder[\s\S]*?renderOpenOrders\(\)/), 'cancelLimitOrder must not use undefined renderOpenOrders');
+
+    // Verify executeQuickTrade calls renderOrders inside isolated safe try/catch
+    assert.ok(appJsContent.includes('Post-trade UI update warning'), 'executeQuickTrade must isolate secondary UI updates so they cannot produce an Order failed toast');
+  });
+
+  // 13. Test Issue 3: LONG 10x chart marker removal
+  await test('Entry price line does NOT render unwanted LONG 10x marker on chart canvas', () => {
+    const fs = require('fs');
+    const appJsContent = fs.readFileSync('frontend/app.js', 'utf-8');
+
+    // Verify lwPriceLines.entry sets title: '' instead of LONG 10x
+    assert.ok(!appJsContent.includes('title: title') || !appJsContent.includes('const title = `${curPos.direction.toUpperCase()}'), 'Must not create LONG 10x title on entry price line');
+    assert.ok(appJsContent.includes("title: ''"), 'Must explicitly set empty title for entry price line to prevent visible text marker on canvas');
+
+    // Verify fallback canvas does not render LONG 10x badge text
+    assert.ok(!appJsContent.includes('const entryText = `${isLong ? \'LONG\' : \'SHORT\'} ${p.leverage}x'), 'Canvas fallback must not render LONG 10x text badge');
   });
 
   console.log(`\n=== TEST SUMMARY: ${passed} PASSED, ${failed} FAILED ===\n`);

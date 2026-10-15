@@ -1318,6 +1318,7 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
   gap: 8px;
   flex-wrap: wrap;
   width: 100%;
+  flex-shrink: 0;
 }
 .tf-group {
   display: flex;
@@ -1453,8 +1454,9 @@ h1, h2, h3, .panel-title, .order-section-title, .brand-name, .modal-title {
   display: flex;
   flex-direction: row;
   width: 100%;
-  min-height: 460px;
-  height: clamp(480px, 58vh, 720px);
+  flex: 1 1 auto;
+  min-height: 480px;
+  height: clamp(480px, 60vh, 760px);
   background: var(--bg0, #0b0e11);
   border: 1px solid var(--border, #1e2329);
   border-radius: var(--r8, 8px);
@@ -3691,6 +3693,12 @@ body:has(.fullscreen-chart) .tv-bottom-nav {
     flex: 1;
   }
   /* Chart fills full available viewport */
+  .chart-container-box {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 440px !important;
+    width: 100% !important;
+  }
   .chart-wrap {
     height: 100% !important;
     min-height: 420px !important;

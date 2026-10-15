@@ -1856,8 +1856,8 @@ function initLightweightChart() {
   container.innerHTML = '';
 
   const box = document.getElementById('chart-container-box');
-  const w = container.clientWidth || box?.clientWidth || (window.innerWidth ? Math.floor(window.innerWidth * 0.7) : 800);
-  const h = container.clientHeight || (box?.clientHeight ? Math.max(380, box.clientHeight - 26) : 520);
+  const w = container.clientWidth || (box?.clientWidth ? Math.max(300, box.clientWidth - 44) : 0) || (window.innerWidth ? Math.floor(window.innerWidth * 0.7) : 800);
+  const h = container.clientHeight || (box?.clientHeight ? Math.max(380, box.clientHeight - 26) : 0) || 520;
 
   try {
     const chart = LightweightCharts.createChart(container, {
@@ -1917,11 +1917,11 @@ function initLightweightChart() {
       repositionHtmlOverlays();
     });
 
-    // Resize observer observes both widget container and outer box
+    // Resize observer strictly observes widget container for 1:1 canvas sizing
     if (window.ResizeObserver) {
       const ro = new ResizeObserver(entries => {
         for (const entry of entries) {
-          if (entry.contentRect && lwChart) {
+          if (entry.target === container && entry.contentRect && lwChart) {
             const nw = Math.floor(entry.contentRect.width);
             const nh = Math.floor(entry.contentRect.height);
             if (nw > 50 && nh > 50) {
@@ -1932,7 +1932,6 @@ function initLightweightChart() {
         }
       });
       ro.observe(container);
-      if (box) ro.observe(box);
     }
 
     // Trigger immediate resize check on next frame once layout resolves
@@ -2052,7 +2051,6 @@ function syncPriceLines(curPos, curCoinOrders) {
   if (curPos && curPos.entry_price > 0) {
     const isLong = curPos.direction === 'long';
     const color = isLong ? '#3861fb' : '#f6465d';
-    const title = `${curPos.direction.toUpperCase()} ${curPos.leverage || 10}x`;
 
     if (!lwPriceLines.entry) {
       lwPriceLines.entry = lwSeries.createPriceLine({
@@ -2061,13 +2059,13 @@ function syncPriceLines(curPos, curCoinOrders) {
         lineWidth: 1.5,
         lineStyle: 2, // Dashed
         axisLabelVisible: true,
-        title: title
+        title: ''
       });
     } else {
       lwPriceLines.entry.applyOptions({
         price: curPos.entry_price,
         color: color,
-        title: title
+        title: ''
       });
     }
   } else {
@@ -2545,7 +2543,7 @@ async function cancelLimitOrder(orderId, event) {
     if (data.success) {
       showToast('Order cancelled', 'info');
       await syncWithBackend();
-      renderOpenOrders();
+      renderOrders();
       repositionChartOverlays();
     } else {
       showToast(data.error || 'Failed to cancel order', 'error');
@@ -2612,11 +2610,16 @@ async function executeQuickTrade(side) {
         showToast(`${actionName} order executed successfully`, 'success');
       }
 
-      await syncWithBackend();
-      renderPositions();
-      renderOpenOrders();
-      updateMiniStats();
-      repositionChartOverlays();
+      // Secondary UI updates isolated so UI refresh warnings never falsify order execution success
+      try {
+        await syncWithBackend();
+        renderPositions();
+        renderOrders();
+        updateMiniStats();
+        repositionChartOverlays();
+      } catch (uiErr) {
+        console.warn('Post-trade UI update warning:', uiErr);
+      }
     }
   } catch(err) {
     console.error('1-Click trade error:', err);
@@ -3043,15 +3046,6 @@ function renderCandlestickChart(allCandles) {
       ctx.moveTo(0, entryY);
       ctx.lineTo(plotW, entryY);
       ctx.stroke();
-
-      ctx.fillStyle = isLong ? '#2563eb' : '#db2777';
-      const entryText = `${isLong ? 'LONG' : 'SHORT'} ${p.leverage}x @ $${fmt(p.entry_price)}`;
-      ctx.font = 'bold 10px Inter, sans-serif';
-      const tw = ctx.measureText(entryText).width + 14;
-      ctx.fillRect(8, entryY - 9, tw, 18);
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'left';
-      ctx.fillText(entryText, 15, entryY + 3.5);
       ctx.restore();
     }
 
@@ -5528,6 +5522,9 @@ function renderOrders() {
     </tr>`;
   }).join('');
 }
+
+// Global alias for backwards compatibility and external callers
+window.renderOpenOrders = renderOrders;
 
 function cancelOrder(id) {
   walletState.orders = (walletState.orders || []).filter(o => o.id !== id);
