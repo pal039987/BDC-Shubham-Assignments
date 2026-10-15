@@ -359,6 +359,39 @@ async function runTests() {
     assert.ok(!appJsContent.includes('const entryText = `${isLong ? \'LONG\' : \'SHORT\'} ${p.leverage}x'), 'Canvas fallback must not render LONG 10x text badge');
   });
 
+  // 14. Test: Official TradingView Advanced Chart Widget Configuration
+  await test('Official TradingView Advanced Chart widget is instantiated with autosize and dark theme', () => {
+    const fs = require('fs');
+    const appJsContent = fs.readFileSync('frontend/app.js', 'utf-8');
+    const indexHtmlContent = fs.readFileSync('frontend/index.html', 'utf-8');
+
+    // Verify official tv.js script is included
+    assert.ok(indexHtmlContent.includes('https://s3.tradingview.com/tv.js'), 'index.html must include official TradingView tv.js script');
+
+    // Verify new TradingView.widget is called in renderTradingViewChart
+    assert.ok(appJsContent.includes('new TradingView.widget({'), 'Must instantiate official new TradingView.widget');
+    assert.ok(appJsContent.includes('autosize: true'), 'Must enable autosize: true for responsive rendering');
+    assert.ok(appJsContent.includes('theme: "dark"'), 'Must configure dark theme');
+    assert.ok(appJsContent.includes('container_id: "tradingview_widget_box"'), 'Must target dedicated tradingview_widget_box container');
+  });
+
+  // 15. Test: Lightweight Charts removed from active chart rendering path
+  await test('Lightweight Charts is removed from active chart rendering path in renderTradingViewChart', () => {
+    const fs = require('fs');
+    const appJsContent = fs.readFileSync('frontend/app.js', 'utf-8');
+
+    // Find renderTradingViewChart function body
+    const fnMatch = appJsContent.match(/function renderTradingViewChart\s*\([^{]*\)\s*\{([\s\S]*?)\nfunction /);
+    assert.ok(fnMatch && fnMatch[1], 'renderTradingViewChart function must exist');
+
+    const fnBody = fnMatch[1];
+    // Verify initLightweightChart is NOT called in renderTradingViewChart
+    assert.ok(!fnBody.includes('initLightweightChart();'), 'renderTradingViewChart must not invoke initLightweightChart()');
+
+    // Verify cleanup of old widget instances
+    assert.ok(fnBody.includes('tvWidgetInstance.remove()'), 'Must clean up previous widget instance before creating a new one');
+  });
+
   console.log(`\n=== TEST SUMMARY: ${passed} PASSED, ${failed} FAILED ===\n`);
   if (failed > 0) process.exit(1);
 }
@@ -367,3 +400,4 @@ runTests().catch(err => {
   console.error('Fatal test error:', err);
   process.exit(1);
 });
+

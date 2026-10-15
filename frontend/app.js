@@ -1947,8 +1947,8 @@ function initLightweightChart() {
 }
 
 function updateChartCandles(candles) {
-  if (!lwSeries) initLightweightChart();
-  if (!lwSeries || !candles || !candles.length) return;
+  if (!lwSeries) return;
+  if (!candles || !candles.length) return;
 
   const formatted = candles.map(c => ({
     time: typeof c.time === 'number' ? Math.floor(c.time) : Math.floor(new Date(c.time).getTime() / 1000),
@@ -2341,28 +2341,103 @@ function renderTradingViewChart(force = false) {
   const tvSymbol = getTradingViewSymbol(selectedCoin);
   if (!tvSymbol) {
     widgetBox.innerHTML = '';
+    if (tvWidgetInstance) {
+      try { if (typeof tvWidgetInstance.remove === 'function') tvWidgetInstance.remove(); } catch(e) {}
+      tvWidgetInstance = null;
+    }
+    currentTvSymbol = null;
     if (loadingEl) loadingEl.classList.add('hidden');
     if (errorEl) errorEl.classList.add('hidden');
     if (unsuppEl) unsuppEl.classList.remove('hidden');
     return;
   }
   if (unsuppEl) unsuppEl.classList.add('hidden');
-  if (loadingEl) loadingEl.classList.add('hidden');
   if (errorEl) errorEl.classList.add('hidden');
   if (symDisp) symDisp.textContent = tvSymbol;
 
-  // Initialize Lightweight Charts
-  initLightweightChart();
+  const tvInterval = getTradingViewInterval(currentTF);
 
-  // Load genuine candles for selected coin and timeframe
-  loadChart(selectedCoin, currentTF);
+  // Avoid recreation if widget is already mounted with identical symbol and interval
+  if (tvWidgetInstance && currentTvSymbol === tvSymbol && currentTvInterval === tvInterval && !force && widgetBox.querySelector('iframe')) {
+    update1ClickPrices();
+    return;
+  }
+
+  // Ensure any previous Lightweight Charts instance is cleared from active rendering
+  if (lwChart) {
+    try { lwChart.remove(); } catch(e) {}
+    lwChart = null;
+    lwSeries = null;
+  }
+
+  // Clear previous widget content
+  widgetBox.innerHTML = '';
+  if (tvWidgetInstance) {
+    try { if (typeof tvWidgetInstance.remove === 'function') tvWidgetInstance.remove(); } catch(e) {}
+    tvWidgetInstance = null;
+  }
+
+  if (loadingEl) loadingEl.classList.remove('hidden');
+
+  // Verify TradingView script is loaded
+  if (typeof TradingView === 'undefined' || typeof TradingView.widget !== 'function') {
+    if (tvLoadTimeout) clearTimeout(tvLoadTimeout);
+    tvLoadTimeout = setTimeout(() => {
+      if (typeof TradingView === 'undefined' || typeof TradingView.widget !== 'function') {
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (errorEl) errorEl.classList.remove('hidden');
+      } else {
+        renderTradingViewChart(true);
+      }
+    }, 3000);
+    return;
+  }
+
+  currentTvSymbol = tvSymbol;
+  currentTvInterval = tvInterval;
+
+  try {
+    tvWidgetInstance = new TradingView.widget({
+      autosize: true,
+      symbol: tvSymbol,
+      interval: tvInterval,
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      toolbar_bg: "#0b0e11",
+      enable_publishing: false,
+      allow_symbol_change: true,
+      container_id: "tradingview_widget_box",
+      hide_side_toolbar: false,
+      withdateranges: true,
+      save_image: false,
+      details: false,
+      hotlist: false,
+      calendar: false,
+      studies: [
+        "MASimple@tv-basicstudies"
+      ]
+    });
+
+    // Hide loader once the iframe begins loading
+    setTimeout(() => {
+      if (loadingEl) loadingEl.classList.add('hidden');
+    }, 400);
+
+  } catch(err) {
+    console.error('TradingView Advanced Chart Widget instantiation failed:', err);
+    if (loadingEl) loadingEl.classList.add('hidden');
+    if (errorEl) errorEl.classList.remove('hidden');
+  }
 
   // Synchronize 1-Click panel prices
   update1ClickPrices();
-  repositionChartOverlays();
 }
 
 function retryTradingViewChart() {
+  const errorEl = document.getElementById('tv-chart-error');
+  if (errorEl) errorEl.classList.add('hidden');
   renderTradingViewChart(true);
 }
 
