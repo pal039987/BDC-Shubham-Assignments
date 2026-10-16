@@ -3724,7 +3724,7 @@ function updateChartQuickCoinChips() {
   if (activeBtn) activeBtn.classList.add('active');
 }
 
-function switchMainTab(tabName) {
+function switchMainTab(tabName, swipeDirection = null) {
   activeMainTab = tabName;
 
   // Instantly scroll window to top to eliminate any blank offset
@@ -3777,24 +3777,35 @@ function switchMainTab(tabName) {
   if (marketsPanel)       marketsPanel.classList.add('hidden');
 
   const isDesktop = typeof window !== 'undefined' && window.innerWidth > 1024;
+  let revealedPanel = null;
 
   if (tabName === 'explore' || tabName === 'markets') {
-    if (exploreContainer) exploreContainer.classList.remove('hidden');
+    if (exploreContainer) {
+      exploreContainer.classList.remove('hidden');
+      revealedPanel = exploreContainer;
+    }
     renderGrowwExploreUI();
   } else if (tabName === 'wallet' || tabName === 'funds') {
-    if (walletPanel) walletPanel.classList.remove('hidden');
+    if (walletPanel) {
+      walletPanel.classList.remove('hidden');
+      revealedPanel = walletPanel;
+    }
     renderWalletOverview();
   } else if (tabName === 'profile' || tabName === 'accounts') {
     if (accountsPanel) {
       accountsPanel.classList.remove('hidden');
       accountsPanel.scrollTop = 0;
+      revealedPanel = accountsPanel;
     }
     renderAccountsScreen();
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
   } else if (tabName === 'history') {
-    if (historyContainer) historyContainer.classList.remove('hidden');
+    if (historyContainer) {
+      historyContainer.classList.remove('hidden');
+      revealedPanel = historyContainer;
+    }
     renderHistoryScreen();
   } else {
     // Exchange views (chart, trade, positions, orders)
@@ -3823,7 +3834,10 @@ function switchMainTab(tabName) {
     } else {
       // Mobile isolated single-tab mode
       if (tabName === 'chart') {
-        if (chartArea) chartArea.classList.remove('hidden');
+        if (chartArea) {
+          chartArea.classList.remove('hidden');
+          revealedPanel = chartArea;
+        }
         if (chartContainerBox) chartContainerBox.classList.remove('hidden');
         if (chartHeader) chartHeader.classList.remove('hidden');
         if (tfRow) tfRow.classList.remove('hidden');
@@ -3834,7 +3848,10 @@ function switchMainTab(tabName) {
           repositionHtmlOverlays();
         });
       } else if (tabName === 'trade') {
-        if (tradePanel) tradePanel.classList.remove('hidden');
+        if (tradePanel) {
+          tradePanel.classList.remove('hidden');
+          revealedPanel = tradePanel;
+        }
         updateMiniStats();
         updateTradeActiveCoinBanner();
         updateTradeInstrumentHeader();
@@ -3842,13 +3859,21 @@ function switchMainTab(tabName) {
         updateTradeBottomSection();
         updateTradeCalc();
       } else if (tabName === 'positions' || tabName === 'orders') {
-        if (positionsContainer) positionsContainer.classList.remove('hidden');
+        if (positionsContainer) {
+          positionsContainer.classList.remove('hidden');
+          revealedPanel = positionsContainer;
+        }
         showVTradeOrdersTab(tabName === 'orders' ? 'orders' : 'positions');
         renderPositions();
         renderOrders();
         renderHistory();
       }
     }
+  }
+
+  // Apply smooth 120 FPS hardware-accelerated transition if triggered by swipe gesture
+  if (revealedPanel && swipeDirection) {
+    apply120FpsSwipeAnimation(revealedPanel, swipeDirection);
   }
 }
 
@@ -4016,19 +4041,31 @@ function initHorizontalSwipeNavigation() {
         // Swipe Left -> Next Category
         if (currentIndex < MAIN_BOTTOM_NAV_CATEGORIES.length - 1) {
           const nextTab = MAIN_BOTTOM_NAV_CATEGORIES[currentIndex + 1];
-          switchMainTab(nextTab);
+          switchMainTab(nextTab, 'slide-left');
           triggerSwipeHapticFeedback();
         }
       } else {
         // Swipe Right -> Previous Category
         if (currentIndex > 0) {
           const prevTab = MAIN_BOTTOM_NAV_CATEGORIES[currentIndex - 1];
-          switchMainTab(prevTab);
+          switchMainTab(prevTab, 'slide-right');
           triggerSwipeHapticFeedback();
         }
       }
     }
   }, { passive: true });
+}
+
+function apply120FpsSwipeAnimation(panelEl, swipeDirection) {
+  if (!panelEl || !swipeDirection) return;
+  panelEl.classList.remove('vtrade-swipe-left', 'vtrade-swipe-right');
+  // Trigger immediate layout pass so CSS hardware animation cleanly triggers at 120 FPS
+  void panelEl.offsetWidth;
+  const cls = (swipeDirection === 'slide-left') ? 'vtrade-swipe-left' : 'vtrade-swipe-right';
+  panelEl.classList.add(cls);
+  setTimeout(() => {
+    if (panelEl) panelEl.classList.remove(cls);
+  }, 220);
 }
 
 function triggerSwipeHapticFeedback() {

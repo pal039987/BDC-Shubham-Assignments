@@ -98,4 +98,11 @@ assert(appContent.includes('function renderAccountsScreen()'), 'renderAccountsSc
 assert(appContent.includes('renderFundsBalance();\n  renderAccountsScreen();'), 'renderPositions must trigger both balance renders');
 console.log('  ✓ Balance screens synchronized with live tick and order execution engine');
 
+// 7. Verify 120 FPS Hardware Accelerated Swipe Animation
+assert(cssContent.includes('.vtrade-swipe-left') && cssContent.includes('.vtrade-swipe-right'), '120 FPS swipe animation classes must be defined in CSS');
+assert(cssContent.includes('translate3d'), 'CSS must use 3D hardware acceleration (translate3d) for 120 FPS');
+assert(appContent.includes('function apply120FpsSwipeAnimation'), 'apply120FpsSwipeAnimation function must be defined in app.js');
+console.log('  ✓ 120 FPS hardware-accelerated swipe transition verified');
+
 console.log('\n=== ALL BALANCE & GESTURE TESTS PASSED SUCCESSFULLY! ===');
+

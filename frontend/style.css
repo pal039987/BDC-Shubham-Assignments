@@ -8035,3 +8035,43 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.5);
 }
 
+/* ══════════════════════ 120 FPS HORIZONTAL SWIPE TRANSITION ══════════════════════ */
+@keyframes vtradeSwipeLeft120 {
+  0% {
+    opacity: 0.8;
+    transform: translate3d(36px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes vtradeSwipeRight120 {
+  0% {
+    opacity: 0.8;
+    transform: translate3d(-36px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.vtrade-swipe-left {
+  animation: vtradeSwipeLeft120 0.18s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  will-change: transform, opacity !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  transform: translate3d(0, 0, 0);
+}
+
+.vtrade-swipe-right {
+  animation: vtradeSwipeRight120 0.18s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  will-change: transform, opacity !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  transform: translate3d(0, 0, 0);
+}
+
+
