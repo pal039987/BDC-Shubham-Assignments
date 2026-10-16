@@ -4554,8 +4554,6 @@ function renderGrowwMovers() {
 }
 
 function renderGrowwExploreUI() {
-  COIN_LIST.forEach(c => updateGrowwLiveElements(c.id));
-  renderGrowwMovers();
   renderMarketsCoinList();
 }
 
