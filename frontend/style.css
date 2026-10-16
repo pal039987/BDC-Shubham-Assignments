@@ -5566,6 +5566,35 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   right: 0;
   width: 220px;
 }
+.order-type-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background: #111622;
+  border: 1px solid #263143;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+  z-index: 50;
+  animation: fadeInDown 0.15s ease-out;
+}
+.ot-dropdown-item {
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ot-dropdown-item:hover, .ot-dropdown-item.active {
+  background: #1c2434;
+  color: #00c2ff;
+}
 .mm-dropdown-item {
   padding: 8px 10px;
   font-size: 12px;
@@ -6199,32 +6228,9 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   filter: drop-shadow(0 0 6px var(--v-primary)) !important;
 }
 
-/* Floating Action Button (FAB) (Screenshots 1, 3, 4) */
+/* Floating Action Button (FAB) (Hidden per user request) */
 .vtrade-fab {
-  position: fixed;
-  bottom: 76px;
-  right: 18px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--v-primary) 0%, #a855f7 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 6px 20px var(--v-primary-glow), 0 0 14px rgba(139, 92, 246, 0.45);
-  z-index: 9998;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  outline: none;
-}
-.vtrade-fab:hover {
-  transform: translateY(-3px) scale(1.06);
-  box-shadow: 0 8px 26px var(--v-primary-glow), 0 0 20px rgba(139, 92, 246, 0.65);
-}
-.vtrade-fab:active {
-  transform: scale(0.94);
+  display: none !important;
 }
 
 /* ─── 2. SCREEN 1: ORDERS SCREEN & SCREEN 2: HISTORY VIEW ─── */
@@ -7339,6 +7345,27 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   background: transparent;
   border: none;
   cursor: pointer;
+}
+.cqtd-calc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--v-text-muted);
+  padding: 2px 4px;
+}
+.cqtd-calc-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cqtd-calc-item b {
+  color: #ffffff;
+  font-family: monospace;
+  font-weight: 600;
+}
+.cqtd-calc-item b.highlight-usdt {
+  color: #a78bfa;
 }
 .cqtd-row3 {
   display: grid;

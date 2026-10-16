@@ -5,7 +5,7 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "test": "node test/vtrade.test.js && node test/order_placement_e2e.test.js && node test/chart_order_positioning_and_1click.test.js",
+    "test": "node test/vtrade.test.js && node test/order_placement_e2e.test.js && node test/chart_order_positioning_and_1click.test.js && node test/trade_desk_and_search_fixes.test.js",
     "build:apk": "npx cap sync android && cd android && ./gradlew assembleDebug && cd .. && cp android/app/build/outputs/apk/debug/app-debug.apk downloads/VTrade.apk",
     "cap:add-android": "npx cap add android",
     "cap:sync": "npx cap sync android",

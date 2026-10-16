@@ -276,8 +276,9 @@ let tradeCategory   = 'position'; // 'position' (default for leverage/margin des
 let tradeSide       = 'buy';      // 'buy' | 'sell'
 let tradeOrderType  = 'market';   // 'market' | 'limit'
 let tradeUnit       = 'coin';     // 'coin' | 'usd'
-let tradeLeverage   = 10;
+let tradeLeverage   = 150;        // Default 150x leverage
 let tradeMarginMode = 'isolated'; // 'isolated' | 'cross'
+let marketsSearchQuery = '';      // Real-time market list search filter
 
 let currentPrices = {};
 let portfolio    = {};
@@ -354,6 +355,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateAuthStateUI();
 
+  // Initialize trade desk defaults (150x leverage, coin unit, market order)
+  setLeverage(150);
+  setTradeUnit('coin');
+  selectTradeOrderType('market');
+
   // Immediately kick off live market data streaming directly from Binance
   fetchBinanceDirect();
   initBinanceWebSocket();
@@ -428,13 +434,59 @@ function toggleLeverageDropdown(e) {
 
 function selectLeverageMenu(lev) {
   setLeverage(lev);
-  const lbl = document.getElementById('btn-lev-label');
-  if (lbl) lbl.textContent = `${lev}x`;
   const menu = document.getElementById('leverage-dropdown-menu');
   if (menu) menu.classList.add('hidden');
-  document.querySelectorAll('.ld-chip').forEach(el => {
-    el.classList.toggle('active', el.textContent === `${lev}x`);
-  });
+}
+
+function toggleOrderTypeDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('order-type-dropdown-menu');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function selectTradeOrderType(type) {
+  tradeOrderType = type;
+  chartTradeOtype = type;
+  
+  const displayLabel = type === 'limit' ? 'Limit' : 'Market';
+  
+  const deskDisp = document.getElementById('tform-order-type-display');
+  if (deskDisp) deskDisp.textContent = displayLabel;
+  
+  const cqtdDisp = document.getElementById('cqtd-otype-label');
+  if (cqtdDisp) cqtdDisp.textContent = displayLabel;
+  
+  const priceLabel = document.getElementById('tform-price-label');
+  const limitInput = document.getElementById('limit-price-input');
+  
+  if (type === 'limit') {
+    if (priceLabel) priceLabel.style.display = 'none';
+    if (limitInput) {
+      limitInput.style.display = 'block';
+      const coinDef = getCoinDefinition(selectedCoin);
+      const curPrice = currentPrices[selectedCoin]?.price || coinDef.basePrice || 0;
+      if (!limitInput.value || parseFloat(limitInput.value) <= 0) {
+        limitInput.value = curPrice > 10 ? curPrice.toFixed(2) : curPrice.toPrecision(5);
+      }
+      limitInput.focus();
+    }
+  } else {
+    if (priceLabel) {
+      priceLabel.style.display = 'block';
+      priceLabel.textContent = 'Placed at Market Price';
+    }
+    if (limitInput) {
+      limitInput.style.display = 'none';
+    }
+  }
+  
+  document.getElementById('ot-item-market')?.classList.toggle('active', type === 'market');
+  document.getElementById('ot-item-limit')?.classList.toggle('active', type === 'limit');
+  
+  const menu = document.getElementById('order-type-dropdown-menu');
+  if (menu) menu.classList.add('hidden');
+  
+  updateTradeCalc();
 }
 
 function toggleCurrencyDropdown(e) {
@@ -557,9 +609,12 @@ function updateMarginRatioStats(ratio, maint, bal) {
 if (typeof window !== 'undefined') {
   window.addEventListener('click', (e) => {
     if (!e.target.closest('#nav-user-group')) closeProfileDropdown();
-    if (!e.target.closest('.mode-lev-row')) {
+    if (!e.target.closest('.mode-lev-row') && !e.target.closest('.tform-controls-row')) {
       document.getElementById('margin-mode-dropdown-menu')?.classList.add('hidden');
       document.getElementById('leverage-dropdown-menu')?.classList.add('hidden');
+    }
+    if (!e.target.closest('.tform-order-type-wrap')) {
+      document.getElementById('order-type-dropdown-menu')?.classList.add('hidden');
     }
     if (!e.target.closest('.pos-currency-switch')) {
       document.getElementById('currency-dropdown-menu')?.classList.add('hidden');
@@ -3920,7 +3975,16 @@ function renderMarketsCoinList() {
     list = list.filter(c => userFavoriteCoins.includes(c.id));
   }
 
-  // 2. Filter by Category
+  // 2. Filter by Search Query (Real-time live filtering on markets screen)
+  if (marketsSearchQuery) {
+    list = list.filter(c =>
+      c.symbol.toLowerCase().includes(marketsSearchQuery) ||
+      c.name.toLowerCase().includes(marketsSearchQuery) ||
+      c.id.toLowerCase().includes(marketsSearchQuery)
+    );
+  }
+
+  // 3. Filter by Category
   if (activeMarketsCategory && activeMarketsCategory !== 'all') {
     if (activeMarketsCategory === 'new') {
       list = list.filter(c => c.tags?.includes('new') || c.category === 'DeFi' || c.id === 'orca' || c.id === 'sui');
@@ -3933,6 +3997,17 @@ function renderMarketsCoinList() {
     } else if (activeMarketsCategory === 'ai') {
       list = list.filter(c => c.tags?.includes('ai') || c.id === 'near');
     }
+  }
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="padding:48px 20px; text-align:center; color:var(--v-text-muted);">
+        <div style="font-size:28px; margin-bottom:8px;">🔍</div>
+        <p style="font-size:14px; font-weight:600; color:#ffffff; margin-bottom:4px;">No coins found</p>
+        <span style="font-size:12px; opacity:0.7;">No crypto pairs matching "${escapeHtml(marketsSearchQuery)}"</span>
+      </div>
+    `;
+    return;
   }
 
   // 3. Sort list
@@ -4214,28 +4289,31 @@ let chartTradeOtype = 'market';
 let chartTradeLeverage = 150;
 
 function toggleOrderTypeFromChart() {
-  chartTradeOtype = chartTradeOtype === 'market' ? 'limit' : 'market';
-  const label = document.getElementById('cqtd-otype-label');
-  if (label) label.textContent = chartTradeOtype === 'market' ? 'Market' : 'Limit';
-  setOrderType(chartTradeOtype);
+  const nextType = (tradeOrderType === 'market') ? 'limit' : 'market';
+  selectTradeOrderType(nextType);
 }
 
 function toggleLeverageFromChart() {
-  const levs = [150, 100, 50, 25, 10];
-  const nextIdx = (levs.indexOf(chartTradeLeverage) + 1) % levs.length;
-  chartTradeLeverage = levs[nextIdx];
-  const label = document.getElementById('cqtd-lev-label');
-  if (label) label.textContent = `${chartTradeLeverage}x`;
-  selectedLeverage = chartTradeLeverage;
-  updateTradeCalc();
+  const levs = [150, 100, 50, 25, 10, 5, 1];
+  const nextIdx = (levs.indexOf(tradeLeverage) + 1) % levs.length;
+  const newLev = levs[nextIdx];
+  setLeverage(newLev);
 }
 
 function syncChartTradeQty(val) {
   const mainInput = document.getElementById('trade-amount-input');
   if (mainInput && val !== mainInput.value) {
     mainInput.value = val;
-    updateTradeCalc();
   }
+  updateTradeCalc();
+}
+
+function syncTradeDeskQty(val) {
+  const cqtdInp = document.getElementById('cqtd-qty-input');
+  if (cqtdInp && val !== cqtdInp.value) {
+    cqtdInp.value = val;
+  }
+  updateTradeCalc();
 }
 
 async function executeChartQuickTrade(side) {
@@ -4576,24 +4654,37 @@ function toggleSearchOverlay() {
   const wrap = document.getElementById('groww-search-bar-wrap');
   if (!wrap) return;
   const isHidden = wrap.classList.toggle('hidden');
+  const inp = document.getElementById('groww-quick-search-input');
   if (!isHidden) {
-    const inp = document.getElementById('groww-quick-search-input');
     if (inp) {
       inp.focus();
       inp.select();
     }
+  } else {
+    // Reset search query and filter when closing overlay
+    marketsSearchQuery = '';
+    if (inp) inp.value = '';
+    renderMarketsCoinList();
   }
 }
 
 function handleGrowwSearch(query) {
-  const q = String(query).trim().toLowerCase();
-  if (!q) return;
-  const match = COIN_LIST.find(c => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q));
-  if (match) {
-    selectCoin(match.id);
-    switchMainTab('chart');
-    const wrap = document.getElementById('groww-search-bar-wrap');
-    if (wrap) wrap.classList.add('hidden');
+  marketsSearchQuery = String(query).trim().toLowerCase();
+  renderMarketsCoinList();
+}
+
+function handleGrowwSearchKeyDown(e) {
+  if (e.key === 'Enter') {
+    const q = String(e.target.value).trim().toLowerCase();
+    if (!q) return;
+    const match = COIN_LIST.find(c => c.symbol.toLowerCase() === q || c.name.toLowerCase() === q || c.id.toLowerCase() === q) ||
+                  COIN_LIST.find(c => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q));
+    if (match) {
+      selectCoin(match.id);
+      switchMainTab('chart');
+      const wrap = document.getElementById('groww-search-bar-wrap');
+      if (wrap) wrap.classList.add('hidden');
+    }
   }
 }
 
@@ -4937,36 +5028,14 @@ function setTradeSide(side) {
     sellBtn.classList.toggle('active', side === 'sell');
   }
   if (subBtn) {
-    if (side === 'buy') {
-      subBtn.className = 'btn-execute-solid btn-execute-buy-long';
-    } else {
-      subBtn.className = 'btn-execute-solid btn-execute-sell-short';
-    }
+    subBtn.className = `btn-tform-submit ${side === 'buy' ? 'buy' : 'sell'}`;
   }
   updateTradeLabels();
   updateTradeCalc();
 }
 
 function setOrderType(type) {
-  tradeOrderType = type;
-  document.querySelectorAll('.sot-tab').forEach(b => b.classList.remove('active'));
-  document.getElementById(`otype-${type}`)?.classList.add('active');
-  
-  const limitField = document.getElementById('limit-price-group');
-  const limitLabel = document.getElementById('limit-price-label');
-  if (limitField) {
-    const isLimitOrStop = (type === 'limit' || type === 'stop-l' || type === 'stop-m');
-    limitField.style.display = isLimitOrStop ? 'block' : 'none';
-    if (limitLabel) {
-      if (type === 'stop-l') limitLabel.textContent = 'Stop-Limit Price (USDT)';
-      else if (type === 'stop-m') limitLabel.textContent = 'Stop-Market Price (USDT)';
-      else limitLabel.textContent = 'Order Price (USDT)';
-    }
-    if (isLimitOrStop) {
-      setLimitPriceToCurrent();
-    }
-  }
-  updateTradeCalc();
+  selectTradeOrderType(type);
 }
 
 function setLimitPriceToCurrent() {
@@ -4979,15 +5048,32 @@ function setLimitPriceToCurrent() {
   updateTradeCalc();
 }
 
+function toggleTradeUnit() {
+  const nextUnit = (tradeUnit === 'coin') ? 'usd' : 'coin';
+  setTradeUnit(nextUnit);
+}
+
 function setTradeUnit(unit) {
   tradeUnit = unit;
-  document.getElementById('uchip-coin')?.classList.toggle('active', unit === 'coin');
-  document.getElementById('uchip-usd')?.classList.toggle('active', unit === 'usd');
-  
   const coinDef = getCoinDefinition(selectedCoin);
-  const prefix = document.getElementById('amount-prefix');
-  if (prefix) prefix.textContent = unit === 'usd' ? '$' : coinDef.symbol.charAt(0);
-  
+  const sym = coinDef.symbol;
+  const displayLabel = (unit === 'coin') ? sym : 'USDT';
+
+  const uchipCoin = document.getElementById('uchip-coin');
+  if (uchipCoin) uchipCoin.textContent = displayLabel;
+
+  const cqtdUnit = document.getElementById('cqtd-unit-label');
+  if (cqtdUnit) cqtdUnit.textContent = `${displayLabel} ⌵`;
+
+  const input = document.getElementById('trade-amount-input');
+  if (input) {
+    input.placeholder = (unit === 'coin') ? `Quantity (${sym})` : 'Quantity (USDT)';
+  }
+  const cqtdInp = document.getElementById('cqtd-qty-input');
+  if (cqtdInp) {
+    cqtdInp.placeholder = (unit === 'coin') ? `Quantity (${sym})` : 'Quantity (USDT)';
+  }
+
   updateTradeCalc();
 }
 
@@ -5002,16 +5088,29 @@ function setMarginMode(mode) {
 }
 
 function setLeverage(val) {
-  tradeLeverage = Math.max(1, Math.min(100, parseInt(val) || 10));
+  tradeLeverage = Math.max(1, Math.min(150, parseInt(val) || 150));
+  chartTradeLeverage = tradeLeverage;
+  selectedLeverage = tradeLeverage;
+  
   const slider = document.getElementById('leverage-slider');
   if (slider) slider.value = tradeLeverage;
   
   const disp = document.getElementById('lev-val-display');
   if (disp) disp.textContent = `${tradeLeverage}x`;
   
+  const lbl = document.getElementById('btn-lev-label');
+  if (lbl) lbl.textContent = `${tradeLeverage}x`;
+
+  const cqtdLbl = document.getElementById('cqtd-lev-label');
+  if (cqtdLbl) cqtdLbl.textContent = `${tradeLeverage}x`;
+  
   const pill = document.getElementById('delta-lev-pill');
   if (pill) pill.textContent = `${tradeLeverage}x ${tradeMarginMode.charAt(0).toUpperCase() + tradeMarginMode.slice(1)}`;
   
+  document.querySelectorAll('.ld-chip').forEach(el => {
+    const chipNum = parseInt(el.textContent.replace('x',''));
+    el.classList.toggle('active', chipNum === tradeLeverage);
+  });
   document.querySelectorAll('.lchip').forEach(c => {
     const chipNum = parseInt(c.textContent.replace('x',''));
     c.classList.toggle('active', chipNum === tradeLeverage);
@@ -5227,11 +5326,27 @@ function updateTradeCalc() {
   const deskLiq = document.getElementById('desk-liq-price');
 
   if (deskAvail && !isBalanceMasked) {
-    deskAvail.textContent = `$${fmtNum(walletState.cashBalance)} USDT`;
+    deskAvail.textContent = `${fmtNum(walletState.cashBalance)} USDT`;
   }
-  if (deskRisk) deskRisk.textContent = `$${fmtNum(marginRequired)} USDT`;
+  if (deskRisk) deskRisk.textContent = `${fmtNum(marginRequired)} USDT`;
   if (deskFee) deskFee.textContent = orderValue > 0 ? `$${fmtNum(estFee)} USDT` : '--';
-  if (deskLiq) deskLiq.textContent = (orderValue > 0 && liqPrice > 0) ? `$${fmt(liqPrice)}` : '--';
+  if (deskLiq) deskLiq.textContent = (orderValue > 0 && liqPrice > 0) ? `$${fmt(liqPrice)}` : '—';
+
+  // Update Chart Quick-Trade Dock calculations (Screenshot 2 Match)
+  const cqtdAvl = document.getElementById('cqtd-avl-val');
+  if (cqtdAvl) cqtdAvl.textContent = `${(walletState.cashBalance || 0).toFixed(4)} USDT`;
+
+  const cqtdOrderVal = document.getElementById('cqtd-order-val');
+  if (cqtdOrderVal) {
+    cqtdOrderVal.textContent = tradeUnit === 'coin'
+      ? `$${fmtNum(orderValue)}`
+      : `≈ ${sizeCoins.toFixed(4)} ${coinDef.symbol}`;
+  }
+
+  const cqtdReqMargin = document.getElementById('cqtd-req-margin');
+  if (cqtdReqMargin) {
+    cqtdReqMargin.textContent = `${fmtNum(marginRequired)} USDT`;
+  }
 
   // Do NOT disable button on zero input so clicks trigger friendly validation feedback
   if (submitBtn) {
@@ -5259,7 +5374,10 @@ function updateTradeLabels() {
   
   // Unit toggle coin chip
   const uchipCoin = document.getElementById('uchip-coin');
-  if (uchipCoin) uchipCoin.textContent = sym;
+  if (uchipCoin) uchipCoin.textContent = (tradeUnit === 'coin') ? sym : 'USDT';
+
+  const cqtdUnit = document.getElementById('cqtd-unit-label');
+  if (cqtdUnit) cqtdUnit.textContent = (tradeUnit === 'coin') ? `${sym} ⌵` : 'USDT ⌵';
   
   // Submit button label (Screenshot 1 Match: Buy / Long BTC or Sell / Short BTC)
   const submitLabel = document.getElementById('delta-submit-label');
