@@ -9747,28 +9747,841 @@ function renderStraddlesList() {
   }).join('');
 }
 
-// ─── SPOT & ANALYTICS VIEWS ───────────────────────────────────────
+// ─── SPOT TAB LOGIC (SCREENSHOT 1) ──────────────────────────────────
+const MARKETS_SPOT_DATA = [
+  {
+    id: 'spot-xrpinr',
+    symbol: 'XRP/INR',
+    name: 'XRP INR spot',
+    price: '₹136.564',
+    rawPrice: 136.564,
+    vol: '₹6L',
+    rawVol: 600000,
+    change: '3.49%',
+    rawChange: 3.49,
+    isPositive: true,
+    starred: false
+  },
+  {
+    id: 'spot-solinr',
+    symbol: 'SOL/INR',
+    name: 'SOL INR spot',
+    price: '₹10806.15',
+    rawPrice: 10806.15,
+    vol: '₹9.87L',
+    rawVol: 987000,
+    change: '4.86%',
+    rawChange: 4.86,
+    isPositive: true,
+    starred: false
+  },
+  {
+    id: 'spot-ethinr',
+    symbol: 'ETH/INR',
+    name: 'ETH INR spot',
+    price: '₹248035.5',
+    rawPrice: 248035.5,
+    vol: '₹3.06L',
+    rawVol: 306000,
+    change: '3.61%',
+    rawChange: 3.61,
+    isPositive: true,
+    starred: false
+  },
+  {
+    id: 'spot-btcinr',
+    symbol: 'BTC/INR',
+    name: 'BTC INR spot',
+    price: '₹8320203',
+    rawPrice: 8320203,
+    vol: '₹13.77L',
+    rawVol: 1377000,
+    change: '1.37%',
+    rawChange: 1.37,
+    isPositive: true,
+    starred: false
+  }
+];
+
+let marketsSpotSortCol = 'vol'; // Default volume sort with orange arrow as in Screenshot 1
+let marketsSpotSortAsc = false;
+let userSpotWatchlist = [];
+
+try {
+  const savedSpot = localStorage.getItem('vtrade_spot_watchlist');
+  if (savedSpot) userSpotWatchlist = JSON.parse(savedSpot);
+} catch (e) {}
+
+function sortMarketsSpot(col) {
+  if (marketsSpotSortCol === col) {
+    marketsSpotSortAsc = !marketsSpotSortAsc;
+  } else {
+    marketsSpotSortCol = col;
+    marketsSpotSortAsc = false;
+  }
+  renderSpotList();
+}
+
+function toggleSpotStar(id, event) {
+  if (event) event.stopPropagation();
+  const idx = userSpotWatchlist.indexOf(id);
+  if (idx >= 0) {
+    userSpotWatchlist.splice(idx, 1);
+    showToast('Removed from favorites', 'info');
+  } else {
+    userSpotWatchlist.push(id);
+    showToast('Added to favorites ★', 'success');
+  }
+  try {
+    localStorage.setItem('vtrade_spot_watchlist', JSON.stringify(userSpotWatchlist));
+  } catch (e) {}
+  renderSpotList();
+}
+
+function selectSpotContract(id) {
+  const item = MARKETS_SPOT_DATA.find(s => s.id === id);
+  if (!item) return;
+  showToast(`Selected Spot ${item.symbol} (${item.price})`, 'info');
+  if (typeof switchTradePair === 'function') {
+    switchTradePair(item.symbol.replace('/INR', 'USDT'));
+  }
+}
+
 function renderSpotList() {
   const listEl = document.getElementById('markets-spot-list');
   if (!listEl) return;
-  const spotItems = MARKETS_FUTURES_DATA.slice(0, 8).map(c => ({
-    ...c,
-    symbol: c.symbol.replace('USD', '/USDT'),
-    leverage: 'SPOT',
-    feeBadge: '0% Maker Fee'
+
+  let list = MARKETS_SPOT_DATA.map(item => ({
+    ...item,
+    starred: userSpotWatchlist.includes(item.id)
   }));
-  listEl.innerHTML = renderContractRowsHtml(spotItems);
+
+  // Filter by search query if user searched
+  if (deltaMarketsSearchQuery && deltaMarketsSearchQuery.trim()) {
+    const q = deltaMarketsSearchQuery.trim().toLowerCase();
+    list = list.filter(item => item.symbol.toLowerCase().includes(q) || item.name.toLowerCase().includes(q));
+  }
+
+  // Sort
+  if (marketsSpotSortCol === 'symbol') {
+    list.sort((a, b) => marketsSpotSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
+  } else if (marketsSpotSortCol === 'price') {
+    list.sort((a, b) => marketsSpotSortAsc ? a.rawPrice - b.rawPrice : b.rawPrice - a.rawPrice);
+  } else if (marketsSpotSortCol === 'vol') {
+    list.sort((a, b) => marketsSpotSortAsc ? a.rawVol - b.rawVol : b.rawVol - a.rawVol);
+  } else if (marketsSpotSortCol === 'change') {
+    list.sort((a, b) => marketsSpotSortAsc ? a.rawChange - b.rawChange : b.rawChange - a.rawChange);
+  }
+
+  if (!list.length) {
+    listEl.innerHTML = `<div style="text-align:center; padding: 40px; color:#8f96a3; font-size:13px;">No spot contracts found</div>`;
+    return;
+  }
+
+  listEl.innerHTML = list.map(item => `
+    <div class="spot-row" onclick="selectSpotContract('${item.id}')">
+      <div class="spot-cell-identity">
+        <button class="spot-star-btn ${item.starred ? 'starred' : ''}" onclick="toggleSpotStar('${item.id}', event)" aria-label="Favorite">
+          ${item.starred ? '★' : '☆'}
+        </button>
+        <div class="spot-name-details">
+          <span class="spot-symbol-text">${item.symbol}</span>
+          <span class="spot-subname">${item.name}</span>
+        </div>
+      </div>
+      <div class="spot-cell-price-vol">
+        <span class="spot-price-val">${item.price}</span>
+        <span class="spot-vol-val">${item.vol}</span>
+      </div>
+      <div class="spot-cell-change">
+        <div class="spot-change-pill ${item.isPositive ? 'positive' : 'negative'}">
+          ${item.change}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+
+// ─── ANALYTICS TAB LOGIC (SCREENSHOTS 2, 3, 4, 5) ─────────────────
+let analyticsActiveAsset = 'BTC';
+let analyticsRotateBannerDismissed = false;
+let analyticsJumpMenuOpen = false;
+let analyticsOiExpiry = 'D1';
+let analyticsOiLegendsVisible = true;
+let analyticsOiChangeLegendsVisible = true;
+let analyticsOiChangeTimeRange = 'Last 12 hours';
+let analyticsVolStrikeLegendsVisible = true;
+let analyticsVolStrikeActiveTooltip = '83,200';
+let analyticsIvRvLegendsVisible = true;
+let analyticsIvRvTimeframe = 'Daily';
+
+const ANALYTICS_DATA = {
+  BTC: {
+    spotPrice: '82,725.7',
+    spotPriceNum: 82725.7,
+    openInterestGlobal: '$1.38B',
+    volGlobal: '$7.59B',
+    totCallsOI: '$329.19M',
+    totPutsOI: '$274.76M',
+    pcr: '0.83',
+    maxPain: '82400',
+    totCallsVol: '$2.95B',
+    totPutsVol: '$2.29B',
+    // 23 strikes from 78,000 to 89,000 across Screenshots 2 & 3
+    oiStrikes: [
+      { strike: '78,000', calls: 0.8, puts: 25.0 },
+      { strike: '79,200', calls: 0.7, puts: 15.0 },
+      { strike: '79,500', calls: 0.6, puts: 14.5 },
+      { strike: '79,800', calls: 0.5, puts: 7.6 },
+      { strike: '80,200', calls: 0.9, puts: 3.2 },
+      { strike: '80,500', calls: 0.8, puts: 4.0 },
+      { strike: '80,800', calls: 0.7, puts: 5.1 },
+      { strike: '81,200', calls: 0.9, puts: 14.8 },
+      { strike: '81,500', calls: 0.8, puts: 3.5 },
+      { strike: '81,800', calls: 0.9, puts: 7.9 },
+      { strike: '82,000', calls: 0.8, puts: 8.4 },
+      { strike: '82,400', calls: 0.9, puts: 5.3, isMaxPain: true },
+      { strike: '82,800', calls: 33.2, puts: 22.8 },
+      { strike: '83,200', calls: 46.8, puts: 7.2 },
+      { strike: '83,500', calls: 26.5, puts: 1.1 },
+      { strike: '83,800', calls: 16.4, puts: 0.8 },
+      { strike: '84,200', calls: 14.8, puts: 0.7 },
+      { strike: '84,500', calls: 7.8, puts: 0.9 },
+      { strike: '84,800', calls: 6.2, puts: 0.8 },
+      { strike: '85,500', calls: 24.2, puts: 1.1 },
+      { strike: '86,500', calls: 8.5, puts: 0.7 },
+      { strike: '87,500', calls: 4.2, puts: 0.6 },
+      { strike: '89,000', calls: 7.1, puts: 0.5 }
+    ],
+    // OI Change strikes (Screenshot 4)
+    oiChangeStrikes: [
+      { strike: '81,200', calls: -0.8, puts: 5.8 },
+      { strike: '81,500', calls: -0.5, puts: 2.1 },
+      { strike: '81,800', calls: -0.4, puts: 4.9 },
+      { strike: '82,200', calls: -0.3, puts: 8.2 },
+      { strike: '82,500', calls: -1.6, puts: 12.4 },
+      { strike: '82,800', calls: 1.2, puts: 9.1 },
+      { strike: '83,200', calls: 8.1, puts: 17.2 },
+      { strike: '83,500', calls: 21.4, puts: 9.8 },
+      { strike: '83,800', calls: 16.8, puts: -0.6 },
+      { strike: '84,200', calls: 15.5, puts: -0.5 },
+      { strike: '84,500', calls: 11.2, puts: -0.4 }
+    ],
+    // Volume vs Strike (Screenshot 4 & 5)
+    volStrikes: [
+      { strike: '81,200', calls: 28, puts: 112, callsDisplay: '$28.00M', putsDisplay: '$112.00M' },
+      { strike: '81,500', calls: 18, puts: 52, callsDisplay: '$18.00M', putsDisplay: '$52.00M' },
+      { strike: '81,800', calls: 22, puts: 48, callsDisplay: '$22.00M', putsDisplay: '$48.00M' },
+      { strike: '82,200', calls: 55, puts: 185, callsDisplay: '$55.00M', putsDisplay: '$185.00M' },
+      { strike: '82,500', calls: 64, puts: 72, callsDisplay: '$64.00M', putsDisplay: '$72.00M' },
+      { strike: '82,800', calls: 70, puts: 68, callsDisplay: '$70.00M', putsDisplay: '$68.00M' },
+      { strike: '83,200', calls: 242, puts: 42, callsDisplay: '$ 128.10M', putsDisplay: '$ 3.04M' },
+      { strike: '83,500', calls: 68, puts: 8, callsDisplay: '$68.00M', putsDisplay: '$8.00M' },
+      { strike: '83,800', calls: 54, puts: 4, callsDisplay: '$54.00M', putsDisplay: '$4.00M' },
+      { strike: '84,200', calls: 188, puts: 5, callsDisplay: '$188.00M', putsDisplay: '$5.00M' },
+      { strike: '84,500', calls: 72, puts: 4, callsDisplay: '$72.00M', putsDisplay: '$4.00M' }
+    ]
+  },
+  ETH: {
+    spotPrice: '2,468.97',
+    spotPriceNum: 2468.97,
+    openInterestGlobal: '$420.5M',
+    volGlobal: '$1.82B',
+    totCallsOI: '$112.4M',
+    totPutsOI: '$89.2M',
+    pcr: '0.79',
+    maxPain: '2450',
+    totCallsVol: '$840.2M',
+    totPutsVol: '$620.1M',
+    oiStrikes: [
+      { strike: '2,200', calls: 2.1, puts: 12.5 },
+      { strike: '2,300', calls: 3.5, puts: 9.2 },
+      { strike: '2,400', calls: 8.4, puts: 14.1 },
+      { strike: '2,450', calls: 12.2, puts: 8.5, isMaxPain: true },
+      { strike: '2,500', calls: 28.5, puts: 4.2 },
+      { strike: '2,600', calls: 19.1, puts: 1.8 },
+      { strike: '2,700', calls: 11.2, puts: 0.9 },
+      { strike: '2,800', calls: 8.4, puts: 0.5 }
+    ],
+    oiChangeStrikes: [
+      { strike: '2,300', calls: -1.2, puts: 4.2 },
+      { strike: '2,400', calls: 2.1, puts: 3.5 },
+      { strike: '2,450', calls: 4.8, puts: 1.9 },
+      { strike: '2,500', calls: 12.4, puts: -0.8 },
+      { strike: '2,600', calls: 8.2, puts: -0.5 }
+    ],
+    volStrikes: [
+      { strike: '2,300', calls: 45, puts: 120, callsDisplay: '$45M', putsDisplay: '$120M' },
+      { strike: '2,400', calls: 80, puts: 95, callsDisplay: '$80M', putsDisplay: '$95M' },
+      { strike: '2,450', calls: 140, puts: 45, callsDisplay: '$140M', putsDisplay: '$45M' },
+      { strike: '2,500', calls: 210, puts: 20, callsDisplay: '$210M', putsDisplay: '$20M' },
+      { strike: '2,600', calls: 95, puts: 8, callsDisplay: '$95M', putsDisplay: '$8M' }
+    ]
+  },
+  XAUT: {
+    spotPrice: '4,178.29',
+    spotPriceNum: 4178.29,
+    openInterestGlobal: '$186.2M',
+    volGlobal: '$763.05M',
+    totCallsOI: '$48.5M',
+    totPutsOI: '$34.2M',
+    pcr: '0.70',
+    maxPain: '4180',
+    totCallsVol: '$390.5M',
+    totPutsVol: '$280.2M',
+    oiStrikes: [
+      { strike: '4,120', calls: 1.2, puts: 18.2 },
+      { strike: '4,140', calls: 2.4, puts: 12.5 },
+      { strike: '4,160', calls: 4.8, puts: 7.9 },
+      { strike: '4,170', calls: 8.1, puts: 4.5 },
+      { strike: '4,180', calls: 16.5, puts: 5.2, isMaxPain: true },
+      { strike: '4,190', calls: 22.4, puts: 1.8 },
+      { strike: '4,200', calls: 28.9, puts: 0.9 },
+      { strike: '4,220', calls: 14.2, puts: 0.4 }
+    ],
+    oiChangeStrikes: [
+      { strike: '4,140', calls: -0.5, puts: 3.1 },
+      { strike: '4,160', calls: 1.2, puts: 2.8 },
+      { strike: '4,180', calls: 5.4, puts: 1.2 },
+      { strike: '4,200', calls: 9.8, puts: -0.4 },
+      { strike: '4,220', calls: 6.2, puts: -0.2 }
+    ],
+    volStrikes: [
+      { strike: '4,140', calls: 30, puts: 85, callsDisplay: '$30M', putsDisplay: '$85M' },
+      { strike: '4,160', calls: 55, puts: 60, callsDisplay: '$55M', putsDisplay: '$60M' },
+      { strike: '4,180', calls: 120, puts: 35, callsDisplay: '$120M', putsDisplay: '$35M' },
+      { strike: '4,200', calls: 175, puts: 15, callsDisplay: '$175M', putsDisplay: '$15M' }
+    ]
+  }
+};
+
+function toggleAnalyticsJumpMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('analytics-jump-menu');
+  if (!menu) return;
+  analyticsJumpMenuOpen = !analyticsJumpMenuOpen;
+  menu.classList.toggle('hidden', !analyticsJumpMenuOpen);
+}
+
+document.addEventListener('click', () => {
+  const menu = document.getElementById('analytics-jump-menu');
+  if (menu && !menu.classList.contains('hidden')) {
+    menu.classList.add('hidden');
+    analyticsJumpMenuOpen = false;
+  }
+});
+
+function jumpToAnalyticsChart(cardId) {
+  const el = document.getElementById(cardId);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  const menu = document.getElementById('analytics-jump-menu');
+  if (menu) menu.classList.add('hidden');
+  analyticsJumpMenuOpen = false;
+}
+
+function dismissRotateBanner(e) {
+  if (e) e.stopPropagation();
+  analyticsRotateBannerDismissed = true;
+  const banner = document.getElementById('analytics-rotate-banner');
+  if (banner) {
+    banner.style.opacity = '0';
+    banner.style.transform = 'translateY(-10px)';
+    setTimeout(() => { banner.style.display = 'none'; }, 250);
+  }
+}
+
+function setAnalyticsAsset(asset) {
+  analyticsActiveAsset = asset;
+  renderAnalyticsView();
+}
+
+function cycleAnalyticsAsset() {
+  const assets = ['BTC', 'ETH', 'XAUT'];
+  const nextIdx = (assets.indexOf(analyticsActiveAsset) + 1) % assets.length;
+  setAnalyticsAsset(assets[nextIdx]);
+}
+
+function toggleLegends(cardKey) {
+  if (cardKey === 'oi') analyticsOiLegendsVisible = !analyticsOiLegendsVisible;
+  if (cardKey === 'oi-change') analyticsOiChangeLegendsVisible = !analyticsOiChangeLegendsVisible;
+  if (cardKey === 'vol-strike') analyticsVolStrikeLegendsVisible = !analyticsVolStrikeLegendsVisible;
+  if (cardKey === 'iv-rv') analyticsIvRvLegendsVisible = !analyticsIvRvLegendsVisible;
+  renderAnalyticsView();
+}
+
+function selectVolStrikeTooltip(strike) {
+  analyticsVolStrikeActiveTooltip = strike;
+  renderAnalyticsView();
 }
 
 function renderAnalyticsView() {
   const listEl = document.getElementById('markets-analytics-list');
   if (!listEl) return;
+
+  const data = ANALYTICS_DATA[analyticsActiveAsset] || ANALYTICS_DATA.BTC;
+
+  // Update top subbar statistics
+  const oiStat = document.getElementById('analytics-stat-oi');
+  const volStat = document.getElementById('analytics-stat-vol');
+  if (oiStat) oiStat.textContent = data.openInterestGlobal;
+  if (volStat) volStat.textContent = data.volGlobal;
+
+  // Manage rotate banner
+  const banner = document.getElementById('analytics-rotate-banner');
+  if (banner && analyticsRotateBannerDismissed) {
+    banner.style.display = 'none';
+  }
+
+  const assetIconClass = analyticsActiveAsset.toLowerCase();
+  const assetSymbolChar = analyticsActiveAsset === 'BTC' ? '₿' : (analyticsActiveAsset === 'ETH' ? 'Ξ' : 'G');
+
+  // Build HTML for all 4 cards
   listEl.innerHTML = `
-    <div class="rwa-banner-card" style="margin: 8px 14px;">
-      <div class="rwa-badge" style="background: rgba(0, 192, 135, 0.15); color: #00c087;">Live Options Heatmap</div>
-      <h3 class="rwa-title">Open Interest & Volume Distribution</h3>
-      <p class="rwa-desc">BTC 82000-83000 strikes represent 68% of total volume with heavy call build-up and bullish skew.</p>
+    <!-- CARD 1: Open Interest (Screenshots 2 & 3) -->
+    <div class="analytics-card" id="chart-card-oi">
+      <div class="acard-header">
+        <span class="acard-title dashed-tip" title="Total active options contracts in circulation">Open Interest</span>
+        <button class="acard-legends-toggle" onclick="toggleLegends('oi')">
+          Legends <span style="font-size:10px; color:var(--delta-primary,#ff7a00);">${analyticsOiLegendsVisible ? '▼' : '▲'}</span>
+        </button>
+      </div>
+
+      <div class="acard-controls-row">
+        <button class="acard-dropdown-btn" onclick="showToast('Selected D1 Expiry', 'info')">
+          <span>${analyticsOiExpiry}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <button class="acard-dropdown-btn" onclick="cycleAnalyticsAsset()">
+          <span class="acard-crypto-icon ${assetIconClass}">${assetSymbolChar}</span>
+          <span>${analyticsActiveAsset}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+      </div>
+
+      <!-- Chart container -->
+      <div class="chart-viewport-container">
+        <div class="chart-yaxis-column">
+          <span class="chart-yaxis-rotlabel">Open Interest($)</span>
+          <span class="chart-yaxis-tick">50M</span>
+          <span class="chart-yaxis-tick">40M</span>
+          <span class="chart-yaxis-tick">30M</span>
+          <span class="chart-yaxis-tick">20M</span>
+          <span class="chart-yaxis-tick">10M</span>
+          <span class="chart-yaxis-tick">0</span>
+        </div>
+
+        <div class="chart-scroll-viewport" id="oi-scroll-viewport">
+          ${renderOiChartSvg(data)}
+        </div>
+      </div>
+
+      ${analyticsOiLegendsVisible ? `
+        <div class="acard-footer">
+          <div class="acard-legends-row">
+            <span><span class="legend-dot green"></span> Calls</span>
+            <span><span class="legend-dot red"></span> Puts</span>
+          </div>
+          <div class="acard-metrics-row">
+            <div class="acard-metric-item">Tot. Calls <span class="m-val">${data.totCallsOI}</span></div>
+            <div class="acard-metric-item">Tot. Puts <span class="m-val">${data.totPutsOI}</span></div>
+            <div class="acard-metric-item dashed-tip" title="Put/Call Ratio">PCR <span class="m-val">${data.pcr}</span></div>
+            <div class="acard-metric-item dashed-tip" title="Strike price causing maximum financial loss to option buyers">Max Pain <span class="m-val">${data.maxPain}</span></div>
+          </div>
+        </div>
+      ` : ''}
     </div>
+
+    <!-- CARD 2: Open Interest Change (Screenshot 4) -->
+    <div class="analytics-card" id="chart-card-oi-change">
+      <div class="acard-header">
+        <span class="acard-title dashed-tip" title="Net change in Open Interest over selected timeframe">Open Interest Change</span>
+        <button class="acard-legends-toggle" onclick="toggleLegends('oi-change')">
+          Legends <span style="font-size:10px; color:var(--delta-primary,#ff7a00);">${analyticsOiChangeLegendsVisible ? '▼' : '▲'}</span>
+        </button>
+      </div>
+
+      <div class="acard-controls-row">
+        <button class="acard-dropdown-btn" onclick="showToast('Selected D1 Expiry', 'info')">
+          <span>${analyticsOiExpiry}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <button class="acard-dropdown-btn" onclick="cycleAnalyticsAsset()">
+          <span class="acard-crypto-icon ${assetIconClass}">${assetSymbolChar}</span>
+          <span>${analyticsActiveAsset}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+      </div>
+
+      <div class="acard-controls-row" style="margin-top:-4px;">
+        <button class="acard-dropdown-btn" onclick="cycleTimeRange()">
+          <span>${analyticsOiChangeTimeRange}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+      </div>
+
+      <div class="chart-viewport-container">
+        <div class="chart-yaxis-column" style="height: 180px;">
+          <span class="chart-yaxis-rotlabel">Open Interest($)</span>
+          <span class="chart-yaxis-tick">30M</span>
+          <span class="chart-yaxis-tick">20M</span>
+          <span class="chart-yaxis-tick">10M</span>
+          <span class="chart-yaxis-tick">0</span>
+          <span class="chart-yaxis-tick">-10M</span>
+          <span class="chart-yaxis-tick">-20M</span>
+          <span class="chart-yaxis-tick">-30M</span>
+        </div>
+
+        <div class="chart-scroll-viewport" id="oi-change-scroll-viewport">
+          ${renderOiChangeChartSvg(data)}
+        </div>
+      </div>
+
+      ${analyticsOiChangeLegendsVisible ? `
+        <div class="acard-footer">
+          <div class="acard-legends-row">
+            <span><span class="legend-dot green"></span> Calls</span>
+            <span><span class="legend-dot red"></span> Puts</span>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+
+    <!-- CARD 3: Volume vs Strike (Screenshot 4 bottom & Screenshot 5 top) -->
+    <div class="analytics-card" id="chart-card-vol-strike">
+      <div class="acard-header">
+        <span class="acard-title dashed-tip" title="Distribution of options trading volume across strikes">Volume vs Strike</span>
+        <button class="acard-legends-toggle" onclick="toggleLegends('vol-strike')">
+          Legends <span style="font-size:10px; color:var(--delta-primary,#ff7a00);">${analyticsVolStrikeLegendsVisible ? '▼' : '▲'}</span>
+        </button>
+      </div>
+
+      <div class="acard-controls-row">
+        <button class="acard-dropdown-btn" onclick="showToast('Selected D1 Expiry', 'info')">
+          <span>${analyticsOiExpiry}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <button class="acard-dropdown-btn" onclick="cycleAnalyticsAsset()">
+          <span class="acard-crypto-icon ${assetIconClass}">${assetSymbolChar}</span>
+          <span>${analyticsActiveAsset}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+      </div>
+
+      <div class="chart-viewport-container">
+        <div class="chart-yaxis-column" style="height: 180px;">
+          <span class="chart-yaxis-rotlabel">Volume($)</span>
+          <span class="chart-yaxis-tick">300M</span>
+          <span class="chart-yaxis-tick">250M</span>
+          <span class="chart-yaxis-tick">200M</span>
+          <span class="chart-yaxis-tick">150M</span>
+          <span class="chart-yaxis-tick">100M</span>
+          <span class="chart-yaxis-tick">50M</span>
+          <span class="chart-yaxis-tick">0</span>
+        </div>
+
+        <div class="chart-scroll-viewport" id="vol-strike-scroll-viewport">
+          ${renderVolStrikeChartSvg(data)}
+        </div>
+      </div>
+
+      ${analyticsVolStrikeLegendsVisible ? `
+        <div class="acard-footer">
+          <div class="acard-legends-row">
+            <span><span class="legend-dot green"></span> Calls</span>
+            <span><span class="legend-dot red"></span> Puts</span>
+          </div>
+          <div class="acard-metrics-row">
+            <div class="acard-metric-item">Tot. Calls <span class="m-val">${data.totCallsVol}</span></div>
+            <div class="acard-metric-item">Tot. Puts <span class="m-val">${data.totPutsVol}</span></div>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+
+    <!-- CARD 4: IV vs RV (Screenshot 5 bottom) -->
+    <div class="analytics-card" id="chart-card-iv-rv">
+      <div class="acard-header">
+        <span class="acard-title dashed-tip" title="Implied Volatility vs Realized Volatility">IV vs RV</span>
+        <button class="acard-legends-toggle" onclick="toggleLegends('iv-rv')">
+          Legends <span style="font-size:10px; color:var(--delta-primary,#ff7a00);">${analyticsIvRvLegendsVisible ? '▼' : '▲'}</span>
+        </button>
+      </div>
+
+      <div class="acard-controls-row">
+        <button class="acard-dropdown-btn" onclick="cycleIvRvTimeframe()">
+          <span>${analyticsIvRvTimeframe}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <button class="acard-dropdown-btn" onclick="cycleAnalyticsAsset()">
+          <span class="acard-crypto-icon ${assetIconClass}">${assetSymbolChar}</span>
+          <span>${analyticsActiveAsset}</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+      </div>
+
+      <div class="chart-viewport-container">
+        <div class="chart-yaxis-column" style="height: 160px;">
+          <span class="chart-yaxis-rotlabel">Volatility(%)</span>
+          <span class="chart-yaxis-tick">60</span>
+          <span class="chart-yaxis-tick">50</span>
+          <span class="chart-yaxis-tick">40</span>
+          <span class="chart-yaxis-tick">30</span>
+          <span class="chart-yaxis-tick">0</span>
+        </div>
+
+        <div class="chart-scroll-viewport" style="overflow-x:hidden;">
+          ${renderIvRvChartSvg()}
+        </div>
+      </div>
+
+      ${analyticsIvRvLegendsVisible ? `
+        <div class="acard-footer">
+          <div class="acard-legends-row">
+            <span><span class="legend-dot green"></span> IV</span>
+            <span><span class="legend-dot red"></span> RV</span>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  // Auto scroll horizontally to center on active spot strikes
+  setTimeout(() => {
+    const oiViewport = document.getElementById('oi-scroll-viewport');
+    if (oiViewport && oiViewport.scrollWidth > oiViewport.clientWidth) {
+      oiViewport.scrollLeft = oiViewport.scrollWidth * 0.38;
+    }
+    const volViewport = document.getElementById('vol-strike-scroll-viewport');
+    if (volViewport && volViewport.scrollWidth > volViewport.clientWidth) {
+      volViewport.scrollLeft = volViewport.scrollWidth * 0.25;
+    }
+  }, 50);
+}
+
+function cycleTimeRange() {
+  const ranges = ['Last 1 hour', 'Last 4 hours', 'Last 12 hours', 'Last 24 hours'];
+  const nextIdx = (ranges.indexOf(analyticsOiChangeTimeRange) + 1) % ranges.length;
+  analyticsOiChangeTimeRange = ranges[nextIdx];
+  renderAnalyticsView();
+}
+
+function cycleIvRvTimeframe() {
+  const tfs = ['Daily', 'Weekly', 'Monthly'];
+  const nextIdx = (tfs.indexOf(analyticsIvRvTimeframe) + 1) % tfs.length;
+  analyticsIvRvTimeframe = tfs[nextIdx];
+  renderAnalyticsView();
+}
+
+// ─── SVG CHART RENDERERS ──────────────────────────────────────────
+
+function renderOiChartSvg(data) {
+  const strikes = data.oiStrikes;
+  const colWidth = 26;
+  const barWidth = 4.5;
+  const chartHeight = 170;
+  const svgWidth = Math.max(strikes.length * colWidth + 50, 600);
+  const maxVal = 50; // 50M scale
+
+  // Horizontal gridlines
+  const gridLines = [0, 10, 20, 30, 40, 50].map(v => {
+    const y = chartHeight - 30 - (v / maxVal) * (chartHeight - 45);
+    return `<line x1="0" y1="${y}" x2="${svgWidth}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+  }).join('');
+
+  // Spot price marker at strike 82,400 - 82,800
+  const spotStrikeIdx = strikes.findIndex(s => s.strike === '82,800');
+  const spotX = spotStrikeIdx >= 0 ? spotStrikeIdx * colWidth + 14 : 320;
+
+  // Max pain marker at 82,400
+  const maxPainIdx = strikes.findIndex(s => s.isMaxPain);
+  const maxPainX = maxPainIdx >= 0 ? maxPainIdx * colWidth + 12 : 280;
+
+  const bars = strikes.map((s, i) => {
+    const x = i * colWidth + 16;
+    const callHeight = (Math.min(s.calls, maxVal) / maxVal) * (chartHeight - 45);
+    const putHeight = (Math.min(s.puts, maxVal) / maxVal) * (chartHeight - 45);
+    const callY = chartHeight - 30 - callHeight;
+    const putY = chartHeight - 30 - putHeight;
+
+    return `
+      <!-- Strike: ${s.strike} -->
+      <g class="chart-strike-group" onclick="showToast('Strike ${s.strike} | Calls: $${s.calls}M | Puts: $${s.puts}M', 'info')">
+        <rect x="${x}" y="${callY}" width="${barWidth}" height="${callHeight}" fill="#00c087" rx="1"/>
+        <rect x="${x + barWidth + 1.5}" y="${putY}" width="${barWidth}" height="${putHeight}" fill="#eb5757" rx="1"/>
+        <!-- X-axis label rotated -45 deg -->
+        <text x="${x + barWidth}" y="${chartHeight - 14}" fill="#7a8296" font-size="9" font-weight="500" text-anchor="end" transform="rotate(-45, ${x + barWidth}, ${chartHeight - 14})">${s.strike}</text>
+      </g>
+    `;
+  }).join('');
+
+  return `
+    <svg width="${svgWidth}" height="${chartHeight}" class="chart-svg-content" style="overflow:visible;">
+      ${gridLines}
+      ${bars}
+
+      <!-- Vertical spot line and pill (Screenshot 3) -->
+      <line x1="${spotX}" y1="20" x2="${spotX}" y2="${chartHeight - 30}" stroke="#ffffff" stroke-width="1" stroke-dasharray="3,3" opacity="0.8"/>
+      <g transform="translate(${spotX - 44}, 0)">
+        <rect x="0" y="0" width="88" height="18" fill="#232938" stroke="rgba(255,255,255,0.2)" rx="4"/>
+        <text x="44" y="12" fill="#ffffff" font-size="9" font-weight="700" text-anchor="middle">${analyticsActiveAsset}: ${data.spotPrice} USD</text>
+      </g>
+
+      <!-- Max Pain badge (Screenshot 3) -->
+      <g transform="translate(${maxPainX - 40}, 30)">
+        <rect x="0" y="0" width="84" height="17" fill="rgba(235, 87, 87, 0.15)" stroke="#eb5757" rx="3"/>
+        <text x="42" y="12" fill="#ffffff" font-size="8.5" font-weight="700" text-anchor="middle">Max pain: ${data.maxPain}</text>
+      </g>
+    </svg>
+  `;
+}
+
+function renderOiChangeChartSvg(data) {
+  const strikes = data.oiChangeStrikes;
+  const colWidth = 32;
+  const barWidth = 5;
+  const chartHeight = 180;
+  const svgWidth = Math.max(strikes.length * colWidth + 40, 380);
+  const maxVal = 30; // -30M to +30M scale
+  const zeroY = 90; // Midpoint for 0 line
+
+  // Horizontal gridlines: +30M, +20M, +10M, 0, -10M, -20M, -30M
+  const gridLines = [-30, -20, -10, 0, 10, 20, 30].map(v => {
+    const y = zeroY - (v / maxVal) * 70;
+    const isZero = v === 0;
+    return `<line x1="0" y1="${y}" x2="${svgWidth}" y2="${y}" stroke="${isZero ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.06)'}" stroke-width="${isZero ? 1.2 : 0.8}"/>`;
+  }).join('');
+
+  const bars = strikes.map((s, i) => {
+    const x = i * colWidth + 18;
+
+    // Call bar
+    let callY = zeroY;
+    let callH = Math.abs(s.calls / maxVal) * 70;
+    if (s.calls >= 0) {
+      callY = zeroY - callH;
+    } else {
+      callY = zeroY;
+    }
+
+    // Put bar
+    let putY = zeroY;
+    let putH = Math.abs(s.puts / maxVal) * 70;
+    if (s.puts >= 0) {
+      putY = zeroY - putH;
+    } else {
+      putY = zeroY;
+    }
+
+    return `
+      <g class="chart-strike-group" onclick="showToast('Strike ${s.strike} Δ | Calls: ${s.calls>0?'+':''}${s.calls}M | Puts: ${s.puts>0?'+':''}${s.puts}M', 'info')">
+        <rect x="${x}" y="${callY}" width="${barWidth}" height="${Math.max(callH, 1)}" fill="#00c087" rx="1"/>
+        <rect x="${x + barWidth + 2}" y="${putY}" width="${barWidth}" height="${Math.max(putH, 1)}" fill="#eb5757" rx="1"/>
+        <!-- X-axis label rotated -45 deg -->
+        <text x="${x + barWidth}" y="${chartHeight - 10}" fill="#7a8296" font-size="9" font-weight="500" text-anchor="end" transform="rotate(-45, ${x + barWidth}, ${chartHeight - 10})">${s.strike}</text>
+      </g>
+    `;
+  }).join('');
+
+  return `
+    <svg width="${svgWidth}" height="${chartHeight}" class="chart-svg-content" style="overflow:visible;">
+      ${gridLines}
+      ${bars}
+    </svg>
+  `;
+}
+
+function renderVolStrikeChartSvg(data) {
+  const strikes = data.volStrikes;
+  const colWidth = 32;
+  const barWidth = 5;
+  const chartHeight = 180;
+  const svgWidth = Math.max(strikes.length * colWidth + 50, 420);
+  const maxVal = 300; // 0 to 300M
+
+  // Horizontal gridlines: 0, 50, 100, 150, 200, 250, 300
+  const gridLines = [0, 50, 100, 150, 200, 250, 300].map(v => {
+    const y = chartHeight - 25 - (v / maxVal) * (chartHeight - 40);
+    return `<line x1="0" y1="${y}" x2="${svgWidth}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+  }).join('');
+
+  // Spot marker at 82,736.9
+  const spotIdx = strikes.findIndex(s => s.strike === '82,800');
+  const spotX = spotIdx >= 0 ? spotIdx * colWidth + 8 : 180;
+
+  // Selected tooltip strike
+  const tooltipIdx = strikes.findIndex(s => s.strike === analyticsVolStrikeActiveTooltip);
+  const activeStrike = tooltipIdx >= 0 ? strikes[tooltipIdx] : strikes[6]; // default to 83,200 (Screenshot 5)
+  const tipX = tooltipIdx >= 0 ? tooltipIdx * colWidth - 45 : 170;
+
+  const bars = strikes.map((s, i) => {
+    const x = i * colWidth + 16;
+    const callHeight = (Math.min(s.calls, maxVal) / maxVal) * (chartHeight - 40);
+    const putHeight = (Math.min(s.puts, maxVal) / maxVal) * (chartHeight - 40);
+    const callY = chartHeight - 25 - callHeight;
+    const putY = chartHeight - 25 - putHeight;
+
+    return `
+      <g class="chart-strike-group" onclick="selectVolStrikeTooltip('${s.strike}')" style="cursor:pointer;">
+        <rect x="${x}" y="${callY}" width="${barWidth}" height="${callHeight}" fill="#00c087" rx="1"/>
+        <rect x="${x + barWidth + 2}" y="${putY}" width="${barWidth}" height="${putHeight}" fill="#eb5757" rx="1"/>
+        <text x="${x + barWidth}" y="${chartHeight - 8}" fill="#7a8296" font-size="9" font-weight="500" text-anchor="end" transform="rotate(-45, ${x + barWidth}, ${chartHeight - 8})">${s.strike}</text>
+      </g>
+    `;
+  }).join('');
+
+  return `
+    <svg width="${svgWidth}" height="${chartHeight}" class="chart-svg-content" style="overflow:visible;">
+      ${gridLines}
+      ${bars}
+
+      <!-- Spot line (Screenshot 5) -->
+      <line x1="${spotX}" y1="15" x2="${spotX}" y2="${chartHeight - 25}" stroke="#ffffff" stroke-width="1" stroke-dasharray="3,3" opacity="0.8"/>
+      <g transform="translate(${spotX - 44}, 0)">
+        <rect x="0" y="0" width="88" height="16" fill="#232938" stroke="rgba(255,255,255,0.2)" rx="4"/>
+        <text x="44" y="11" fill="#ffffff" font-size="8.5" font-weight="700" text-anchor="middle">${analyticsActiveAsset}: ${data.spotPrice} USD</text>
+      </g>
+
+      <!-- Interactive Callout Tooltip matching Screenshot 5 exactly -->
+      <g transform="translate(${Math.max(10, tipX)}, 52)" style="filter: drop-shadow(0 6px 14px rgba(0,0,0,0.85)); pointer-events: none;">
+        <rect x="0" y="0" width="124" height="48" fill="#151926" stroke="#ff7a00" stroke-width="1.6" rx="6"/>
+        <text x="10" y="15" fill="#c0c6d4" font-size="9.5" font-weight="700">At Strike: $ ${activeStrike.strike}</text>
+        <circle cx="14" cy="27" r="3" fill="#00c087"/>
+        <text x="22" y="30" fill="#ffffff" font-size="9" font-weight="600">Calls: ${activeStrike.callsDisplay || '$128.10M'}</text>
+        <circle cx="14" cy="39" r="3" fill="#eb5757"/>
+        <text x="22" y="42" fill="#ffffff" font-size="9" font-weight="600">Puts: ${activeStrike.putsDisplay || '$3.04M'}</text>
+      </g>
+    </svg>
+  `;
+}
+
+function renderIvRvChartSvg() {
+  const chartWidth = 320;
+  const chartHeight = 160;
+
+  // Gridlines at 0, 30, 40, 50, 60%
+  const gridLines = [0, 30, 40, 50, 60].map(v => {
+    const y = chartHeight - 20 - (v / 60) * (chartHeight - 35);
+    return `<line x1="0" y1="${y}" x2="${chartWidth}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+  }).join('');
+
+  // Coordinates matching the curves in Screenshot 5
+  // IV green line: curves smoothly between 34% and 40%
+  const ivPath = "M 10 120 C 50 115, 80 112, 110 118 C 140 125, 170 105, 200 98 C 230 92, 260 108, 290 114 L 310 108";
+
+  // RV red line: fluctuations between 22% and 39% with a sharp spike at the end
+  const rvPath = "M 10 135 C 30 130, 50 138, 70 132 C 90 120, 110 135, 130 95 C 150 118, 170 112, 190 125 C 210 132, 230 138, 260 135 C 280 138, 295 140, 305 85 L 312 88";
+
+  return `
+    <svg width="${chartWidth}" height="${chartHeight}" class="chart-svg-content" style="width:100%; height:auto;" viewBox="0 0 ${chartWidth} ${chartHeight}">
+      ${gridLines}
+      <!-- IV Curve (Green) -->
+      <path d="${ivPath}" fill="none" stroke="#00c087" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- RV Curve (Red) -->
+      <path d="${rvPath}" fill="none" stroke="#eb5757" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   `;
 }
 

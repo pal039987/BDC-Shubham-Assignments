@@ -521,22 +521,57 @@
           </div>
         </section>
 
-        <!-- 6. SPOT TAB VIEW -->
+        <!-- 6. SPOT TAB VIEW (Screenshot 1) -->
         <section class="mkt-subview hidden" id="mkt-view-spot">
-          <div class="mkt-table-header">
-            <span class="mcol-contract" onclick="sortMarketsSpot('symbol')">Pair</span>
-            <span class="mcol-price-vol" onclick="sortMarketsSpot('price')">Price ↕ | Vol ↕</span>
-            <span class="mcol-change" onclick="sortMarketsSpot('change')">24h Chg. ↕</span>
+          <div class="mkt-table-header spot-table-header">
+            <span class="mcol-contract" onclick="sortMarketsSpot('symbol')">Contract</span>
+            <span class="mcol-price-vol" onclick="sortMarketsSpot('price')">Price <span class="sort-icon-pair">⬍</span> | Vol <span class="sort-icon-active" style="color:var(--delta-primary,#ff7a00)">▼</span></span>
+            <span class="mcol-change" onclick="sortMarketsSpot('change')">24h Chg. <span class="sort-icon-pair">⬍</span></span>
           </div>
           <div class="contracts-list" id="markets-spot-list">
-            <!-- Injected by JavaScript -->
+            <!-- Injected by JavaScript from MARKETS_SPOT_DATA -->
           </div>
         </section>
 
-        <!-- 7. ANALYTICS TAB VIEW -->
+        <!-- 7. ANALYTICS TAB VIEW (Screenshots 2, 3, 4, 5) -->
         <section class="mkt-subview hidden" id="mkt-view-analytics">
+          <!-- Analytics Top Sub-Bar (Screenshots 2-5) -->
+          <div class="analytics-subbar">
+            <div class="analytics-subbar-left">
+              <button class="analytics-jump-btn" id="analytics-jump-btn" onclick="toggleAnalyticsJumpMenu(event)">
+                <span>Jump to...</span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </button>
+              <div class="analytics-jump-menu hidden" id="analytics-jump-menu">
+                <div class="jump-menu-item" onclick="jumpToAnalyticsChart('chart-card-oi')">Open Interest</div>
+                <div class="jump-menu-item" onclick="jumpToAnalyticsChart('chart-card-oi-change')">Open Interest Change</div>
+                <div class="jump-menu-item" onclick="jumpToAnalyticsChart('chart-card-vol-strike')">Volume vs Strike</div>
+                <div class="jump-menu-item" onclick="jumpToAnalyticsChart('chart-card-iv-rv')">IV vs RV</div>
+              </div>
+            </div>
+            <div class="analytics-subbar-right">
+              <div class="analytics-stat-line">
+                <span class="stat-lbl">Open Interest</span>
+                <span class="stat-val" id="analytics-stat-oi">$1.38B</span>
+              </div>
+              <div class="analytics-stat-line">
+                <span class="stat-lbl dashed-tip" title="Total Options Volume in 24 Hours">24h Vol</span>
+                <span class="stat-val" id="analytics-stat-vol">$7.59B</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rotate Notice Banner (Screenshot 2) -->
+          <div class="analytics-rotate-banner" id="analytics-rotate-banner">
+            <span class="rotate-banner-text">Rotate your screen for a better experience.</span>
+            <button class="rotate-close-btn" onclick="dismissRotateBanner(event)" aria-label="Close banner">✕</button>
+          </div>
+
+          <!-- Analytics Charts Container (Screenshots 2, 3, 4, 5) -->
           <div class="analytics-cards-container" id="markets-analytics-list">
-            <!-- Injected by JavaScript -->
+            <!-- Dynamically populated by renderAnalyticsView() -->
           </div>
         </section>
 

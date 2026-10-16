@@ -240,5 +240,67 @@ assert.ok(jsContent.includes('function openWhatAreStraddlesModal()'), 'openWhatA
 assert.ok(jsContent.includes('function closeWhatAreStraddlesModal()'), 'closeWhatAreStraddlesModal defined');
 console.log('  ✓ Straddles contracts, floating action button, and modal strictly match Screenshot 5');
 
-console.log('\n=== ALL 15 MARKETS & OPTIONS TESTS PASSED! ===\n');
+// 9. Test Spot Tab (Screenshot 1)
+const spotMatch = jsContent.match(/const MARKETS_SPOT_DATA = (\[[\s\S]*?\]);/);
+assert.ok(spotMatch, 'Must match MARKETS_SPOT_DATA array');
+const spotData = eval(spotMatch[1]);
+assert.strictEqual(spotData.length, 4, 'Spot data must contain exactly 4 pairs (Screenshot 1)');
+assert.strictEqual(spotData[0].symbol, 'XRP/INR');
+assert.strictEqual(spotData[0].price, '₹136.564');
+assert.strictEqual(spotData[0].vol, '₹6L');
+assert.strictEqual(spotData[0].change, '3.49%');
+assert.strictEqual(spotData[1].symbol, 'SOL/INR');
+assert.strictEqual(spotData[1].price, '₹10806.15');
+assert.strictEqual(spotData[1].vol, '₹9.87L');
+assert.strictEqual(spotData[1].change, '4.86%');
+assert.strictEqual(spotData[2].symbol, 'ETH/INR');
+assert.strictEqual(spotData[2].price, '₹248035.5');
+assert.strictEqual(spotData[2].vol, '₹3.06L');
+assert.strictEqual(spotData[2].change, '3.61%');
+assert.strictEqual(spotData[3].symbol, 'BTC/INR');
+assert.strictEqual(spotData[3].price, '₹8320203');
+assert.strictEqual(spotData[3].vol, '₹13.77L');
+assert.strictEqual(spotData[3].change, '1.37%');
+assert.ok(jsContent.includes('function renderSpotList()'), 'renderSpotList defined');
+assert.ok(jsContent.includes('function sortMarketsSpot(col)'), 'sortMarketsSpot defined');
+assert.ok(jsContent.includes('function toggleSpotStar(id, event)'), 'toggleSpotStar defined');
+assert.ok(htmlContent.includes('spot-table-header'), 'Spot table header present');
+console.log('  ✓ Spot Tab contracts, INR pricing, volumes & 24h change strictly match Screenshot 1');
+
+// 10. Test Analytics Tab (Screenshots 2, 3, 4, 5)
+assert.ok(htmlContent.includes('id="analytics-jump-btn"'), 'Jump to button present');
+assert.ok(htmlContent.includes('id="analytics-jump-menu"'), 'Jump to menu present');
+assert.ok(htmlContent.includes('id="analytics-stat-oi"'), 'Analytics Open Interest global stat present');
+assert.ok(htmlContent.includes('id="analytics-stat-vol"'), 'Analytics 24h Vol global stat present');
+assert.ok(htmlContent.includes('id="analytics-rotate-banner"'), 'Rotate screen banner present (Screenshot 2)');
+assert.ok(cssContent.includes('.analytics-rotate-banner'), 'CSS for rotate screen banner present');
+
+// Cards 1-4 definitions
+assert.ok(jsContent.includes('id="chart-card-oi"'), 'Card 1: Open Interest chart card generated');
+assert.ok(jsContent.includes('id="chart-card-oi-change"'), 'Card 2: Open Interest Change chart card generated');
+assert.ok(jsContent.includes('id="chart-card-vol-strike"'), 'Card 3: Volume vs Strike chart card generated');
+assert.ok(jsContent.includes('id="chart-card-iv-rv"'), 'Card 4: IV vs RV chart card generated');
+
+// Overlays & Callouts
+assert.ok(jsContent.includes("maxPain: '82400'"), 'Max Pain data property present in BTC dataset (Screenshot 3)');
+assert.ok(jsContent.includes('Max pain: ${data.maxPain}'), 'Max Pain badge present in Open Interest chart (Screenshot 3)');
+assert.ok(jsContent.includes("spotPrice: '82,725.7'"), 'Spot price data property present in BTC dataset (Screenshot 3)');
+assert.ok(jsContent.includes('${analyticsActiveAsset}: ${data.spotPrice} USD'), 'Spot price pill present in chart (Screenshot 3)');
+assert.ok(jsContent.includes('At Strike: $'), 'Interactive tooltip callout box present (Screenshot 5)');
+assert.ok(jsContent.includes("callsDisplay: '$ 128.10M'"), 'Strike 83,200 Calls volume tooltip verified (Screenshot 5)');
+assert.ok(jsContent.includes("putsDisplay: '$ 3.04M'"), 'Strike 83,200 Puts volume tooltip verified (Screenshot 5)');
+
+// Functions and SVG renderers
+assert.ok(jsContent.includes('function renderOiChartSvg(data)'), 'renderOiChartSvg defined');
+assert.ok(jsContent.includes('function renderOiChangeChartSvg(data)'), 'renderOiChangeChartSvg defined');
+assert.ok(jsContent.includes('function renderVolStrikeChartSvg(data)'), 'renderVolStrikeChartSvg defined');
+assert.ok(jsContent.includes('function renderIvRvChartSvg()'), 'renderIvRvChartSvg defined');
+assert.ok(jsContent.includes('function jumpToAnalyticsChart(cardId)'), 'jumpToAnalyticsChart defined');
+assert.ok(jsContent.includes('function dismissRotateBanner(e)'), 'dismissRotateBanner defined');
+assert.ok(jsContent.includes('function cycleAnalyticsAsset()'), 'cycleAnalyticsAsset defined');
+assert.ok(jsContent.includes('function toggleLegends(cardKey)'), 'toggleLegends defined');
+console.log('  ✓ Analytics Tab 4 chart cards, overlays, tooltips & controllers strictly match Screenshots 2-5');
+
+console.log('\n=== ALL 17 MARKETS & OPTIONS TESTS PASSED! ===\n');
+
 
