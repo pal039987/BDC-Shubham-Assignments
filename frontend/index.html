@@ -166,6 +166,20 @@
 <!-- ══════════════════════ MAIN APP (LIVE EXCHANGE) ══════════════════════ -->
 <div id="app" class="app">
 
+  <!-- Pull-To-Refresh Indicator (Vertical Drag Gesture) -->
+  <div id="pull-to-refresh-indicator" class="pull-to-refresh-indicator">
+    <div class="ptr-content">
+      <div class="ptr-spinner" id="ptr-spinner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"></path>
+          <path d="M1 20v-6h6"></path>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </div>
+      <span class="ptr-text" id="ptr-text">Pull down to refresh</span>
+    </div>
+  </div>
+
   <!-- NAVBAR (Shark Exchange Style) -->
   <nav class="navbar groww-navbar shark-navbar">
     <div class="nav-brand" onclick="switchMainTab('chart')">
@@ -394,9 +408,15 @@
       <!-- Available Balance Card (Screenshot 3) -->
       <div class="vfunds-balance-card">
         <div class="vfunds-bal-left">
-          <span class="vfunds-bal-label">Available Balance</span>
+          <div class="vfunds-bal-header-row">
+            <span class="vfunds-bal-label">Available Balance</span>
+            <div class="vfunds-curr-toggle-group" id="vfunds-curr-toggle-group">
+              <button type="button" class="vfunds-curr-toggle-btn active" id="vfunds-curr-usdt" onclick="switchFundsWalletTab('futures')" title="USDT Dollar View">$ USD</button>
+              <button type="button" class="vfunds-curr-toggle-btn" id="vfunds-curr-inr" onclick="switchFundsWalletTab('inr')" title="Indian Rupee View">₹ INR</button>
+            </div>
+          </div>
           <div class="vfunds-bal-amount-wrap">
-            <span class="vfunds-bal-amount" id="vfunds-balance-display">₹ 0.00</span>
+            <span class="vfunds-bal-amount" id="vfunds-balance-display" onclick="toggleFundsBalanceCurrency()" title="Tap to toggle INR / USD" style="cursor:pointer;">$ 10,000.00 USDT</span>
             <button type="button" class="vfunds-eye-btn" id="vfunds-eye-btn" onclick="toggleFundsBalanceVisibility()" title="Toggle Balance Mask">👁</button>
           </div>
         </div>
@@ -1276,9 +1296,15 @@
 
       <!-- Total Balance Card (Screenshot 4) -->
       <div class="vacc-balance-card">
-        <div>
-          <div class="vacc-bal-label">Total Balance</div>
-          <div class="vacc-bal-val" id="vacc-total-balance">₹ 0.00</div>
+        <div class="vacc-bal-col">
+          <div class="vacc-bal-header-row">
+            <div class="vacc-bal-label">Total Balance</div>
+            <div class="vacc-curr-toggle-group" id="vacc-curr-toggle-group">
+              <button type="button" class="vacc-curr-toggle-btn active" id="vacc-curr-inr" onclick="setAccountsCurrency('INR')" title="View in Indian Rupees">₹ INR</button>
+              <button type="button" class="vacc-curr-toggle-btn" id="vacc-curr-usd" onclick="setAccountsCurrency('USD')" title="View in US Dollars">$ USD</button>
+            </div>
+          </div>
+          <div class="vacc-bal-val" id="vacc-total-balance" onclick="toggleAccountsCurrency()" title="Tap to toggle INR / USD" style="cursor:pointer;">₹ 0.00</div>
         </div>
         <button type="button" class="btn-vacc-add-funds" onclick="openDepositModal()">Add Funds</button>
       </div>

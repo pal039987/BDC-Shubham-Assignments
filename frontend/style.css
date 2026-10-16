@@ -7934,3 +7934,104 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   min-height: calc(100vh - 70px);
   padding-bottom: 90px;
 }
+
+/* ══════════════════════ PULL-TO-REFRESH INDICATOR ══════════════════════ */
+.pull-to-refresh-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translateY(-100%);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.pull-to-refresh-indicator.pulling {
+  transition: none !important;
+}
+.pull-to-refresh-indicator.refreshing {
+  transform: translateY(12px) !important;
+}
+.ptr-content {
+  background: rgba(15, 20, 32, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 8px 18px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 16px rgba(99, 102, 241, 0.25);
+}
+.ptr-spinner {
+  color: #818cf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+.pull-to-refresh-indicator.refreshing .ptr-spinner {
+  animation: ptrSpinnerKeyframes 0.7s linear infinite;
+}
+@keyframes ptrSpinnerKeyframes {
+  100% { transform: rotate(360deg); }
+}
+.ptr-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.2px;
+}
+
+/* ══════════════════════ CURRENCY TOGGLE GROUPS (FUNDS & ACCOUNTS) ══════════════════════ */
+.vfunds-bal-header-row,
+.vacc-bal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.vacc-bal-col {
+  display: flex;
+  flex-direction: column;
+}
+.vfunds-curr-toggle-group,
+.vacc-curr-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 2px;
+  gap: 2px;
+}
+.vfunds-curr-toggle-btn,
+.vacc-curr-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--v-text-muted, #94a3b8);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  line-height: 1.2;
+}
+.vfunds-curr-toggle-btn:hover,
+.vacc-curr-toggle-btn:hover {
+  color: #ffffff;
+}
+.vfunds-curr-toggle-btn.active,
+.vacc-curr-toggle-btn.active {
+  background: var(--v-primary, #6366f1);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.5);
+}
+

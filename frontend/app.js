@@ -372,6 +372,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDrawingCanvas();
   startPriceRefreshTimer();
   startFundingCountdown();
+  initPullToRefresh();
+  initHorizontalSwipeNavigation();
 
   loadAll();
 
@@ -3824,6 +3826,191 @@ function switchMainTab(tabName) {
   }
 }
 
+// ══════════════════════ GESTURE ENGINES: PULL-TO-REFRESH & HORIZONTAL SWIPE ══════════════════════
+let ptrTouchStartY = 0;
+let ptrTouchStartX = 0;
+let isPtrActive = false;
+let isPtrRefreshing = false;
+
+function initPullToRefresh() {
+  const ptrIndicator = document.getElementById('pull-to-refresh-indicator');
+  const ptrSpinner = document.getElementById('ptr-spinner');
+  const ptrText = document.getElementById('ptr-text');
+  if (!ptrIndicator) return;
+
+  window.addEventListener('touchstart', (e) => {
+    if (isPtrRefreshing || e.touches.length !== 1) return;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    if (scrollY <= 2) {
+      ptrTouchStartY = e.touches[0].clientY;
+      ptrTouchStartX = e.touches[0].clientX;
+      isPtrActive = true;
+    } else {
+      isPtrActive = false;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!isPtrActive || isPtrRefreshing) return;
+    const curY = e.touches[0].clientY;
+    const curX = e.touches[0].clientX;
+    const deltaY = curY - ptrTouchStartY;
+    const deltaX = curX - ptrTouchStartX;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+    if (scrollY <= 2 && deltaY > 10 && deltaY > Math.abs(deltaX) * 1.3) {
+      ptrIndicator.classList.add('pulling');
+      const pullOffset = Math.min(deltaY * 0.45, 80);
+      ptrIndicator.style.transform = `translateY(${pullOffset - 60}px)`;
+      const rot = Math.min((pullOffset / 60) * 180, 180);
+      if (ptrSpinner) ptrSpinner.style.transform = `rotate(${rot}deg)`;
+      if (ptrText) {
+        ptrText.textContent = pullOffset >= 55 ? 'Release to refresh' : 'Pull down to refresh';
+      }
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    if (!isPtrActive || isPtrRefreshing) {
+      isPtrActive = false;
+      return;
+    }
+    isPtrActive = false;
+    ptrIndicator.classList.remove('pulling');
+
+    const match = ptrIndicator.style.transform.match(/translateY\((-?\d+(\.\d+)?)px\)/);
+    const currentOffset = match ? parseFloat(match[1]) : -60;
+
+    if (currentOffset >= -10) {
+      triggerGlobalRefresh();
+    } else {
+      ptrIndicator.style.transform = '';
+      if (ptrSpinner) ptrSpinner.style.transform = '';
+      if (ptrText) ptrText.textContent = 'Pull down to refresh';
+    }
+  }, { passive: true });
+}
+
+async function triggerGlobalRefresh() {
+  const ptrIndicator = document.getElementById('pull-to-refresh-indicator');
+  const ptrSpinner = document.getElementById('ptr-spinner');
+  const ptrText = document.getElementById('ptr-text');
+  if (isPtrRefreshing) return;
+  isPtrRefreshing = true;
+
+  if (ptrIndicator) {
+    ptrIndicator.classList.add('refreshing');
+    ptrIndicator.style.transform = 'translateY(12px)';
+  }
+  if (ptrText) ptrText.textContent = 'Updating prices & balances...';
+
+  try {
+    // 1. Fetch fresh live prices directly from Binance
+    if (typeof fetchBinanceDirect === 'function') {
+      await fetchBinanceDirect().catch(() => {});
+    }
+    // 2. Fetch authenticated portfolio & positions if logged in
+    if (typeof loadPortfolio === 'function') {
+      await loadPortfolio().catch(() => {});
+    }
+    // 3. Re-render all views and balances
+    if (typeof renderPositions === 'function') renderPositions();
+    if (typeof renderOrders === 'function') renderOrders();
+    if (typeof renderOpenOrdersCardList === 'function') renderOpenOrdersCardList();
+    if (typeof renderFundsBalance === 'function') renderFundsBalance();
+    if (typeof renderAccountsScreen === 'function') renderAccountsScreen();
+    if (typeof renderWalletOverview === 'function') renderWalletOverview();
+
+    if (ptrText) ptrText.textContent = 'Refreshed!';
+    showToast('Data refreshed successfully!', 'success');
+  } catch (err) {
+    showToast('Refreshed local trading state', 'info');
+  } finally {
+    setTimeout(() => {
+      if (ptrIndicator) {
+        ptrIndicator.classList.remove('refreshing');
+        ptrIndicator.style.transform = '';
+      }
+      if (ptrSpinner) ptrSpinner.style.transform = '';
+      if (ptrText) ptrText.textContent = 'Pull down to refresh';
+      isPtrRefreshing = false;
+    }, 600);
+  }
+}
+
+// Horizontal Swipe Across All Bottom Navbar Categories
+const MAIN_BOTTOM_NAV_CATEGORIES = ['orders', 'explore', 'trade', 'funds', 'accounts'];
+let hSwipeStartX = 0;
+let hSwipeStartY = 0;
+let hSwipeStartTime = 0;
+
+function initHorizontalSwipeNavigation() {
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    const target = e.target;
+    // Exempt interactive chart canvas, TradingView widgets, sliders, text inputs, open dialogs
+    if (target.closest('#tradingview-chart-container') ||
+        target.closest('.chart-wrapper') ||
+        target.closest('#chart-canvas') ||
+        target.closest('input') ||
+        target.closest('textarea') ||
+        target.closest('select') ||
+        target.closest('.modal') ||
+        target.closest('.dialog-overlay') ||
+        target.closest('.vtrade-dialog-overlay')) {
+      hSwipeStartX = 0;
+      return;
+    }
+    hSwipeStartX = e.touches[0].clientX;
+    hSwipeStartY = e.touches[0].clientY;
+    hSwipeStartTime = Date.now();
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    if (!hSwipeStartX) return;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const deltaX = endX - hSwipeStartX;
+    const deltaY = endY - hSwipeStartY;
+    const duration = Date.now() - hSwipeStartTime;
+    hSwipeStartX = 0;
+
+    // Minimum swipe distance: 55px, dominant horizontal movement, within 650ms
+    if (duration < 650 && Math.abs(deltaX) > 55 && Math.abs(deltaX) > Math.abs(deltaY) * 1.35) {
+      let currentTab = activeMainTab || 'explore';
+      if (currentTab === 'positions' || currentTab === 'history') currentTab = 'orders';
+      if (currentTab === 'markets') currentTab = 'explore';
+      if (currentTab === 'wallet') currentTab = 'funds';
+      if (currentTab === 'profile') currentTab = 'accounts';
+
+      const currentIndex = MAIN_BOTTOM_NAV_CATEGORIES.indexOf(currentTab);
+      if (currentIndex === -1) return;
+
+      if (deltaX < 0) {
+        // Swipe Left -> Next Category
+        if (currentIndex < MAIN_BOTTOM_NAV_CATEGORIES.length - 1) {
+          const nextTab = MAIN_BOTTOM_NAV_CATEGORIES[currentIndex + 1];
+          switchMainTab(nextTab);
+          triggerSwipeHapticFeedback();
+        }
+      } else {
+        // Swipe Right -> Previous Category
+        if (currentIndex > 0) {
+          const prevTab = MAIN_BOTTOM_NAV_CATEGORIES[currentIndex - 1];
+          switchMainTab(prevTab);
+          triggerSwipeHapticFeedback();
+        }
+      }
+    }
+  }, { passive: true });
+}
+
+function triggerSwipeHapticFeedback() {
+  if (typeof navigator !== 'undefined' && navigator.vibrate && hapticFeedbackActive) {
+    try { navigator.vibrate(15); } catch (_) {}
+  }
+}
+
 // ─── SCREEN 1: ORDERS SCREEN FUNCTIONS (Screenshot 1 Match) ───────────
 let activeOrdersTab = 'positions';
 
@@ -4361,7 +4548,26 @@ function toggleChartSettings() {
 }
 
 // ─── SCREEN 3: FUNDS / WALLET FUNCTIONS (Screenshot 3 Match) ───
-let activeFundsWalletTab = 'inr';
+// ─── DYNAMIC NET EQUITY ENGINE (Screenshots 1 & 2 Sync) ───────────
+function computeNetEquity() {
+  const cash = (walletState && typeof walletState.cashBalance === 'number') 
+    ? walletState.cashBalance 
+    : ((walletState && typeof walletState.cash === 'number') ? walletState.cash : 10000);
+  const open = walletState?.positions || [];
+  let totalMargin = 0;
+  let totalUnrealized = 0;
+
+  open.forEach(p => {
+    totalMargin += (p.margin || 0);
+    const curPrice = currentPrices[p.coin]?.price || p.entry_price || 0;
+    const priceDiff = (p.direction === 'long') ? (curPrice - p.entry_price) : (p.entry_price - curPrice);
+    totalUnrealized += (priceDiff * (p.size || 0));
+  });
+
+  return Math.max(0, roundUsd(cash + totalMargin + totalUnrealized));
+}
+
+let activeFundsWalletTab = 'futures';
 let fundsBalanceHidden = false;
 let activeFundsSheetTab = 'fiat';
 
@@ -4372,12 +4578,21 @@ function switchFundsWalletTab(tab) {
   if (inrBtn) inrBtn.classList.toggle('active', tab === 'inr');
   if (futBtn) futBtn.classList.toggle('active', tab === 'futures');
 
+  const inrToggleBtn = document.getElementById('vfunds-curr-inr');
+  const usdtToggleBtn = document.getElementById('vfunds-curr-usdt');
+  if (inrToggleBtn) inrToggleBtn.classList.toggle('active', tab === 'inr');
+  if (usdtToggleBtn) usdtToggleBtn.classList.toggle('active', tab === 'futures');
+
   const depSub = document.getElementById('vfunds-dep-sub');
   const withSub = document.getElementById('vfunds-with-sub');
   if (depSub) depSub.textContent = tab === 'inr' ? 'INR' : 'USDT';
   if (withSub) withSub.textContent = tab === 'inr' ? 'INR' : 'USDT';
 
   renderFundsBalance();
+}
+
+function toggleFundsBalanceCurrency() {
+  switchFundsWalletTab(activeFundsWalletTab === 'inr' ? 'futures' : 'inr');
 }
 
 function toggleFundsBalanceVisibility() {
@@ -4389,8 +4604,14 @@ function toggleFundsBalanceVisibility() {
 
 function renderFundsBalance() {
   const balEl = document.getElementById('vfunds-balance-display');
-  const cash = walletState?.cash !== undefined ? walletState.cash : 10000;
   if (!balEl) return;
+
+  const netEquity = computeNetEquity();
+
+  const inrToggleBtn = document.getElementById('vfunds-curr-inr');
+  const usdtToggleBtn = document.getElementById('vfunds-curr-usdt');
+  if (inrToggleBtn) inrToggleBtn.classList.toggle('active', activeFundsWalletTab === 'inr');
+  if (usdtToggleBtn) usdtToggleBtn.classList.toggle('active', activeFundsWalletTab === 'futures');
 
   if (fundsBalanceHidden) {
     balEl.textContent = activeFundsWalletTab === 'inr' ? '₹ ••••••••' : '$ ••••••••';
@@ -4398,10 +4619,10 @@ function renderFundsBalance() {
   }
 
   if (activeFundsWalletTab === 'inr') {
-    const inrVal = cash * (usdToInrRate || 92.5);
+    const inrVal = netEquity * (usdToInrRate || 92.5);
     balEl.textContent = `₹ ${inrVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   } else {
-    balEl.textContent = `$ ${cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
+    balEl.textContent = `$ ${netEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
   }
 }
 
@@ -4423,6 +4644,21 @@ function switchFundsSheetTab(tab) {
 
 // ─── SCREEN 4: ACCOUNTS & PAPER-TRADING PREFERENCES (Screenshot 4 Match) ───
 let userCustomName = 'flipfishtrust';
+let accountsCurrency = safeStorageGet('vtrade_accounts_currency') || 'INR';
+
+function setAccountsCurrency(curr) {
+  accountsCurrency = curr;
+  safeStorageSet('vtrade_accounts_currency', curr);
+  const inrBtn = document.getElementById('vacc-curr-inr');
+  const usdBtn = document.getElementById('vacc-curr-usd');
+  if (inrBtn) inrBtn.classList.toggle('active', curr === 'INR');
+  if (usdBtn) usdBtn.classList.toggle('active', curr === 'USD');
+  renderAccountsScreen();
+}
+
+function toggleAccountsCurrency() {
+  setAccountsCurrency(accountsCurrency === 'INR' ? 'USD' : 'INR');
+}
 
 function triggerAvatarUpload() {
   const inp = document.getElementById('vacc-avatar-input');
@@ -4448,13 +4684,23 @@ function handleAvatarFileSelect(e) {
 }
 
 function renderAccountsScreen() {
-  const cash = walletState?.cash !== undefined ? walletState.cash : 10000;
+  const netEquity = computeNetEquity();
   const totalBalEl = document.getElementById('vacc-total-balance');
   const nameEl = document.getElementById('vacc-username');
   if (nameEl) nameEl.textContent = `Hi ${userCustomName} !`;
+
+  const inrBtn = document.getElementById('vacc-curr-inr');
+  const usdBtn = document.getElementById('vacc-curr-usd');
+  if (inrBtn) inrBtn.classList.toggle('active', accountsCurrency === 'INR');
+  if (usdBtn) usdBtn.classList.toggle('active', accountsCurrency === 'USD');
+
   if (totalBalEl) {
-    const inrVal = cash * (usdToInrRate || 92.5);
-    totalBalEl.textContent = `₹ ${inrVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    if (accountsCurrency === 'INR') {
+      const inrVal = netEquity * (usdToInrRate || 92.5);
+      totalBalEl.textContent = `₹ ${inrVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    } else {
+      totalBalEl.textContent = `$ ${netEquity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
+    }
   }
 
   // Load custom profile DP if saved
@@ -6231,6 +6477,8 @@ function updateLivePnL(coin, curPrice) {
   checkAutoCloseConditions();
   checkPendingLimitOrders();
   updateMiniStats();
+  renderFundsBalance();
+  renderAccountsScreen();
 }
 
 // ─── MINI STATS & PORTFOLIO TRACKING ──────────────────────
@@ -6282,6 +6530,8 @@ function updateMiniStats() {
 function renderPositions() {
   updateTabBadges();
   renderTvChartOverlay();
+  renderFundsBalance();
+  renderAccountsScreen();
   const tbody = document.getElementById('pos-tbody');
   const cardsList = document.getElementById('pos-cards-list');
   const summaryEl = document.getElementById('pos-total-pnl-summary');
