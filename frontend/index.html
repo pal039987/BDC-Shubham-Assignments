@@ -620,28 +620,124 @@
 
     </div>
 
-    <!-- ══════════════════════ GROWW WALLET & ACCOUNT VIEW (Only Total Equity) ══════════════════════ -->
-    <div class="groww-wallet-panel hidden" id="view-wallet-panel">
-      <!-- Total Account Net Equity Card Only -->
-      <div class="gwallet-card">
-        <div class="gwallet-head">
-          <div class="gwallet-title-group">
-            <span class="gwallet-sub">Total Account Net Equity</span>
-            <span class="gwallet-balance-val" id="gwallet-equity-val">$10,000.00 USDT</span>
-            <span class="gwallet-equity-sub" id="gwallet-equity-breakdown">Updated live after every trade &amp; tick</span>
+    <!-- ══════════════════════ SCREEN 3: VTRADE FUNDS / WALLET VIEW (Screenshot 3 Match) ══════════════════════ -->
+    <div class="vtrade-funds-panel hidden" id="view-wallet-panel">
+      <!-- Top Sub-Tabs: INR Wallet | Futures Wallet + Info Icon (Screenshot 3) -->
+      <div class="vfunds-header">
+        <div class="vfunds-subtabs">
+          <button type="button" class="vfunds-subtab active" id="vfunds-tab-inr" onclick="switchFundsWalletTab('inr')">INR Wallet</button>
+          <button type="button" class="vfunds-subtab" id="vfunds-tab-futures" onclick="switchFundsWalletTab('futures')">Futures Wallet</button>
+        </div>
+        <button type="button" class="vfunds-info-btn" onclick="openFundsInfoDialog()" title="Paper Trading Wallet Info">ⓘ</button>
+      </div>
+
+      <!-- Available Balance Card (Screenshot 3) -->
+      <div class="vfunds-balance-card">
+        <div class="vfunds-bal-left">
+          <span class="vfunds-bal-label">Available Balance</span>
+          <div class="vfunds-bal-amount-wrap">
+            <span class="vfunds-bal-amount" id="vfunds-balance-display">₹ 0.00</span>
+            <button type="button" class="vfunds-eye-btn" id="vfunds-eye-btn" onclick="toggleFundsBalanceVisibility()" title="Toggle Balance Mask">👁</button>
           </div>
-          <div class="gwallet-chip">100% Real-Time Paper Balance</div>
+        </div>
+        <button type="button" class="btn-vfunds-transfer" onclick="openFundsTransferDialog()">
+          <span>Transfer</span>
+          <span>›</span>
+        </button>
+      </div>
+
+      <!-- Promo / Announcement Banner (Screenshot 3) -->
+      <div class="vfunds-banner" onclick="openDepositModal()">
+        <div class="vfunds-banner-badge">
+          <span class="vfunds-banner-badge-icon"></span>
+          <span>UPI Deposits Live</span>
+        </div>
+        <button type="button" class="btn-vfunds-banner-try">Try now</button>
+      </div>
+
+      <!-- Quick Action 2-Card Row: Deposit INR | Withdraw INR (Screenshot 3) -->
+      <div class="vfunds-actions-grid">
+        <div class="vfunds-action-card" onclick="openDepositModal('inr')">
+          <div class="vfunds-ac-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M16 12h4"/><circle cx="16" cy="12" r="1.5"/></svg>
+          </div>
+          <span class="vfunds-ac-title">Deposit</span>
+          <span class="vfunds-ac-sub" id="vfunds-dep-sub">INR</span>
+          <span class="vfunds-ac-bg-symbol">₹</span>
+        </div>
+        <div class="vfunds-action-card" onclick="openResetWalletDialog()">
+          <div class="vfunds-ac-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <span class="vfunds-ac-title">Withdraw</span>
+          <span class="vfunds-ac-sub" id="vfunds-with-sub">INR</span>
+          <span class="vfunds-ac-bg-symbol">₹</span>
+        </div>
+      </div>
+
+      <!-- Bottom Sheet Section (Screenshot 3) -->
+      <div class="vfunds-bottom-sheet">
+        <div class="vfunds-sheet-tabs">
+          <button type="button" class="vfunds-sheet-tab active" id="vfunds-shtab-fiat" onclick="switchFundsSheetTab('fiat')">Fiat</button>
+          <button type="button" class="vfunds-sheet-tab" id="vfunds-shtab-ref" onclick="switchFundsSheetTab('referral')">Referral</button>
         </div>
 
-        <div class="gwallet-actions">
-          <button class="gwallet-btn-reset" onclick="openResetWalletDialog()">🔄 Reset to $10,000 USDT</button>
-          <button class="gwallet-btn-apk" onclick="handleDownloadApk(event)">📱 Download APK</button>
+        <div id="vfunds-sheet-content">
+          <!-- 3D Blue Wallet Graphic & Promo matching Screenshot 3 -->
+          <div class="vtrade-empty-state" style="padding: 20px 0;">
+            <div class="ves-wallet-art">
+              <svg width="88" height="78" viewBox="0 0 100 90" fill="none">
+                <circle cx="50" cy="40" r="34" fill="#3B82F6" fill-opacity="0.22" filter="blur(16px)" />
+                <rect x="18" y="22" width="64" height="46" rx="12" fill="#2563EB" />
+                <rect x="18" y="22" width="64" height="46" rx="12" stroke="#60A5FA" stroke-width="2.5" />
+                <circle cx="50" cy="22" r="22" fill="#F59E0B" stroke="#FDE047" stroke-width="2.5" />
+                <text x="50" y="28" font-size="18" font-weight="900" fill="#78350F" text-anchor="middle" font-family="sans-serif">₹</text>
+                <path d="M60 40H82V54H60C56.6863 54 54 51.3137 54 48C54 44.6863 56.6863 42 60 40Z" fill="#FDE047" stroke="#F59E0B" stroke-width="2" />
+                <circle cx="68" cy="47" r="3" fill="#78350F" />
+                <path d="M12 28L15 31L12 34L9 31Z" fill="#60A5FA" />
+                <path d="M88 48L91 51L88 54L85 51Z" fill="#60A5FA" />
+              </svg>
+            </div>
+            <div class="ves-title" style="font-size:15px; max-width:280px; margin:0 auto 16px auto; line-height:1.4;">
+              Start Trading in Futures today with a Minimum Deposit of Just ₹200
+            </div>
+            <button type="button" class="btn-ves-deposit" onclick="openDepositModal()">Add Funds</button>
+          </div>
         </div>
+      </div>
+
+      <!-- Hidden compatibility elements for existing wallet handlers -->
+      <div style="display:none !important;">
+        <span id="gwallet-equity-val">$10,000.00 USDT</span>
+        <span id="gwallet-equity-breakdown">Updated live</span>
+        <span id="gwallet-cash-val">$10,000.00 USDT</span>
+        <span id="gwallet-used-margin-val">$0.00 USDT</span>
+        <span id="gwallet-unrealized-pnl-val">$0.00 USDT</span>
+        <span id="gwallet-realized-pnl-val">$0.00 USDT</span>
       </div>
     </div>
 
     <!-- LEFT SIDEBAR: Chart area -->
     <div class="chart-area hidden" id="chart-area">
+
+      <!-- Top Header matching Screenshot 2 -->
+      <div class="chart-vtrade-header" id="chart-vtrade-header">
+        <div class="cvh-left">
+          <div class="cvh-coin-select" onclick="togglePairQuickMenu()">
+            <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" class="cvh-coin-icon" id="chart-vtrade-coin-icon" alt="BTC" />
+            <span id="chart-vtrade-symbol">BTC-USDT</span>
+            <span class="chp-caret">▾</span>
+          </div>
+          <span class="cvh-chg-pill pos" id="chart-vtrade-chg-pill">+1.39%</span>
+        </div>
+        <div class="cvh-right">
+          <button type="button" class="cvh-btn" id="btn-chart-fav" onclick="toggleChartFavorite()" title="Add to Favorites">⭐</button>
+          <button type="button" class="cvh-btn" onclick="toggleChartSettings()" title="Indicators &amp; Tools">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg>
+          </button>
+          <button type="button" class="cvh-btn" onclick="switchMainTab('trade')" title="Back to Trade">✕</button>
+        </div>
+      </div>
 
       <!-- ══════ WATCHLIST (BTC/USDT, ETH/USDT, SOL/USDT) ══════ -->
       <div class="watchlist-section" id="watchlist-section">
@@ -934,6 +1030,40 @@
           </div> <!-- end tv-chart-container -->
         </div> <!-- end chart-viewport -->
       </div> <!-- end chart-container-box -->
+
+      <!-- Bottom Mobile Quick-Trade Dock (Screenshot 2 Match) -->
+      <div class="chart-quick-trade-dock" id="chart-quick-trade-dock">
+        <div class="cqtd-row1">
+          <div class="cqtd-pills-left">
+            <div class="cqtd-pill" onclick="toggleOrderTypeFromChart()" title="Toggle Order Type">
+              <span id="cqtd-otype-label">Market</span>
+              <span>↕</span>
+            </div>
+            <div class="cqtd-pill" onclick="toggleLeverageFromChart()" title="Change Leverage">
+              <span id="cqtd-lev-label">150x</span>
+              <span>▾</span>
+            </div>
+          </div>
+          <div class="cqtd-avl-wrap">
+            <span>Avl :</span>
+            <span class="cqtd-avl-val" id="cqtd-avl-val">0.0000 USDT</span>
+            <button type="button" class="cqtd-add-btn" onclick="openDepositModal()" title="Deposit Demo Funds">+</button>
+            <span class="cqtd-chevron" onclick="switchMainTab('trade')">⌵</span>
+          </div>
+        </div>
+
+        <div class="cqtd-row2">
+          <div class="cqtd-input-wrap">
+            <input type="number" id="cqtd-qty-input" class="cqtd-input" placeholder="Quantity" step="any" min="0.0001" oninput="syncChartTradeQty(this.value)" />
+            <span class="cqtd-unit-select" id="cqtd-unit-label">BTC ⌵</span>
+          </div>
+        </div>
+
+        <div class="cqtd-row3">
+          <button type="button" class="cqtd-btn-buy" id="cqtd-btn-buy" onclick="executeChartQuickTrade('buy')">Buy</button>
+          <button type="button" class="cqtd-btn-sell" id="cqtd-btn-sell" onclick="executeChartQuickTrade('sell')">Sell</button>
+        </div>
+      </div>
     </div> <!-- end chart-area -->
 
     <!-- ══════════════════════ SCREEN 1: ORDERS & POSITIONS VIEW (Screenshot 1 Match) ══════════════════════ -->
@@ -1319,6 +1449,15 @@
             <button type="button" class="ttool-btn" onclick="switchMainTab('history')" title="View History">📄</button>
           </div>
         </div>
+
+        <!-- Sub-filter row with All Markets checkbox (Screenshot 1 Match) -->
+        <div class="tbpos-filter-bar">
+          <label class="tbpos-checkbox-label">
+            <input type="checkbox" id="tbpos-all-markets-chk" checked onchange="toggleAllMarketsFilter(this.checked)" />
+            <span>All Markets</span>
+          </label>
+        </div>
+
         <div id="trade-bottom-content-area"></div>
       </div>
 
@@ -1562,6 +1701,138 @@
   </div>
 </div>
 
+<!-- ══════════════════════ SCREEN 4: PROFILE / ACCOUNTS VIEW (Screenshot 4 Match) ══════════════════════ -->
+<div class="vtrade-accounts-panel hidden" id="view-accounts-panel">
+  <!-- Header: Version, Avatar, Name, Email, Phone (Screenshot 4) -->
+  <div class="vacc-header">
+    <span class="vacc-version">Version : 4.3.01</span>
+    <div class="vacc-avatar-wrap">
+      <img src="https://assets.coingecko.com/coins/images/325/small/Tether.png" class="vacc-avatar-img" id="vacc-avatar-img" alt="Avatar" />
+    </div>
+    <div class="vacc-user-greeting">
+      <span id="vacc-username">Hi flipfishtrust !</span>
+      <span style="font-size:14px; cursor:pointer;" onclick="editUsernameDialog()" title="Edit Name">✏️</span>
+    </div>
+    <div class="vacc-user-email" id="vacc-email">pal******@gmail.com</div>
+    <div class="vacc-user-phone">
+      <span id="vacc-phone">+91 *****95636</span>
+      <span style="cursor:pointer;" onclick="togglePhoneVisibility()" title="Toggle Phone Mask">👁</span>
+    </div>
+  </div>
+
+  <!-- Total Balance Card (Screenshot 4) -->
+  <div class="vacc-balance-card">
+    <div>
+      <div class="vacc-bal-label">Total Balance</div>
+      <div class="vacc-bal-val" id="vacc-total-balance">₹ 0.00</div>
+    </div>
+    <button type="button" class="btn-vacc-add-funds" onclick="openDepositModal()">Add Funds</button>
+  </div>
+
+  <!-- Paper Trading Preferences (Replaces KYC & Bank Details per User Requirement) -->
+  <div class="vacc-section">
+    <div class="vacc-section-title">Paper Trading &amp; Preferences</div>
+    <div class="vacc-menu-list">
+      <div class="vacc-row" onclick="showPaperModeInfo()">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">🛡️</span>
+          <span class="vacc-row-text">Paper Trading Mode</span>
+        </div>
+        <div class="vacc-row-right">
+          <span style="color:var(--v-green); font-size:12px; font-weight:700;">Active</span>
+          <span class="vacc-check-icon">✓</span>
+        </div>
+      </div>
+      <div class="vacc-row" onclick="openResetWalletDialog()">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">💰</span>
+          <span class="vacc-row-text">Virtual Capital Reset</span>
+        </div>
+        <div class="vacc-row-right">
+          <span>$10,000 / ₹10L ›</span>
+        </div>
+      </div>
+      <div class="vacc-row" onclick="openLeverageSettingsDialog()">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">⚡</span>
+          <span class="vacc-row-text">Max Futures Leverage</span>
+        </div>
+        <div class="vacc-row-right">
+          <span>150x ›</span>
+        </div>
+      </div>
+      <div class="vacc-row" onclick="openTradingPreferencesDialog()">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">⚙️</span>
+          <span class="vacc-row-text">Trading Preferences</span>
+        </div>
+        <div class="vacc-row-right">
+          <span>Fast 1-Click ›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Activities (Screenshot 4 Match) -->
+  <div class="vacc-section">
+    <div class="vacc-section-title">My Activities</div>
+    <div class="vacc-menu-list">
+      <div class="vacc-row" onclick="exportTradeHistoryCsv()">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">📄</span>
+          <span class="vacc-row-text">User Reports</span>
+        </div>
+        <div class="vacc-row-right">
+          <span>CSV Export ›</span>
+        </div>
+      </div>
+      <div class="vacc-row" onclick="switchMainTab('history')">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">📊</span>
+          <span class="vacc-row-text">P&amp;L Analytics</span>
+        </div>
+        <div class="vacc-row-right">
+          <span>Breakdown ›</span>
+        </div>
+      </div>
+      <div class="vacc-row" onclick="showFeeRebateDialog()">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">🏆</span>
+          <span class="vacc-row-text">Monthly Fee Rebate Program</span>
+        </div>
+        <div class="vacc-row-right">
+          <span>Zero-Fee Tier ›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Download & Support Action -->
+  <div class="vacc-section">
+    <div class="vacc-menu-list">
+      <div class="vacc-row" onclick="handleDownloadApk(event)">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">📱</span>
+          <span class="vacc-row-text">Download VTrade APK</span>
+        </div>
+        <div class="vacc-row-right">
+          <span style="color:var(--v-primary-light); font-weight:700;">v4.3.01 ›</span>
+        </div>
+      </div>
+      <div class="vacc-row" onclick="openResetWalletDialog()">
+        <div class="vacc-row-left">
+          <span class="vacc-row-icon">🔄</span>
+          <span class="vacc-row-text" style="color:var(--v-red);">Reset Virtual Account</span>
+        </div>
+        <div class="vacc-row-right">
+          <span style="color:var(--v-red);">Reset ›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <!-- Floating Toast Container -->
 <div id="toast-container" class="toast-container"></div>
 <div id="toast" class="toast hidden"></div>
@@ -1587,17 +1858,17 @@
     </div>
     <span class="gnav-label">Trade</span>
   </button>
-  <button class="gnav-btn vnav-btn" id="gnav-wallet" onclick="switchMainTab('wallet')" title="Virtual Wallet">
+  <button class="gnav-btn vnav-btn" id="gnav-wallet" onclick="switchMainTab('funds')" title="Funds">
     <div class="gnav-icon">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M16 12h4"/><circle cx="16" cy="12" r="1.5"/></svg>
     </div>
-    <span class="gnav-label">Wallet</span>
+    <span class="gnav-label">Funds</span>
   </button>
-  <button class="gnav-btn vnav-btn" id="gnav-profile" onclick="openProfileScreen()" title="Profile & Settings">
+  <button class="gnav-btn vnav-btn" id="gnav-profile" onclick="switchMainTab('accounts')" title="Accounts">
     <div class="gnav-icon">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </div>
-    <span class="gnav-label">Profile</span>
+    <span class="gnav-label">Accounts</span>
   </button>
 </nav>
 

@@ -3642,6 +3642,8 @@ function switchMainTab(tabName) {
   let navKey = tabName;
   if (tabName === 'orders' || tabName === 'history') navKey = 'positions';
   if (tabName === 'markets') navKey = 'explore';
+  if (tabName === 'funds') navKey = 'wallet';
+  if (tabName === 'accounts') navKey = 'profile';
   const navBtn = document.getElementById(`gnav-${navKey}`);
   if (navBtn) navBtn.classList.add('active');
 
@@ -3657,6 +3659,7 @@ function switchMainTab(tabName) {
   const historyContainer   = document.getElementById('view-history-container');
   const tradePanel         = document.getElementById('view-trade-panel') || document.querySelector('.order-sidebar');
   const walletPanel        = document.getElementById('view-wallet-panel');
+  const accountsPanel      = document.getElementById('view-accounts-panel');
   const indicesTicker      = document.getElementById('groww-indices-ticker');
 
   // Hide all sections first
@@ -3666,6 +3669,7 @@ function switchMainTab(tabName) {
   if (historyContainer)   historyContainer.classList.add('hidden');
   if (tradePanel)         tradePanel.classList.add('hidden');
   if (walletPanel)        walletPanel.classList.add('hidden');
+  if (accountsPanel)      accountsPanel.classList.add('hidden');
 
   // Strictly keep watchlistSection & marketsPanel hidden on pure chart tab
   if (watchlistSection)   watchlistSection.classList.add('hidden');
@@ -3677,10 +3681,14 @@ function switchMainTab(tabName) {
     if (exploreContainer) exploreContainer.classList.remove('hidden');
     if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderGrowwExploreUI();
-  } else if (tabName === 'wallet') {
+  } else if (tabName === 'wallet' || tabName === 'funds') {
     if (walletPanel) walletPanel.classList.remove('hidden');
     if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderWalletOverview();
+  } else if (tabName === 'profile' || tabName === 'accounts') {
+    if (accountsPanel) accountsPanel.classList.remove('hidden');
+    if (indicesTicker) indicesTicker.classList.remove('hidden');
+    renderAccountsScreen();
   } else if (tabName === 'history') {
     if (historyContainer) historyContainer.classList.remove('hidden');
     renderHistoryScreen();
@@ -4053,6 +4061,18 @@ function updateTradeInstrumentHeader() {
     chgBadge.textContent = `${isPos ? '+' : ''}${(pData.change24h || 0).toFixed(2)}%`;
     chgBadge.className = `tinst-chg-badge ${isPos ? 'pos' : 'neg'}`;
   }
+
+  // Also update Screenshot 2 Chart Header elements
+  const chartIcon = document.getElementById('chart-vtrade-coin-icon');
+  const chartSym = document.getElementById('chart-vtrade-symbol');
+  const chartChg = document.getElementById('chart-vtrade-chg-pill');
+  if (chartIcon) chartIcon.src = coin.icon;
+  if (chartSym) chartSym.textContent = `${coin.symbol}-USDT`;
+  if (chartChg) {
+    const isPos = (pData.change24h || 0) >= 0;
+    chartChg.textContent = `${isPos ? '+' : ''}${(pData.change24h || 0).toFixed(2)}%`;
+    chartChg.className = `cvh-chg-pill ${isPos ? 'pos' : 'neg'}`;
+  }
 }
 
 function setSnapPercent(pct) {
@@ -4068,6 +4088,30 @@ function setSnapPercent(pct) {
 function toggleTpSlSection() {
   const body = document.getElementById('tpsl-body');
   if (body) body.classList.toggle('hidden');
+}
+
+// ─── SCREEN 1: POSITION / ORDERS SECTION & EMPTY STATE (Screenshot 1 Match) ───
+function renderNoDataState() {
+  return `
+    <div class="vtrade-no-data-state">
+      <div class="vtrade-no-data-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+          <path d="M7 8h6"></path>
+          <circle cx="16" cy="8" r="1" fill="currentColor"></circle>
+          <line x1="7" y1="12" x2="17" y2="12"></line>
+          <line x1="7" y1="16" x2="13" y2="16"></line>
+        </svg>
+      </div>
+      <div class="vtrade-no-data-text">No Data Available</div>
+    </div>
+  `;
+}
+
+let allMarketsFilterActive = true;
+function toggleAllMarketsFilter(chk) {
+  allMarketsFilterActive = !!chk;
+  updateTradeBottomSection();
 }
 
 let activeTradeBottomTab = 'pos';
@@ -4086,8 +4130,8 @@ function updateTradeBottomSection() {
   const countPos = document.getElementById('tbpos-count-pos');
   const countOrders = document.getElementById('tbpos-count-orders');
 
-  const positions = walletState.positions || [];
-  const orders = walletState.orders || [];
+  let positions = walletState.positions || [];
+  let orders = walletState.orders || [];
 
   if (countPos) countPos.textContent = `(${positions.length})`;
   if (countOrders) countOrders.textContent = `(${orders.length})`;
@@ -4095,8 +4139,11 @@ function updateTradeBottomSection() {
   if (!container) return;
 
   if (activeTradeBottomTab === 'pos') {
+    if (!allMarketsFilterActive) {
+      positions = positions.filter(p => p.coin === selectedCoin);
+    }
     if (!positions.length) {
-      container.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
+      container.innerHTML = renderNoDataState();
       return;
     }
     container.innerHTML = `
@@ -4126,8 +4173,11 @@ function updateTradeBottomSection() {
       </div>
     `;
   } else {
+    if (!allMarketsFilterActive) {
+      orders = orders.filter(o => o.coin === selectedCoin);
+    }
     if (!orders.length) {
-      container.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
+      container.innerHTML = renderNoDataState();
       return;
     }
     container.innerHTML = `
@@ -4151,12 +4201,177 @@ function updateTradeBottomSection() {
   }
 }
 
-function openProfileScreen() {
-  if (token) {
-    openSettingsSheet();
-  } else {
-    openAuthModal('login');
+// ─── SCREEN 2: CHART SCREEN QUICK-TRADE DOCK & ACTIONS (Screenshot 2 Match) ───
+let chartTradeOtype = 'market';
+let chartTradeLeverage = 150;
+
+function toggleOrderTypeFromChart() {
+  chartTradeOtype = chartTradeOtype === 'market' ? 'limit' : 'market';
+  const label = document.getElementById('cqtd-otype-label');
+  if (label) label.textContent = chartTradeOtype === 'market' ? 'Market' : 'Limit';
+  setOrderType(chartTradeOtype);
+}
+
+function toggleLeverageFromChart() {
+  const levs = [150, 100, 50, 25, 10];
+  const nextIdx = (levs.indexOf(chartTradeLeverage) + 1) % levs.length;
+  chartTradeLeverage = levs[nextIdx];
+  const label = document.getElementById('cqtd-lev-label');
+  if (label) label.textContent = `${chartTradeLeverage}x`;
+  selectedLeverage = chartTradeLeverage;
+  updateTradeCalc();
+}
+
+function syncChartTradeQty(val) {
+  const mainInput = document.getElementById('trade-amount-input');
+  if (mainInput && val !== mainInput.value) {
+    mainInput.value = val;
+    updateTradeCalc();
   }
+}
+
+async function executeChartQuickTrade(side) {
+  const qtyInput = document.getElementById('cqtd-qty-input');
+  const size = parseFloat(qtyInput?.value || 0.01);
+  if (!size || size <= 0) {
+    showToast('Please enter a valid quantity', 'error');
+    return;
+  }
+  const mainInput = document.getElementById('trade-amount-input');
+  if (mainInput) mainInput.value = size;
+  currentDirection = (side === 'buy' || side === 'long') ? 'long' : 'short';
+  await executeTrade();
+}
+
+function toggleChartFavorite() {
+  const btn = document.getElementById('btn-chart-fav');
+  const isFav = userFavoriteCoins.includes(selectedCoin);
+  if (isFav) {
+    userFavoriteCoins = userFavoriteCoins.filter(id => id !== selectedCoin);
+    if (btn) btn.style.opacity = '0.5';
+    showToast('Removed from Favorites', 'info');
+  } else {
+    userFavoriteCoins.push(selectedCoin);
+    if (btn) btn.style.opacity = '1';
+    showToast('Added to Favorites', 'success');
+  }
+}
+
+function toggleChartSettings() {
+  openSettingsSheet();
+}
+
+// ─── SCREEN 3: FUNDS / WALLET FUNCTIONS (Screenshot 3 Match) ───
+let activeFundsWalletTab = 'inr';
+let fundsBalanceHidden = false;
+let activeFundsSheetTab = 'fiat';
+
+function switchFundsWalletTab(tab) {
+  activeFundsWalletTab = tab;
+  const inrBtn = document.getElementById('vfunds-tab-inr');
+  const futBtn = document.getElementById('vfunds-tab-futures');
+  if (inrBtn) inrBtn.classList.toggle('active', tab === 'inr');
+  if (futBtn) futBtn.classList.toggle('active', tab === 'futures');
+
+  const depSub = document.getElementById('vfunds-dep-sub');
+  const withSub = document.getElementById('vfunds-with-sub');
+  if (depSub) depSub.textContent = tab === 'inr' ? 'INR' : 'USDT';
+  if (withSub) withSub.textContent = tab === 'inr' ? 'INR' : 'USDT';
+
+  renderFundsBalance();
+}
+
+function toggleFundsBalanceVisibility() {
+  fundsBalanceHidden = !fundsBalanceHidden;
+  const eyeBtn = document.getElementById('vfunds-eye-btn');
+  if (eyeBtn) eyeBtn.textContent = fundsBalanceHidden ? '🔒' : '👁';
+  renderFundsBalance();
+}
+
+function renderFundsBalance() {
+  const balEl = document.getElementById('vfunds-balance-display');
+  const cash = walletState?.cash !== undefined ? walletState.cash : 10000;
+  if (!balEl) return;
+
+  if (fundsBalanceHidden) {
+    balEl.textContent = activeFundsWalletTab === 'inr' ? '₹ ••••••••' : '$ ••••••••';
+    return;
+  }
+
+  if (activeFundsWalletTab === 'inr') {
+    const inrVal = cash * (usdToInrRate || 92.5);
+    balEl.textContent = `₹ ${inrVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  } else {
+    balEl.textContent = `$ ${cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT`;
+  }
+}
+
+function openFundsInfoDialog() {
+  showToast('VTrade Paper Trading: Risk-free virtual demo wallet with genuine real-time market data.', 'info');
+}
+
+function openFundsTransferDialog() {
+  showToast('Instant zero-fee transfer between Virtual INR and Futures USDT.', 'info');
+}
+
+function switchFundsSheetTab(tab) {
+  activeFundsSheetTab = tab;
+  const fTab = document.getElementById('vfunds-shtab-fiat');
+  const rTab = document.getElementById('vfunds-shtab-ref');
+  if (fTab) fTab.classList.toggle('active', tab === 'fiat');
+  if (rTab) rTab.classList.toggle('active', tab === 'referral');
+}
+
+// ─── SCREEN 4: ACCOUNTS & PAPER-TRADING PREFERENCES (Screenshot 4 Match) ───
+let userCustomName = 'flipfishtrust';
+let phoneMasked = true;
+
+function renderAccountsScreen() {
+  const cash = walletState?.cash !== undefined ? walletState.cash : 10000;
+  const totalBalEl = document.getElementById('vacc-total-balance');
+  const nameEl = document.getElementById('vacc-username');
+  if (nameEl) nameEl.textContent = `Hi ${userCustomName} !`;
+  if (totalBalEl) {
+    const inrVal = cash * (usdToInrRate || 92.5);
+    totalBalEl.textContent = `₹ ${inrVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+}
+
+function editUsernameDialog() {
+  const newName = prompt('Enter display name:', userCustomName);
+  if (newName && newName.trim()) {
+    userCustomName = newName.trim();
+    renderAccountsScreen();
+    showToast(`Name updated to ${userCustomName}`, 'success');
+  }
+}
+
+function togglePhoneVisibility() {
+  phoneMasked = !phoneMasked;
+  const phoneEl = document.getElementById('vacc-phone');
+  if (phoneEl) {
+    phoneEl.textContent = phoneMasked ? '+91 *****95636' : '+91 9876595636';
+  }
+}
+
+function showPaperModeInfo() {
+  showToast('Paper Trading Engine is active and risk-free. No KYC or real bank account needed.', 'success');
+}
+
+function openLeverageSettingsDialog() {
+  showToast('Supported maximum 150x Leverage on BTC/ETH and 100x on Altcoins.', 'info');
+}
+
+function openTradingPreferencesDialog() {
+  openSettingsSheet();
+}
+
+function showFeeRebateDialog() {
+  showToast('Zero Fee Scalping Offer Tier Active: 0% Maker and 0% Taker fees applied!', 'success');
+}
+
+function openProfileScreen() {
+  switchMainTab('accounts');
 }
 
 // Funding Rate Countdown Timer (ticking every 1s)
@@ -4393,6 +4608,12 @@ function renderWalletOverview() {
   if (statTotal) statTotal.textContent = `$${fmt(totalEquity)}`;
   const statUnPnl = document.getElementById('stat-unrealized-pnl');
   if (statUnPnl) statUnPnl.textContent = `${totalUnrealizedPnl >= 0 ? '+' : ''}$${fmtNum(totalUnrealizedPnl)}`;
+
+  // Synchronize Screenshot 3 & 4 balances
+  renderFundsBalance();
+  renderAccountsScreen();
+  const cqtdAvl = document.getElementById('cqtd-avl-val');
+  if (cqtdAvl) cqtdAvl.textContent = `${cash.toFixed(4)} USDT`;
 
   // 3. User Holdings List
   const holdingsListEl = document.getElementById('gholdings-list');
