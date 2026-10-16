@@ -579,6 +579,261 @@
 
     </div><!-- End #markets-screen-view -->
 
+    <!-- ══════════════════════ 3. TRADE SCREEN VIEW (Screenshots 1 & 2) ══════════════════════ -->
+    <div id="trade-screen-view" class="trade-screen-container" style="display:none;">
+      <!-- Trade Top Header -->
+      <header class="trade-top-header">
+        <div class="trade-top-strip">
+          <div class="trade-top-left">
+            <span class="trade-main-label">Main</span>
+            <button class="trade-margin-capsule" onclick="toggleTradeMarginMode()">
+              <span id="trade-cur-margin-mode">Isolated</span>
+            </button>
+          </div>
+          <div class="trade-top-right">
+            <button class="trade-chevron-btn" onclick="showToast('Main Account Options', 'info')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="trade-symbol-row">
+          <div class="trade-symbol-left" onclick="toggleTradePairSelector()">
+            <button class="trade-star-btn" id="trade-star-btn" onclick="toggleTradePairStar(event)">☆</button>
+            <div class="trade-pair-title-wrap">
+              <div class="trade-pair-name">
+                <span id="trade-pair-symbol">BTCUSD</span>
+                <svg class="trade-arrow-down" viewBox="0 0 24 24" width="13" height="13" fill="#ff7a00">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </div>
+              <span class="trade-pair-subtitle" id="trade-pair-sub">Bitcoin Perpetual</span>
+            </div>
+          </div>
+          <div class="trade-symbol-right">
+            <div class="trade-price-badge down" id="trade-header-price">$82593.0 ↓</div>
+            <div class="trade-change-pct up" id="trade-header-change">1.93%</div>
+          </div>
+        </div>
+
+        <!-- Market stats & action icons row -->
+        <div class="trade-stats-strip">
+          <div class="trade-stats-left">
+            <div class="tstat-item"><span class="tstat-k">24h Vol.</span> <span class="tstat-v" id="trade-24h-vol">$1181.0M</span></div>
+            <div class="tstat-item"><span class="tstat-k">OI</span> <span class="tstat-v" id="trade-oi">$71.1M</span></div>
+          </div>
+          <div class="trade-actions-right">
+            <button class="taction-icon-btn" title="Contract Details" onclick="showToast('Contract: BTCUSD Perpetual (100x-200x)', 'info')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </button>
+            <button class="taction-icon-btn" title="Price Alerts" onclick="showToast('Price Alert set for $82,593', 'success')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 01-3.46 0"/>
+              </svg>
+            </button>
+            <button class="taction-icon-btn" title="Preferences" onclick="showToast('Trading Preferences', 'info')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"/>
+                <line x1="4" y1="10" x2="4" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12" y2="3"/>
+                <line x1="20" y1="21" x2="20" y2="16"/>
+                <line x1="20" y1="12" x2="20" y2="3"/>
+                <line x1="1" y1="14" x2="7" y2="14"/>
+                <line x1="9" y1="8" x2="15" y2="8"/>
+                <line x1="17" y1="16" x2="23" y2="16"/>
+              </svg>
+            </button>
+            <button class="taction-icon-btn" title="More" onclick="showToast('More Options', 'info')">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <circle cx="12" cy="5" r="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <circle cx="12" cy="19" r="2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Funding row -->
+        <div class="trade-funding-strip">
+          <div class="tfund-col">
+            <span class="tfund-k">Funding (8h) / Countdown</span>
+            <span class="tfund-v"><span id="trade-funding-rate">0.0056%</span> / <span id="trade-funding-countdown">03:59:41</span></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Two-Column Trading Grid -->
+      <main class="trade-main-grid">
+        <!-- LEFT: ORDERBOOK (DOM) -->
+        <div class="trade-orderbook-col">
+          <div class="obook-header">
+            <span class="ob-col-title">Price(USD)</span>
+            <span class="ob-col-title right">Size(BTC)</span>
+          </div>
+
+          <!-- Asks (Red) -->
+          <div class="obook-asks-list" id="obook-asks-container">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Mid Market Price Strip -->
+          <div class="obook-mid-price-strip">
+            <div class="ob-mid-price down" id="obook-mid-price">$82593.0</div>
+            <div class="ob-mid-refs">
+              <span class="ref-item"><span class="ref-badge index">I</span> <span id="obook-index-price">82632.5</span></span>
+              <span class="ref-item"><span class="ref-badge mark">M</span> <span id="obook-mark-price">82594.8</span></span>
+            </div>
+          </div>
+
+          <!-- Bids (Green) -->
+          <div class="obook-bids-list" id="obook-bids-container">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Orderbook Footer Controls -->
+          <div class="obook-footer-controls">
+            <button class="ob-ctl-btn" title="Fullscreen Orderbook" onclick="showToast('Expanded Orderbook', 'info')">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+              </svg>
+            </button>
+
+            <!-- Depth precision dropdown button (triggers Screenshot 2 modal) -->
+            <button class="ob-depth-dropdown-btn" id="ob-depth-btn" onclick="openDepthModal()">
+              <span id="ob-current-depth">0.5</span>
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+
+            <button class="ob-ctl-btn" title="View Mode" onclick="cycleOrderbookViewMode()">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                <rect x="3" y="3" width="7" height="8" rx="1" fill="#eb5757"/>
+                <rect x="3" y="13" width="7" height="8" rx="1" fill="#00c087"/>
+                <rect x="14" y="3" width="7" height="18" rx="1" fill="#626a7f"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: ORDER FORM -->
+        <div class="trade-orderform-col">
+          <!-- Long / Short Switcher -->
+          <div class="tform-side-toggle">
+            <button class="tform-side-btn long active" id="tside-btn-long" onclick="setTradeSide('long')">Long</button>
+            <button class="tform-side-btn short" id="tside-btn-short" onclick="setTradeSide('short')">Short</button>
+          </div>
+
+          <!-- Leverage & Order Type Controls -->
+          <div class="tform-row-duo">
+            <button class="tform-pill-btn" onclick="openLeverageModal()">
+              <span id="trade-cur-leverage">200x</span>
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+            <button class="tform-pill-btn" onclick="toggleTradeOrderTypeMenu()">
+              <span id="trade-cur-otype">Market</span>
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+            </button>
+          </div>
+
+          <!-- Limit Price Input (if Limit order selected) -->
+          <div class="tform-limit-box hidden" id="trade-limit-price-box">
+            <span class="tform-limit-lbl">Price</span>
+            <input type="number" id="trade-limit-input" step="0.5" value="82593.0" />
+            <span class="tform-limit-unit">USD</span>
+          </div>
+
+          <!-- Qty Input Card -->
+          <div class="tform-qty-card">
+            <div class="tform-qty-top">
+              <span class="qty-lbl">Qty</span>
+              <div class="qty-unit-wrap" onclick="showToast('Currency unit: BTC', 'info')">
+                <span id="trade-qty-unit">BTC</span>
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+              </div>
+            </div>
+            <input type="number" class="tform-qty-input" id="trade-qty-input" placeholder="0" step="0.001" oninput="handleTradeQtyChange(this.value)" />
+            <div class="tform-qty-sub">
+              <span class="qty-sub-lot">~LOT</span>
+              <span class="qty-sub-val" id="trade-lot-eq">1 Lot = 0.001 BTC</span>
+            </div>
+          </div>
+
+          <!-- Percentage Quick Buttons -->
+          <div class="tform-pct-strip">
+            <button class="pct-btn" onclick="setTradePct(25)">25%</button>
+            <button class="pct-btn" onclick="setTradePct(50)">50%</button>
+            <button class="pct-btn" onclick="setTradePct(75)">75%</button>
+            <button class="pct-btn" onclick="setTradePct(100)">100%</button>
+          </div>
+
+          <!-- TP/SL Toggle Row -->
+          <div class="tform-tpsl-row" onclick="toggleTpSlFields()">
+            <div class="tpsl-radio-circle" id="trade-tpsl-radio"></div>
+            <span class="tpsl-lbl">TP/SL</span>
+          </div>
+
+          <!-- Optional TP/SL expandable input fields -->
+          <div class="tform-tpsl-inputs hidden" id="trade-tpsl-inputs">
+            <div class="tpsl-input-group">
+              <span class="tpsl-in-lbl">Take Profit</span>
+              <input type="number" id="trade-tp-input" placeholder="Price" />
+            </div>
+            <div class="tpsl-input-group">
+              <span class="tpsl-in-lbl">Stop Loss</span>
+              <input type="number" id="trade-sl-input" placeholder="Price" />
+            </div>
+          </div>
+
+          <!-- Req. | Avbl. strip -->
+          <div class="tform-balance-strip">
+            <span class="bal-lbl dashed-tip" title="Required Margin | Available Trading Balance">Req. | Avbl.</span>
+            <span class="bal-val"><span id="trade-req-margin">0</span> | <span id="trade-avbl-balance">0.46 USD</span></span>
+          </div>
+
+          <!-- FUNCTIONAL TRADE ACTION BUTTON (Replacing Renew KYC as explicitly requested) -->
+          <button class="trade-action-btn buy" id="trade-action-btn" onclick="executeTradeDeskOrder()">
+            Buy / Long BTC
+          </button>
+
+          <!-- Reduce Only Checkbox -->
+          <label class="tform-reduce-only">
+            <input type="checkbox" id="trade-reduce-only" />
+            <span>Reduce Only <span class="info-bubble" title="Only closes or reduces existing position without opening new exposure">ⓘ</span></span>
+          </label>
+
+          <!-- User note: 'Renew KYC' block and 'Scalper Offer' banner are omitted per instruction -->
+        </div>
+      </main>
+
+      <!-- Bottom Position & Orders Section -->
+      <section class="trade-bottom-section">
+        <div class="trade-pos-tabs-bar">
+          <button class="pos-tab-btn active" id="tab-btn-positions" onclick="switchTradePosTab('positions')">
+            Position
+          </button>
+          <button class="pos-tab-btn" id="tab-btn-orders" onclick="switchTradePosTab('orders')">
+            Open Orders (<span id="trade-orders-count">0</span>)
+          </button>
+        </div>
+
+        <div class="trade-tab-panel" id="panel-positions">
+          <!-- Populated by renderTradePositions() -->
+        </div>
+
+        <div class="trade-tab-panel hidden" id="panel-orders">
+          <!-- Populated by renderTradeOrders() -->
+        </div>
+      </section>
+    </div><!-- End #trade-screen-view -->
+
     <!-- Hidden compatibility layers for test assertions & tab switching -->
     <div class="test-compatibility-fixture" style="display:none;">
       <div id="vfunds-curr-toggle-group">
@@ -774,6 +1029,55 @@
           </div>
         </div>
         <button class="deposit-confirm-btn" onclick="closeWhatAreStraddlesModal()">Got It, Explore Straddles</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trade Depth Modal (Screenshot 2) -->
+  <div id="trade-depth-modal" class="vmodal-backdrop hidden" onclick="if(event.target===this) closeDepthModal()">
+    <div class="vmodal-sheet trade-depth-sheet">
+      <div class="vmodal-header">
+        <h3 class="vmodal-title">Depth</h3>
+        <button class="vmodal-close-btn" onclick="closeDepthModal()">✕</button>
+      </div>
+      <div class="depth-options-list">
+        <div class="depth-option-row active" id="dopt-0-5" onclick="selectOrderbookDepth('0.5')">
+          <span class="dopt-val">0.5</span>
+        </div>
+        <div class="depth-option-row" id="dopt-1" onclick="selectOrderbookDepth('1')">
+          <span class="dopt-val">1</span>
+        </div>
+        <div class="depth-option-row" id="dopt-10" onclick="selectOrderbookDepth('10')">
+          <span class="dopt-val">10</span>
+        </div>
+        <div class="depth-option-row" id="dopt-50" onclick="selectOrderbookDepth('50')">
+          <span class="dopt-val">50</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trade Leverage Modal -->
+  <div id="trade-leverage-modal" class="vmodal-backdrop hidden" onclick="if(event.target===this) closeLeverageModal()">
+    <div class="vmodal-sheet trade-leverage-sheet">
+      <div class="vmodal-header">
+        <h3 class="vmodal-title">Adjust Leverage</h3>
+        <button class="vmodal-close-btn" onclick="closeLeverageModal()">✕</button>
+      </div>
+      <div class="vmodal-body" style="padding: 16px 20px 28px 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <span style="color:#8b92a4; font-size:13px;">Selected Leverage</span>
+          <span style="color:#ff7a00; font-size:18px; font-weight:800;" id="lev-slider-val">200x</span>
+        </div>
+        <input type="range" min="1" max="200" value="200" id="trade-leverage-slider" oninput="handleLeverageSliderChange(this.value)" style="width:100%; accent-color:#ff7a00; margin-bottom:16px;" />
+        <div class="leverage-presets-row" style="display:flex; gap:8px; margin-bottom:20px;">
+          <button class="deposit-preset-btn" onclick="selectTradeLeverage(10)">10x</button>
+          <button class="deposit-preset-btn" onclick="selectTradeLeverage(25)">25x</button>
+          <button class="deposit-preset-btn" onclick="selectTradeLeverage(50)">50x</button>
+          <button class="deposit-preset-btn" onclick="selectTradeLeverage(100)">100x</button>
+          <button class="deposit-preset-btn" onclick="selectTradeLeverage(200)">200x</button>
+        </div>
+        <button class="deposit-confirm-btn" onclick="confirmTradeLeverage()">Confirm Leverage</button>
       </div>
     </div>
   </div>

@@ -10585,6 +10585,521 @@ function renderIvRvChartSvg() {
   `;
 }
 
+// ─── TRADE SCREEN CONTROLLER (SCREENSHOTS 1 & 2) ──────────────────
+let tradeDeskSide = 'long'; // 'long' or 'short'
+let tradeDeskLeverage = 200; // default 200x matching Screenshot 1
+let tradeDeskOrderType = 'market'; // 'market' or 'limit'
+let tradeDeskDepth = '0.5'; // '0.5', '1', '10', '50' matching Screenshot 2
+let tradeDeskMarginMode = 'Isolated'; // 'Isolated' or 'Cross'
+let tradeDeskPosTab = 'positions'; // 'positions' or 'orders'
+let tradeDeskPairStarred = false;
+let tradeDeskQty = 0;
+let tradeDeskTpSlOpen = false;
+let tradeDeskObViewMode = 'both'; // 'both', 'bids', 'asks'
+
+// Base orderbook data centered on 82593.0 matching Screenshot 1
+const TRADE_BASE_ASKS = [
+  { price: 82596.0, size: 11.075 },
+  { price: 82595.5, size: 1.512 },
+  { price: 82595.0, size: 1.236 },
+  { price: 82594.5, size: 1.011 },
+  { price: 82594.0, size: 0.826 },
+  { price: 82593.5, size: 0.675 }
+];
+
+const TRADE_BASE_BIDS = [
+  { price: 82593.0, size: 4.844 },
+  { price: 82592.5, size: 5.926 },
+  { price: 82592.0, size: 7.248 },
+  { price: 82591.5, size: 8.867 },
+  { price: 82591.0, size: 10.846 },
+  { price: 82590.5, size: 13.268 }
+];
+
+function renderTradeScreen() {
+  updateTradeHeaderPrices();
+  renderTradeOrderbook();
+  updateTradeBalancePreview();
+  renderTradePositions();
+  startTradeFundingTimer();
+}
+
+function updateTradeHeaderPrices() {
+  const btcPrice = currentPrices['bitcoin']?.price || 82593.0;
+  const btcChange = currentPrices['bitcoin']?.change || 1.93;
+  
+  const priceEl = document.getElementById('trade-header-price');
+  const changeEl = document.getElementById('trade-header-change');
+  const midPriceEl = document.getElementById('obook-mid-price');
+  const indexEl = document.getElementById('obook-index-price');
+  const markEl = document.getElementById('obook-mark-price');
+
+  if (priceEl) {
+    priceEl.textContent = `$${btcPrice.toFixed(1)} ↓`;
+  }
+  if (changeEl) {
+    changeEl.textContent = `${btcChange >= 0 ? '' : ''}${btcChange.toFixed(2)}%`;
+  }
+  if (midPriceEl) {
+    midPriceEl.textContent = `$${btcPrice.toFixed(1)}`;
+  }
+  if (indexEl) {
+    indexEl.textContent = (btcPrice + 39.5).toFixed(1);
+  }
+  if (markEl) {
+    markEl.textContent = (btcPrice + 1.8).toFixed(1);
+  }
+}
+
+function renderTradeOrderbook() {
+  const asksContainer = document.getElementById('obook-asks-container');
+  const bidsContainer = document.getElementById('obook-bids-container');
+  if (!asksContainer || !bidsContainer) return;
+
+  const btcPrice = currentPrices['bitcoin']?.price || 82593.0;
+  const depthNum = parseFloat(tradeDeskDepth) || 0.5;
+
+  // Generate dynamic asks & bids adjusted for depth
+  const asks = TRADE_BASE_ASKS.map((row, idx) => {
+    const p = Math.ceil(btcPrice / depthNum) * depthNum + (6 - idx) * depthNum;
+    return { price: p, size: row.size };
+  });
+
+  const bids = TRADE_BASE_BIDS.map((row, idx) => {
+    const p = Math.floor(btcPrice / depthNum) * depthNum - idx * depthNum;
+    return { price: p, size: row.size };
+  });
+
+  const maxAskSize = Math.max(...asks.map(a => a.size), 12);
+  const maxBidSize = Math.max(...bids.map(b => b.size), 14);
+
+  asksContainer.innerHTML = asks.map(a => {
+    const depthPct = Math.min(100, (a.size / maxAskSize) * 100);
+    return `
+      <div class="obook-row ask" onclick="fillTradePrice(${a.price.toFixed(1)})">
+        <span class="ob-price">${a.price.toFixed(1)}</span>
+        <span class="ob-size">${a.size.toFixed(3)}</span>
+        <div class="ob-depth-bar ask" style="width: ${depthPct}%;"></div>
+      </div>
+    `;
+  }).join('');
+
+  bidsContainer.innerHTML = bids.map(b => {
+    const depthPct = Math.min(100, (b.size / maxBidSize) * 100);
+    return `
+      <div class="obook-row bid" onclick="fillTradePrice(${b.price.toFixed(1)})">
+        <span class="ob-price">${b.price.toFixed(1)}</span>
+        <span class="ob-size">${b.size.toFixed(3)}</span>
+        <div class="ob-depth-bar bid" style="width: ${depthPct}%;"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setTradeSide(side) {
+  tradeDeskSide = side;
+  const longBtn = document.getElementById('tside-btn-long');
+  const shortBtn = document.getElementById('tside-btn-short');
+  const actionBtn = document.getElementById('trade-action-btn');
+
+  if (longBtn) longBtn.classList.toggle('active', side === 'long');
+  if (shortBtn) shortBtn.classList.toggle('active', side === 'short');
+
+  if (actionBtn) {
+    if (side === 'long') {
+      actionBtn.textContent = 'Buy / Long BTC';
+      actionBtn.className = 'trade-action-btn buy';
+    } else {
+      actionBtn.textContent = 'Sell / Short BTC';
+      actionBtn.className = 'trade-action-btn sell';
+    }
+  }
+  updateTradeBalancePreview();
+}
+
+function toggleTradeMarginMode() {
+  tradeDeskMarginMode = tradeDeskMarginMode === 'Isolated' ? 'Cross' : 'Isolated';
+  const el = document.getElementById('trade-cur-margin-mode');
+  if (el) el.textContent = tradeDeskMarginMode;
+  showToast(`Switched Margin Mode to ${tradeDeskMarginMode}`, 'info');
+}
+
+function toggleTradePairStar(e) {
+  if (e) e.stopPropagation();
+  tradeDeskPairStarred = !tradeDeskPairStarred;
+  const btn = document.getElementById('trade-star-btn');
+  if (btn) {
+    btn.textContent = tradeDeskPairStarred ? '★' : '☆';
+    btn.classList.toggle('starred', tradeDeskPairStarred);
+  }
+  showToast(tradeDeskPairStarred ? 'Added BTCUSD to favorites ★' : 'Removed from favorites', 'info');
+}
+
+function toggleTradePairSelector() {
+  showToast('Select contract: BTCUSD, ETHUSD, SOLUSD, XAUTUSD', 'info');
+}
+
+function cycleOrderbookViewMode() {
+  const modes = ['both', 'bids', 'asks'];
+  const nextIdx = (modes.indexOf(tradeDeskObViewMode) + 1) % modes.length;
+  tradeDeskObViewMode = modes[nextIdx];
+  const asksEl = document.getElementById('obook-asks-container');
+  const bidsEl = document.getElementById('obook-bids-container');
+  if (tradeDeskObViewMode === 'both') {
+    if (asksEl) asksEl.style.display = 'flex';
+    if (bidsEl) bidsEl.style.display = 'flex';
+  } else if (tradeDeskObViewMode === 'bids') {
+    if (asksEl) asksEl.style.display = 'none';
+    if (bidsEl) bidsEl.style.display = 'flex';
+  } else {
+    if (asksEl) asksEl.style.display = 'flex';
+    if (bidsEl) bidsEl.style.display = 'none';
+  }
+  showToast(`Orderbook view: ${tradeDeskObViewMode.toUpperCase()}`, 'info');
+}
+
+function openDepthModal() {
+  const modal = document.getElementById('trade-depth-modal');
+  if (!modal) return;
+  const opts = ['0-5', '1', '10', '50'];
+  opts.forEach(o => {
+    const el = document.getElementById(`dopt-${o}`);
+    const key = o.replace('-', '.');
+    if (el) el.classList.toggle('active', key === tradeDeskDepth);
+  });
+  modal.classList.remove('hidden');
+}
+
+function closeDepthModal() {
+  const modal = document.getElementById('trade-depth-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function selectOrderbookDepth(depth) {
+  tradeDeskDepth = depth;
+  const curEl = document.getElementById('ob-current-depth');
+  if (curEl) curEl.textContent = depth;
+  closeDepthModal();
+  renderTradeOrderbook();
+  showToast(`Orderbook Depth set to ${depth}`, 'info');
+}
+
+function openLeverageModal() {
+  const modal = document.getElementById('trade-leverage-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeLeverageModal() {
+  const modal = document.getElementById('trade-leverage-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function handleLeverageSliderChange(val) {
+  const valEl = document.getElementById('lev-slider-val');
+  if (valEl) valEl.textContent = `${val}x`;
+}
+
+function selectTradeLeverage(lev) {
+  const slider = document.getElementById('trade-leverage-slider');
+  if (slider) slider.value = lev;
+  handleLeverageSliderChange(lev);
+}
+
+function confirmTradeLeverage() {
+  const slider = document.getElementById('trade-leverage-slider');
+  const lev = slider ? parseInt(slider.value) || 200 : 200;
+  tradeDeskLeverage = lev;
+  const curLev = document.getElementById('trade-cur-leverage');
+  if (curLev) curLev.textContent = `${lev}x`;
+  closeLeverageModal();
+  updateTradeBalancePreview();
+  showToast(`Leverage updated to ${lev}x`, 'success');
+}
+
+function toggleTradeOrderTypeMenu() {
+  tradeDeskOrderType = tradeDeskOrderType === 'market' ? 'limit' : 'market';
+  const typeEl = document.getElementById('trade-cur-otype');
+  const limitBox = document.getElementById('trade-limit-price-box');
+  if (typeEl) typeEl.textContent = tradeDeskOrderType === 'market' ? 'Market' : 'Limit';
+  if (limitBox) limitBox.classList.toggle('hidden', tradeDeskOrderType !== 'limit');
+  updateTradeBalancePreview();
+}
+
+function fillTradePrice(p) {
+  const limitInput = document.getElementById('trade-limit-input');
+  if (limitInput) limitInput.value = p.toFixed(1);
+  if (tradeDeskOrderType !== 'limit') {
+    toggleTradeOrderTypeMenu();
+  }
+}
+
+function handleTradeQtyChange(val) {
+  tradeDeskQty = parseFloat(val) || 0;
+  updateTradeBalancePreview();
+}
+
+function setTradePct(pct) {
+  const btcPrice = currentPrices['bitcoin']?.price || 82593.0;
+  const avblCash = walletState.cashBalance || 10000;
+  const maxMargin = avblCash * (pct / 100);
+  const positionVal = maxMargin * tradeDeskLeverage;
+  const qtyBtc = Math.max(0.001, roundValue(positionVal / btcPrice, 'qty'));
+  
+  tradeDeskQty = qtyBtc;
+  const input = document.getElementById('trade-qty-input');
+  if (input) input.value = qtyBtc;
+  updateTradeBalancePreview();
+}
+
+function toggleTpSlFields() {
+  tradeDeskTpSlOpen = !tradeDeskTpSlOpen;
+  const radio = document.getElementById('trade-tpsl-radio');
+  const inputs = document.getElementById('trade-tpsl-inputs');
+  if (radio) radio.classList.toggle('active', tradeDeskTpSlOpen);
+  if (inputs) inputs.classList.toggle('hidden', !tradeDeskTpSlOpen);
+}
+
+function updateTradeBalancePreview() {
+  const btcPrice = currentPrices['bitcoin']?.price || 82593.0;
+  const avblCash = walletState.cashBalance || 0;
+  const orderVal = tradeDeskQty * btcPrice;
+  const reqMargin = tradeDeskLeverage > 0 ? (orderVal / tradeDeskLeverage) : 0;
+
+  const reqEl = document.getElementById('trade-req-margin');
+  const avblEl = document.getElementById('trade-avbl-balance');
+
+  if (reqEl) reqEl.textContent = reqMargin > 0 ? `$${reqMargin.toFixed(2)}` : '0';
+  if (avblEl) avblEl.textContent = `$${avblCash.toFixed(2)} USD`;
+}
+
+function executeTradeDeskOrder() {
+  if (!tradeDeskQty || tradeDeskQty <= 0) {
+    showToast('Please enter an order quantity > 0', 'error');
+    return;
+  }
+
+  const btcPrice = currentPrices['bitcoin']?.price || 82593.0;
+  const orderVal = tradeDeskQty * btcPrice;
+  const reqMargin = orderVal / tradeDeskLeverage;
+
+  if (reqMargin > walletState.cashBalance) {
+    showToast(`Insufficient balance! Required: $${reqMargin.toFixed(2)}, Available: $${walletState.cashBalance.toFixed(2)}`, 'error');
+    return;
+  }
+
+  // Open real paper trading position in walletState
+  walletState.cashBalance = Math.max(0, roundValue(walletState.cashBalance - reqMargin, 'money'));
+  walletState.positions = walletState.positions || [];
+
+  const newPos = {
+    id: `pos-${Date.now()}`,
+    coin: 'bitcoin',
+    symbol: 'BTCUSD',
+    side: tradeDeskSide,
+    size: tradeDeskQty,
+    entryPrice: btcPrice,
+    leverage: tradeDeskLeverage,
+    margin: reqMargin,
+    marginMode: tradeDeskMarginMode,
+    liquidationPrice: tradeDeskSide === 'long' ? (btcPrice * (1 - 1 / tradeDeskLeverage)) : (btcPrice * (1 + 1 / tradeDeskLeverage)),
+    status: 'open',
+    openedAt: Date.now()
+  };
+
+  walletState.positions.unshift(newPos);
+  saveWalletState();
+
+  showToast(`${tradeDeskSide.toUpperCase()} ${tradeDeskQty} BTC executed @ $${btcPrice.toFixed(1)}!`, 'success');
+
+  // Reset qty input
+  tradeDeskQty = 0;
+  const input = document.getElementById('trade-qty-input');
+  if (input) input.value = '';
+
+  updateTradeBalancePreview();
+  renderTradePositions();
+  updateTabBadges();
+}
+
+function switchTradePosTab(tab) {
+  tradeDeskPosTab = tab;
+  const btnPos = document.getElementById('tab-btn-positions');
+  const btnOrd = document.getElementById('tab-btn-orders');
+  const panelPos = document.getElementById('panel-positions');
+  const panelOrd = document.getElementById('panel-orders');
+
+  if (btnPos) btnPos.classList.toggle('active', tab === 'positions');
+  if (btnOrd) btnOrd.classList.toggle('active', tab === 'orders');
+  if (panelPos) panelPos.classList.toggle('hidden', tab !== 'positions');
+  if (panelOrd) panelOrd.classList.toggle('hidden', tab !== 'orders');
+
+  if (tab === 'positions') renderTradePositions();
+  else renderTradeOrders();
+}
+
+function renderTradePositions() {
+  const panel = document.getElementById('panel-positions');
+  if (!panel) return;
+
+  const positions = (walletState.positions || []).filter(p => p.status === 'open' || !p.status);
+
+  if (!positions.length) {
+    panel.innerHTML = `
+      <div class="trade-empty-pos">
+        <div class="trade-empty-art">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#3d4659" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <path d="M11 8v6M8 11h6"/>
+          </svg>
+        </div>
+        <span class="trade-empty-lbl">No open position</span>
+      </div>
+    `;
+    return;
+  }
+
+  const btcPrice = currentPrices['bitcoin']?.price || 82593.0;
+
+  panel.innerHTML = positions.map(p => {
+    const isLong = p.side === 'long';
+    const markPrice = p.coin === 'bitcoin' ? btcPrice : (currentPrices[p.coin]?.price || p.entryPrice);
+    const pnl = isLong ? (markPrice - p.entryPrice) * p.size : (p.entryPrice - markPrice) * p.size;
+    const pnlPct = p.margin > 0 ? (pnl / p.margin) * 100 : 0;
+    const isProfit = pnl >= 0;
+
+    return `
+      <div class="trade-pos-card">
+        <div class="tpos-card-header">
+          <div class="tpos-sym-wrap">
+            <span class="tpos-side-badge ${p.side}">${p.side.toUpperCase()}</span>
+            <span class="tpos-sym-text">${p.symbol || 'BTCUSD'}</span>
+            <span class="tpos-lev-badge">${p.leverage}x</span>
+          </div>
+          <div class="tpos-pnl-wrap">
+            <div class="tpos-pnl-val ${isProfit ? 'profit' : 'loss'}">
+              ${isProfit ? '+' : ''}$${pnl.toFixed(2)} (${isProfit ? '+' : ''}${pnlPct.toFixed(2)}%)
+            </div>
+          </div>
+        </div>
+        <div class="tpos-grid">
+          <div class="tpos-item">
+            <div class="tpos-item-lbl">Size</div>
+            <div class="tpos-item-val">${p.size} BTC</div>
+          </div>
+          <div class="tpos-item">
+            <div class="tpos-item-lbl">Entry Price</div>
+            <div class="tpos-item-val">$${p.entryPrice.toFixed(1)}</div>
+          </div>
+          <div class="tpos-item">
+            <div class="tpos-item-lbl">Mark Price</div>
+            <div class="tpos-item-val">$${markPrice.toFixed(1)}</div>
+          </div>
+          <div class="tpos-item">
+            <div class="tpos-item-lbl">Margin</div>
+            <div class="tpos-item-val">$${p.margin.toFixed(2)}</div>
+          </div>
+          <div class="tpos-item">
+            <div class="tpos-item-lbl">Liq. Price</div>
+            <div class="tpos-item-val">$${(p.liquidationPrice || 0).toFixed(1)}</div>
+          </div>
+          <div class="tpos-item">
+            <div class="tpos-item-lbl">Margin Mode</div>
+            <div class="tpos-item-val">${p.marginMode || 'Isolated'}</div>
+          </div>
+        </div>
+        <button class="tpos-close-btn" onclick="closeTradeDeskPosition('${p.id}')">Close Position</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function closeTradeDeskPosition(posId) {
+  const posIdx = (walletState.positions || []).findIndex(p => p.id === posId);
+  if (posIdx < 0) return;
+  const p = walletState.positions[posIdx];
+
+  const btcPrice = currentPrices['bitcoin']?.price || 82593.0;
+  const isLong = p.side === 'long';
+  const markPrice = p.coin === 'bitcoin' ? btcPrice : (currentPrices[p.coin]?.price || p.entryPrice);
+  const pnl = isLong ? (markPrice - p.entryPrice) * p.size : (p.entryPrice - markPrice) * p.size;
+
+  // Return margin + PnL
+  walletState.cashBalance = Math.max(0, roundValue(walletState.cashBalance + p.margin + pnl, 'money'));
+  walletState.positions.splice(posIdx, 1);
+  saveWalletState();
+
+  showToast(`Closed ${p.symbol || 'BTCUSD'} (${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)})`, 'info');
+  renderTradePositions();
+  updateTradeBalancePreview();
+  updateTabBadges();
+}
+
+function renderTradeOrders() {
+  const panel = document.getElementById('panel-orders');
+  const countEl = document.getElementById('trade-orders-count');
+  if (!panel) return;
+
+  const orders = (walletState.orders || []).filter(o => o.status === 'pending' || o.status === 'open');
+  if (countEl) countEl.textContent = orders.length;
+
+  if (!orders.length) {
+    panel.innerHTML = `
+      <div class="trade-empty-pos">
+        <div class="trade-empty-art">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#3d4659" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <span class="trade-empty-lbl">No open orders</span>
+      </div>
+    `;
+    return;
+  }
+
+  panel.innerHTML = orders.map(o => `
+    <div class="trade-pos-card">
+      <div class="tpos-card-header">
+        <span class="tpos-side-badge ${o.side}">${o.side.toUpperCase()}</span>
+        <span class="tpos-sym-text">${o.symbol || 'BTCUSD'}</span>
+        <span class="tpos-lev-badge">${o.type || 'LIMIT'}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:12px; margin: 6px 0;">
+        <span style="color:#8b92a4;">Price: <strong style="color:#fff;">$${o.price}</strong></span>
+        <span style="color:#8b92a4;">Qty: <strong style="color:#fff;">${o.size} BTC</strong></span>
+      </div>
+      <button class="tpos-close-btn" onclick="cancelTradeDeskOrder('${o.id}')">Cancel Order</button>
+    </div>
+  `).join('');
+}
+
+function cancelTradeDeskOrder(orderId) {
+  const idx = (walletState.orders || []).findIndex(o => o.id === orderId);
+  if (idx >= 0) {
+    walletState.orders.splice(idx, 1);
+    saveWalletState();
+    showToast('Limit order cancelled', 'info');
+    renderTradeOrders();
+    updateTabBadges();
+  }
+}
+
+let tradeFundingTimerInterval = null;
+function startTradeFundingTimer() {
+  if (tradeFundingTimerInterval) return;
+  let seconds = 3 * 3600 + 59 * 60 + 41;
+  tradeFundingTimerInterval = setInterval(() => {
+    seconds--;
+    if (seconds < 0) seconds = 8 * 3600;
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    const el = document.getElementById('trade-funding-countdown');
+    if (el) el.textContent = `${h}:${m}:${s}`;
+  }, 1000);
+}
+
 // ─── BOTTOM NAVIGATION HANDLER ───────────────────────────────────
 function showBottomTab(tab, btn) {
   activeBottomTab = tab || 'home';
@@ -10598,16 +11113,27 @@ function showBottomTab(tab, btn) {
 
   const homeView = document.getElementById('home-screen-view');
   const mktView = document.getElementById('markets-screen-view');
+  const tradeView = document.getElementById('trade-screen-view');
 
   if (activeBottomTab === 'home') {
     if (homeView) homeView.style.display = 'flex';
     if (mktView) mktView.style.display = 'none';
+    if (tradeView) tradeView.style.display = 'none';
     renderHomeScreen();
   } else if (activeBottomTab === 'markets') {
     if (homeView) homeView.style.display = 'none';
     if (mktView) mktView.style.display = 'flex';
+    if (tradeView) tradeView.style.display = 'none';
     renderMarketsScreen();
+  } else if (activeBottomTab === 'trade') {
+    if (homeView) homeView.style.display = 'none';
+    if (mktView) mktView.style.display = 'none';
+    if (tradeView) tradeView.style.display = 'flex';
+    renderTradeScreen();
   } else {
+    if (homeView) homeView.style.display = 'none';
+    if (mktView) mktView.style.display = 'none';
+    if (tradeView) tradeView.style.display = 'none';
     showToast(`Navigating to ${activeBottomTab.toUpperCase()}...`, 'info');
   }
 }
