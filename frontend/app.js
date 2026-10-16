@@ -67,19 +67,21 @@ function getApiBase() {
 }
 let API = getApiBase();
 
-// ─── Supported Coins (Popular Coins: BTC, ETH, SOL, BNB, DOGE, XRP, ADA, SUI, AVAX, PEPE, NEAR) ───────────
+// ─── Supported Coins (Popular Coins: BTC, ETH, SOL, BNB, DOGE, XRP, ADA, SUI, AVAX, 1000PEPE, 1000SHIB, ORCA, NEAR) ───────────
 const COIN_LIST = [
-  { id: 'bitcoin',     symbol: 'BTC',  name: 'Bitcoin',       pair: 'BTC/USDT',  color: '#f7931a', category: 'Majors',  tags: ['Majors'],  icon: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',   binanceSymbol: 'BTCUSDT',  basePrice: 83800.00, baseChange: -0.10, baseVol: 31513000000, baseCap: 1676759000000 },
-  { id: 'ethereum',    symbol: 'ETH',  name: 'Ethereum',      pair: 'ETH/USDT',  color: '#627eea', category: 'Majors',  tags: ['Majors'],  icon: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png', binanceSymbol: 'ETHUSDT',  basePrice: 2515.00,  baseChange: -1.60, baseVol: 16497000000, baseCap: 307174000000 },
-  { id: 'solana',      symbol: 'SOL',  name: 'Solana',        pair: 'SOL/USDT',  color: '#14f195', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',  binanceSymbol: 'SOLUSDT',  basePrice: 107.50,   baseChange: -3.70, baseVol: 4059000000,  baseCap: 63637000000 },
-  { id: 'binancecoin', symbol: 'BNB',  name: 'BNB',           pair: 'BNB/USDT',  color: '#f3ba2f', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png', binanceSymbol: 'BNBUSDT', basePrice: 744.00, baseChange: -0.14, baseVol: 1850000000, baseCap: 107000000000 },
-  { id: 'dogecoin',    symbol: 'DOGE', name: 'Dogecoin',      pair: 'DOGE/USDT', color: '#c2a633', category: 'Meme',    tags: ['Meme'],    icon: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',   binanceSymbol: 'DOGEUSDT', basePrice: 0.085,    baseChange: -0.65, baseVol: 850000000,   baseCap: 12500000000 },
-  { id: 'ripple',      symbol: 'XRP',  name: 'XRP',           pair: 'XRP/USDT',  color: '#23292f', category: 'Payment', tags: ['Payment'], icon: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png', binanceSymbol: 'XRPUSDT', basePrice: 1.38, baseChange: -0.85, baseVol: 2450000000, baseCap: 78000000000 },
-  { id: 'cardano',     symbol: 'ADA',  name: 'Cardano',       pair: 'ADA/USDT',  color: '#0033ad', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/975/small/cardano.png',   binanceSymbol: 'ADAUSDT',  basePrice: 0.236,    baseChange: -1.08, baseVol: 420000000,   baseCap: 8400000000 },
-  { id: 'sui',         symbol: 'SUI',  name: 'Sui',           pair: 'SUI/USDT',  color: '#2a82e4', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png', binanceSymbol: 'SUIUSDT', basePrice: 1.058, baseChange: -1.13, baseVol: 560000000, baseCap: 3100000000 },
-  { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche',     pair: 'AVAX/USDT', color: '#e84142', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png', binanceSymbol: 'AVAXUSDT', basePrice: 10.23, baseChange: -2.10, baseVol: 390000000, baseCap: 4100000000 },
-  { id: 'pepe',        symbol: 'PEPE', name: 'Pepe',          pair: 'PEPE/USDT', color: '#4ba35a', category: 'Meme',    tags: ['Meme'],    icon: 'https://assets.coingecko.com/coins/images/29850/small/pepe-token.png', binanceSymbol: 'PEPEUSDT', basePrice: 0.0000042, baseChange: 1.60, baseVol: 650000000, baseCap: 1800000000 },
-  { id: 'near',        symbol: 'NEAR', name: 'NEAR Protocol', pair: 'NEAR/USDT', color: '#000000', category: 'Layer 1', tags: ['Layer 1'], icon: 'https://assets.coingecko.com/coins/images/10365/small/near.png', binanceSymbol: 'NEARUSDT', basePrice: 5.045, baseChange: -1.20, baseVol: 480000000, baseCap: 6200000000 }
+  { id: 'bitcoin',     symbol: 'BTC',      name: 'Bitcoin',       pair: 'BTC/USDT',      color: '#f7931a', category: 'Majors',  tags: ['Majors', 'all', 'new'],  icon: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',   binanceSymbol: 'BTCUSDT',  basePrice: 82004.60, baseChange: 1.36, baseVol: 15300000000, baseCap: 1676759000000, leverage: 150 },
+  { id: 'ethereum',    symbol: 'ETH',      name: 'Ethereum',      pair: 'ETH/USDT',      color: '#627eea', category: 'Majors',  tags: ['Majors', 'all', 'l1'],   icon: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png', binanceSymbol: 'ETHUSDT',  basePrice: 2436.78,  baseChange: 3.18, baseVol: 10180000000, baseCap: 307174000000, leverage: 150 },
+  { id: 'solana',      symbol: 'SOL',      name: 'Solana',        pair: 'SOL/USDT',      color: '#14f195', category: 'Layer 1', tags: ['Layer 1', 'all', 'l1'],  icon: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',  binanceSymbol: 'SOLUSDT',  basePrice: 105.12,   baseChange: 2.30, baseVol: 1900000000,  baseCap: 63637000000,  leverage: 100 },
+  { id: 'ripple',      symbol: 'XRP',      name: 'XRP',           pair: 'XRP/USDT',      color: '#23292f', category: 'Payment', tags: ['Payment', 'all', 'l1'],  icon: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png', binanceSymbol: 'XRPUSDT', basePrice: 1.3315, baseChange: 1.85, baseVol: 745290000, baseCap: 78000000000, leverage: 100 },
+  { id: 'dogecoin',    symbol: 'DOGE',     name: 'Dogecoin',      pair: 'DOGE/USDT',     color: '#c2a633', category: 'Meme',    tags: ['Meme', 'all'],     icon: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',   binanceSymbol: 'DOGEUSDT', basePrice: 0.08151,  baseChange: 2.02, baseVol: 469610000,   baseCap: 12500000000,  leverage: 100 },
+  { id: 'pepe',        symbol: '1000PEPE', name: 'Pepe',          pair: '1000PEPE/USDT', color: '#4ba35a', category: 'Meme',    tags: ['Meme', 'all'],     icon: 'https://assets.coingecko.com/coins/images/29850/small/pepe-token.png', binanceSymbol: 'PEPEUSDT', basePrice: 0.0040843, baseChange: 4.30, baseVol: 263050000, baseCap: 1800000000, leverage: 35 },
+  { id: 'shiba-inu',   symbol: '1000SHIB', name: 'Shiba Inu',     pair: '1000SHIB/USDT', color: '#ff6347', category: 'Meme',    tags: ['Meme', 'all'],     icon: 'https://assets.coingecko.com/coins/images/11939/small/shiba.png', binanceSymbol: 'SHIBUSDT', basePrice: 0.00512, baseChange: 3.37, baseVol: 36010000, baseCap: 12000000000, leverage: 50 },
+  { id: 'orca',        symbol: 'ORCA',     name: 'Orca',          pair: 'ORCA/USDT',     color: '#f7c325', category: 'DeFi',    tags: ['DeFi', 'all', 'new'],    icon: 'https://assets.coingecko.com/coins/images/17547/small/Orca_Logo.png', binanceSymbol: 'ORCAUSDT', basePrice: 1.973, baseChange: 2.82, baseVol: 18420000, baseCap: 120000000, leverage: 50 },
+  { id: 'binancecoin', symbol: 'BNB',      name: 'BNB',           pair: 'BNB/USDT',      color: '#f3ba2f', category: 'Layer 1', tags: ['Layer 1', 'all', 'l1'],  icon: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png', binanceSymbol: 'BNBUSDT', basePrice: 744.00, baseChange: -0.14, baseVol: 1850000000, baseCap: 107000000000, leverage: 100 },
+  { id: 'cardano',     symbol: 'ADA',      name: 'Cardano',       pair: 'ADA/USDT',      color: '#0033ad', category: 'Layer 1', tags: ['Layer 1', 'all', 'l1'],  icon: 'https://assets.coingecko.com/coins/images/975/small/cardano.png',   binanceSymbol: 'ADAUSDT',  basePrice: 0.236,    baseChange: -1.08, baseVol: 420000000,   baseCap: 8400000000,   leverage: 50 },
+  { id: 'sui',         symbol: 'SUI',      name: 'Sui',           pair: 'SUI/USDT',      color: '#2a82e4', category: 'Layer 1', tags: ['Layer 1', 'all', 'l1'],  icon: 'https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png', binanceSymbol: 'SUIUSDT', basePrice: 1.058, baseChange: -1.13, baseVol: 560000000, baseCap: 3100000000, leverage: 50 },
+  { id: 'avalanche-2', symbol: 'AVAX',     name: 'Avalanche',     pair: 'AVAX/USDT',     color: '#e84142', category: 'Layer 1', tags: ['Layer 1', 'all', 'l1'],  icon: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png', binanceSymbol: 'AVAXUSDT', basePrice: 10.23, baseChange: -2.10, baseVol: 390000000, baseCap: 4100000000, leverage: 50 },
+  { id: 'near',        symbol: 'NEAR',     name: 'NEAR Protocol', pair: 'NEAR/USDT',     color: '#000000', category: 'Layer 1', tags: ['Layer 1', 'all', 'l1', 'ai'], icon: 'https://assets.coingecko.com/coins/images/10365/small/near.png', binanceSymbol: 'NEARUSDT', basePrice: 5.045, baseChange: -1.20, baseVol: 480000000, baseCap: 6200000000, leverage: 50 }
 ];
 
 function getCoinDefinition(coinId) {
@@ -489,16 +491,49 @@ function setMinTradeAmount() {
   }
 }
 
-function renderNoDataState(colspan = 10) {
-  return `<tr><td colspan="${colspan}" class="empty-row">
-    <div class="shark-empty-state">
-      <svg class="shark-empty-tray-icon" width="56" height="56" viewBox="0 0 64 64" fill="none">
-        <path d="M12 22L20 44H44L52 22H12Z" stroke="#2c3545" stroke-width="2.5" fill="#141923"/>
-        <path d="M26 34H38" stroke="#3b475c" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M12 22L22 14H42L52 22" stroke="#222a38" stroke-width="2" stroke-linejoin="round"/>
-      </svg>
-      <div class="shark-empty-text">No data</div>
+function renderVTradeEmptyState(title = 'Deposit Funds to Your Wallet', subtitle = 'Start your trading journey with us.', btnText = 'Deposit Funds') {
+  return `
+    <div class="vtrade-empty-state">
+      <div class="ves-illustration-wrap">
+        <div class="ves-glow"></div>
+        <span class="ves-sparkle ves-s1">✦</span>
+        <span class="ves-sparkle ves-s2">✦</span>
+        <span class="ves-sparkle ves-s3">✦</span>
+        <div class="ves-wallet-art">
+          <svg width="105" height="100" viewBox="0 0 105 100" fill="none">
+            <!-- Gold Coin popping out -->
+            <circle cx="52" cy="38" r="24" fill="url(#ves-gold-grad)" stroke="#d97706" stroke-width="2"/>
+            <circle cx="52" cy="38" r="20" fill="none" stroke="#fde68a" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <text x="52" y="44" font-size="20" font-weight="bold" fill="#78350f" text-anchor="middle" font-family="sans-serif">₹</text>
+            <!-- Blue 3D Wallet Body -->
+            <rect x="12" y="36" width="81" height="56" rx="14" fill="url(#ves-wallet-grad)" stroke="#60a5fa" stroke-width="1.5"/>
+            <path d="M12 48H93" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+            <!-- Flap & Gold Clasp -->
+            <rect x="58" y="54" width="35" height="20" rx="6" fill="#f59e0b" stroke="#fde68a" stroke-width="1"/>
+            <circle cx="68" cy="64" r="3.5" fill="#ffffff"/>
+            <defs>
+              <linearGradient id="ves-gold-grad" x1="28" y1="14" x2="76" y2="62" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#fbbf24"/>
+                <stop offset="1" stop-color="#d97706"/>
+              </linearGradient>
+              <linearGradient id="ves-wallet-grad" x1="12" y1="36" x2="93" y2="92" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#60a5fa"/>
+                <stop offset="1" stop-color="#3b82f6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+      <div class="ves-title">${title}</div>
+      <div class="ves-subtitle">${subtitle}</div>
+      <button type="button" class="btn-ves-deposit" onclick="openResetWalletDialog()">${btnText}</button>
     </div>
+  `;
+}
+
+function renderNoDataState(colspan = 10) {
+  return `<tr><td colspan="${colspan}" class="empty-row" style="padding:0; border:none;">
+    ${renderVTradeEmptyState()}
   </td></tr>`;
 }
 
@@ -1575,6 +1610,9 @@ function selectCoin(coin) {
   renderTvChartOverlay();
   updateChartQuickCoinChips();
   update1ClickPrices();
+  updateTradeInstrumentHeader();
+  updateVTradeOrderbook();
+  updateTradeBottomSection();
 }
 
 // ─── REAL-TIME BINANCE WEBSOCKET & FAST TICKER STREAM ───────
@@ -1709,6 +1747,8 @@ function onPriceTick(coin, prevPrice, newPrice) {
       priceEl.classList.add(cls);
     }
     renderTvChartOverlay();
+    updateTradeInstrumentHeader();
+    updateVTradeOrderbook();
   }
   updateLivePnL(coin, newPrice);
   updateGrowwLiveElements(coin);
@@ -3597,9 +3637,11 @@ function switchMainTab(tabName) {
   const subBtn = document.getElementById(`gsub-${tabName}`);
   if (subBtn) subBtn.classList.add('active');
 
-  // 2. Update Fixed Bottom-Nav
-  document.querySelectorAll('.groww-bottom-nav .gnav-btn').forEach(b => b.classList.remove('active'));
-  const navKey = (tabName === 'orders') ? 'positions' : tabName;
+  // 2. Update Fixed Bottom-Nav (Active Glowing Pill)
+  document.querySelectorAll('.groww-bottom-nav .gnav-btn, .vtrade-bottom-nav .vnav-btn').forEach(b => b.classList.remove('active'));
+  let navKey = tabName;
+  if (tabName === 'orders' || tabName === 'history') navKey = 'positions';
+  if (tabName === 'markets') navKey = 'explore';
   const navBtn = document.getElementById(`gnav-${navKey}`);
   if (navBtn) navBtn.classList.add('active');
 
@@ -3612,6 +3654,7 @@ function switchMainTab(tabName) {
   const watchlistSection   = document.getElementById('watchlist-section');
   const marketsPanel       = document.getElementById('markets-panel');
   const positionsContainer = document.getElementById('view-positions-container');
+  const historyContainer   = document.getElementById('view-history-container');
   const tradePanel         = document.getElementById('view-trade-panel') || document.querySelector('.order-sidebar');
   const walletPanel        = document.getElementById('view-wallet-panel');
   const indicesTicker      = document.getElementById('groww-indices-ticker');
@@ -3620,6 +3663,7 @@ function switchMainTab(tabName) {
   if (exploreContainer)   exploreContainer.classList.add('hidden');
   if (chartArea)          chartArea.classList.add('hidden');
   if (positionsContainer) positionsContainer.classList.add('hidden');
+  if (historyContainer)   historyContainer.classList.add('hidden');
   if (tradePanel)         tradePanel.classList.add('hidden');
   if (walletPanel)        walletPanel.classList.add('hidden');
 
@@ -3629,7 +3673,7 @@ function switchMainTab(tabName) {
 
   const isDesktop = typeof window !== 'undefined' && window.innerWidth > 1024;
 
-  if (tabName === 'explore') {
+  if (tabName === 'explore' || tabName === 'markets') {
     if (exploreContainer) exploreContainer.classList.remove('hidden');
     if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderGrowwExploreUI();
@@ -3637,6 +3681,9 @@ function switchMainTab(tabName) {
     if (walletPanel) walletPanel.classList.remove('hidden');
     if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderWalletOverview();
+  } else if (tabName === 'history') {
+    if (historyContainer) historyContainer.classList.remove('hidden');
+    renderHistoryScreen();
   } else {
     // Exchange views (chart, trade, positions, orders)
     if (indicesTicker) indicesTicker.classList.remove('hidden');
@@ -3653,6 +3700,8 @@ function switchMainTab(tabName) {
       showBottomTab(tabName === 'orders' ? 'orders' : 'positions');
       updateMiniStats();
       updateTradeActiveCoinBanner();
+      updateTradeInstrumentHeader();
+      updateVTradeOrderbook();
       updateTradeCalc();
       renderTradingViewChart();
       requestAnimationFrame(() => {
@@ -3676,10 +3725,13 @@ function switchMainTab(tabName) {
         if (tradePanel) tradePanel.classList.remove('hidden');
         updateMiniStats();
         updateTradeActiveCoinBanner();
+        updateTradeInstrumentHeader();
+        updateVTradeOrderbook();
+        updateTradeBottomSection();
         updateTradeCalc();
       } else if (tabName === 'positions' || tabName === 'orders') {
         if (positionsContainer) positionsContainer.classList.remove('hidden');
-        showBottomTab(tabName === 'orders' ? 'orders' : 'positions');
+        showVTradeOrdersTab(tabName === 'orders' ? 'orders' : 'positions');
         renderPositions();
         renderOrders();
         renderHistory();
@@ -3687,6 +3739,437 @@ function switchMainTab(tabName) {
     }
   }
 }
+
+// ─── SCREEN 1: ORDERS SCREEN FUNCTIONS (Screenshot 1 Match) ───────────
+let activeOrdersTab = 'positions';
+
+function showVTradeOrdersTab(type) {
+  activeOrdersTab = type;
+  const posBtn = document.getElementById('orders-seg-positions');
+  const ordBtn = document.getElementById('orders-seg-orders');
+  const panelPos = document.getElementById('panel-positions');
+  const panelOrd = document.getElementById('panel-orders');
+
+  if (type === 'positions') {
+    if (posBtn) posBtn.classList.add('active');
+    if (ordBtn) ordBtn.classList.remove('active');
+    if (panelPos) panelPos.classList.remove('hidden');
+    if (panelOrd) panelOrd.classList.add('hidden');
+    renderPositions();
+  } else {
+    if (posBtn) posBtn.classList.remove('active');
+    if (ordBtn) ordBtn.classList.add('active');
+    if (panelPos) panelPos.classList.add('hidden');
+    if (panelOrd) panelOrd.classList.remove('hidden');
+    renderOrders();
+  }
+}
+
+// ─── SCREEN 2: HISTORY SCREEN FUNCTIONS (Screenshot 2 Match) ──────────
+let activeHistorySubTab = 'order';
+
+function showHistorySubTab(sub) {
+  activeHistorySubTab = sub;
+  const orderBtn = document.getElementById('hist-seg-order');
+  const tradeBtn = document.getElementById('hist-seg-trade');
+  const transBtn = document.getElementById('hist-seg-trans');
+
+  if (orderBtn) orderBtn.classList.toggle('active', sub === 'order');
+  if (tradeBtn) tradeBtn.classList.toggle('active', sub === 'trade');
+  if (transBtn) transBtn.classList.toggle('active', sub === 'transaction');
+
+  renderHistoryScreen();
+}
+
+function renderHistoryScreen() {
+  const container = document.getElementById('history-content-area');
+  if (!container) return;
+
+  if (activeHistorySubTab === 'order') {
+    const orders = walletState.orders || [];
+    if (!orders.length) {
+      container.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
+      return;
+    }
+    container.innerHTML = `
+      <div class="pos-cards-list" style="padding:16px;">
+        ${orders.map(o => `
+          <div class="pos-card">
+            <div class="pos-card-header">
+              <span class="pos-card-sym">${(o.symbol || o.coin).toUpperCase()}</span>
+              <span class="badge ${o.direction === 'long' ? 'badge-long' : 'badge-short'}">${(o.direction || 'BUY').toUpperCase()}</span>
+            </div>
+            <div class="pos-card-body">
+              <div class="pos-card-row"><span>Type</span><span>${(o.type || 'LIMIT').toUpperCase()}</span></div>
+              <div class="pos-card-row"><span>Price</span><span>$${fmt(o.price)}</span></div>
+              <div class="pos-card-row"><span>Amount</span><span>${o.size}</span></div>
+              <div class="pos-card-row"><span>Status</span><span style="color:var(--v-amber);">${o.status || 'Pending'}</span></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } else if (activeHistorySubTab === 'trade') {
+    const history = walletState.history || [];
+    if (!history.length) {
+      container.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
+      return;
+    }
+    container.innerHTML = `
+      <div class="pos-cards-list" style="padding:16px;">
+        ${history.map(h => {
+          const isPos = (h.realizedPnl || 0) >= 0;
+          return `
+            <div class="pos-card">
+              <div class="pos-card-header">
+                <span class="pos-card-sym">${(h.symbol || h.coin).toUpperCase()}</span>
+                <span class="badge ${isPos ? 'badge-long' : 'badge-short'}">${isPos ? '+' : ''}$${fmtNum(h.realizedPnl || 0)}</span>
+              </div>
+              <div class="pos-card-body">
+                <div class="pos-card-row"><span>Side</span><span>${(h.direction || h.side || 'LONG').toUpperCase()}</span></div>
+                <div class="pos-card-row"><span>Close Price</span><span>$${fmt(h.closePrice || h.price || 0)}</span></div>
+                <div class="pos-card-row"><span>Quantity</span><span>${h.size}</span></div>
+                <div class="pos-card-row"><span>Time</span><span>${h.time ? new Date(h.time).toLocaleTimeString() : 'Recent'}</span></div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  } else {
+    container.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
+  }
+}
+
+// ─── SCREEN 3 & 4: MARKETS SCREEN FUNCTIONS (Screenshots 3 & 4 Match) ──
+let activeMarketsCategory = 'all';
+let activeMarketsQuote = 'USDT';
+let marketsSortBy = 'pair';
+let marketsSortAsc = true;
+let marketsFavOnly = false;
+let userFavoriteCoins = ['bitcoin', 'ethereum', 'solana'];
+
+function filterMarketsCategory(cat, btn) {
+  activeMarketsCategory = cat;
+  document.querySelectorAll('.mcat-chip').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderMarketsCoinList();
+}
+
+function setMarketsQuote(quote) {
+  activeMarketsQuote = quote;
+  document.querySelectorAll('.markets-nav-tab').forEach(b => b.classList.remove('active'));
+  const tab = document.getElementById(`mnav-tab-${quote.toLowerCase()}`);
+  if (tab) tab.classList.add('active');
+  renderMarketsCoinList();
+}
+
+function toggleFavoritesFilter() {
+  marketsFavOnly = !marketsFavOnly;
+  const btn = document.getElementById('btn-fav-filter');
+  if (btn) btn.classList.toggle('active', marketsFavOnly);
+  renderMarketsCoinList();
+}
+
+function sortMarketsList(col) {
+  if (marketsSortBy === col) {
+    marketsSortAsc = !marketsSortAsc;
+  } else {
+    marketsSortBy = col;
+    marketsSortAsc = true;
+  }
+  renderMarketsCoinList();
+}
+
+function toggleMarketsSortOrder() {
+  marketsSortAsc = !marketsSortAsc;
+  renderMarketsCoinList();
+}
+
+function fmtMarketVol(vol) {
+  if (!vol || isNaN(vol)) return '$1.20B';
+  if (vol >= 1e9) return `$${(vol / 1e9).toFixed(2)}B`;
+  if (vol >= 1e6) return `$${(vol / 1e6).toFixed(2)}M`;
+  return `$${fmt(vol)}`;
+}
+
+function renderMarketsCoinList() {
+  const container = document.getElementById('markets-coin-list');
+  if (!container) return;
+
+  let list = [...COIN_LIST];
+
+  // 1. Filter by Favorites
+  if (marketsFavOnly) {
+    list = list.filter(c => userFavoriteCoins.includes(c.id));
+  }
+
+  // 2. Filter by Category
+  if (activeMarketsCategory && activeMarketsCategory !== 'all') {
+    if (activeMarketsCategory === 'new') {
+      list = list.filter(c => c.tags?.includes('new') || c.category === 'DeFi' || c.id === 'orca' || c.id === 'sui');
+    } else if (activeMarketsCategory === 'meme') {
+      list = list.filter(c => c.category === 'Meme' || c.tags?.includes('Meme'));
+    } else if (activeMarketsCategory === 'l1') {
+      list = list.filter(c => c.category === 'Layer 1' || c.tags?.includes('l1') || c.category === 'Majors');
+    } else if (activeMarketsCategory === 'l2') {
+      list = list.filter(c => c.tags?.includes('l2') || c.id === 'solana' || c.id === 'near');
+    } else if (activeMarketsCategory === 'ai') {
+      list = list.filter(c => c.tags?.includes('ai') || c.id === 'near');
+    }
+  }
+
+  // 3. Sort list
+  list.sort((a, b) => {
+    const aData = currentPrices[a.id] || { price: a.basePrice, change24h: a.baseChange };
+    const bData = currentPrices[b.id] || { price: b.basePrice, change24h: b.baseChange };
+    let res = 0;
+    if (marketsSortBy === 'price') {
+      res = (aData.price || 0) - (bData.price || 0);
+    } else {
+      res = a.symbol.localeCompare(b.symbol);
+    }
+    return marketsSortAsc ? res : -res;
+  });
+
+  const quoteRate = activeMarketsQuote === 'INR' ? usdToInrRate : 1;
+  const quoteSuffix = activeMarketsQuote;
+
+  container.innerHTML = list.map(c => {
+    const cData = currentPrices[c.id] || { price: c.basePrice, change24h: c.baseChange, volume24h: c.baseVol };
+    const price = (cData.price || c.basePrice) * quoteRate;
+    const chg = cData.change24h !== undefined ? cData.change24h : c.baseChange;
+    const isPos = chg >= 0;
+    const lev = c.leverage || 100;
+    const volStr = fmtMarketVol(cData.volume24h || c.baseVol);
+
+    return `
+      <div class="mcoin-row" onclick="selectCoin('${c.id}'); switchMainTab('trade');">
+        <div class="mcoin-left">
+          <img src="${c.icon}" class="mcoin-avatar" alt="${c.symbol}" />
+          <div class="mcoin-info">
+            <div class="mcoin-symbol-row">
+              <span class="mcoin-symbol-main">${c.symbol}</span>
+              <span class="mcoin-symbol-quote">-${quoteSuffix}</span>
+            </div>
+            <div class="mcoin-sub-row">
+              <span class="mcoin-leverage-badge">${lev}x</span>
+              <span class="mcoin-vol-text">Vol: ${volStr}</span>
+            </div>
+          </div>
+        </div>
+        <div class="mcoin-right">
+          <span class="mcoin-price">${price >= 1 ? price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) : price.toFixed(price < 0.01 ? 6 : 4)}</span>
+          <span class="mcoin-chg-pill ${isPos ? 'pos' : 'neg'}">${isPos ? '+' : ''}${chg.toFixed(2)}%</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── SCREEN 5: SPLIT TRADE DESK & ORDERBOOK FUNCTIONS (Screenshot 5 Match) ───
+function updateVTradeOrderbook() {
+  const asksContainer = document.getElementById('ob-asks-list');
+  const bidsContainer = document.getElementById('ob-bids-list');
+  const midPriceEl = document.getElementById('ob-mid-price-val');
+  const midMarkEl = document.getElementById('ob-mid-mark-val');
+  const buyerRatioText = document.getElementById('ob-buyer-ratio-text');
+  const sellerRatioText = document.getElementById('ob-seller-ratio-text');
+  const buyerRatioBar = document.getElementById('ob-ratio-buyer-bar');
+  const sellerRatioBar = document.getElementById('ob-ratio-seller-bar');
+
+  if (!asksContainer || !bidsContainer) return;
+
+  const curData = currentPrices[selectedCoin] || COIN_LIST.find(c => c.id === selectedCoin) || COIN_LIST[0];
+  const price = curData.price || curData.basePrice || 82061.3;
+  const chg = curData.change24h || 0;
+  const isPos = chg >= 0;
+
+  if (midPriceEl) {
+    midPriceEl.textContent = `${price >= 1 ? price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) : price.toFixed(4)} ${isPos ? '↑' : '↓'}`;
+    midPriceEl.style.color = isPos ? 'var(--v-green)' : 'var(--v-red)';
+  }
+  if (midMarkEl) {
+    const markP = price * (1 + (Math.random() * 0.0004 - 0.0002));
+    midMarkEl.textContent = `M ${markP >= 1 ? markP.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) : markP.toFixed(4)}`;
+  }
+
+  // 6 Ask levels (descending order)
+  const askOffsets = [0.0008, 0.0006, 0.0005, 0.0003, 0.0002, 0.0001];
+  const askQtys = [0.002, 0.001, 0.063, 0.025, 0.006, 3.665];
+  const maxQty = 4.0;
+
+  asksContainer.innerHTML = askOffsets.map((off, i) => {
+    const p = price * (1 + off);
+    const q = askQtys[i] || (Math.random() * 0.5 + 0.01).toFixed(3);
+    const depthPct = Math.min(100, Math.round((parseFloat(q) / maxQty) * 100));
+    return `
+      <div class="ob-row">
+        <span class="ob-price ask">${p >= 1 ? p.toFixed(1) : p.toFixed(4)}</span>
+        <span class="ob-qty">${q}</span>
+        <div class="ob-depth-bar ask" style="width: ${depthPct}%;"></div>
+      </div>
+    `;
+  }).join('');
+
+  // 6 Bid levels (descending order)
+  const bidOffsets = [-0.0001, -0.0002, -0.0003, -0.0005, -0.0006, -0.0008];
+  const bidQtys = [1.438, 0.468, 0.001, 0.002, 0.002, 0.100];
+
+  bidsContainer.innerHTML = bidOffsets.map((off, i) => {
+    const p = price * (1 + off);
+    const q = bidQtys[i] || (Math.random() * 0.5 + 0.01).toFixed(3);
+    const depthPct = Math.min(100, Math.round((parseFloat(q) / maxQty) * 100));
+    return `
+      <div class="ob-row">
+        <span class="ob-price bid">${p >= 1 ? p.toFixed(1) : p.toFixed(4)}</span>
+        <span class="ob-qty">${q}</span>
+        <div class="ob-depth-bar bid" style="width: ${depthPct}%;"></div>
+      </div>
+    `;
+  }).join('');
+
+  // Sentiment Ratio
+  const buyerPct = 41.08 + (Math.sin(Date.now() / 10000) * 4);
+  const sellerPct = 100 - buyerPct;
+  if (buyerRatioText) buyerRatioText.textContent = `B ${buyerPct.toFixed(2)}%`;
+  if (sellerRatioText) sellerRatioText.textContent = `${sellerPct.toFixed(2)}% S`;
+  if (buyerRatioBar) buyerRatioBar.style.width = `${buyerPct}%`;
+  if (sellerRatioBar) sellerRatioBar.style.width = `${sellerPct}%`;
+}
+
+function updateTradeInstrumentHeader() {
+  const icon = document.getElementById('tinst-active-icon');
+  const sym = document.getElementById('tinst-active-symbol');
+  const chgBadge = document.getElementById('tinst-active-chg');
+
+  const coin = COIN_LIST.find(c => c.id === selectedCoin) || COIN_LIST[0];
+  const pData = currentPrices[selectedCoin] || { price: coin.basePrice, change24h: coin.baseChange };
+
+  if (icon) icon.src = coin.icon;
+  if (sym) sym.textContent = `${coin.symbol}-USDT`;
+  if (chgBadge) {
+    const isPos = (pData.change24h || 0) >= 0;
+    chgBadge.textContent = `${isPos ? '+' : ''}${(pData.change24h || 0).toFixed(2)}%`;
+    chgBadge.className = `tinst-chg-badge ${isPos ? 'pos' : 'neg'}`;
+  }
+}
+
+function setSnapPercent(pct) {
+  document.querySelectorAll('.tform-snap-dot').forEach(dot => {
+    const dPct = parseFloat(dot.getAttribute('data-pct')) / 100;
+    dot.classList.toggle('active', dPct <= pct);
+  });
+  const bar = document.getElementById('tform-slider-progress');
+  if (bar) bar.style.width = `${pct * 100}%`;
+  setQuickPercent(pct);
+}
+
+function toggleTpSlSection() {
+  const body = document.getElementById('tpsl-body');
+  if (body) body.classList.toggle('hidden');
+}
+
+let activeTradeBottomTab = 'pos';
+
+function switchTradeBottomTab(tab) {
+  activeTradeBottomTab = tab;
+  const posTab = document.getElementById('tbpos-tab-pos');
+  const ordTab = document.getElementById('tbpos-tab-orders');
+  if (posTab) posTab.classList.toggle('active', tab === 'pos');
+  if (ordTab) ordTab.classList.toggle('active', tab === 'orders');
+  updateTradeBottomSection();
+}
+
+function updateTradeBottomSection() {
+  const container = document.getElementById('trade-bottom-content-area');
+  const countPos = document.getElementById('tbpos-count-pos');
+  const countOrders = document.getElementById('tbpos-count-orders');
+
+  const positions = walletState.positions || [];
+  const orders = walletState.orders || [];
+
+  if (countPos) countPos.textContent = `(${positions.length})`;
+  if (countOrders) countOrders.textContent = `(${orders.length})`;
+
+  if (!container) return;
+
+  if (activeTradeBottomTab === 'pos') {
+    if (!positions.length) {
+      container.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
+      return;
+    }
+    container.innerHTML = `
+      <div class="pos-cards-list">
+        ${positions.map(p => {
+          const coinDef = getCoinDefinition(p.coin);
+          const curPrice = currentPrices[p.coin]?.price || p.entry_price;
+          const priceDiff = (p.direction === 'long') ? (curPrice - p.entry_price) : (p.entry_price - curPrice);
+          const pnl = roundUsd(priceDiff * p.size);
+          const isPos = pnl >= 0;
+          return `
+            <div class="pos-card" style="margin-bottom:8px;">
+              <div class="pos-card-header">
+                <span class="pos-card-sym">${coinDef.symbol}-USDT</span>
+                <span class="badge ${p.direction === 'long' ? 'badge-long' : 'badge-short'}">${(p.direction).toUpperCase()} ${p.leverage}x</span>
+              </div>
+              <div class="pos-card-body">
+                <div class="pos-card-row"><span>Size</span><span>${p.size} ${coinDef.symbol}</span></div>
+                <div class="pos-card-row"><span>Entry</span><span>$${fmt(p.entry_price)}</span></div>
+                <div class="pos-card-row"><span>Mark</span><span>$${fmt(curPrice)}</span></div>
+                <div class="pos-card-row"><span>PnL</span><span class="${isPos ? 'pnl-pos' : 'pnl-neg'}" style="font-weight:700;">${isPos ? '+' : ''}$${fmtNum(pnl)}</span></div>
+              </div>
+              <button type="button" class="btn-close-pos" style="width:100%; margin-top:8px;" onclick="closePositionUnified(${p.id})">Close Position</button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  } else {
+    if (!orders.length) {
+      container.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
+      return;
+    }
+    container.innerHTML = `
+      <div class="pos-cards-list">
+        ${orders.map(o => `
+          <div class="pos-card" style="margin-bottom:8px;">
+            <div class="pos-card-header">
+              <span class="pos-card-sym">${(o.symbol || o.coin).toUpperCase()}</span>
+              <span class="badge ${o.direction === 'long' ? 'badge-long' : 'badge-short'}">${(o.direction || 'BUY').toUpperCase()}</span>
+            </div>
+            <div class="pos-card-body">
+              <div class="pos-card-row"><span>Type</span><span>${(o.type || 'LIMIT').toUpperCase()}</span></div>
+              <div class="pos-card-row"><span>Price</span><span>$${fmt(o.price)}</span></div>
+              <div class="pos-card-row"><span>Amount</span><span>${o.size}</span></div>
+            </div>
+            <button type="button" class="btn-close-pos" style="width:100%; margin-top:8px;" onclick="cancelLimitOrder(${o.id})">Cancel Order</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+}
+
+function openProfileScreen() {
+  if (token) {
+    openSettingsSheet();
+  } else {
+    openAuthModal('login');
+  }
+}
+
+// Funding Rate Countdown Timer (ticking every 1s)
+let fundingSecondsRemaining = 3 * 3600 + 52 * 60 + 37;
+setInterval(() => {
+  fundingSecondsRemaining--;
+  if (fundingSecondsRemaining < 0) fundingSecondsRemaining = 8 * 3600;
+  const h = String(Math.floor(fundingSecondsRemaining / 3600)).padStart(2, '0');
+  const m = String(Math.floor((fundingSecondsRemaining % 3600) / 60)).padStart(2, '0');
+  const s = String(fundingSecondsRemaining % 60).padStart(2, '0');
+  const el = document.getElementById('trade-funding-countdown');
+  if (el) el.textContent = `${h}:${m}:${s}`;
+}, 1000);
 
 // Ensure chart layout updates smoothly on window resize without infinite tab re-triggers
 let resizeDebounceTimer = null;
@@ -3809,6 +4292,7 @@ function renderGrowwMovers() {
 function renderGrowwExploreUI() {
   COIN_LIST.forEach(c => updateGrowwLiveElements(c.id));
   renderGrowwMovers();
+  renderMarketsCoinList();
 }
 
 function selectQuickTool(tool) {
@@ -5390,7 +5874,7 @@ function renderPositions() {
 
   if (!open.length) {
     if (tbody) tbody.innerHTML = renderNoDataState(10);
-    if (cardsList) cardsList.innerHTML = `<div class="shark-empty-state"><svg class="shark-empty-tray-icon" width="56" height="56" viewBox="0 0 64 64" fill="none"><path d="M12 22L20 44H44L52 22H12Z" stroke="#2c3545" stroke-width="2.5" fill="#141923"/><path d="M26 34H38" stroke="#3b475c" stroke-width="2.5" stroke-linecap="round"/><path d="M12 22L22 14H42L52 22" stroke="#222a38" stroke-width="2" stroke-linejoin="round"/></svg><div class="shark-empty-text">No data</div></div>`;
+    if (cardsList) cardsList.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
     updateMarginRatioStats('0.00', 0, walletState.cashBalance);
     return;
   }
@@ -5572,30 +6056,54 @@ function renderOrders() {
   updateTabBadges();
   renderTvChartOverlay();
   const tbody = document.getElementById('orders-tbody');
-  if (!tbody) return;
+  const cardsList = document.getElementById('orders-cards-list');
   const pending = walletState.orders || [];
 
   if (!pending.length) {
-    tbody.innerHTML = renderNoDataState(7);
+    if (tbody) tbody.innerHTML = renderNoDataState(7);
+    if (cardsList) cardsList.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
     return;
   }
 
-  tbody.innerHTML = pending.map(o => {
-    const isLong = (o.side === 'Buy' || o.side === 'Long' || o.side === 'buy' || o.side === 'long');
-    const sideCls = isLong ? 'badge-long' : 'badge-short';
-    const sideText = isLong ? 'Long' : 'Short';
-    const timeStr = o.createdAt ? fmtDate(o.createdAt) : '—';
+  if (cardsList) {
+    cardsList.innerHTML = pending.map(o => {
+      const isLong = (o.side === 'Buy' || o.side === 'Long' || o.side === 'buy' || o.side === 'long');
+      return `
+        <div class="pos-card" style="margin-bottom:8px;">
+          <div class="pos-card-header">
+            <span class="pos-card-sym">${(o.symbol || o.coin).toUpperCase()}</span>
+            <span class="badge ${isLong ? 'badge-long' : 'badge-short'}">${(o.side || 'BUY').toUpperCase()}</span>
+          </div>
+          <div class="pos-card-body">
+            <div class="pos-card-row"><span>Type</span><span>${(o.type || 'LIMIT').toUpperCase()}</span></div>
+            <div class="pos-card-row"><span>Price</span><span>$${fmt(o.price)}</span></div>
+            <div class="pos-card-row"><span>Amount</span><span>${fmtCoin(o.size)}</span></div>
+            <div class="pos-card-row"><span>Status</span><span style="color:var(--v-amber);">${o.status || 'Pending'}</span></div>
+          </div>
+          <button type="button" class="btn-close-pos" style="width:100%; margin-top:8px;" onclick="cancelOrder(${o.id})">Cancel Order</button>
+        </div>
+      `;
+    }).join('');
+  }
 
-    return `<tr>
-      <td><b>${o.symbol}</b></td>
-      <td><span class="badge ${sideCls}">${sideText}</span></td>
-      <td><span class="badge badge-limit">Limit</span></td>
-      <td>$${fmt(o.price)}</td>
-      <td>${fmtCoin(o.size)}</td>
-      <td style="color:var(--txt3); font-size:11px;">${timeStr}</td>
-      <td><button class="btn-cancel-ord" onclick="cancelOrder(${o.id})">Cancel</button></td>
-    </tr>`;
-  }).join('');
+  if (tbody) {
+    tbody.innerHTML = pending.map(o => {
+      const isLong = (o.side === 'Buy' || o.side === 'Long' || o.side === 'buy' || o.side === 'long');
+      const sideCls = isLong ? 'badge-long' : 'badge-short';
+      const sideText = isLong ? 'Long' : 'Short';
+      const timeStr = o.createdAt ? fmtDate(o.createdAt) : '—';
+
+      return `<tr>
+        <td><b>${o.symbol}</b></td>
+        <td><span class="badge ${sideCls}">${sideText}</span></td>
+        <td><span class="badge badge-limit">Limit</span></td>
+        <td>$${fmt(o.price)}</td>
+        <td>${fmtCoin(o.size)}</td>
+        <td style="color:var(--txt3); font-size:11px;">${timeStr}</td>
+        <td><button class="btn-cancel-ord" onclick="cancelOrder(${o.id})">Cancel</button></td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 // Global alias for backwards compatibility and external callers

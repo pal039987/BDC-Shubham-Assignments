@@ -6096,3 +6096,1035 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   color: #727b8a;
   letter-spacing: 0.1px;
 }
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   VTRADE EYE-CATCHING CYBER IRIS & ELECTRIC VIOLET THEME (5 SCREEN REDESIGN)
+   ═════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --v-primary: #8b5cf6;
+  --v-primary-hover: #7c3aed;
+  --v-primary-dark: #6d28d9;
+  --v-primary-light: #a78bfa;
+  --v-primary-glow: rgba(139, 92, 246, 0.45);
+  --v-accent-pill-bg: rgba(139, 92, 246, 0.16);
+  --v-accent-pill-border: rgba(139, 92, 246, 0.6);
+  --v-bg-deep: #08090e;
+  --v-bg-card: #12141f;
+  --v-bg-card-alt: #171a28;
+  --v-border: #222638;
+  --v-border-subtle: rgba(255, 255, 255, 0.07);
+  --v-green: #00f090;
+  --v-green-bg: rgba(0, 240, 144, 0.14);
+  --v-green-glow: rgba(0, 240, 144, 0.35);
+  --v-red: #ff3366;
+  --v-red-bg: rgba(255, 51, 102, 0.14);
+  --v-red-glow: rgba(255, 51, 102, 0.35);
+  --v-amber: #f59e0b;
+  --v-text-primary: #f8fafc;
+  --v-text-secondary: #94a3b8;
+  --v-text-muted: #64748b;
+}
+
+/* ─── 1. FIXED MOBILE BOTTOM NAVIGATION BAR & FAB (Screenshots 1, 3, 5) ─── */
+.groww-bottom-nav, .vtrade-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(10, 12, 18, 0.96) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-top: 1px solid var(--v-border-subtle) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  padding: 0 8px !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  z-index: 9999 !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.75) !important;
+}
+
+.gnav-btn, .vnav-btn {
+  background: transparent;
+  border: none;
+  color: var(--v-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 22px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  font-family: inherit;
+}
+
+.gnav-btn .gnav-label, .vnav-btn .vnav-label {
+  display: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.gnav-btn:hover, .vnav-btn:hover {
+  color: var(--v-text-secondary);
+}
+
+/* Active Glowing Pill matching Screenshots 1, 3, 5 */
+.gnav-btn.active, .vnav-btn.active {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background: var(--v-accent-pill-bg) !important;
+  border: 1.5px solid var(--v-primary) !important;
+  color: var(--v-primary-light) !important;
+  padding: 8px 16px !important;
+  box-shadow: 0 0 16px var(--v-primary-glow) !important;
+  border-radius: 24px !important;
+  flex: 0 0 auto !important;
+}
+
+.gnav-btn.active .gnav-label, .vnav-btn.active .vnav-label {
+  display: inline-block !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+.gnav-btn.active .gnav-icon svg, .vnav-btn.active .vnav-icon svg {
+  stroke: var(--v-primary-light) !important;
+  filter: drop-shadow(0 0 6px var(--v-primary)) !important;
+}
+
+/* Floating Action Button (FAB) (Screenshots 1, 3, 4) */
+.vtrade-fab {
+  position: fixed;
+  bottom: 76px;
+  right: 18px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--v-primary) 0%, #a855f7 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 20px var(--v-primary-glow), 0 0 14px rgba(139, 92, 246, 0.45);
+  z-index: 9998;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  outline: none;
+}
+.vtrade-fab:hover {
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 8px 26px var(--v-primary-glow), 0 0 20px rgba(139, 92, 246, 0.65);
+}
+.vtrade-fab:active {
+  transform: scale(0.94);
+}
+
+/* ─── 2. SCREEN 1: ORDERS SCREEN & SCREEN 2: HISTORY VIEW ─── */
+.vtrade-orders-view {
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  background: var(--v-bg-deep);
+  padding-bottom: 80px;
+}
+
+.orders-screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px 16px;
+  background: var(--v-bg-deep);
+  border-bottom: 1px solid var(--v-border-subtle);
+}
+
+.vtrade-segmented-tabs {
+  display: flex;
+  align-items: center;
+  background: #12141f;
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid var(--v-border);
+  flex: 1;
+  max-width: 340px;
+}
+
+.vtrade-seg-btn {
+  flex: 1;
+  padding: 8px 14px;
+  border-radius: 9px;
+  background: transparent;
+  border: none;
+  color: var(--v-text-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  outline: none;
+  white-space: nowrap;
+}
+
+.vtrade-seg-btn.active {
+  background: linear-gradient(135deg, var(--v-primary-dark) 0%, var(--v-primary) 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 12px var(--v-primary-glow) !important;
+  font-weight: 700 !important;
+}
+
+.vtrade-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: var(--v-bg-card);
+  border: 1px solid var(--v-border);
+  color: var(--v-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+.vtrade-icon-btn:hover {
+  border-color: var(--v-primary);
+  color: var(--v-primary-light);
+  box-shadow: 0 0 10px var(--v-primary-glow);
+}
+
+/* History Screen Header (Screenshot 2) */
+.history-screen-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--v-bg-deep);
+  border-bottom: 1px solid var(--v-border-subtle);
+}
+.history-back-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.history-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+.history-subtabs-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 8px;
+  background: var(--v-bg-deep);
+}
+
+/* ─── 3. 3D FLOATING WALLET EMPTY STATE (Screenshots 1 & 2) ─── */
+.vtrade-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 70px 24px;
+  text-align: center;
+  width: 100%;
+}
+.ves-illustration-wrap {
+  position: relative;
+  width: 140px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.ves-glow {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--v-primary-glow) 0%, transparent 70%);
+  filter: blur(14px);
+  pointer-events: none;
+  animation: vesPulse 3s infinite alternate;
+}
+@keyframes vesPulse {
+  0% { transform: scale(0.92); opacity: 0.55; }
+  100% { transform: scale(1.18); opacity: 0.95; }
+}
+.ves-sparkle {
+  position: absolute;
+  font-size: 16px;
+  pointer-events: none;
+  animation: vesSparkle 2.6s infinite ease-in-out;
+}
+.ves-s1 { top: 8px; left: 16px; color: #a78bfa; font-size: 18px; animation-delay: 0s; }
+.ves-s2 { bottom: 20px; left: 8px; color: #60a5fa; font-size: 14px; animation-delay: 0.9s; }
+.ves-s3 { top: 38px; right: 12px; color: #a78bfa; font-size: 17px; animation-delay: 1.6s; }
+@keyframes vesSparkle {
+  0%, 100% { transform: translateY(0) scale(0.85); opacity: 0.4; }
+  50% { transform: translateY(-6px) scale(1.25); opacity: 1; }
+}
+.ves-wallet-art {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.75));
+  animation: vesFloat 4s ease-in-out infinite;
+}
+@keyframes vesFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+.ves-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.2px;
+}
+.ves-subtitle {
+  font-size: 13.5px;
+  color: var(--v-text-muted);
+  margin-bottom: 24px;
+  max-width: 270px;
+  line-height: 1.45;
+}
+.btn-ves-deposit {
+  background: linear-gradient(135deg, var(--v-primary) 0%, #a855f7 100%);
+  color: #ffffff;
+  border: none;
+  padding: 13px 36px;
+  border-radius: 12px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--v-primary-glow);
+  transition: all 0.22s ease;
+  outline: none;
+}
+.btn-ves-deposit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px var(--v-primary-glow);
+}
+
+/* ─── 4. SCREEN 3 & 4: MARKETS SCREEN ─── */
+.markets-top-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--v-bg-deep);
+  border-bottom: 1px solid var(--v-border-subtle);
+}
+.markets-nav-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--v-text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.markets-nav-icon-btn.active, .markets-nav-icon-btn:hover {
+  color: var(--v-primary-light);
+}
+.markets-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.markets-nav-tab {
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--v-text-muted);
+  cursor: pointer;
+  padding-bottom: 4px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+.markets-nav-tab.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+.markets-nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--v-primary);
+  box-shadow: 0 0 8px var(--v-primary);
+}
+
+/* Category Filter Chips Bar (Screenshots 3 & 4) */
+.markets-categories-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  white-space: nowrap;
+  background: var(--v-bg-deep);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.markets-categories-scroll::-webkit-scrollbar {
+  display: none;
+}
+.mcat-chip {
+  padding: 7px 16px;
+  border-radius: 18px;
+  background: #141724;
+  border: 1px solid var(--v-border);
+  color: var(--v-text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  outline: none;
+}
+.mcat-chip.active {
+  background: var(--v-accent-pill-bg);
+  border-color: var(--v-primary);
+  color: #ffffff;
+  box-shadow: 0 0 12px var(--v-primary-glow);
+}
+
+/* Column Header Row */
+.markets-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  color: var(--v-text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--v-border-subtle);
+}
+.mth-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.mth-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--v-text-muted);
+  cursor: pointer;
+  padding: 2px;
+  font-size: 13px;
+}
+
+/* Coin List Row */
+.markets-coin-list {
+  display: flex;
+  flex-direction: column;
+}
+.mcoin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.mcoin-row:hover {
+  background: rgba(139, 92, 246, 0.04);
+}
+.mcoin-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mcoin-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: #1a1e2d;
+  flex-shrink: 0;
+}
+.mcoin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mcoin-symbol-row {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.mcoin-symbol-main {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.mcoin-symbol-quote {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--v-text-muted);
+}
+.mcoin-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mcoin-leverage-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(139, 92, 246, 0.16);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: var(--v-primary-light);
+  font-size: 9.5px;
+  font-weight: 700;
+  font-family: monospace;
+}
+.mcoin-vol-text {
+  font-size: 11px;
+  color: var(--v-text-muted);
+}
+.mcoin-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.mcoin-price {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: monospace;
+}
+.mcoin-chg-pill {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: monospace;
+}
+.mcoin-chg-pill.pos {
+  background: var(--v-green-bg);
+  color: var(--v-green);
+}
+.mcoin-chg-pill.neg {
+  background: var(--v-red-bg);
+  color: var(--v-red);
+}
+
+/* ─── 5. SCREEN 5: SPLIT TRADE DESK & ORDERBOOK (Screenshot 5) ─── */
+.vtrade-trade-screen {
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  background: var(--v-bg-deep);
+  padding-bottom: 80px;
+}
+
+/* Top Mode Toggle: Trade | Charts */
+.trade-mode-toggle-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  background: var(--v-bg-deep);
+}
+.trade-mode-toggle {
+  display: flex;
+  background: #12141f;
+  border-radius: 12px;
+  padding: 3px;
+  border: 1px solid var(--v-border);
+  width: 100%;
+  max-width: 360px;
+}
+.tmode-btn {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: 9px;
+  background: transparent;
+  border: none;
+  color: var(--v-text-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.tmode-btn.active {
+  background: linear-gradient(135deg, var(--v-primary-dark) 0%, var(--v-primary) 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 12px var(--v-primary-glow);
+  font-weight: 700;
+}
+
+/* Trade Screen Instrument Header */
+.trade-inst-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--v-border-subtle);
+}
+.trade-inst-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tinst-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.tinst-title-box {
+  display: flex;
+  flex-direction: column;
+}
+.tinst-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tinst-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+.tinst-type-badge {
+  font-size: 11px;
+  color: var(--v-text-muted);
+  font-weight: 500;
+}
+.tinst-chg-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: monospace;
+}
+.tinst-chg-badge.pos { background: var(--v-green-bg); color: var(--v-green); }
+.tinst-chg-badge.neg { background: var(--v-red-bg); color: var(--v-red); }
+
+.trade-inst-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--v-text-secondary);
+}
+.ttool-btn {
+  background: transparent;
+  border: none;
+  color: var(--v-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Funding rate bar */
+.trade-funding-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--v-border-subtle);
+  font-size: 11.5px;
+}
+.tfund-label {
+  color: var(--v-text-muted);
+}
+.tfund-val {
+  color: var(--v-amber);
+  font-family: monospace;
+  font-weight: 600;
+}
+
+/* Split Trading Screen: Orderbook Left (45%) | Order Form Right (55%) */
+.trade-split-container {
+  display: flex;
+  width: 100%;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.trade-col-orderbook {
+  flex: 0 0 45%;
+  max-width: 45%;
+  display: flex;
+  flex-direction: column;
+}
+.ob-header-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--v-text-muted);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.ob-rows-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ob-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  height: 20px;
+  font-size: 11.5px;
+  font-family: monospace;
+  font-weight: 600;
+  padding: 0 4px;
+}
+.ob-depth-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  opacity: 0.16;
+  pointer-events: none;
+}
+.ob-depth-bar.ask { background: var(--v-red); }
+.ob-depth-bar.bid { background: var(--v-green); }
+.ob-price.ask { color: var(--v-red); z-index: 1; }
+.ob-price.bid { color: var(--v-green); z-index: 1; }
+.ob-qty { color: var(--v-text-secondary); z-index: 1; }
+
+.ob-mid-price-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  margin: 4px 0;
+  border-top: 1px solid var(--v-border-subtle);
+  border-bottom: 1px solid var(--v-border-subtle);
+}
+.ob-mid-price {
+  font-size: 14px;
+  font-weight: 800;
+  font-family: monospace;
+}
+.ob-mid-mark {
+  font-size: 10.5px;
+  color: var(--v-text-muted);
+  font-family: monospace;
+}
+
+/* Buyer / Seller sentiment ratio */
+.ob-ratio-bar-wrap {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ob-ratio-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: monospace;
+}
+.ob-ratio-track {
+  display: flex;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--v-border);
+}
+.ob-ratio-buyer { background: var(--v-green); height: 100%; transition: width 0.3s; }
+.ob-ratio-seller { background: var(--v-red); height: 100%; transition: width 0.3s; }
+
+/* Right Column: Order Placement Form (Screenshot 5) */
+.trade-col-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tform-side-toggle {
+  display: flex;
+  background: #12141f;
+  border-radius: 10px;
+  padding: 3px;
+  border: 1px solid var(--v-border);
+}
+.tform-side-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  color: var(--v-text-muted);
+  transition: all 0.18s ease;
+}
+.tform-side-btn.long.active {
+  background: var(--v-green) !important;
+  color: #000000 !important;
+  box-shadow: 0 0 12px var(--v-green-glow);
+}
+.tform-side-btn.short.active {
+  background: var(--v-red) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px var(--v-red-glow);
+}
+
+.tform-controls-row {
+  display: flex;
+  gap: 8px;
+}
+.tform-select-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #141724;
+  border: 1px solid var(--v-border);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tform-order-type-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #141724;
+  border: 1px solid var(--v-border);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tform-input-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #0f121d;
+  border: 1px solid var(--v-border);
+  color: var(--v-text-muted);
+  font-size: 12px;
+}
+.tform-input-field {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: monospace;
+  outline: none;
+  width: 100%;
+}
+
+/* Percentage Slider with Snap Dots (Screenshot 5) */
+.tform-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 2px;
+  position: relative;
+}
+.tform-dots-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 6px;
+  background: #1c2030;
+  border-radius: 3px;
+  margin: 10px 0;
+}
+.tform-slider-progress {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  background: var(--v-primary);
+  border-radius: 3px;
+  pointer-events: none;
+}
+.tform-snap-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #252b40;
+  border: 2px solid #10131e;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  transition: all 0.15s;
+}
+.tform-snap-dot.active {
+  background: var(--v-primary);
+  box-shadow: 0 0 8px var(--v-primary);
+}
+
+/* Take Profit / Stop Loss Accordion */
+.tform-tpsl-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #141724;
+  border: 1px solid var(--v-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Financial summary rows */
+.tform-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--v-text-muted);
+  padding: 1px 0;
+}
+.tform-sum-val {
+  color: #ffffff;
+  font-weight: 600;
+  font-family: monospace;
+}
+.tform-add-btn {
+  color: var(--v-primary-light);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Big CTA Button */
+.btn-tform-submit {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+.btn-tform-submit.buy {
+  background: var(--v-green);
+  color: #000000;
+  box-shadow: 0 4px 16px var(--v-green-glow);
+}
+.btn-tform-submit.sell {
+  background: var(--v-red);
+  color: #ffffff;
+  box-shadow: 0 4px 16px var(--v-red-glow);
+}
+.btn-tform-submit:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+/* Scalping / Promotional banner */
+.trade-promo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1b1638 0%, #2d1847 100%);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.tpb-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tpb-icon {
+  font-size: 18px;
+}
+.tpb-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.1px;
+}
+.tpb-arrow {
+  color: var(--v-primary-light);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Bottom Positions & Orders section inside Trade screen */
+.trade-bottom-positions-sec {
+  padding: 12px 16px;
+  background: var(--v-bg-deep);
+  border-top: 1px solid var(--v-border-subtle);
+}
+.tbpos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.tbpos-tabs {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.tbpos-tab {
+  background: transparent;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--v-text-muted);
+  cursor: pointer;
+  padding-bottom: 4px;
+  position: relative;
+}
+.tbpos-tab.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+.tbpos-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--v-primary);
+  border-radius: 2px;
+}
+.tbpos-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--v-text-secondary);
+}
+

@@ -333,11 +333,53 @@
   <!-- MAIN LAYOUT -->
   <div class="app-body">
 
-    <!-- ══════════════════════ GROWW CRYPTO EXPLORE VIEW ══════════════════════ -->
+    <!-- ══════════════════════ GROWW CRYPTO EXPLORE / MARKETS VIEW (Screenshots 3 & 4 Match) ══════════════════════ -->
     <div class="groww-explore-container" id="groww-explore-container">
 
+      <!-- Top Markets Header (Star | INR-M / USDT-M | Search) (Screenshots 3 & 4) -->
+      <div class="markets-top-navbar">
+        <button type="button" class="markets-nav-icon-btn" id="btn-fav-filter" onclick="toggleFavoritesFilter()" title="Favorites">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <div class="markets-nav-tabs">
+          <button type="button" class="markets-nav-tab" id="mnav-tab-inr" onclick="setMarketsQuote('INR')">INR-M</button>
+          <button type="button" class="markets-nav-tab active" id="mnav-tab-usdt" onclick="setMarketsQuote('USDT')">USDT-M</button>
+        </div>
+        <button type="button" class="markets-nav-icon-btn" onclick="toggleSearchOverlay()" title="Search Coins">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+
+      <!-- Horizontal Categories Bar (Screenshots 3 & 4) -->
+      <div class="markets-categories-scroll" id="markets-categories-scroll">
+        <button type="button" class="mcat-chip active" data-cat="all" onclick="filterMarketsCategory('all', this)">All</button>
+        <button type="button" class="mcat-chip" data-cat="new" onclick="filterMarketsCategory('new', this)">New</button>
+        <button type="button" class="mcat-chip" data-cat="stocks" onclick="filterMarketsCategory('stocks', this)">US Stocks</button>
+        <button type="button" class="mcat-chip" data-cat="etfs" onclick="filterMarketsCategory('etfs', this)">ETFs</button>
+        <button type="button" class="mcat-chip" data-cat="metals" onclick="filterMarketsCategory('metals', this)">Metals</button>
+        <button type="button" class="mcat-chip" data-cat="energy" onclick="filterMarketsCategory('energy', this)">Energy</button>
+        <button type="button" class="mcat-chip" data-cat="meme" onclick="filterMarketsCategory('meme', this)">Meme</button>
+        <button type="button" class="mcat-chip" data-cat="l1" onclick="filterMarketsCategory('l1', this)">Layer-1</button>
+        <button type="button" class="mcat-chip" data-cat="l2" onclick="filterMarketsCategory('l2', this)">Layer-2</button>
+        <button type="button" class="mcat-chip" data-cat="ai" onclick="filterMarketsCategory('ai', this)">AI</button>
+      </div>
+
+      <!-- Column Header Row (Screenshots 3 & 4) -->
+      <div class="markets-table-header">
+        <div class="mth-sortable" onclick="sortMarketsList('pair')">Pair ⇅ / Leverage ⇅</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="mth-sortable" onclick="sortMarketsList('price')">Price ⇅ / 24h % ⇅</div>
+          <button type="button" class="mth-toggle-btn" title="Toggle sorting order" onclick="toggleMarketsSortOrder()">⇄</button>
+        </div>
+      </div>
+
+      <!-- Markets Coin List (Dynamically Populated) -->
+      <div class="markets-coin-list" id="markets-coin-list">
+        <!-- Rendered dynamically -->
+      </div>
+
       <!-- Recently viewed (Screenshot 3) -->
-      <div class="groww-section">
+      <div class="groww-section" style="margin-top:16px;">
         <div class="groww-sec-title">Recently viewed</div>
         <div class="groww-recent-row" id="groww-recent-row">
           <div class="grecent-item" onclick="selectCoin('bitcoin'); switchMainTab('chart');">
@@ -894,11 +936,22 @@
       </div> <!-- end chart-container-box -->
     </div> <!-- end chart-area -->
 
-    <!-- ══════════════════════ DEDICATED POSITIONS & ORDERS VIEW (Screenshot 2 & 3 Match) ══════════════════════ -->
-    <div class="positions-view-panel hidden" id="view-positions-container">
+    <!-- ══════════════════════ SCREEN 1: ORDERS & POSITIONS VIEW (Screenshot 1 Match) ══════════════════════ -->
+    <div class="positions-view-panel vtrade-orders-view hidden" id="view-positions-container">
       
-      <!-- Bottom Tabs Bar with Currency Switch (Screenshot 2 & 3 Match) -->
-      <div class="shark-pos-tabs-wrap">
+      <!-- Top Segmented Bar: Open Position | Open Orders + History Icon (Screenshot 1) -->
+      <div class="orders-screen-header">
+        <div class="vtrade-segmented-tabs">
+          <button type="button" class="vtrade-seg-btn active" id="orders-seg-positions" onclick="showVTradeOrdersTab('positions')">Open Position</button>
+          <button type="button" class="vtrade-seg-btn" id="orders-seg-orders" onclick="showVTradeOrdersTab('orders')">Open Orders</button>
+        </div>
+        <button type="button" class="vtrade-icon-btn" id="btn-open-history-header" onclick="switchMainTab('history')" title="View Trade & Order History">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        </button>
+      </div>
+
+      <!-- Bottom Tabs Bar with Currency Switch (Kept for Desktop / Sub-tab switching) -->
+      <div class="shark-pos-tabs-wrap" id="shark-pos-tabs-wrap" style="display:none;">
         <div class="bottom-tabs pos-view-tabs">
           <button type="button" class="btab active" id="tab-btn-positions" onclick="showBottomTab('positions', this)">
             Positions
@@ -964,6 +1017,7 @@
 
       <!-- Open Orders Panel -->
       <div class="bottom-panel hidden" id="panel-orders">
+        <div class="pos-cards-list" id="orders-cards-list"></div>
         <div class="panel-scroll">
           <table class="data-table shark-data-table">
             <thead><tr>
@@ -1033,57 +1087,129 @@
       </div>
     </div> <!-- end view-positions-container -->
 
-    <!-- ══════════════════════ DEDICATED TRADE VIEW DESK (No Chart) ══════════════════════ -->
-    <div class="order-sidebar hidden" id="view-trade-panel">
+    <!-- ══════════════════════ SCREEN 2: HISTORY VIEW (Screenshot 2 Match) ══════════════════════ -->
+    <div class="positions-view-panel vtrade-orders-view hidden" id="view-history-container">
+      <div class="history-screen-header">
+        <button type="button" class="history-back-btn" onclick="switchMainTab('orders')" title="Back to Orders">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="history-title">History</span>
+      </div>
+      <div class="history-subtabs-row">
+        <div class="vtrade-segmented-tabs">
+          <button type="button" class="vtrade-seg-btn active" id="hist-seg-order" onclick="showHistorySubTab('order')">Order</button>
+          <button type="button" class="vtrade-seg-btn" id="hist-seg-trade" onclick="showHistorySubTab('trade')">Trade</button>
+          <button type="button" class="vtrade-seg-btn" id="hist-seg-trans" onclick="showHistorySubTab('transaction')">Transaction</button>
+        </div>
+      </div>
+      <div id="history-content-area" class="history-content-area"></div>
+    </div>
 
-      <!-- Stats mini cards -->
-      <div class="mini-stats">
-        <div class="mstat">
-          <div class="mstat-label">Virtual USDT Cash</div>
-          <div class="mstat-val green" id="stat-balance">$10,000.00</div>
-        </div>
-        <div class="mstat">
-          <div class="mstat-label" id="stat-coin-label">BTC Held</div>
-          <div class="mstat-val" id="stat-coin-val">0.00000000</div>
-        </div>
-        <div class="mstat">
-          <div class="mstat-label">Unrealized PnL</div>
-          <div class="mstat-val" id="stat-unrealized-pnl">$0.00</div>
-        </div>
-        <div class="mstat">
-          <div class="mstat-label">Total Equity</div>
-          <div class="mstat-val orange" id="stat-total">$10,000.00</div>
+    <!-- ══════════════════════ SCREEN 5: SPLIT TRADE DESK (Screenshot 5 Match) ══════════════════════ -->
+    <div class="order-sidebar vtrade-trade-screen hidden" id="view-trade-panel">
+
+      <!-- Top Mode Toggle: Trade | Charts -->
+      <div class="trade-mode-toggle-wrap">
+        <div class="trade-mode-toggle">
+          <button type="button" class="tmode-btn active" id="tmode-trade-btn" onclick="switchMainTab('trade')">Trade</button>
+          <button type="button" class="tmode-btn" id="tmode-chart-btn" onclick="switchMainTab('chart')">Charts</button>
         </div>
       </div>
 
-      <!-- UNIFIED TRADE PANEL (Screenshot 1 & 2 Pro Exchange Desk) -->
-      <div class="order-card delta-trade-card shark-trade-card">
-        
-        <!-- Side Toggle: Long / Buy (Green) | Sell / Short (Grey) -->
-        <div class="shark-trade-side-tabs">
-          <button type="button" class="st-side-btn buy-tab active" id="side-buy-btn" onclick="setTradeSide('buy')">
-            <span class="st-check-icon">✓</span> <span id="side-buy-label">Long / Buy</span>
-          </button>
-          <button type="button" class="st-side-btn sell-tab" id="side-sell-btn" onclick="setTradeSide('sell')">
-            <span id="side-sell-label">Sell / Short</span>
-          </button>
+      <!-- Active Instrument Header with Coin Info & Tools (Screenshot 5) -->
+      <div class="trade-inst-header">
+        <div class="trade-inst-left" onclick="togglePairQuickMenu()" style="cursor:pointer;" title="Switch Trading Pair">
+          <img src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" class="tinst-icon" id="tinst-active-icon" alt="BTC" />
+          <div class="tinst-title-box">
+            <div class="tinst-name-row">
+              <span class="tinst-name" id="tinst-active-symbol">BTC-USDT</span>
+              <span class="tinst-chg-badge pos" id="tinst-active-chg">+1.38%</span>
+            </div>
+            <span class="tinst-type-badge">Perpetual Future</span>
+          </div>
         </div>
 
-        <!-- Mode & Leverage Row: Isolated Margin Mode ▾ & 150x ▾ (Screenshot 1 Match) -->
-        <div class="mode-lev-row">
-          <button type="button" class="shark-select-btn" id="btn-margin-mode-select" onclick="toggleMarginModeDropdown(event)">
-            <span id="margin-mode-display-label">Isolated Margin Mode</span>
-            <span class="shark-caret">▾</span>
+        <div class="trade-inst-tools">
+          <button type="button" class="ttool-btn" onclick="showToast('Leverage & Margin Calculator', 'info')" title="Calculator">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
           </button>
+          <button type="button" class="ttool-btn" onclick="toggleFavoritesFilter()" title="Add to Favorites">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
+          <button type="button" class="ttool-btn" onclick="openSettingsSheet()" title="Settings & Preferences">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Funding Rate / Countdown Row -->
+      <div class="trade-funding-bar">
+        <span class="tfund-label">Funding Rate / Countdown</span>
+        <span class="tfund-val" id="trade-funding-val">0.0049% / <span id="trade-funding-countdown">03:52:37</span></span>
+      </div>
+
+      <!-- Split Container: Left Orderbook (45%) | Right Order Form (55%) -->
+      <div class="trade-split-container">
+        
+        <!-- LEFT: Real-Time Orderbook (Screenshot 5) -->
+        <div class="trade-col-orderbook">
+          <div class="ob-header-row">
+            <span>Ask (USDT)</span>
+            <span>Qty (BTC)</span>
+          </div>
+          <!-- 6 Ask Rows -->
+          <div class="ob-rows-box" id="ob-asks-list">
+            <!-- Dynamically populated 6 ask rows -->
+          </div>
+
+          <!-- Mid Market Price Box -->
+          <div class="ob-mid-price-box">
+            <span class="ob-mid-price" id="ob-mid-price-val" style="color:var(--v-green);">82,061.3 ↑</span>
+            <span class="ob-mid-mark" id="ob-mid-mark-val">M 82,062.4</span>
+          </div>
+
+          <!-- 6 Bid Rows -->
+          <div class="ob-rows-box" id="ob-bids-list">
+            <!-- Dynamically populated 6 bid rows -->
+          </div>
+
+          <!-- Buyer / Seller Sentiment Ratio Bar -->
+          <div class="ob-ratio-bar-wrap">
+            <div class="ob-ratio-labels">
+              <span style="color:var(--v-green);" id="ob-buyer-ratio-text">B 41.08%</span>
+              <span style="color:var(--v-red);" id="ob-seller-ratio-text">58.92% S</span>
+            </div>
+            <div class="ob-ratio-track">
+              <div class="ob-ratio-buyer" id="ob-ratio-buyer-bar" style="width: 41%;"></div>
+              <div class="ob-ratio-seller" id="ob-ratio-seller-bar" style="width: 59%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Order Placement Form (Screenshot 5) -->
+        <div class="trade-col-form">
+          <!-- Side Toggle: Long (Green) | Short (Red) -->
+          <div class="tform-side-toggle">
+            <button type="button" class="tform-side-btn long active" id="side-buy-btn" onclick="setTradeSide('buy')">Long</button>
+            <button type="button" class="tform-side-btn short" id="side-sell-btn" onclick="setTradeSide('sell')">Short</button>
+          </div>
+
+          <!-- Margin Mode & Leverage Row -->
+          <div class="tform-controls-row">
+            <button type="button" class="tform-select-btn" id="btn-margin-mode-select" onclick="toggleMarginModeDropdown(event)">
+              <span id="margin-mode-display-label">Isolated</span>
+              <span>▾</span>
+            </button>
+            <button type="button" class="tform-select-btn" id="btn-leverage-select" onclick="toggleLeverageDropdown(event)">
+              <span id="btn-lev-label">150x</span>
+              <span>▾</span>
+            </button>
+          </div>
+          <!-- Keep Dropdowns -->
           <div class="margin-mode-dropdown-menu hidden" id="margin-mode-dropdown-menu">
             <div class="mm-dropdown-item active" onclick="selectMarginModeMenu('isolated')">Isolated Margin Mode</div>
             <div class="mm-dropdown-item" onclick="selectMarginModeMenu('cross')">Cross Margin Mode</div>
           </div>
-
-          <button type="button" class="shark-select-btn" id="btn-leverage-select" onclick="toggleLeverageDropdown(event)">
-            <span id="btn-lev-label">150x</span>
-            <span class="shark-caret">▾</span>
-          </button>
           <div class="leverage-dropdown-menu hidden" id="leverage-dropdown-menu">
             <div class="lev-dropdown-title">Select Leverage</div>
             <div class="lev-dropdown-grid">
@@ -1096,187 +1222,123 @@
               <button type="button" class="ld-chip active" onclick="selectLeverageMenu(150)">150x</button>
             </div>
           </div>
-        </div>
 
-        <!-- Order Type: Market | Limit | Stop-L | Stop-M (Screenshot 1 Match) -->
-        <div class="shark-order-types-strip">
-          <div class="sot-tabs">
-            <button type="button" class="sot-tab active" id="otype-market" onclick="setOrderType('market')">Market</button>
-            <button type="button" class="sot-tab" id="otype-limit" onclick="setOrderType('limit')">Limit</button>
-            <button type="button" class="sot-tab" id="otype-stop-l" onclick="setOrderType('stop-l')">Stop-L</button>
-            <button type="button" class="sot-tab" id="otype-stop-m" onclick="setOrderType('stop-m')">Stop-M</button>
+          <!-- Order Type Select: Market / Limit -->
+          <div class="tform-order-type-row" onclick="toggleOrderTypeDropdown(event)">
+            <span id="tform-order-type-display">Market</span>
+            <span>▾</span>
           </div>
-          <span class="sot-info-icon" title="Market: instant execution at best available price. Limit: execute at specified price.">ⓘ</span>
-        </div>
 
-        <!-- Limit / Trigger Price Input -->
-        <div class="field-group" id="limit-price-group" style="display:none; margin-top:8px;">
-          <div class="field-label-row">
-            <label for="limit-price-input" id="limit-price-label">Order Price (USDT)</label>
-            <button class="field-label-action" type="button" onclick="setLimitPriceToCurrent()">Latest</button>
+          <!-- Price Display Field -->
+          <div class="tform-input-box" id="tform-price-box">
+            <span id="tform-price-label">Placed at Market Price</span>
+            <input type="number" id="limit-price-input" style="display:none;" class="tform-input-field" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
           </div>
-          <div class="input-wrap">
-            <span class="iprefix">$</span>
-            <input type="number" id="limit-price-input" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
-          </div>
-        </div>
 
-        <!-- Quantity Row: Quantity with BTC | USDT toggle (Screenshot 1 Match) -->
-        <div class="field-group quantity-field-group" style="margin-top:10px;">
-          <div class="field-label-row">
-            <label id="amount-input-label" for="trade-amount-input">Quantity</label>
-            <div class="unit-toggle-chips">
-              <button type="button" class="uchip active" id="uchip-coin" onclick="setTradeUnit('coin')">BTC</button>
-              <span class="uchip-divider">|</span>
-              <button type="button" class="uchip" id="uchip-usd" onclick="setTradeUnit('usd')">USDT</button>
-            </div>
-          </div>
-          <div class="input-wrap amount-wrap">
-            <input type="number" id="trade-amount-input" placeholder="0.00" step="any" min="0" oninput="updateTradeCalc()" />
-          </div>
-          <div class="live-conversion-sub" id="live-conversion-sub" style="display:none;">
-            ≈ $0.00 USDT
-          </div>
-        </div>
-
-        <!-- Quick Chips Row: Min: 0.002 BTC, 25%, 50%, Max (Screenshot 1 Match) -->
-        <div class="shark-chips-row">
-          <button type="button" class="sq-chip" id="chip-min-size" onclick="setMinTradeAmount()">Min : 0.002 BTC</button>
-          <button type="button" class="sq-chip" onclick="setQuickPercent(0.25)">25%</button>
-          <button type="button" class="sq-chip" onclick="setQuickPercent(0.50)">50%</button>
-          <button type="button" class="sq-chip" onclick="setQuickPercent(1.00)">Max</button>
-        </div>
-
-        <!-- Set Stop Loss / Take Profit Checkbox (Screenshot 1 Match) -->
-        <div class="checkbox-tpsl-row">
-          <label class="shark-checkbox-label">
-            <input type="checkbox" id="checkbox-tpsl" onchange="toggleTpSlCheckbox(this.checked)" />
-            <span class="scheck-custom"></span>
-            <span class="scheck-text">Set Stop Loss / Take Profit</span>
-          </label>
-        </div>
-
-        <!-- Take Profit & Stop Loss Fields (Expanded when checked) -->
-        <div class="tpsl-body hidden" id="tpsl-body">
-          <div class="field-group tpsl-field">
-            <div class="field-label-row">
-              <label for="tp-input">Take Profit (USDT)</label>
-              <div class="tpsl-pct-chips">
-                <button type="button" class="tpchip" onclick="setQuickTp(0.05)">5%</button>
-                <button type="button" class="tpchip" onclick="setQuickTp(0.10)">10%</button>
-                <button type="button" class="tpchip" onclick="setQuickTp(0.25)">25%</button>
-              </div>
-            </div>
-            <div class="input-wrap">
-              <span class="iprefix">$</span>
-              <input type="number" id="tp-input" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
+          <!-- Quantity Input Field with BTC / USDT Unit Selector -->
+          <div class="tform-input-box">
+            <input type="number" id="trade-amount-input" class="tform-input-field" placeholder="Quantity" step="any" min="0" oninput="updateTradeCalc()" />
+            <div style="display:flex; align-items:center; gap:4px; cursor:pointer;" onclick="toggleTradeUnit()">
+              <span id="uchip-coin" style="font-weight:700; color:#ffffff;">BTC</span>
+              <span>▾</span>
             </div>
           </div>
 
-          <div class="field-group tpsl-field">
-            <div class="field-label-row">
-              <label for="sl-input">Stop Loss (USDT)</label>
-              <div class="tpsl-pct-chips">
-                <button type="button" class="slchip" onclick="setQuickSl(0.05)">5%</button>
-                <button type="button" class="slchip" onclick="setQuickSl(0.10)">10%</button>
-                <button type="button" class="slchip" onclick="setQuickSl(0.25)">25%</button>
-              </div>
-            </div>
-            <div class="input-wrap">
-              <span class="iprefix">$</span>
-              <input type="number" id="sl-input" placeholder="0.00" step="any" oninput="updateTradeCalc()" />
+          <!-- Percentage Slider Track with 5 Snap Dots (0%, 25%, 50%, 75%, 100%) (Screenshot 5) -->
+          <div class="tform-slider-wrap">
+            <div class="tform-dots-track" id="tform-dots-track">
+              <div class="tform-slider-progress" id="tform-slider-progress" style="width: 0%;"></div>
+              <div class="tform-snap-dot active" data-pct="0" onclick="setSnapPercent(0)" title="0%"></div>
+              <div class="tform-snap-dot" data-pct="25" onclick="setSnapPercent(0.25)" title="25%"></div>
+              <div class="tform-snap-dot" data-pct="50" onclick="setSnapPercent(0.50)" title="50%"></div>
+              <div class="tform-snap-dot" data-pct="75" onclick="setSnapPercent(0.75)" title="75%"></div>
+              <div class="tform-snap-dot" data-pct="100" onclick="setSnapPercent(1.00)" title="100%"></div>
             </div>
           </div>
-        </div>
 
-        <!-- Hidden summary elements for backward compatibility in calculations -->
-        <div class="delta-summary hidden" style="display:none;">
-          <span id="sum-order-val">$0.00</span>
-          <span id="sum-margin-req">$0.00</span>
-          <span id="sum-est-fee">$0.00</span>
-          <span id="sum-liq-price">—</span>
-          <span id="sum-avail-cash">$10,000.00</span>
-          <span id="sum-coin-held">0.00000000 BTC</span>
-        </div>
-
-        <!-- AUTHENTICATED SUBMIT BUTTON & STATS (Screenshot 1 & 2 Match: Shown when logged in) -->
-        <div id="trade-auth-actions" class="trade-auth-actions hidden">
-          <button type="button" class="btn-execute-solid btn-execute-buy-long" id="delta-submit-btn" onclick="executeTrade()">
-            <span id="delta-submit-label">Buy / Long BTC</span>
+          <!-- + Take Profit / Stop Accordion Button -->
+          <button type="button" class="tform-tpsl-btn" onclick="toggleTpSlSection()">
+            <span>+</span> <span>Take Profit / Stop</span>
           </button>
-
-          <!-- Account info rows below button (Screenshot 1 Match) -->
-          <div class="shark-account-stats-box">
-            <div class="sstat-auth-row">
-              <span class="sstat-auth-lbl">Avail. Balance <span class="desk-eye-btn" onclick="toggleBalanceMask()" title="Hide / Show Balance">👁️</span></span>
-              <span class="sstat-auth-val">
-                <span id="desk-avail-bal">$10,000.00 USDT</span>
-                <button type="button" class="desk-plus-btn" onclick="openResetWalletDialog()" title="Add Virtual Funds">+</button>
-              </span>
+          <div class="tpsl-body hidden" id="tpsl-body" style="margin-top:6px;">
+            <div style="margin-bottom:8px;">
+              <label style="font-size:11px; color:var(--v-text-muted);">TP Price (USDT)</label>
+              <input type="number" id="tp-input" class="tform-input-field" placeholder="Take Profit" step="any" oninput="updateTradeCalc()" style="background:#0f121d; padding:6px 10px; border-radius:6px; border:1px solid var(--v-border);" />
             </div>
-            <div class="sstat-auth-row">
-              <span class="sstat-auth-lbl">Margin at Risk</span>
-              <span class="sstat-auth-val" id="desk-margin-risk">0.00 USDT</span>
-            </div>
-            <div class="sstat-auth-row">
-              <span class="sstat-auth-lbl">Est. Fee (Taker 0.04%)</span>
-              <span class="sstat-auth-val" id="desk-est-fee">--</span>
-            </div>
-            <div class="sstat-auth-row">
-              <span class="sstat-auth-lbl">Est. Liquidation Price</span>
-              <span class="sstat-auth-val" id="desk-liq-price">--</span>
+            <div>
+              <label style="font-size:11px; color:var(--v-text-muted);">SL Price (USDT)</label>
+              <input type="number" id="sl-input" class="tform-input-field" placeholder="Stop Loss" step="any" oninput="updateTradeCalc()" style="background:#0f121d; padding:6px 10px; border-radius:6px; border:1px solid var(--v-border);" />
             </div>
           </div>
 
-          <!-- Margin Ratio Card (Screenshot 2 & 3 Match) -->
-          <div class="margin-ratio-card" id="margin-ratio-card">
-            <div class="mrc-header">
-              <div class="mrc-title-left">
-                <span class="mrc-label">Margin Ratio</span>
-                <span class="mrc-coin-badge" id="mrc-coin-badge">
-                  <span class="mrc-coin-dot">₿</span>
-                  <span id="mrc-coin-symbol">BTC-USDT</span>
-                </span>
-                <span class="mrc-info-icon" title="Margin Ratio = Maintenance Margin / Margin Balance">ⓘ</span>
-              </div>
+          <!-- Financial Summary Rows (Screenshot 5) -->
+          <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
+            <div class="tform-summary-row">
+              <span>Available</span>
+              <span><span class="tform-sum-val" id="desk-avail-bal">10,000.00 USDT</span> <span class="tform-add-btn" onclick="openResetWalletDialog()" title="Top up Virtual Cash">+</span></span>
             </div>
-            <div class="mrc-pct-val" id="mrc-pct-val">0.00%</div>
-            <div class="mrc-progress-bar">
-              <div class="mrc-progress-fill" id="mrc-progress-fill" style="width: 0%;"></div>
+            <div class="tform-summary-row">
+              <span>Required</span>
+              <span class="tform-sum-val" id="desk-margin-risk">0.00 USDT</span>
             </div>
-            <div class="mrc-footer-row">
-              <div class="mrc-stat-col">
-                <span class="mrc-stat-lbl">Maintenance Margin</span>
-                <span class="mrc-stat-val" id="mrc-maint-margin">0.0000 USDT</span>
-              </div>
-              <div class="mrc-stat-col text-right">
-                <span class="mrc-stat-lbl">Margin Balance</span>
-                <span class="mrc-stat-val" id="mrc-margin-bal">10000.0000 USDT</span>
-              </div>
+            <div class="tform-summary-row">
+              <span>Est. Liq Price</span>
+              <span class="tform-sum-val" id="desk-liq-price">—</span>
             </div>
           </div>
-        </div>
 
-        <!-- UNAUTHENTICATED GUEST ACTIONS (Screenshot 1 Match: Log In to Trade & Create Account) -->
-        <div id="trade-guest-actions" class="trade-guest-actions">
-          <button type="button" class="btn-trade-login" onclick="openAuthModal('login')">Log In to Trade</button>
-          <div class="trade-guest-prompt">New to VTrade?</div>
-          <button type="button" class="btn-trade-signup" onclick="openAuthModal('register')">Create Account</button>
-
-          <div class="trade-guest-margin-stats">
-            <div class="tgm-row"><span>Margin Ratio</span><span class="tgm-val green">0.00%</span></div>
-            <div class="tgm-row"><span>Maintenance Margin</span><span class="tgm-val">0.0000 USDT</span></div>
-            <div class="tgm-row"><span>Margin Balance</span><span class="tgm-val">0.0000 USDT</span></div>
-          </div>
+          <!-- Big Buy/Long or Sell/Short Button (Screenshot 5) -->
+          <button type="button" class="btn-tform-submit buy" id="delta-submit-btn" onclick="executeTrade()">
+            <span id="delta-submit-label">Buy / Long</span>
+          </button>
         </div>
       </div>
 
-      <!-- Realized PnL Summary -->
-      <div class="pnl-card">
-        <div class="order-section-title">Realized Performance</div>
-        <div class="pnl-row"><span>Total Closed Trades</span><span id="pnl-trades">0</span></div>
-        <div class="pnl-row"><span>Win Rate</span><span id="pnl-win-rate">0.0%</span></div>
-        <div class="pnl-row"><span>Net Realized PnL</span><span id="pnl-net" class="pnl-grey">$0.00 USDT</span></div>
+      <!-- Scalping Offer Banner (Screenshot 5) -->
+      <div class="trade-promo-banner" onclick="showToast('Zero Fee Scalping is enabled on all Virtual Futures!', 'success')">
+        <div class="tpb-left">
+          <span class="tpb-icon">🌀</span>
+          <span class="tpb-title">Zero Fee Scalping Offer</span>
+        </div>
+        <span class="tpb-arrow">›</span>
+      </div>
+
+      <!-- Bottom Position & Open Orders Section (Screenshot 5) -->
+      <div class="trade-bottom-positions-sec">
+        <div class="tbpos-header">
+          <div class="tbpos-tabs">
+            <button type="button" class="tbpos-tab active" id="tbpos-tab-pos" onclick="switchTradeBottomTab('pos')">
+              Position <span id="tbpos-count-pos">(0)</span>
+            </button>
+            <button type="button" class="tbpos-tab" id="tbpos-tab-orders" onclick="switchTradeBottomTab('orders')">
+              Open Orders <span id="tbpos-count-orders">(0)</span>
+            </button>
+          </div>
+          <div class="tbpos-tools">
+            <button type="button" class="ttool-btn" onclick="switchMainTab('chart')" title="View Chart">📊</button>
+            <button type="button" class="ttool-btn" onclick="switchMainTab('history')" title="View History">📄</button>
+          </div>
+        </div>
+        <div id="trade-bottom-content-area"></div>
+      </div>
+
+      <!-- Hidden backward-compatibility elements so old functions/scripts do not throw -->
+      <div style="display:none !important;">
+        <span id="stat-balance">$10,000.00</span>
+        <span id="stat-coin-val">0.00000000</span>
+        <span id="stat-coin-label">BTC Held</span>
+        <span id="stat-unrealized-pnl">$0.00</span>
+        <span id="stat-total">$10,000.00</span>
+        <span id="desk-est-fee">0.00</span>
+        <button id="otype-market" onclick="setOrderType('market')"></button>
+        <button id="otype-limit" onclick="setOrderType('limit')"></button>
+        <button id="otype-stop-l" onclick="setOrderType('stop-l')"></button>
+        <button id="otype-stop-m" onclick="setOrderType('stop-m')"></button>
+        <input type="checkbox" id="checkbox-tpsl" />
+        <span id="side-buy-label">Long / Buy</span>
+        <span id="side-sell-label">Sell / Short</span>
+        <div id="trade-auth-actions"></div>
+        <div id="trade-guest-actions"></div>
       </div>
 
     </div>
@@ -1504,40 +1566,45 @@
 <div id="toast-container" class="toast-container"></div>
 <div id="toast" class="toast hidden"></div>
 
-<!-- Fixed Mobile Bottom Navigation Bar (Groww Crypto Style) -->
-<nav class="groww-bottom-nav" id="groww-bottom-nav">
-  <button class="gnav-btn active" id="gnav-explore" onclick="switchMainTab('explore')" title="Crypto Explore">
+<!-- Fixed Mobile Bottom Navigation Bar & FAB (Screenshots 1, 3, 4, 5) -->
+<nav class="groww-bottom-nav vtrade-bottom-nav" id="groww-bottom-nav">
+  <button class="gnav-btn vnav-btn" id="gnav-positions" onclick="switchMainTab('orders')" title="Orders & Positions">
     <div class="gnav-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span class="gnav-badge hidden" id="gnav-pos-badge">0</span>
     </div>
-    <span class="gnav-label">Explore</span>
+    <span class="gnav-label">Orders</span>
   </button>
-  <button class="gnav-btn" id="gnav-chart" onclick="switchMainTab('chart')" title="Interactive Live Chart">
+  <button class="gnav-btn vnav-btn active" id="gnav-explore" onclick="switchMainTab('explore')" title="Markets">
     <div class="gnav-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
     </div>
-    <span class="gnav-label">Chart</span>
+    <span class="gnav-label">Markets</span>
   </button>
-  <button class="gnav-btn" id="gnav-trade" onclick="switchMainTab('trade')" title="100x Futures &amp; Spot Trade">
+  <button class="gnav-btn vnav-btn" id="gnav-trade" onclick="switchMainTab('trade')" title="Trade Desk">
     <div class="gnav-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
     </div>
     <span class="gnav-label">Trade</span>
   </button>
-  <button class="gnav-btn" id="gnav-positions" onclick="switchMainTab('positions')" title="Open Positions &amp; Orders">
+  <button class="gnav-btn vnav-btn" id="gnav-wallet" onclick="switchMainTab('wallet')" title="Virtual Wallet">
     <div class="gnav-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      <span class="gnav-badge hidden" id="gnav-pos-badge">0</span>
-    </div>
-    <span class="gnav-label">Positions</span>
-  </button>
-  <button class="gnav-btn" id="gnav-wallet" onclick="switchMainTab('wallet')" title="Virtual Wallet &amp; Settings">
-    <div class="gnav-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M16 12h4"/><circle cx="16" cy="12" r="1.5"/></svg>
     </div>
     <span class="gnav-label">Wallet</span>
   </button>
+  <button class="gnav-btn vnav-btn" id="gnav-profile" onclick="openProfileScreen()" title="Profile & Settings">
+    <div class="gnav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+    <span class="gnav-label">Profile</span>
+  </button>
 </nav>
+
+<!-- Floating Action Button (FAB) (Screenshots 1, 3, 4) -->
+<button class="vtrade-fab" id="vtrade-fab" onclick="switchMainTab('trade')" title="Quick Trade">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+</button>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="settings.js"></script>
