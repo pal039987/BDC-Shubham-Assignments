@@ -2103,4 +2103,181 @@ html, body {
   line-height: 1.5;
 }
 
+/* ══════════════════════ SELECT EXPIRY MODAL (SCREENSHOT 3) ══════════════════════ */
+.select-expiry-sheet, .select-view-sheet {
+  background: #141824;
+  border-radius: 20px 20px 0 0;
+  padding: 16px 14px 28px 14px;
+}
+
+.expiry-sheet-subtitle {
+  font-size: 13.5px;
+  color: #8f96a3;
+  text-align: center;
+  margin: 4px 0 16px 0;
+  font-weight: 500;
+}
+
+.expiry-options-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.expiry-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background 0.12s ease;
+  color: #ffffff;
+}
+
+.expiry-option-row:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.expiry-option-row.active {
+  color: var(--delta-orange);
+}
+
+.exp-time-left {
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 72px;
+}
+
+.exp-date-full {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+  text-align: center;
+}
+
+.exp-check {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--delta-orange);
+  min-width: 20px;
+  text-align: right;
+}
+
+/* ══════════════════════ SELECT VIEW MODAL (SCREENSHOT 4) ══════════════════════ */
+.view-options-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.view-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #c0c6d4;
+  transition: background 0.12s ease;
+}
+
+.view-option-row:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.view-option-row.active {
+  color: var(--delta-orange);
+  font-weight: 700;
+}
+
+.vopt-check {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--delta-orange);
+}
+
+/* ══════════════════════ OI DEPTH VISUAL BARS (SCREENSHOT 1) ══════════════════════ */
+.oi-cell-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 2px 4px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.oi-depth-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  z-index: 1;
+  opacity: 0.28;
+}
+
+.oi-depth-bar.calls-bar {
+  right: 0;
+  background: #00c087;
+}
+
+.oi-depth-bar.calls-bar.red-tint {
+  background: #f43f5e;
+}
+
+.oi-depth-bar.puts-bar {
+  left: 0;
+  background: #00c087;
+}
+
+.oi-val-text {
+  position: relative;
+  z-index: 2;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 12px;
+}
+
+/* Calls Only and Puts Only View Modes */
+.opt-chain-head.mode-calls-only {
+  grid-template-columns: 1fr 78px;
+}
+.opt-chain-row.mode-calls-only {
+  grid-template-columns: 1fr 78px;
+}
+
+.opt-chain-head.mode-puts-only {
+  grid-template-columns: 78px 1fr;
+}
+.opt-chain-row.mode-puts-only {
+  grid-template-columns: 78px 1fr;
+}
+
+.subcol.oivol-subcol, .subcol.greeks-subcol {
+  color: #8fa0b5;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.25;
+  flex: 1;
+}
+
+.subcol-subtext {
+  color: #6c788d;
+  font-size: 9.5px;
+}
+
+.oi-depth-bar.red-tint {
+  background: #f43f5e !important;
+  opacity: 0.22;
+}
+
+.oi-depth-bar.green-tint {
+  background: #00c087 !important;
+  opacity: 0.22;
+}
+
+
 

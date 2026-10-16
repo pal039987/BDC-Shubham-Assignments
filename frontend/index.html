@@ -409,14 +409,14 @@
 
           <!-- Expiry & T-Shape Controls Row -->
           <div class="options-expiry-row">
-            <div class="expiry-selector-box" onclick="toggleExpiryDropdown()">
+            <div class="expiry-selector-box" onclick="openExpiryModal()">
               <span class="exp-date-label" id="exp-current-date">16 Oct</span>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-              <span class="exp-countdown-tag" id="exp-countdown">Expires in 1h: 6m</span>
+              <span class="exp-countdown-tag" id="exp-countdown">Expires in 53m</span>
             </div>
             <div class="shape-controls-box">
-              <div class="shape-dropdown-pill">
-                <span>T-Shape</span>
+              <div class="shape-dropdown-pill" onclick="openSelectViewModal()">
+                <span id="opt-current-view-mode">T-Shape</span>
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
               </div>
               <button class="options-more-btn" onclick="openOptionsMoreMenu()">
@@ -439,7 +439,7 @@
           <!-- Options Chain Table -->
           <div class="options-chain-table" id="options-chain-table">
             <!-- Table Header Row -->
-            <div class="opt-chain-head">
+            <div class="opt-chain-head" id="opt-chain-head">
               <div class="opt-head-calls">
                 <span class="opt-head-side-title calls-title">Calls</span>
                 <div class="opt-head-subcols">
@@ -613,6 +613,48 @@
           <p class="kyc-desc">Delta Exchange India requires periodic verification. For paper trading, your account is fully verified for all Futures & Options contracts.</p>
         </div>
         <button class="deposit-confirm-btn" onclick="completeKycSimulation()">Acknowledge & Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Select Expiry Modal (Screenshot 3) -->
+  <div id="select-expiry-modal" class="vmodal-backdrop hidden" onclick="if(event.target===this) closeExpiryModal()">
+    <div class="vmodal-sheet select-expiry-sheet">
+      <div class="vmodal-header">
+        <h3 class="vmodal-title">Select Expiry</h3>
+        <button class="vmodal-close-btn" onclick="closeExpiryModal()">✕</button>
+      </div>
+      <div class="expiry-sheet-subtitle" id="expiry-modal-subtitle">BTC Options expire at 5:30 pm</div>
+      <div class="expiry-options-list" id="expiry-options-list">
+        <!-- Injected dynamically by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Select View (T-Shape) Modal (Screenshot 4) -->
+  <div id="select-view-modal" class="vmodal-backdrop hidden" onclick="if(event.target===this) closeSelectViewModal()">
+    <div class="vmodal-sheet select-view-sheet">
+      <div class="vmodal-header">
+        <h3 class="vmodal-title">Select View</h3>
+        <button class="vmodal-close-btn" onclick="closeSelectViewModal()">✕</button>
+      </div>
+      <div class="view-options-list">
+        <div class="view-option-row active" id="vopt-t-shape" onclick="setOptionsViewMode('T-Shape')">
+          <span class="vopt-name">T-Shape</span>
+          <span class="vopt-check">✓</span>
+        </div>
+        <div class="view-option-row" id="vopt-all" onclick="setOptionsViewMode('All')">
+          <span class="vopt-name">All</span>
+          <span class="vopt-check"></span>
+        </div>
+        <div class="view-option-row" id="vopt-calls" onclick="setOptionsViewMode('Calls')">
+          <span class="vopt-name">Calls</span>
+          <span class="vopt-check"></span>
+        </div>
+        <div class="view-option-row" id="vopt-puts" onclick="setOptionsViewMode('Puts')">
+          <span class="vopt-name">Puts</span>
+          <span class="vopt-check"></span>
+        </div>
       </div>
     </div>
   </div>

@@ -8345,23 +8345,302 @@ const MARKETS_FUTURES_DATA = [
   }
 ];
 
-// OPTIONS CHAIN DATA (Screenshot 5 Match)
-let activeOptionsUnderlying = 'btc';
+// OPTIONS CHAIN DATA (SCREENSHOTS 1, 2, 3, 4, 5)
+const OPTIONS_EXPIRIES = [
+  { remaining: '53m', dateStr: '16 Oct, 2026', shortDate: '16 Oct', countdown: 'Expires in 53m' },
+  { remaining: '1d: 53m', dateStr: '17 Oct, 2026', shortDate: '17 Oct', countdown: 'Expires in 1d: 53m' },
+  { remaining: '2d: 53m', dateStr: '18 Oct, 2026', shortDate: '18 Oct', countdown: 'Expires in 2d: 53m' },
+  { remaining: '7d: 53m', dateStr: '23 Oct, 2026', shortDate: '23 Oct', countdown: 'Expires in 7d: 53m' },
+  { remaining: '14d: 53m', dateStr: '30 Oct, 2026', shortDate: '30 Oct', countdown: 'Expires in 14d: 53m' },
+  { remaining: '42d: 53m', dateStr: '27 Nov, 2026', shortDate: '27 Nov', countdown: 'Expires in 42d: 53m' },
+  { remaining: '70d: 53m', dateStr: '25 Dec, 2026', shortDate: '25 Dec', countdown: 'Expires in 70d: 53m' }
+];
+let activeExpiryIndex = 0;
+let activeOptionsViewMode = 'T-Shape'; // 'T-Shape', 'All', 'Calls', 'Puts'
+let activeOptionsUnderlying = 'btc'; // 'btc', 'eth', 'xaut'
 let activeOptionsMetric = 'price'; // 'price', 'oivol', 'greeks'
-const OPTIONS_STRIKES_DATA = [
-  { strike: 81200, callBid: 987, callAsk: 1002, callMark: 1008.6, callIv: 40.0, putMark: 0.4, putIv: 40.9, putBid: 0.1, putAsk: 0.2 },
-  { strike: 81400, callBid: 783, callAsk: 795, callMark: 808.7, callIv: 33.5, putMark: 0.4, putIv: 33.3, putBid: 0.2, putAsk: 0.3 },
-  { strike: 81500, callBid: 685, callAsk: 696, callMark: 708.7, callIv: 28.9, putMark: 0.4, putIv: 30.0, putBid: 0.1, putAsk: 0.2 },
-  { strike: 81600, callBid: 588, callAsk: 598, callMark: 608.9, callIv: 26.9, putMark: 0.6, putIv: 27.3, putBid: 0.7, putAsk: 0.9 },
-  { strike: 81800, callBid: 388, callAsk: 396, callMark: 410.0, callIv: 22.3, putMark: 2.1, putIv: 23.0, putBid: 3.0, putAsk: 4.6 },
-  { strike: 82000, callBid: 202, callAsk: 207, callMark: 220.3, callIv: 20.1, putMark: 11.9, putIv: 20.0, putBid: 13.0, putAsk: 15.0 },
-  { strike: 82200, callBid: 64, callAsk: 67.8, callMark: 69.4, callIv: 19.5, putMark: 66.7, putIv: 19.3, putBid: 74.0, putAsk: 77.0 },
-  // SPOT DIVIDER AT 82208.3
-  { strike: 82400, callBid: 10.5, callAsk: 13.0, callMark: 25.5, callIv: 24.9, putMark: 203.5, putIv: 18.9, putBid: 217.0, putAsk: 222.0 },
-  { strike: 82500, callBid: 6.5, callAsk: 7.0, callMark: 15.1, callIv: 27.4, putMark: 294.9, putIv: 18.8, putBid: 310.0, putAsk: 317.0 },
-  { strike: 82600, callBid: 2.3, callAsk: 3.9, callMark: 10.6, callIv: 30.3, putMark: 391.8, putIv: 14.1, putBid: 404.0, putAsk: 412.0 },
-  { strike: 82800, callBid: 1.0, callAsk: 1.9, callMark: 5.7, callIv: 36.6, putMark: 591.7, putIv: 9.1, putBid: 599.0, putAsk: 609.0 },
-  { strike: 83000, callBid: 0.5, callAsk: 1.2, callMark: 3.5, callIv: 40.8, putMark: 791.7, putIv: 12.7, putBid: 787.0, putAsk: 798.0 }
+
+// BTC OPTIONS DATA (SCREENSHOTS 1, 2 & 5)
+const BTC_OPTIONS_STRIKES_DATA = [
+  {
+    strike: 81200,
+    callBid: '987', callAsk: '1002', callMark: '1008.6', callIv: '40.0',
+    putMark: '0.4', putIv: '40.9', putBid: '0.1', putAsk: '0.2',
+    callVol: '$12.43M', callVolChg: '98.73%', callOi: '$130.69K', callOiBar: 8, callOiBarColor: 'green-tint',
+    putOi: '$6.77M', putOiBar: 28, putOiBarColor: 'green-tint', putVol: '$56.67M', putVolChg: '-99.99%',
+    callTheta: '0', callVega: '0', callDelta: '1.00', callGamma: '0',
+    putDelta: '-0.01', putGamma: '0.00003', putTheta: '-88.47', putVega: '0.12'
+  },
+  {
+    strike: 81400,
+    callBid: '783', callAsk: '795', callMark: '808.7', callIv: '33.5',
+    putMark: '0.4', putIv: '33.3', putBid: '0.2', putAsk: '0.3',
+    callVol: '$13.72M', callVolChg: '69.05%', callOi: '$245.25K', callOiBar: 12, callOiBarColor: 'green-tint',
+    putOi: '$6.69M', putOiBar: 28, putOiBarColor: 'green-tint', putVol: '$46.44M', putVolChg: '-99.98%',
+    callTheta: '-41.4', callVega: '0.07', callDelta: '1.00', callGamma: '0.00002',
+    putDelta: '-0.01', putGamma: '0.00004', putTheta: '-89.64', putVega: '0.14'
+  },
+  {
+    strike: 81500,
+    callBid: '685', callAsk: '696', callMark: '708.7', callIv: '28.9',
+    putMark: '0.4', putIv: '30.0', putBid: '0.1', putAsk: '0.2',
+    callVol: '$10.82M', callVolChg: '67.43%', callOi: '$152.64K', callOiBar: 9, callOiBarColor: 'green-tint',
+    putOi: '$9.03M', putOiBar: 38, putOiBarColor: 'green-tint', putVol: '$53.63M', putVolChg: '-99.98%',
+    callTheta: '-40.64', callVega: '0.08', callDelta: '1.00', callGamma: '0.00003',
+    putDelta: '-0.01', putGamma: '0.00006', putTheta: '-94.23', putVega: '0.16'
+  },
+  {
+    strike: 81600,
+    callBid: '588', callAsk: '598', callMark: '608.9', callIv: '26.9',
+    putMark: '0.6', putIv: '27.3', putBid: '0.7', putAsk: '0.9',
+    callVol: '$17.18M', callVolChg: '80.60%', callOi: '$1.59M', callOiBar: 15, callOiBarColor: 'red-tint',
+    putOi: '$11.78M', putOiBar: 50, putOiBarColor: 'green-tint', putVol: '$75.74M', putVolChg: '-99.98%',
+    callTheta: '-50.68', callVega: '0.11', callDelta: '1.00', callGamma: '0.00004',
+    putDelta: '-0.01', putGamma: '0.00007', putTheta: '-98.41', putVega: '0.19'
+  },
+  {
+    strike: 81800,
+    callBid: '388', callAsk: '396', callMark: '410.0', callIv: '22.3',
+    putMark: '2.1', putIv: '23.0', putBid: '3.0', putAsk: '4.6',
+    callVol: '$55.60M', callVolChg: '35.89%', callOi: '$1.00M', callOiBar: 10, callOiBarColor: 'green-tint',
+    putOi: '$16.57M', putOiBar: 70, putOiBarColor: 'green-tint', putVol: '$103.81M', putVolChg: '-99.96%',
+    callTheta: '0', callVega: '0', callDelta: '1.00', callGamma: '0',
+    putDelta: '-0.02', putGamma: '0.00015', putTheta: '-125.14', putVega: '0.31'
+  },
+  {
+    strike: 82000,
+    callBid: '202', callAsk: '207', callMark: '220.3', callIv: '20.1',
+    putMark: '11.9', putIv: '20.0', putBid: '13.0', putAsk: '15.0',
+    callVol: '$146.48M', callVolChg: '6.08%', callOi: '$7.57M', callOiBar: 35, callOiBarColor: 'red-tint',
+    putOi: '$16.92M', putOiBar: 72, putOiBarColor: 'green-tint', putVol: '$166.35M', putVolChg: '-99.72%',
+    callTheta: '-120.79', callVega: '0.44', callDelta: '0.98', callGamma: '0.00033',
+    putDelta: '-0.04', putGamma: '0.00049', putTheta: '-239.61', putVega: '0.77'
+  },
+  {
+    strike: 82200,
+    callBid: '64.0', callAsk: '67.8', callMark: '69.4', callIv: '19.5',
+    putMark: '66.7', putIv: '19.3', putBid: '74.0', putAsk: '77.0',
+    callVol: '$146.37M', callVolChg: '-53.62%', callOi: '$13.06M', callOiBar: 60, callOiBarColor: 'red-tint',
+    putOi: '$10.34M', putOiBar: 45, putOiBarColor: 'green-tint', putVol: '$114.11M', putVolChg: '-97.69%',
+    callTheta: '-627.8', callVega: '2.47', callDelta: '0.78', callGamma: '0.00194',
+    putDelta: '-0.21', putGamma: '0.00182', putTheta: '-603.34', putVega: '2.34'
+  },
+  // SPOT DIVIDER AT BTC 82284.0 / 82327.5
+  {
+    strike: 82400,
+    callBid: '10.5', callAsk: '13.0', callMark: '25.5', callIv: '24.9',
+    putMark: '203.5', putIv: '18.9', putBid: '217.0', putAsk: '222.0',
+    callVol: '$129.48M', callVolChg: '-89.29%', callOi: '$19.24M', callOiBar: 85, callOiBarColor: 'red-tint',
+    putOi: '$4.16M', putOiBar: 20, putOiBarColor: 'green-tint', putVol: '$67.26M', putVolChg: '-91.05%',
+    callTheta: '-719.2', callVega: '2.93', callDelta: '0.32', callGamma: '0.0024',
+    putDelta: '-0.68', putGamma: '0.00236', putTheta: '-729.23', putVega: '2.93'
+  },
+  {
+    strike: 82500,
+    callBid: '6.5', callAsk: '7.0', callMark: '15.1', callIv: '27.4',
+    putMark: '294.9', putIv: '18.8', putBid: '310.0', putAsk: '317.0',
+    callVol: '$109.41M', callVolChg: '-94.44%', callOi: '$13.03M', callOiBar: 60, callOiBarColor: 'red-tint',
+    putOi: '$149.75K', putOiBar: 8, putOiBarColor: 'green-tint', putVol: '$28.71M', putVolChg: '-84.88%',
+    callTheta: '-413.8', callVega: '1.64', callDelta: '0.12', callGamma: '0.00129',
+    putDelta: '-0.82', putGamma: '0.00139', putTheta: '-660.81', putVega: '2.15'
+  },
+  {
+    strike: 82600,
+    callBid: '2.3', callAsk: '3.9', callMark: '10.6', callIv: '30.3',
+    putMark: '391.8', putIv: '14.1', putBid: '404.0', putAsk: '412.0',
+    callVol: '$86.01M', callVolChg: '-97.16%', callOi: '$12.86M', callOiBar: 58, callOiBarColor: 'red-tint',
+    putOi: '$44.16K', putOiBar: 3, putOiBarColor: 'green-tint', putVol: '$6.47M', putVolChg: '-78.52%',
+    callTheta: '-204.46', callVega: '0.76', callDelta: '0.04', callGamma: '0.00056',
+    putDelta: '-0.98', putGamma: '0.00038', putTheta: '-96.37', putVega: '0.43'
+  },
+  {
+    strike: 82800,
+    callBid: '1.0', callAsk: '1.9', callMark: '5.7', callIv: '36.6',
+    putMark: '591.7', putIv: '9.1', putBid: '599.0', putAsk: '609.0',
+    callVol: '$89.97M', callVolChg: '-99.01%', callOi: '$16.76M', callOiBar: 75, callOiBarColor: 'red-tint',
+    putOi: '$41.88K', putOiBar: 3, putOiBarColor: 'green-tint', putVol: '$7.36M', putVolChg: '-71.98%',
+    callTheta: '-61.78', callVega: '0.19', callDelta: '0.01', callGamma: '0.00011',
+    putDelta: '-1.00', putGamma: '0', putTheta: '0', putVega: '0'
+  },
+  {
+    strike: 83000,
+    callBid: '0.5', callAsk: '1.2', callMark: '3.5', callIv: '40.8',
+    putMark: '791.7', putIv: '12.7', putBid: '787.0', putAsk: '798.0',
+    callVol: '$189.81M', callVolChg: '-99.16%', callOi: '$29.40M', callOiBar: 95, callOiBarColor: 'red-tint',
+    putOi: '$370.34K', putOiBar: 15, putOiBarColor: 'green-tint', putVol: '$5.24M', putVolChg: '-52.64%',
+    callTheta: '-34.73', callVega: '0.08', callDelta: '0.00', callGamma: '0.00004',
+    putDelta: '-0.99', putGamma: '0.00014', putTheta: '-140.17', putVega: '0.38'
+  }
+];
+
+// ETH OPTIONS DATA (SCREENSHOT 5)
+const ETH_OPTIONS_STRIKES_DATA = [
+  {
+    strike: 2410,
+    callBid: '58.2', callAsk: '59.4', callMark: '58.94', callIv: '53.47',
+    putMark: '0.01', putIv: '78.14', putBid: '0.01', putAsk: '0.02',
+    putMarkBar: 25, putMarkBarColor: 'green-tint',
+    callVol: '$1.42M', callVolChg: '45.20%', callOi: '$85.4K', callOiBar: 15, callOiBarColor: 'green-tint',
+    putOi: '$1.24M', putOiBar: 30, putOiBarColor: 'green-tint', putVol: '$4.12M', putVolChg: '-99.10%',
+    callTheta: '-12.5', callVega: '0.04', callDelta: '0.99', callGamma: '0.0001',
+    putDelta: '-0.01', putGamma: '0.0001', putTheta: '-18.2', putVega: '0.03'
+  },
+  {
+    strike: 2420,
+    callBid: '48.2', callAsk: '49.4', callMark: '48.94', callIv: '47.88',
+    putMark: '0.01', putIv: '62.83', putBid: '0.01', putAsk: '0.02',
+    putMarkBar: 35, putMarkBarColor: 'green-tint',
+    callVol: '$1.88M', callVolChg: '38.50%', callOi: '$110.2K', callOiBar: 20, callOiBarColor: 'green-tint',
+    putOi: '$1.45M', putOiBar: 35, putOiBarColor: 'green-tint', putVol: '$3.85M', putVolChg: '-98.70%',
+    callTheta: '-14.1', callVega: '0.05', callDelta: '0.98', callGamma: '0.0002',
+    putDelta: '-0.02', putGamma: '0.0002', putTheta: '-21.4', putVega: '0.04'
+  },
+  {
+    strike: 2430,
+    callBid: '38.3', callAsk: '39.3', callMark: '38.95', callIv: '56.75',
+    putMark: '0.01', putIv: '52.71', putBid: '0.01', putAsk: '0.02',
+    putMarkBar: 40, putMarkBarColor: 'green-tint',
+    callVol: '$2.15M', callVolChg: '52.10%', callOi: '$160.8K', callOiBar: 28, callOiBarColor: 'green-tint',
+    putOi: '$1.88M', putOiBar: 42, putOiBarColor: 'green-tint', putVol: '$4.90M', putVolChg: '-99.20%',
+    callTheta: '-16.8', callVega: '0.07', callDelta: '0.96', callGamma: '0.0003',
+    putDelta: '-0.04', putGamma: '0.0003', putTheta: '-26.1', putVega: '0.06'
+  },
+  {
+    strike: 2440,
+    callBid: '28.5', callAsk: '29.4', callMark: '28.94', callIv: '40.51',
+    putMark: '0.01', putIv: '43.65', putBid: '0.02', putAsk: '0.03',
+    putMarkBar: 20, putMarkBarColor: 'green-tint',
+    callVol: '$3.40M', callVolChg: '24.70%', callOi: '$240.5K', callOiBar: 38, callOiBarColor: 'green-tint',
+    putOi: '$2.10M', putOiBar: 50, putOiBarColor: 'green-tint', putVol: '$6.20M', putVolChg: '-99.00%',
+    callTheta: '-22.4', callVega: '0.11', callDelta: '0.91', callGamma: '0.0006',
+    putDelta: '-0.09', putGamma: '0.0006', putTheta: '-35.7', putVega: '0.10'
+  },
+  {
+    strike: 2450,
+    callBid: '18.4', callAsk: '19.2', callMark: '18.99', callIv: '35.01',
+    putMark: '0.05', putIv: '36.15', putBid: '0.04', putAsk: '0.05',
+    putMarkBar: 25, putMarkBarColor: 'green-tint',
+    callVol: '$6.85M', callVolChg: '18.20%', callOi: '$450.0K', callOiBar: 60, callOiBarColor: 'green-tint',
+    putOi: '$3.50M', putOiBar: 75, putOiBarColor: 'green-tint', putVol: '$8.40M', putVolChg: '-97.40%',
+    callTheta: '-38.5', callVega: '0.22', callDelta: '0.82', callGamma: '0.0014',
+    putDelta: '-0.18', putGamma: '0.0014', putTheta: '-52.0', putVega: '0.21'
+  },
+  {
+    strike: 2460,
+    callBid: '8.8', callAsk: '9.4', callMark: '9.28', callIv: '29.17',
+    putMark: '0.74', putIv: '36.86', putBid: '0.5', putAsk: '0.9',
+    putMarkBar: 30, putMarkBarColor: 'green-tint',
+    callVol: '$12.40M', callVolChg: '-12.50%', callOi: '$820.0K', callOiBar: 85, callOiBarColor: 'red-tint',
+    putOi: '$2.80M', putOiBar: 65, putOiBarColor: 'green-tint', putVol: '$11.20M', putVolChg: '-88.50%',
+    callTheta: '-64.2', callVega: '0.45', callDelta: '0.65', callGamma: '0.0028',
+    putDelta: '-0.35', putGamma: '0.0028', putTheta: '-78.4', putVega: '0.44'
+  },
+  // SPOT DIVIDER: ETH 2468.97
+  {
+    strike: 2470,
+    callBid: '1.9', callAsk: '2.8', callMark: '2.11', callIv: '26.89',
+    callMarkBar: 25, callMarkBarColor: 'red-tint',
+    putMark: '3.21', putIv: '27.35', putBid: '3', putAsk: '3.3',
+    callVol: '$10.50M', callVolChg: '-64.20%', callOi: '$950.0K', callOiBar: 90, callOiBarColor: 'red-tint',
+    putOi: '$1.95M', putOiBar: 45, putOiBarColor: 'green-tint', putVol: '$7.80M', putVolChg: '-75.20%',
+    callTheta: '-72.0', callVega: '0.48', callDelta: '0.38', callGamma: '0.0029',
+    putDelta: '-0.62', putGamma: '0.0029', putTheta: '-82.1', putVega: '0.49'
+  },
+  {
+    strike: 2480,
+    callBid: '0.32', callAsk: '0.4', callMark: '0.14', callIv: '27.81',
+    putMark: '11.18', putIv: '26.90', putBid: '11', putAsk: '11.6',
+    callVol: '$7.20M', callVolChg: '-85.00%', callOi: '$680.0K', callOiBar: 70, callOiBarColor: 'red-tint',
+    putOi: '$850.0K', putOiBar: 25, putOiBarColor: 'green-tint', putVol: '$4.50M', putVolChg: '-62.00%',
+    callTheta: '-44.5', callVega: '0.28', callDelta: '0.15', callGamma: '0.0016',
+    putDelta: '-0.85', putGamma: '0.0016', putTheta: '-58.2', putVega: '0.30'
+  },
+  {
+    strike: 2490,
+    callBid: '0.07', callAsk: '0.14', callMark: '0.01', callIv: '30.09',
+    putMark: '21.07', putIv: '32.23', putBid: '20.7', putAsk: '21.5',
+    callVol: '$4.10M', callVolChg: '-92.40%', callOi: '$420.0K', callOiBar: 50, callOiBarColor: 'red-tint',
+    putOi: '$420.0K', putOiBar: 15, putOiBarColor: 'green-tint', putVol: '$2.90M', putVolChg: '-45.50%',
+    callTheta: '-24.0', callVega: '0.14', callDelta: '0.05', callGamma: '0.0007',
+    putDelta: '-0.95', putGamma: '0.0007', putTheta: '-34.0', putVega: '0.15'
+  },
+  {
+    strike: 2500,
+    callBid: '0.07', callAsk: '0.16', callMark: '0.01', callIv: '34.52',
+    callMarkBar: 35, callMarkBarColor: 'red-tint',
+    putMark: '31.06', putIv: '33.41', putBid: '30.6', putAsk: '31.5',
+    callVol: '$2.80M', callVolChg: '-96.00%', callOi: '$310.0K', callOiBar: 38, callOiBarColor: 'red-tint',
+    putOi: '$280.0K', putOiBar: 10, putOiBarColor: 'green-tint', putVol: '$1.85M', putVolChg: '-38.00%',
+    callTheta: '-14.2', callVega: '0.07', callDelta: '0.02', callGamma: '0.0003',
+    putDelta: '-0.98', putGamma: '0.0003', putTheta: '-22.5', putVega: '0.08'
+  },
+  {
+    strike: 2510,
+    callBid: '0.02', callAsk: '0.05', callMark: '0.01', callIv: '40.77',
+    putMark: '41.06', putIv: '33.79', putBid: '40.7', putAsk: '41.7',
+    callVol: '$1.90M', callVolChg: '-98.10%', callOi: '$190.0K', callOiBar: 22, callOiBarColor: 'red-tint',
+    putOi: '$150.0K', putOiBar: 6, putOiBarColor: 'green-tint', putVol: '$1.10M', putVolChg: '-25.00%',
+    callTheta: '-8.1', callVega: '0.04', callDelta: '0.01', callGamma: '0.0001',
+    putDelta: '-0.99', putGamma: '0.0001', putTheta: '-15.0', putVega: '0.04'
+  },
+  {
+    strike: 2520,
+    callBid: '0.01', callAsk: '0.02', callMark: '0.01', callIv: '48.52',
+    putMark: '51.06', putIv: '50.63', putBid: '50.6', putAsk: '51.8',
+    callVol: '$1.20M', callVolChg: '-99.00%', callOi: '$110.0K', callOiBar: 12, callOiBarColor: 'red-tint',
+    putOi: '$90.0K', putOiBar: 4, putOiBarColor: 'green-tint', putVol: '$750.0K', putVolChg: '-18.00%',
+    callTheta: '-4.5', callVega: '0.02', callDelta: '0.00', callGamma: '0.00005',
+    putDelta: '-1.00', putGamma: '0', putTheta: '-8.2', putVega: '0.02'
+  }
+];
+
+// XAUT OPTIONS DATA
+const XAUT_OPTIONS_STRIKES_DATA = [
+  {
+    strike: 2600,
+    callBid: '48.5', callAsk: '52.0', callMark: '50.2', callIv: '18.4',
+    putMark: '1.2', putIv: '19.2', putBid: '1.0', putAsk: '1.5',
+    callVol: '$420K', callVolChg: '12.4%', callOi: '$1.1M', callOiBar: 30, callOiBarColor: 'green-tint',
+    putOi: '$2.4M', putOiBar: 60, putOiBarColor: 'green-tint', putVol: '$310K', putVolChg: '-5.2%',
+    callTheta: '-4.2', callVega: '0.08', callDelta: '0.85', callGamma: '0.001',
+    putDelta: '-0.15', putGamma: '0.001', putTheta: '-6.4', putVega: '0.09'
+  },
+  {
+    strike: 2620,
+    callBid: '31.0', callAsk: '34.5', callMark: '32.8', callIv: '17.8',
+    putMark: '3.8', putIv: '18.1', putBid: '3.5', putAsk: '4.2',
+    callVol: '$680K', callVolChg: '8.1%', callOi: '$1.8M', callOiBar: 50, callOiBarColor: 'green-tint',
+    putOi: '$1.9M', putOiBar: 52, putOiBarColor: 'green-tint', putVol: '$450K', putVolChg: '-12.0%',
+    callTheta: '-5.8', callVega: '0.12', callDelta: '0.68', callGamma: '0.002',
+    putDelta: '-0.32', putGamma: '0.002', putTheta: '-7.9', putVega: '0.13'
+  },
+  {
+    strike: 2640,
+    callBid: '16.5', callAsk: '19.0', callMark: '17.7', callIv: '16.9',
+    putMark: '9.2', putIv: '17.0', putBid: '8.8', putAsk: '9.8',
+    callVol: '$1.25M', callVolChg: '4.2%', callOi: '$2.9M', callOiBar: 80, callOiBarColor: 'green-tint',
+    putOi: '$2.6M', putOiBar: 72, putOiBarColor: 'green-tint', putVol: '$980K', putVolChg: '-18.5%',
+    callTheta: '-7.4', callVega: '0.16', callDelta: '0.50', callGamma: '0.003',
+    putDelta: '-0.50', putGamma: '0.003', putTheta: '-8.6', putVega: '0.16'
+  },
+  {
+    strike: 2660,
+    callBid: '6.2', callAsk: '8.0', callMark: '7.1', callIv: '17.2',
+    putMark: '19.4', putIv: '17.5', putBid: '18.8', putAsk: '20.1',
+    callVol: '$890K', callVolChg: '-22.0%', callOi: '$2.1M', callOiBar: 60, callOiBarColor: 'red-tint',
+    putOi: '$1.4M', putOiBar: 40, putOiBarColor: 'green-tint', putVol: '$1.1M', putVolChg: '-28.0%',
+    callTheta: '-6.1', callVega: '0.14', callDelta: '0.32', callGamma: '0.002',
+    putDelta: '-0.68', putGamma: '0.002', putTheta: '-9.2', putVega: '0.14'
+  },
+  {
+    strike: 2680,
+    callBid: '1.8', callAsk: '3.0', callMark: '2.4', callIv: '18.0',
+    putMark: '34.8', putIv: '18.4', putBid: '33.5', putAsk: '36.0',
+    callVol: '$340K', callVolChg: '-45.0%', callOi: '$1.2M', callOiBar: 35, callOiBarColor: 'red-tint',
+    putOi: '$780K', putOiBar: 22, putOiBarColor: 'green-tint', putVol: '$820K', putVolChg: '-40.0%',
+    callTheta: '-4.5', callVega: '0.09', callDelta: '0.16', callGamma: '0.001',
+    putDelta: '-0.84', putGamma: '0.001', putTheta: '-7.1', putVega: '0.09'
+  }
 ];
 
 function renderMarketsScreen() {
@@ -8592,13 +8871,17 @@ function clearMarketsSearch() {
   renderMarketsScreen();
 }
 
-// ─── OPTIONS CHAIN LOGIC (SCREENSHOT 5) ───────────────────────────
+// ─── OPTIONS CHAIN LOGIC (SCREENSHOTS 1, 2, 3, 4, 5) ─────────────
 function setOptionsUnderlying(asset) {
   activeOptionsUnderlying = asset;
   ['btc', 'eth', 'xaut'].forEach(a => {
     const el = document.getElementById(`opt-und-${a}`);
     if (el) el.classList.toggle('active', a === asset);
   });
+  const sub = document.getElementById('expiry-modal-subtitle');
+  if (sub) {
+    sub.textContent = `${asset.toUpperCase()} Options expire at 5:30 pm`;
+  }
   renderOptionsChain();
 }
 
@@ -8611,8 +8894,79 @@ function setOptionsMetric(metric) {
   renderOptionsChain();
 }
 
-function toggleExpiryDropdown() {
-  showToast('Options Expiry: 16 Oct (1h: 6m remaining)', 'info');
+// ─── SELECT EXPIRY MODAL (SCREENSHOT 3) ───────────────────────────
+function openExpiryModal() {
+  const modal = document.getElementById('select-expiry-modal');
+  if (!modal) return;
+  const sub = document.getElementById('expiry-modal-subtitle');
+  if (sub) {
+    sub.textContent = `${activeOptionsUnderlying.toUpperCase()} Options expire at 5:30 pm`;
+  }
+  const listEl = document.getElementById('expiry-options-list');
+  if (listEl) {
+    listEl.innerHTML = OPTIONS_EXPIRIES.map((exp, idx) => {
+      const isActive = idx === activeExpiryIndex;
+      return `
+        <div class="expiry-option-row ${isActive ? 'active' : ''}" onclick="selectExpiry(${idx})">
+          <span class="exp-time-left">${exp.remaining}</span>
+          <span class="exp-date-full">${exp.dateStr}</span>
+          <span class="exp-check">${isActive ? '✓' : ''}</span>
+        </div>
+      `;
+    }).join('');
+  }
+  modal.classList.remove('hidden');
+}
+
+function closeExpiryModal() {
+  const modal = document.getElementById('select-expiry-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function selectExpiry(idx) {
+  activeExpiryIndex = idx;
+  const exp = OPTIONS_EXPIRIES[idx];
+  if (exp) {
+    const dateLabel = document.getElementById('exp-current-date');
+    if (dateLabel) dateLabel.textContent = exp.shortDate;
+    const countTag = document.getElementById('exp-countdown');
+    if (countTag) countTag.textContent = exp.countdown;
+    showToast(`Expiry selected: ${exp.dateStr}`, 'success');
+  }
+  closeExpiryModal();
+  renderOptionsChain();
+}
+
+// ─── SELECT VIEW MODAL (SCREENSHOT 4) ─────────────────────────────
+function openSelectViewModal() {
+  const modal = document.getElementById('select-view-modal');
+  if (!modal) return;
+  const modes = ['T-Shape', 'All', 'Calls', 'Puts'];
+  modes.forEach(m => {
+    const id = `vopt-${m.toLowerCase()}`;
+    const el = document.getElementById(id);
+    if (el) {
+      const isActive = activeOptionsViewMode === m;
+      el.classList.toggle('active', isActive);
+      const chk = el.querySelector('.vopt-check');
+      if (chk) chk.textContent = isActive ? '✓' : '';
+    }
+  });
+  modal.classList.remove('hidden');
+}
+
+function closeSelectViewModal() {
+  const modal = document.getElementById('select-view-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function setOptionsViewMode(mode) {
+  activeOptionsViewMode = mode;
+  const label = document.getElementById('opt-current-view-mode');
+  if (label) label.textContent = mode;
+  closeSelectViewModal();
+  renderOptionsChain();
+  showToast(`View mode changed to: ${mode}`, 'info');
 }
 
 function openStrategyBuilder() {
@@ -8624,48 +8978,152 @@ function openOptionsMoreMenu() {
 }
 
 function renderOptionsChain() {
+  const tableEl = document.getElementById('options-chain-table');
+  const headEl = document.getElementById('opt-chain-head');
   const bodyEl = document.getElementById('opt-chain-rows');
-  if (!bodyEl) return;
+  if (!tableEl || !headEl || !bodyEl) return;
 
-  const btcSpot = currentPrices['bitcoin']?.price || 82208.3;
+  const dataset = activeOptionsUnderlying === 'eth'
+    ? ETH_OPTIONS_STRIKES_DATA
+    : (activeOptionsUnderlying === 'xaut' ? XAUT_OPTIONS_STRIKES_DATA : BTC_OPTIONS_STRIKES_DATA);
+
+  let spotPrice = 82284.0;
+  let spotLabel = 'BTC';
+  if (activeOptionsUnderlying === 'eth') {
+    spotPrice = 2468.97;
+    spotLabel = 'ETH';
+  } else if (activeOptionsUnderlying === 'xaut') {
+    spotPrice = 2640.50;
+    spotLabel = 'XAUT';
+  }
+
+  // 1. Adapt Table Header to activeOptionsViewMode & activeOptionsMetric
+  const isCallsOnly = activeOptionsViewMode === 'Calls';
+  const isPutsOnly = activeOptionsViewMode === 'Puts';
+
+  headEl.className = 'opt-chain-head' + (isCallsOnly ? ' mode-calls-only' : '') + (isPutsOnly ? ' mode-puts-only' : '');
+
+  let callsHeaderHtml = '';
+  let putsHeaderHtml = '';
+
+  if (activeOptionsMetric === 'price') {
+    callsHeaderHtml = `
+      <div class="opt-head-calls">
+        <span class="opt-head-side-title calls-title">Calls</span>
+        <div class="opt-head-subcols">
+          <span class="subcol bid-ask">BID<br><span class="ask-text">ASK</span></span>
+          <span class="subcol mark-iv">Mark<br>Price / IV</span>
+        </div>
+      </div>
+    `;
+    putsHeaderHtml = `
+      <div class="opt-head-puts">
+        <span class="opt-head-side-title puts-title">Puts</span>
+        <div class="opt-head-subcols">
+          <span class="subcol mark-iv">Mark<br>Price / IV</span>
+          <span class="subcol bid-ask">BID<br><span class="ask-text">ASK</span></span>
+        </div>
+      </div>
+    `;
+  } else if (activeOptionsMetric === 'oivol') {
+    callsHeaderHtml = `
+      <div class="opt-head-calls">
+        <span class="opt-head-side-title calls-title">Calls</span>
+        <div class="opt-head-subcols">
+          <span class="subcol oivol-subcol">24h Vol<br><span class="subcol-subtext">24h Chg.</span></span>
+          <span class="subcol oivol-subcol">OI</span>
+        </div>
+      </div>
+    `;
+    putsHeaderHtml = `
+      <div class="opt-head-puts">
+        <span class="opt-head-side-title puts-title">Puts</span>
+        <div class="opt-head-subcols">
+          <span class="subcol oivol-subcol">OI</span>
+          <span class="subcol oivol-subcol">24h Vol<br><span class="subcol-subtext">24h Chg.</span></span>
+        </div>
+      </div>
+    `;
+  } else {
+    // Greeks
+    callsHeaderHtml = `
+      <div class="opt-head-calls">
+        <span class="opt-head-side-title calls-title">Calls</span>
+        <div class="opt-head-subcols">
+          <span class="subcol greeks-subcol">Theta<br><span class="subcol-subtext">Vega</span></span>
+          <span class="subcol greeks-subcol">Delta<br><span class="subcol-subtext">Gamma</span></span>
+        </div>
+      </div>
+    `;
+    putsHeaderHtml = `
+      <div class="opt-head-puts">
+        <span class="opt-head-side-title puts-title">Puts</span>
+        <div class="opt-head-subcols">
+          <span class="subcol greeks-subcol">Delta<br><span class="subcol-subtext">Gamma</span></span>
+          <span class="subcol greeks-subcol">Theta<br><span class="subcol-subtext">Vega</span></span>
+        </div>
+      </div>
+    `;
+  }
+
+  const strikeHeaderHtml = `
+    <div class="opt-head-strike">
+      <span>Strike ↕</span>
+    </div>
+  `;
+
+  if (isCallsOnly) {
+    headEl.innerHTML = callsHeaderHtml + strikeHeaderHtml;
+  } else if (isPutsOnly) {
+    headEl.innerHTML = strikeHeaderHtml + putsHeaderHtml;
+  } else {
+    headEl.innerHTML = callsHeaderHtml + strikeHeaderHtml + putsHeaderHtml;
+  }
+
+  // 2. Build Rows
   let rowsHtml = '';
   let spotDividerRendered = false;
 
-  OPTIONS_STRIKES_DATA.forEach(row => {
-    // Check if we cross spot price to render the divider
-    if (!spotDividerRendered && row.strike > btcSpot) {
+  dataset.forEach(row => {
+    // Spot divider between strikes
+    if (!spotDividerRendered && row.strike > spotPrice) {
       spotDividerRendered = true;
       rowsHtml += `
         <div class="opt-spot-divider">
           <div class="opt-spot-pill">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#00c087" stroke-width="2.5"><polyline points="3 17 9 11 13 15 21 7"/></svg>
-            <span>BTC ${btcSpot.toFixed(1)}</span>
+            <span>${spotLabel} ${spotPrice.toFixed(activeOptionsUnderlying === 'btc' ? 1 : 2)}</span>
           </div>
         </div>
       `;
     }
 
-    const isItmCalls = row.strike < btcSpot;
-    const isItmPuts = row.strike > btcSpot;
+    const isItmCalls = row.strike < spotPrice;
+    const isItmPuts = row.strike > spotPrice;
 
     let callLeftHtml = '';
     let putRightHtml = '';
 
     if (activeOptionsMetric === 'price') {
+      const callMarkBg = (row.callMarkBar ? `<div class="oi-depth-bar calls-bar ${row.callMarkBarColor || ''}" style="width:${row.callMarkBar}%;"></div>` : '');
+      const putMarkBg = (row.putMarkBar ? `<div class="oi-depth-bar puts-bar ${row.putMarkBarColor || ''}" style="width:${row.putMarkBar}%;"></div>` : '');
+
       callLeftHtml = `
         <div class="opt-val-col">
           <span class="opt-val-green">$${row.callBid}</span>
           <span class="opt-val-red">$${row.callAsk}</span>
         </div>
-        <div class="opt-val-col">
-          <span class="opt-val-white">$${row.callMark}</span>
-          <span class="opt-val-muted">${row.callIv}%</span>
+        <div class="opt-val-col oi-cell-wrap">
+          ${callMarkBg}
+          <span class="opt-val-white oi-val-text">$${row.callMark}</span>
+          <span class="opt-val-muted oi-val-text">${row.callIv}%</span>
         </div>
       `;
       putRightHtml = `
-        <div class="opt-val-col">
-          <span class="opt-val-white">$${row.putMark}</span>
-          <span class="opt-val-muted">${row.putIv}%</span>
+        <div class="opt-val-col oi-cell-wrap">
+          ${putMarkBg}
+          <span class="opt-val-white oi-val-text">$${row.putMark}</span>
+          <span class="opt-val-muted oi-val-text">${row.putIv}%</span>
         </div>
         <div class="opt-val-col">
           <span class="opt-val-green">$${row.putBid}</span>
@@ -8673,39 +9131,81 @@ function renderOptionsChain() {
         </div>
       `;
     } else if (activeOptionsMetric === 'oivol') {
+      const callChgClass = (row.callVolChg && String(row.callVolChg).startsWith('-')) ? 'opt-val-red' : 'opt-val-green';
+      const putChgClass = (row.putVolChg && String(row.putVolChg).startsWith('-')) ? 'opt-val-red' : 'opt-val-green';
+
       callLeftHtml = `
-        <div class="opt-val-col"><span class="opt-val-white">OI: 450</span><span class="opt-val-muted">Vol: 1.2K</span></div>
-        <div class="opt-val-col"><span class="opt-val-white">$${row.callMark}</span></div>
+        <div class="opt-val-col">
+          <span class="opt-val-white">${row.callVol}</span>
+          <span class="${callChgClass}">${row.callVolChg}</span>
+        </div>
+        <div class="opt-val-col oi-cell-wrap">
+          <div class="oi-depth-bar calls-bar ${row.callOiBarColor || ''}" style="width:${row.callOiBar || 10}%;"></div>
+          <span class="oi-val-text">${row.callOi}</span>
+        </div>
       `;
       putRightHtml = `
-        <div class="opt-val-col"><span class="opt-val-white">$${row.putMark}</span></div>
-        <div class="opt-val-col"><span class="opt-val-white">OI: 280</span><span class="opt-val-muted">Vol: 840</span></div>
+        <div class="opt-val-col oi-cell-wrap">
+          <div class="oi-depth-bar puts-bar ${row.putOiBarColor || ''}" style="width:${row.putOiBar || 10}%;"></div>
+          <span class="oi-val-text">${row.putOi}</span>
+        </div>
+        <div class="opt-val-col">
+          <span class="opt-val-white">${row.putVol}</span>
+          <span class="${putChgClass}">${row.putVolChg}</span>
+        </div>
       `;
     } else {
       // Greeks
-      const delta = (row.strike < btcSpot ? 0.65 : 0.35).toFixed(2);
-      const theta = (-12.4).toFixed(1);
       callLeftHtml = `
-        <div class="opt-val-col"><span class="opt-val-green">Δ ${delta}</span></div>
-        <div class="opt-val-col"><span class="opt-val-muted">θ ${theta}</span></div>
+        <div class="opt-val-col">
+          <span class="opt-val-white">${row.callTheta}</span>
+          <span class="opt-val-muted">${row.callVega}</span>
+        </div>
+        <div class="opt-val-col">
+          <span class="opt-val-white">${row.callDelta}</span>
+          <span class="opt-val-muted">${row.callGamma}</span>
+        </div>
       `;
       putRightHtml = `
-        <div class="opt-val-col"><span class="opt-val-muted">θ ${theta}</span></div>
-        <div class="opt-val-col"><span class="opt-val-red">Δ -${(1 - delta).toFixed(2)}</span></div>
+        <div class="opt-val-col">
+          <span class="opt-val-white">${row.putDelta}</span>
+          <span class="opt-val-muted">${row.putGamma}</span>
+        </div>
+        <div class="opt-val-col">
+          <span class="opt-val-white">${row.putTheta}</span>
+          <span class="opt-val-muted">${row.putVega}</span>
+        </div>
+      `;
+    }
+
+    const rowClass = 'opt-chain-row' +
+      (isCallsOnly ? ' mode-calls-only' : '') +
+      (isPutsOnly ? ' mode-puts-only' : '') +
+      (isItmCalls ? ' itm-calls' : '') +
+      (isItmPuts ? ' itm-puts' : '');
+
+    let rowContent = '';
+    if (isCallsOnly) {
+      rowContent = `
+        <div class="opt-call-side">${callLeftHtml}</div>
+        <div class="opt-strike-center">${row.strike}</div>
+      `;
+    } else if (isPutsOnly) {
+      rowContent = `
+        <div class="opt-strike-center">${row.strike}</div>
+        <div class="opt-put-side">${putRightHtml}</div>
+      `;
+    } else {
+      rowContent = `
+        <div class="opt-call-side">${callLeftHtml}</div>
+        <div class="opt-strike-center">${row.strike}</div>
+        <div class="opt-put-side">${putRightHtml}</div>
       `;
     }
 
     rowsHtml += `
-      <div class="opt-chain-row ${isItmCalls ? 'itm-calls' : ''} ${isItmPuts ? 'itm-puts' : ''}" onclick="selectOptionStrike(${row.strike})">
-        <div class="opt-call-side">
-          ${callLeftHtml}
-        </div>
-        <div class="opt-strike-center">
-          ${row.strike}
-        </div>
-        <div class="opt-put-side">
-          ${putRightHtml}
-        </div>
+      <div class="${rowClass}" onclick="selectOptionStrike(${row.strike})">
+        ${rowContent}
       </div>
     `;
   });
@@ -8714,7 +9214,7 @@ function renderOptionsChain() {
 }
 
 function selectOptionStrike(strike) {
-  showToast(`Selected Strike: ${strike} Call/Put`, 'info');
+  showToast(`Selected Strike: ${strike} (${activeOptionsUnderlying.toUpperCase()})`, 'info');
 }
 
 // ─── RWA & STRADDLES LOGIC ────────────────────────────────────────
