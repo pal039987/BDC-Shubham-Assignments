@@ -7871,5 +7871,39 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   color: var(--v-red);
 }
 
+/* ══════════════ USER DIRECTIVE: KEEP ONLY LATEST UPDATED UI & ELIMINATE PREVIOUS UI ══════════════ */
+/* Completely eliminate previous UI strips and redundant headers on mobile */
+@media (max-width: 1024px) {
+  .shark-navbar,
+  .groww-navbar,
+  .navbar,
+  .groww-indices-ticker,
+  .groww-subnav-strip,
+  .shark-pos-tabs-wrap {
+    display: none !important;
+  }
 
+  .app-body {
+    min-height: auto !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    padding-bottom: 70px !important;
+  }
+}
 
+/* Ensure groww-subnav-strip is removed everywhere */
+.groww-subnav-strip {
+  display: none !important;
+}
+
+/* Ensure accounts panel starts immediately from the very top with 0 blank space */
+#view-accounts-panel,
+.vtrade-accounts-panel {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: var(--v-bg-deep) !important;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  min-height: calc(100vh - 70px);
+  padding-bottom: 90px;
+}

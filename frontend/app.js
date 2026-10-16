@@ -3632,7 +3632,12 @@ function updateChartQuickCoinChips() {
 function switchMainTab(tabName) {
   activeMainTab = tabName;
 
-  // 1. Update Sub-Navigation strip
+  // Instantly scroll window to top to eliminate any blank offset
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }
+
+  // 1. Update Sub-Navigation strip (kept for backward compatibility if present)
   document.querySelectorAll('.gsub-tab').forEach(b => b.classList.remove('active'));
   const subBtn = document.getElementById(`gsub-${tabName}`);
   if (subBtn) subBtn.classList.add('active');
@@ -3670,6 +3675,7 @@ function switchMainTab(tabName) {
   if (tradePanel)         tradePanel.classList.add('hidden');
   if (walletPanel)        walletPanel.classList.add('hidden');
   if (accountsPanel)      accountsPanel.classList.add('hidden');
+  if (indicesTicker)      indicesTicker.classList.add('hidden');
 
   // Strictly keep watchlistSection & marketsPanel hidden on pure chart tab
   if (watchlistSection)   watchlistSection.classList.add('hidden');
@@ -3679,16 +3685,19 @@ function switchMainTab(tabName) {
 
   if (tabName === 'explore' || tabName === 'markets') {
     if (exploreContainer) exploreContainer.classList.remove('hidden');
-    if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderGrowwExploreUI();
   } else if (tabName === 'wallet' || tabName === 'funds') {
     if (walletPanel) walletPanel.classList.remove('hidden');
-    if (indicesTicker) indicesTicker.classList.remove('hidden');
     renderWalletOverview();
   } else if (tabName === 'profile' || tabName === 'accounts') {
-    if (accountsPanel) accountsPanel.classList.remove('hidden');
-    if (indicesTicker) indicesTicker.classList.remove('hidden');
+    if (accountsPanel) {
+      accountsPanel.classList.remove('hidden');
+      accountsPanel.scrollTop = 0;
+    }
     renderAccountsScreen();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
   } else if (tabName === 'history') {
     if (historyContainer) historyContainer.classList.remove('hidden');
     renderHistoryScreen();
