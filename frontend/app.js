@@ -10736,7 +10736,7 @@ function toggleTradePairStar(e) {
 }
 
 function toggleTradePairSelector() {
-  showToast('Select contract: BTCUSD, ETHUSD, SOLUSD, XAUTUSD', 'info');
+  openContractSelectorModal('trade');
 }
 
 function cycleOrderbookViewMode() {
@@ -11114,28 +11114,439 @@ function showBottomTab(tab, btn) {
   const homeView = document.getElementById('home-screen-view');
   const mktView = document.getElementById('markets-screen-view');
   const tradeView = document.getElementById('trade-screen-view');
+  const chartsView = document.getElementById('charts-screen-view');
 
   if (activeBottomTab === 'home') {
     if (homeView) homeView.style.display = 'flex';
     if (mktView) mktView.style.display = 'none';
     if (tradeView) tradeView.style.display = 'none';
+    if (chartsView) chartsView.style.display = 'none';
     renderHomeScreen();
   } else if (activeBottomTab === 'markets') {
     if (homeView) homeView.style.display = 'none';
     if (mktView) mktView.style.display = 'flex';
     if (tradeView) tradeView.style.display = 'none';
+    if (chartsView) chartsView.style.display = 'none';
     renderMarketsScreen();
   } else if (activeBottomTab === 'trade') {
     if (homeView) homeView.style.display = 'none';
     if (mktView) mktView.style.display = 'none';
     if (tradeView) tradeView.style.display = 'flex';
+    if (chartsView) chartsView.style.display = 'none';
     renderTradeScreen();
+  } else if (activeBottomTab === 'charts') {
+    if (homeView) homeView.style.display = 'none';
+    if (mktView) mktView.style.display = 'none';
+    if (tradeView) tradeView.style.display = 'none';
+    if (chartsView) chartsView.style.display = 'flex';
+    renderChartsScreen();
   } else {
     if (homeView) homeView.style.display = 'none';
     if (mktView) mktView.style.display = 'none';
     if (tradeView) tradeView.style.display = 'none';
+    if (chartsView) chartsView.style.display = 'none';
     showToast(`Navigating to ${activeBottomTab.toUpperCase()}...`, 'info');
   }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CHARTS SCREEN & CONTRACT SELECTOR (SCREENSHOTS 1 & 2)
+// ══════════════════════════════════════════════════════════════════════════
+
+const CONTRACT_SELECTOR_FUTURES = [
+  { symbol: 'BTCUSD', lev: '200x', price: '$82226', priceNum: 82226, vol: '$1.19B', volNum: 1.19e9, change: '+1.68%', changeNum: 1.68, fee: null, tvSymbol: 'BINANCE:BTCUSDT', name: 'Bitcoin Perpetual', lotEq: '1 Lot = 0.001 BTC', unit: 'BTC', shortPrice: '82305.5', longPrice: '82306' },
+  { symbol: 'ETHUSD', lev: '200x', price: '$2464.6', priceNum: 2464.6, vol: '$783.47M', volNum: 783.47e6, change: '+4.39%', changeNum: 4.39, fee: null, tvSymbol: 'BINANCE:ETHUSDT', name: 'Ethereum Perpetual', lotEq: '1 Lot = 0.01 ETH', unit: 'ETH', shortPrice: '2464.2', longPrice: '2464.6' },
+  { symbol: 'XAUTUSD', lev: '100x', price: '$4175.37', priceNum: 4175.37, vol: '$757.05M', volNum: 757.05e6, change: '+0.66%', changeNum: 0.66, fee: 'Fee 0.01%', tvSymbol: 'BITFINEX:XAUTUSD', name: 'Tether Gold Perpetual', lotEq: '1 Lot = 0.01 XAUT', unit: 'XAUT', shortPrice: '4175.0', longPrice: '4175.4' },
+  { symbol: 'SOLUSD', lev: '100x', price: '$106.15', priceNum: 106.15, vol: '$158.18M', volNum: 158.18e6, change: '+3.97%', changeNum: 3.97, fee: null, tvSymbol: 'BINANCE:SOLUSDT', name: 'Solana Perpetual', lotEq: '1 Lot = 0.1 SOL', unit: 'SOL', shortPrice: '106.10', longPrice: '106.15' },
+  { symbol: 'PAXGUSD', lev: '100x', price: '$4167.9', priceNum: 4167.9, vol: '$124.52M', volNum: 124.52e6, change: '+0.59%', changeNum: 0.59, fee: 'Fee 0.01%', tvSymbol: 'BINANCE:PAXGUSDT', name: 'PAX Gold Perpetual', lotEq: '1 Lot = 0.01 PAXG', unit: 'PAXG', shortPrice: '4167.5', longPrice: '4167.9' },
+  { symbol: 'AKEUSD', lev: '20x', price: '$0.0295677', priceNum: 0.0295677, vol: '$43.54M', volNum: 43.54e6, change: '-8.85%', changeNum: -8.85, fee: null, tvSymbol: 'BINANCE:CAKEUSDT', name: 'Cake Perpetual', lotEq: '1 Lot = 100 AKE', unit: 'AKE', shortPrice: '0.02956', longPrice: '0.02957' },
+  { symbol: 'SIRENUSD', lev: '20x', price: '$0.02771', priceNum: 0.02771, vol: '$22.86M', volNum: 22.86e6, change: '+15.41%', changeNum: 15.41, fee: null, tvSymbol: 'BINANCE:SIRENUSDT', name: 'Siren Perpetual', lotEq: '1 Lot = 100 SIREN', unit: 'SIREN', shortPrice: '0.02770', longPrice: '0.02771' },
+  { symbol: 'XRPUSD', lev: '100x', price: '$1.341', priceNum: 1.341, vol: '$14.65M', volNum: 14.65e6, change: '+2.74%', changeNum: 2.74, fee: null, tvSymbol: 'BINANCE:XRPUSDT', name: 'Ripple Perpetual', lotEq: '1 Lot = 10 XRP', unit: 'XRP', shortPrice: '1.340', longPrice: '1.341' },
+  { symbol: 'ZECUSD', lev: '20x', price: '$1226.92', priceNum: 1226.92, vol: '$13.08M', volNum: 13.08e6, change: '+12.59%', changeNum: 12.59, fee: null, tvSymbol: 'BINANCE:ZECUSDT', name: 'Zcash Perpetual', lotEq: '1 Lot = 0.05 ZEC', unit: 'ZEC', shortPrice: '1226.50', longPrice: '1226.92' },
+  { symbol: 'UNIUSD', lev: '100x', price: '$7.429', priceNum: 7.429, vol: '$11.11M', volNum: 11.11e6, change: '+7.95%', changeNum: 7.95, fee: null, tvSymbol: 'BINANCE:UNIUSDT', name: 'Uniswap Perpetual', lotEq: '1 Lot = 1 UNI', unit: 'UNI', shortPrice: '7.425', longPrice: '7.429' },
+  { symbol: 'SLVONUSD', lev: '50x', price: '$52.4', priceNum: 52.4, vol: '$9.54M', volNum: 9.54e6, change: '+1.95%', changeNum: 1.95, fee: 'Fee 0.01%', tvSymbol: 'BINANCE:SLVUSDT', name: 'Silver Perpetual', lotEq: '1 Lot = 0.5 SLVON', unit: 'SLVON', shortPrice: '52.35', longPrice: '52.40' },
+  { symbol: 'BTWUSD', lev: '10x', price: '$1.6894', priceNum: 1.6894, vol: '$8.53M', volNum: 8.53e6, change: '-9.98%', changeNum: -9.98, fee: null, tvSymbol: 'BINANCE:WUSDT', name: 'BitWhite Perpetual', lotEq: '1 Lot = 10 BTW', unit: 'BTW', shortPrice: '1.6890', longPrice: '1.6894' },
+  { symbol: 'ARCUSD', lev: '20x', price: '$0.04063', priceNum: 0.04063, vol: '$7.38M', volNum: 7.38e6, change: '-2.26%', changeNum: -2.26, fee: null, tvSymbol: 'BINANCE:ARUSDT', name: 'Arc Perpetual', lotEq: '1 Lot = 100 ARC', unit: 'ARC', shortPrice: '0.04060', longPrice: '0.04063' },
+  { symbol: 'STRKUSD', lev: '20x', price: '$0.0769', priceNum: 0.0769, vol: '$7.34M', volNum: 7.34e6, change: '-2.41%', changeNum: -2.41, fee: null, tvSymbol: 'BINANCE:STRKUSDT', name: 'Starknet Perpetual', lotEq: '1 Lot = 50 STRK', unit: 'STRK', shortPrice: '0.0768', longPrice: '0.0769' },
+  { symbol: 'SNDKBUSD', lev: '25x', price: '$1364.66', priceNum: 1364.66, vol: '$6.31M', volNum: 6.31e6, change: '+2.52%', changeNum: 2.52, fee: null, tvSymbol: 'BINANCE:SANDUSDT', name: 'Sand Perpetual', lotEq: '1 Lot = 0.01 SNDKB', unit: 'SNDKB', shortPrice: '1364.50', longPrice: '1364.66' }
+];
+
+const CONTRACT_SELECTOR_OPTIONS = [
+  { symbol: 'BTC-24OCT-82000-C', lev: 'Call', price: '$1240.0', priceNum: 1240, vol: '$45.2M', volNum: 45.2e6, change: '+8.45%', changeNum: 8.45, fee: null, tvSymbol: 'BINANCE:BTCUSDT', name: 'BTC 82000 Call', lotEq: '1 Lot = 0.01 BTC', unit: 'BTC', shortPrice: '1235.0', longPrice: '1240.0' },
+  { symbol: 'BTC-24OCT-82000-P', lev: 'Put', price: '$980.5', priceNum: 980.5, vol: '$38.1M', volNum: 38.1e6, change: '-5.12%', changeNum: -5.12, fee: null, tvSymbol: 'BINANCE:BTCUSDT', name: 'BTC 82000 Put', lotEq: '1 Lot = 0.01 BTC', unit: 'BTC', shortPrice: '978.0', longPrice: '980.5' },
+  { symbol: 'ETH-24OCT-2500-C', lev: 'Call', price: '$42.5', priceNum: 42.5, vol: '$18.4M', volNum: 18.4e6, change: '+12.30%', changeNum: 12.3, fee: null, tvSymbol: 'BINANCE:ETHUSDT', name: 'ETH 2500 Call', lotEq: '1 Lot = 0.1 ETH', unit: 'ETH', shortPrice: '42.0', longPrice: '42.5' }
+];
+
+const CONTRACT_SELECTOR_RWA = [
+  { symbol: 'XAUTUSD', lev: '100x', price: '$4175.37', priceNum: 4175.37, vol: '$757.05M', volNum: 757.05e6, change: '+0.66%', changeNum: 0.66, fee: 'Fee 0.01%', tvSymbol: 'BITFINEX:XAUTUSD', name: 'Tether Gold Perpetual', lotEq: '1 Lot = 0.01 XAUT', unit: 'XAUT', shortPrice: '4175.0', longPrice: '4175.4' },
+  { symbol: 'PAXGUSD', lev: '100x', price: '$4167.9', priceNum: 4167.9, vol: '$124.52M', volNum: 124.52e6, change: '+0.59%', changeNum: 0.59, fee: 'Fee 0.01%', tvSymbol: 'BINANCE:PAXGUSDT', name: 'PAX Gold Perpetual', lotEq: '1 Lot = 0.01 PAXG', unit: 'PAXG', shortPrice: '4167.5', longPrice: '4167.9' },
+  { symbol: 'SLVONUSD', lev: '50x', price: '$52.4', priceNum: 52.4, vol: '$9.54M', volNum: 9.54e6, change: '+1.95%', changeNum: 1.95, fee: 'Fee 0.01%', tvSymbol: 'BINANCE:SLVUSDT', name: 'Silver Perpetual', lotEq: '1 Lot = 0.5 SLVON', unit: 'SLVON', shortPrice: '52.35', longPrice: '52.40' }
+];
+
+let chartsActiveContract = 'BTCUSD';
+let chartsTvWidgetInstance = null;
+let chartsActiveSubTab = 'traded-price';
+let chartsPairStarred = false;
+
+let contractSelectorActiveTab = 'futures';
+let contractSelectorSearchQuery = '';
+let contractSelectorSortField = null;
+let contractSelectorSortAsc = false;
+let contractSelectorStarredSymbols = new Set(['BTCUSD']);
+let contractSelectorCallerScreen = 'charts';
+
+function getContractData(symbol) {
+  const all = [...CONTRACT_SELECTOR_FUTURES, ...CONTRACT_SELECTOR_OPTIONS, ...CONTRACT_SELECTOR_RWA];
+  return all.find(c => c.symbol === symbol) || CONTRACT_SELECTOR_FUTURES[0];
+}
+
+function renderChartsScreen() {
+  const contract = getContractData(chartsActiveContract);
+
+  // Update header text
+  const pairSymbolEl = document.getElementById('chart-pair-symbol');
+  const pairSubEl = document.getElementById('chart-pair-sub');
+  const priceValEl = document.getElementById('chart-header-price');
+  const priceChgEl = document.getElementById('chart-header-change');
+  const starBtn = document.getElementById('chart-star-btn');
+
+  if (pairSymbolEl) pairSymbolEl.textContent = contract.symbol;
+  if (pairSubEl) pairSubEl.textContent = contract.name || 'Perpetual';
+  if (priceValEl) {
+    const isDown = contract.change.startsWith('-');
+    priceValEl.textContent = `${contract.price} ${isDown ? '↓' : '↑'}`;
+    priceValEl.className = `chart-price-val ${isDown ? 'down' : 'down'}`; // matching Screenshot 1 red price
+  }
+  if (priceChgEl) {
+    const isDown = contract.change.startsWith('-');
+    priceChgEl.textContent = `${contract.change.replace('+', '')}`;
+    priceChgEl.className = `chart-price-change ${isDown ? 'down' : 'up'}`;
+  }
+  if (starBtn) {
+    starBtn.textContent = chartsPairStarred ? '★' : '☆';
+    starBtn.classList.toggle('starred', chartsPairStarred);
+  }
+
+  // Update Quick Dock
+  const shortPriceEl = document.getElementById('cqd-short-price');
+  const longPriceEl = document.getElementById('cqd-long-price');
+  const lotEqEl = document.getElementById('cqd-lot-eq');
+  const unitLabelEl = document.getElementById('cqd-unit-label');
+
+  if (shortPriceEl) shortPriceEl.textContent = contract.shortPrice || '82305.5';
+  if (longPriceEl) longPriceEl.textContent = contract.longPrice || '82306';
+  if (lotEqEl) lotEqEl.textContent = contract.lotEq || '1 Lot = 0.001 BTC';
+  if (unitLabelEl) unitLabelEl.textContent = contract.unit || 'BTC';
+
+  // Mount TradingView Widget
+  renderChartsScreenTvWidget(contract.tvSymbol);
+}
+
+function renderChartsScreenTvWidget(tvSymbol) {
+  const container = document.getElementById('charts_tradingview_widget');
+  if (!container) return;
+
+  const symbol = tvSymbol || 'BINANCE:BTCUSDT';
+
+  // Check if TradingView script is available
+  if (typeof TradingView !== 'undefined' && typeof TradingView.widget === 'function') {
+    container.innerHTML = '';
+    try {
+      chartsTvWidgetInstance = new TradingView.widget({
+        autosize: true,
+        symbol: symbol,
+        interval: "60", // 1h per Screenshot 1
+        timezone: "Asia/Kolkata",
+        theme: "dark",
+        style: "1", // Candlesticks
+        locale: "en",
+        toolbar_bg: "#0d1017",
+        enable_publishing: false,
+        allow_symbol_change: false,
+        container_id: "charts_tradingview_widget",
+        hide_side_toolbar: false, // Left drawing toolbar per Screenshot 1
+        withdateranges: true,     // Bottom range toolbar per Screenshot 1
+        save_image: false,
+        details: false,
+        hotlist: false,
+        calendar: false,
+        studies: [
+          "Volume@tv-basicstudies"
+        ]
+      });
+      return;
+    } catch (e) {
+      console.warn('TradingView widget initialization failed, rendering fallback iframe/canvas:', e);
+    }
+  }
+
+  // Fallback to high-fidelity TradingView iframe / dark SVG canvas
+  renderChartsWidgetFallback(container, symbol);
+}
+
+function renderChartsWidgetFallback(container, symbol) {
+  const cleanSymbol = encodeURIComponent(symbol || 'BINANCE:BTCUSDT');
+  container.innerHTML = `
+    <div style="width:100%;height:100%;position:relative;background:#131722;overflow:hidden;display:flex;flex-direction:column;">
+      <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_charts&symbol=${cleanSymbol}&interval=60&hidesidetoolbar=0&symboledit=0&saveimage=0&toolbarbg=131722&studies=%5B%5D&theme=dark&style=1&timezone=Asia%2FKolkata&withdateranges=1&showpopupbutton=0&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=en"
+        style="width:100%;height:100%;border:none;flex:1;"
+        allowtransparency="true"
+        frameborder="0"
+        loading="lazy"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      </iframe>
+      <!-- Static High-Fidelity SVG Dark Chart Fallback if iframe blocked in sandbox -->
+      <div id="chart-svg-fallback" style="display:none;position:absolute;inset:0;background:#131722;padding:10px;">
+        <svg viewBox="0 0 400 450" width="100%" height="100%" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="chartVolGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00c087" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#00c087" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          <!-- Grid lines -->
+          <line x1="0" y1="60" x2="400" y2="60" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+          <line x1="0" y1="120" x2="400" y2="120" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+          <line x1="0" y1="180" x2="400" y2="180" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+          <line x1="0" y1="240" x2="400" y2="240" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+          <line x1="0" y1="300" x2="400" y2="300" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+          <line x1="0" y1="360" x2="400" y2="360" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3 3"/>
+          <!-- Candlesticks matching Screenshot 1 -->
+          <!-- Bearish red candle -->
+          <line x1="80" y1="90" x2="80" y2="220" stroke="#f04f5e" stroke-width="1.2"/>
+          <rect x="76" y="110" width="8" height="85" fill="#f04f5e"/>
+          <!-- Bullish green candle -->
+          <line x1="120" y1="70" x2="120" y2="190" stroke="#00c087" stroke-width="1.2"/>
+          <rect x="116" y="85" width="8" height="90" fill="#00c087"/>
+          <!-- Drop consolidation -->
+          <line x1="160" y1="140" x2="160" y2="280" stroke="#f04f5e" stroke-width="1.2"/>
+          <rect x="156" y="160" width="8" height="95" fill="#f04f5e"/>
+          <!-- Rebound -->
+          <line x1="200" y1="160" x2="200" y2="270" stroke="#00c087" stroke-width="1.2"/>
+          <rect x="196" y="180" width="8" height="70" fill="#00c087"/>
+          <!-- Current price bar -->
+          <line x1="240" y1="170" x2="240" y2="260" stroke="#f04f5e" stroke-width="1.2"/>
+          <rect x="236" y="190" width="8" height="60" fill="#f04f5e"/>
+          <!-- Current Price Dash Line -->
+          <line x1="0" y1="215" x2="400" y2="215" stroke="#f04f5e" stroke-width="1" stroke-dasharray="4 2"/>
+          <!-- Right Axis Price Badge -->
+          <rect x="330" y="205" width="70" height="20" rx="3" fill="#f04f5e"/>
+          <text x="365" y="219" fill="#ffffff" font-size="10" font-weight="700" text-anchor="middle">82,306.0</text>
+        </svg>
+      </div>
+    </div>
+  `;
+}
+
+function toggleChartPairStar(event) {
+  if (event) event.stopPropagation();
+  chartsPairStarred = !chartsPairStarred;
+  const btn = document.getElementById('chart-star-btn');
+  if (btn) {
+    btn.textContent = chartsPairStarred ? '★' : '☆';
+    btn.classList.toggle('starred', chartsPairStarred);
+  }
+  showToast(chartsPairStarred ? `Added ${chartsActiveContract} to favorites ★` : 'Removed from favorites', 'info');
+}
+
+function switchChartSubTab(tab) {
+  chartsActiveSubTab = tab;
+  const tabs = ['traded-price', 'order-book', 'recent-trades'];
+  tabs.forEach(t => {
+    const el = document.getElementById(`csub-${t}`);
+    if (el) el.classList.toggle('active', t === tab);
+  });
+  if (tab === 'order-book') {
+    showToast('Switched to Order Book view', 'info');
+  } else if (tab === 'recent-trades') {
+    showToast('Switched to Recent Trades view', 'info');
+  } else {
+    showToast('Displaying Traded Price Chart', 'info');
+  }
+}
+
+function executeChartQuickTrade(side) {
+  const contract = getContractData(chartsActiveContract);
+  const price = side === 'short' ? (contract.shortPrice || '82305.5') : (contract.longPrice || '82306');
+  showToast(`Quick ${side.toUpperCase()} Order Submitted: 1 Lot @ $${price}`, 'success');
+}
+
+// ─── CONTRACT SELECTOR MODAL (SCREENSHOT 2) ──────────────────────────
+function openContractSelectorModal(caller) {
+  contractSelectorCallerScreen = caller || (activeBottomTab === 'trade' ? 'trade' : 'charts');
+  const modal = document.getElementById('contract-selector-modal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  renderContractSelectorList();
+}
+
+function closeContractSelectorModal() {
+  const modal = document.getElementById('contract-selector-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function switchContractSelectorTab(tab) {
+  contractSelectorActiveTab = tab;
+  const tabs = ['watchlist', 'futures', 'options', 'rwa'];
+  tabs.forEach(t => {
+    const el = document.getElementById(`csel-tab-${t}`);
+    if (el) el.classList.toggle('active', t === tab);
+  });
+  renderContractSelectorList();
+}
+
+function handleContractSelectorSearch(query) {
+  contractSelectorSearchQuery = (query || '').trim().toLowerCase();
+  renderContractSelectorList();
+}
+
+function clearContractSelectorSearch() {
+  contractSelectorSearchQuery = '';
+  const input = document.getElementById('cselect-search-input');
+  if (input) input.value = '';
+  renderContractSelectorList();
+}
+
+function sortContractSelector(field) {
+  if (contractSelectorSortField === field) {
+    contractSelectorSortAsc = !contractSelectorSortAsc;
+  } else {
+    contractSelectorSortField = field;
+    contractSelectorSortAsc = false;
+  }
+  renderContractSelectorList();
+}
+
+function toggleContractStar(symbol, event) {
+  if (event) event.stopPropagation();
+  if (contractSelectorStarredSymbols.has(symbol)) {
+    contractSelectorStarredSymbols.delete(symbol);
+    showToast(`Removed ${symbol} from Watchlist`, 'info');
+  } else {
+    contractSelectorStarredSymbols.add(symbol);
+    showToast(`Added ${symbol} to Watchlist ★`, 'info');
+  }
+  renderContractSelectorList();
+}
+
+function selectContractFromSelector(symbol) {
+  chartsActiveContract = symbol;
+  const contract = getContractData(symbol);
+
+  // Sync to paper wallet active coin if supported
+  if (typeof selectedCoin !== 'undefined') {
+    if (symbol.startsWith('BTC')) selectedCoin = 'BTC';
+    else if (symbol.startsWith('ETH')) selectedCoin = 'ETH';
+    else if (symbol.startsWith('SOL')) selectedCoin = 'SOL';
+  }
+
+  // Update Charts screen
+  renderChartsScreen();
+
+  // Also update Trade screen headers if they exist
+  const tradePairSym = document.getElementById('trade-pair-symbol');
+  const tradePairSub = document.getElementById('trade-pair-sub');
+  const tradeHdrPrice = document.getElementById('trade-header-price');
+  const tradeHdrChange = document.getElementById('trade-header-change');
+  if (tradePairSym) tradePairSym.textContent = contract.symbol;
+  if (tradePairSub) tradePairSub.textContent = contract.name || 'Perpetual';
+  if (tradeHdrPrice) tradeHdrPrice.textContent = `${contract.price} ↓`;
+  if (tradeHdrChange) tradeHdrChange.textContent = contract.change.replace('+', '');
+
+  closeContractSelectorModal();
+  showToast(`Selected Contract: ${symbol}`, 'success');
+}
+
+function renderContractSelectorList() {
+  const container = document.getElementById('cselect-contracts-container');
+  if (!container) return;
+
+  let list = [];
+  if (contractSelectorActiveTab === 'futures') {
+    list = [...CONTRACT_SELECTOR_FUTURES];
+  } else if (contractSelectorActiveTab === 'options') {
+    list = [...CONTRACT_SELECTOR_OPTIONS];
+  } else if (contractSelectorActiveTab === 'rwa') {
+    list = [...CONTRACT_SELECTOR_RWA];
+  } else if (contractSelectorActiveTab === 'watchlist') {
+    const all = [...CONTRACT_SELECTOR_FUTURES, ...CONTRACT_SELECTOR_OPTIONS, ...CONTRACT_SELECTOR_RWA];
+    list = all.filter(c => contractSelectorStarredSymbols.has(c.symbol));
+    if (list.length === 0) {
+      container.innerHTML = `
+        <div style="padding:48px 20px;text-align:center;color:#636b7e;font-size:13px;">
+          <p style="margin-bottom:8px;font-size:15px;color:#ffffff;font-weight:700;">No Watchlist Items</p>
+          <p>Tap the star icon next to any contract in Futures, Options, or RWA to add it here.</p>
+        </div>
+      `;
+      return;
+    }
+  }
+
+  // Search Filter
+  if (contractSelectorSearchQuery) {
+    list = list.filter(c => 
+      c.symbol.toLowerCase().includes(contractSelectorSearchQuery) ||
+      (c.name && c.name.toLowerCase().includes(contractSelectorSearchQuery))
+    );
+  }
+
+  // Sorting
+  if (contractSelectorSortField === 'symbol') {
+    list.sort((a, b) => contractSelectorSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
+  } else if (contractSelectorSortField === 'price') {
+    list.sort((a, b) => contractSelectorSortAsc ? a.priceNum - b.priceNum : b.priceNum - a.priceNum);
+  } else if (contractSelectorSortField === 'change') {
+    list.sort((a, b) => contractSelectorSortAsc ? a.changeNum - b.changeNum : b.changeNum - a.changeNum);
+  }
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="padding:48px 20px;text-align:center;color:#636b7e;font-size:13px;">
+        <p>No contracts found matching "${contractSelectorSearchQuery}"</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(c => {
+    const isStarred = contractSelectorStarredSymbols.has(c.symbol);
+    const isUp = c.change.startsWith('+');
+    const feeBadgeHtml = c.fee ? `
+      <div class="csel-fee-badge">
+        <span>🪙</span>
+        <span>${c.fee}</span>
+      </div>
+    ` : '';
+
+    return `
+      <div class="cselect-row" onclick="selectContractFromSelector('${c.symbol}')">
+        <!-- Contract Symbol Column -->
+        <div class="csel-cell-contract">
+          <span class="csel-star ${isStarred ? 'starred' : ''}" onclick="toggleContractStar('${c.symbol}', event)">
+            ${isStarred ? '★' : '☆'}
+          </span>
+          <div class="csel-name-col">
+            <div class="csel-symbol-row">
+              <span class="csel-symbol">${c.symbol}</span>
+              <span class="csel-lev-badge">${c.lev}</span>
+            </div>
+            ${feeBadgeHtml}
+          </div>
+        </div>
+
+        <!-- Last Price & Vol Column -->
+        <div class="csel-cell-price-vol">
+          <span class="csel-price">${c.price}</span>
+          <span class="csel-vol">${c.vol}</span>
+        </div>
+
+        <!-- 24h Chg Column -->
+        <div class="csel-cell-change">
+          <span class="csel-change-val ${isUp ? 'up' : 'down'}">${c.change}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // Initialize on boot

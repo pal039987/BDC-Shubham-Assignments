@@ -834,6 +834,80 @@
       </section>
     </div><!-- End #trade-screen-view -->
 
+    <!-- ══════════════════════ 4. CHARTS SCREEN VIEW (Screenshot 1) ══════════════════════ -->
+    <div id="charts-screen-view" class="charts-screen-container" style="display:none;">
+      <!-- Chart Top Bar (Screenshot 1) -->
+      <header class="chart-top-bar">
+        <div class="chart-symbol-left" onclick="openContractSelectorModal()">
+          <button class="chart-star-btn" id="chart-star-btn" onclick="toggleChartPairStar(event)" aria-label="Favorite">☆</button>
+          <div class="chart-pair-info">
+            <div class="chart-pair-title">
+              <span id="chart-pair-symbol">BTCUSD</span>
+              <svg class="chart-down-arrow" id="chart-pair-down-arrow" viewBox="0 0 24 24" width="13" height="13" fill="#ff7a00" onclick="openContractSelectorModal('charts'); event.stopPropagation();" style="cursor:pointer;">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </div>
+            <span class="chart-pair-sub" id="chart-pair-sub">Bitcoin Perpetual</span>
+          </div>
+        </div>
+        <div class="chart-symbol-right">
+          <div class="chart-price-val down" id="chart-header-price">$82306.0 ↓</div>
+          <div class="chart-price-change up" id="chart-header-change">1.80%</div>
+        </div>
+      </header>
+
+      <!-- Sub-Navigation Strip (Screenshot 1) -->
+      <div class="chart-subnav-strip">
+        <div class="chart-subnav-tabs">
+          <button class="csub-tab-btn active" id="csub-traded-price" onclick="switchChartSubTab('traded-price')">
+            <span>Traded Price</span>
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+          </button>
+          <button class="csub-tab-btn" id="csub-order-book" onclick="switchChartSubTab('order-book')">
+            <span>Order Book</span>
+          </button>
+          <button class="csub-tab-btn" id="csub-recent-trades" onclick="switchChartSubTab('recent-trades')">
+            <span>Recent Trades</span>
+          </button>
+        </div>
+        <button class="zip-trade-btn" onclick="showToast('ZipTrade Fast Execution Mode Enabled', 'info')">
+          <span class="zip-bolt">⚡</span>
+          <span>ZipTrade</span>
+        </button>
+      </div>
+
+      <!-- TradingView Widget Canvas Container -->
+      <div class="chart-widget-wrapper" id="charts-tv-wrapper">
+        <div class="tradingview-embed-box" id="charts_tradingview_widget"></div>
+      </div>
+
+      <!-- Quick Trading Bottom Dock (Screenshot 1) -->
+      <div class="chart-quick-dock">
+        <!-- Short Button -->
+        <button class="cqd-btn cqd-short" onclick="executeChartQuickTrade('short')">
+          <span class="cqd-lbl">Short</span>
+          <span class="cqd-price" id="cqd-short-price">82305.5</span>
+        </button>
+
+        <!-- Quantity Card -->
+        <div class="cqd-qty-box">
+          <div class="cqd-qty-input-wrap">
+            <span class="cqd-lot-eq" id="cqd-lot-eq">1 Lot = 0.001 BTC</span>
+          </div>
+          <button class="cqd-unit-btn" onclick="showToast('Contract Currency: BTC', 'info')">
+            <span id="cqd-unit-label">BTC</span>
+            <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+          </button>
+        </div>
+
+        <!-- Long Button -->
+        <button class="cqd-btn cqd-long" onclick="executeChartQuickTrade('long')">
+          <span class="cqd-lbl">Long</span>
+          <span class="cqd-price" id="cqd-long-price">82306</span>
+        </button>
+      </div>
+    </div><!-- End #charts-screen-view -->
+
     <!-- Hidden compatibility layers for test assertions & tab switching -->
     <div class="test-compatibility-fixture" style="display:none;">
       <div id="vfunds-curr-toggle-group">
@@ -1079,6 +1153,49 @@
         </div>
         <button class="deposit-confirm-btn" onclick="confirmTradeLeverage()">Confirm Leverage</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 5. CONTRACT SELECTOR MODAL / SCREEN (Screenshot 2) ══════════════════════ -->
+  <div id="contract-selector-modal" class="contract-selector-view hidden">
+    <!-- Search Header (Screenshot 2) -->
+    <header class="cselect-header">
+      <button class="cselect-back-btn" onclick="closeContractSelectorModal()" aria-label="Back">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <div class="cselect-search-box">
+        <svg class="cselect-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8b92a4" stroke-width="2.2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="cselect-search-input" placeholder="Search" oninput="handleContractSelectorSearch(this.value)" />
+        <button class="cselect-search-clear" onclick="clearContractSelectorSearch()">✕</button>
+      </div>
+    </header>
+
+    <!-- Category Tabs (Screenshot 2) -->
+    <nav class="cselect-tabs-nav">
+      <button class="cselect-tab-btn" id="csel-tab-watchlist" onclick="switchContractSelectorTab('watchlist')">Watchlist</button>
+      <button class="cselect-tab-btn active" id="csel-tab-futures" onclick="switchContractSelectorTab('futures')">Futures</button>
+      <button class="cselect-tab-btn" id="csel-tab-options" onclick="switchContractSelectorTab('options')">Options</button>
+      <button class="cselect-tab-btn" id="csel-tab-rwa" onclick="switchContractSelectorTab('rwa')">
+        <span class="mkt-badge-new">NEW</span>
+        <span>RWA Tokens</span>
+      </button>
+    </nav>
+
+    <!-- Table Column Headers -->
+    <div class="cselect-table-header">
+      <span class="csel-col-contract" onclick="sortContractSelector('symbol')">Contract</span>
+      <span class="csel-col-price-vol" onclick="sortContractSelector('price')">Last Price/ Vol. ⬍</span>
+      <span class="csel-col-change" onclick="sortContractSelector('change')">24h Chg. ⬍</span>
+    </div>
+
+    <!-- Contracts Scroll List (15 contracts from Screenshot 2) -->
+    <div class="cselect-contracts-list" id="cselect-contracts-container">
+      <!-- Populated dynamically by renderContractSelectorList() -->
     </div>
   </div>
 
