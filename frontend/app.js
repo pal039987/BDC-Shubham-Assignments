@@ -262,6 +262,7 @@ function saveCachedPrices() {
 let token        = safeStorageGet('ct_token') || null;
 let username     = safeStorageGet('ct_username') || '';
 let balance      = parseFloat(safeStorageGet('ct_balance') || 10000);
+let currentUserEmail = safeStorageGet('ct_email') || '';
 let selectedCoin = 'bitcoin';
 let currentTF    = '15m';
 let chartMode    = 'tv';        // 'tv' (TradingView default) | 'candle' | 'line'
@@ -411,6 +412,8 @@ function closeProfileDropdown() {
 
 function toggleMarginModeDropdown(e) {
   if (e) e.stopPropagation();
+  document.getElementById('leverage-dropdown-menu')?.classList.add('hidden');
+  document.getElementById('order-type-dropdown-menu')?.classList.add('hidden');
   const menu = document.getElementById('margin-mode-dropdown-menu');
   if (menu) menu.classList.toggle('hidden');
 }
@@ -418,7 +421,7 @@ function toggleMarginModeDropdown(e) {
 function selectMarginModeMenu(mode) {
   setMarginMode(mode);
   const lbl = document.getElementById('margin-mode-display-label');
-  if (lbl) lbl.textContent = mode === 'isolated' ? 'Isolated Margin Mode' : 'Cross Margin Mode';
+  if (lbl) lbl.textContent = mode === 'isolated' ? 'Isolated' : 'Cross';
   const menu = document.getElementById('margin-mode-dropdown-menu');
   if (menu) menu.classList.add('hidden');
   document.querySelectorAll('.mm-dropdown-item').forEach(el => {
@@ -428,6 +431,8 @@ function selectMarginModeMenu(mode) {
 
 function toggleLeverageDropdown(e) {
   if (e) e.stopPropagation();
+  document.getElementById('margin-mode-dropdown-menu')?.classList.add('hidden');
+  document.getElementById('order-type-dropdown-menu')?.classList.add('hidden');
   const menu = document.getElementById('leverage-dropdown-menu');
   if (menu) menu.classList.toggle('hidden');
 }
@@ -440,6 +445,8 @@ function selectLeverageMenu(lev) {
 
 function toggleOrderTypeDropdown(e) {
   if (e) e.stopPropagation();
+  document.getElementById('margin-mode-dropdown-menu')?.classList.add('hidden');
+  document.getElementById('leverage-dropdown-menu')?.classList.add('hidden');
   const menu = document.getElementById('order-type-dropdown-menu');
   if (menu) menu.classList.toggle('hidden');
 }
@@ -609,8 +616,10 @@ function updateMarginRatioStats(ratio, maint, bal) {
 if (typeof window !== 'undefined') {
   window.addEventListener('click', (e) => {
     if (!e.target.closest('#nav-user-group')) closeProfileDropdown();
-    if (!e.target.closest('.mode-lev-row') && !e.target.closest('.tform-controls-row')) {
+    if (!e.target.closest('#btn-margin-mode-select') && !e.target.closest('#margin-mode-dropdown-menu')) {
       document.getElementById('margin-mode-dropdown-menu')?.classList.add('hidden');
+    }
+    if (!e.target.closest('#btn-leverage-select') && !e.target.closest('#leverage-dropdown-menu')) {
       document.getElementById('leverage-dropdown-menu')?.classList.add('hidden');
     }
     if (!e.target.closest('.tform-order-type-wrap')) {
@@ -799,20 +808,24 @@ async function handleRegister(e) {
 
 function saveAuth(data) {
   token    = data.token;   username = data.username; balance = data.balance;
+  currentUserEmail = data.email || (data.user && data.user.email) || currentUserEmail || '';
   safeStorageSet('ct_token',    token);
   safeStorageSet('ct_username', username);
   safeStorageSet('ct_balance',  balance.toString());
+  if (currentUserEmail) safeStorageSet('ct_email', currentUserEmail);
+  renderAccountsScreen();
 }
 
 function logout() {
-  token = null; username = ''; balance = 10000;
-  ['ct_token','ct_username','ct_balance'].forEach(k => safeStorageRemove(k));
+  token = null; username = ''; balance = 10000; currentUserEmail = '';
+  ['ct_token','ct_username','ct_balance','ct_email'].forEach(k => safeStorageRemove(k));
   updateAuthStateUI();
   renderPositions();
   renderOrders();
   renderHistory();
   updatePnlSummary();
   updateMiniStats();
+  renderAccountsScreen();
   showToast('Logged out', 'info');
 }
 
@@ -4410,7 +4423,29 @@ function switchFundsSheetTab(tab) {
 
 // ─── SCREEN 4: ACCOUNTS & PAPER-TRADING PREFERENCES (Screenshot 4 Match) ───
 let userCustomName = 'flipfishtrust';
-let phoneMasked = true;
+
+function triggerAvatarUpload() {
+  const inp = document.getElementById('vacc-avatar-input');
+  if (inp) inp.click();
+}
+
+function handleAvatarFileSelect(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select a valid image file', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const dataUrl = evt.target.result;
+    const avatarImg = document.getElementById('vacc-avatar-img');
+    if (avatarImg) avatarImg.src = dataUrl;
+    safeStorageSet('vtrade_user_avatar', dataUrl);
+    showToast('Profile photo updated successfully!', 'success');
+  };
+  reader.readAsDataURL(file);
+}
 
 function renderAccountsScreen() {
   const cash = walletState?.cash !== undefined ? walletState.cash : 10000;
@@ -4421,6 +4456,20 @@ function renderAccountsScreen() {
     const inrVal = cash * (usdToInrRate || 92.5);
     totalBalEl.textContent = `₹ ${inrVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
+
+  // Load custom profile DP if saved
+  const savedAvatar = safeStorageGet('vtrade_user_avatar');
+  const avatarImg = document.getElementById('vacc-avatar-img');
+  if (savedAvatar && avatarImg) {
+    avatarImg.src = savedAvatar;
+  }
+
+  // Display genuine user email
+  const emailEl = document.getElementById('vacc-email');
+  if (emailEl) {
+    const userEmail = safeStorageGet('ct_email') || currentUserEmail || (username ? `${username.toLowerCase()}@gmail.com` : 'user@vtrade.paper');
+    emailEl.textContent = userEmail;
+  }
 }
 
 function editUsernameDialog() {
@@ -4429,14 +4478,6 @@ function editUsernameDialog() {
     userCustomName = newName.trim();
     renderAccountsScreen();
     showToast(`Name updated to ${userCustomName}`, 'success');
-  }
-}
-
-function togglePhoneVisibility() {
-  phoneMasked = !phoneMasked;
-  const phoneEl = document.getElementById('vacc-phone');
-  if (phoneEl) {
-    phoneEl.textContent = phoneMasked ? '+91 *****95636' : '+91 9876595636';
   }
 }
 
@@ -5499,23 +5540,25 @@ async function syncWithBackend() {
     }
 
     if (Array.isArray(ordRes)) {
-      walletState.orders = ordRes.map(o => {
-        const coinDef = getCoinDefinition(o.coin);
-        return {
-          id: o.id,
-          coin: o.coin,
-          symbol: coinDef ? coinDef.symbol : o.coin.toUpperCase(),
-          side: o.direction === 'long' ? 'Long' : o.direction === 'short' ? 'Short' : (o.direction === 'buy' ? 'Buy' : 'Sell'),
-          category: (o.direction === 'long' || o.direction === 'short') ? 'position' : 'spot',
-          type: o.type === 'limit' ? 'Limit' : 'Market',
-          price: roundValue(o.price, 'money'),
-          size: roundValue(o.amount, 'coin'),
-          leverage: 10,
-          margin: roundValue((o.amount * o.price) / 10, 'money'),
-          status: o.status,
-          createdAt: o.created_at
-        };
-      });
+      walletState.orders = ordRes
+        .filter(o => (o.type || '').toLowerCase() === 'limit' && (o.status || '').toLowerCase() === 'pending')
+        .map(o => {
+          const coinDef = getCoinDefinition(o.coin);
+          return {
+            id: o.id,
+            coin: o.coin,
+            symbol: coinDef ? coinDef.symbol : o.coin.toUpperCase(),
+            side: o.direction === 'long' ? 'Long' : o.direction === 'short' ? 'Short' : (o.direction === 'buy' ? 'Buy' : 'Sell'),
+            category: (o.direction === 'long' || o.direction === 'short') ? 'position' : 'spot',
+            type: 'Limit',
+            price: roundValue(o.price, 'money'),
+            size: roundValue(o.amount, 'coin'),
+            leverage: 150,
+            margin: roundValue((o.amount * o.price) / 150, 'money'),
+            status: o.status,
+            createdAt: o.created_at
+          };
+        });
     }
 
     if (Array.isArray(tradeRes)) {
@@ -6441,11 +6484,18 @@ function renderOrders() {
   renderTvChartOverlay();
   const tbody = document.getElementById('orders-tbody');
   const cardsList = document.getElementById('orders-cards-list');
-  const pending = walletState.orders || [];
+  
+  // Filter ONLY pending limit orders (strictly exclude market orders)
+  const allOrders = walletState.orders || [];
+  const pending = allOrders.filter(o => {
+    const t = String(o.type || o.orderType || '').toLowerCase();
+    const s = String(o.status || '').toLowerCase();
+    return t === 'limit' && s === 'pending';
+  });
 
   if (!pending.length) {
-    if (tbody) tbody.innerHTML = renderNoDataState(7);
-    if (cardsList) cardsList.innerHTML = renderVTradeEmptyState('Deposit Funds to Your Wallet', 'Start your trading journey with us.', 'Deposit Funds');
+    if (tbody) tbody.innerHTML = '';
+    if (cardsList) cardsList.innerHTML = renderVTradeEmptyState('No Open Orders', 'You have no pending limit orders.', 'Place Limit Order');
     return;
   }
 
@@ -6456,13 +6506,13 @@ function renderOrders() {
         <div class="pos-card" style="margin-bottom:8px;">
           <div class="pos-card-header">
             <span class="pos-card-sym">${(o.symbol || o.coin).toUpperCase()}</span>
-            <span class="badge ${isLong ? 'badge-long' : 'badge-short'}">${(o.side || 'BUY').toUpperCase()}</span>
+            <span class="badge ${isLong ? 'badge-long' : 'badge-short'}">${isLong ? 'LONG' : 'SHORT'}</span>
           </div>
           <div class="pos-card-body">
-            <div class="pos-card-row"><span>Type</span><span>${(o.type || 'LIMIT').toUpperCase()}</span></div>
+            <div class="pos-card-row"><span>Type</span><span style="font-weight:700; color:#8b5cf6;">LIMIT</span></div>
             <div class="pos-card-row"><span>Price</span><span>$${fmt(o.price)}</span></div>
             <div class="pos-card-row"><span>Amount</span><span>${fmtCoin(o.size)}</span></div>
-            <div class="pos-card-row"><span>Status</span><span style="color:var(--v-amber);">${o.status || 'Pending'}</span></div>
+            <div class="pos-card-row"><span>Status</span><span style="color:var(--v-amber); font-weight:600;">${o.status || 'pending'}</span></div>
           </div>
           <button type="button" class="btn-close-pos" style="width:100%; margin-top:8px;" onclick="cancelOrder(${o.id})">Cancel Order</button>
         </div>
@@ -6471,29 +6521,21 @@ function renderOrders() {
   }
 
   if (tbody) {
-    tbody.innerHTML = pending.map(o => {
-      const isLong = (o.side === 'Buy' || o.side === 'Long' || o.side === 'buy' || o.side === 'long');
-      const sideCls = isLong ? 'badge-long' : 'badge-short';
-      const sideText = isLong ? 'Long' : 'Short';
-      const timeStr = o.createdAt ? fmtDate(o.createdAt) : '—';
-
-      return `<tr>
-        <td><b>${o.symbol}</b></td>
-        <td><span class="badge ${sideCls}">${sideText}</span></td>
-        <td><span class="badge badge-limit">Limit</span></td>
-        <td>$${fmt(o.price)}</td>
-        <td>${fmtCoin(o.size)}</td>
-        <td style="color:var(--txt3); font-size:11px;">${timeStr}</td>
-        <td><button class="btn-cancel-ord" onclick="cancelOrder(${o.id})">Cancel</button></td>
-      </tr>`;
-    }).join('');
+    tbody.innerHTML = '';
   }
 }
 
 // Global alias for backwards compatibility and external callers
 window.renderOpenOrders = renderOrders;
 
-function cancelOrder(id) {
+async function cancelOrder(id) {
+  try {
+    if (token) {
+      await authDelete(`${API}/orders/${id}`);
+    }
+  } catch (e) {
+    console.warn('Backend cancel sync:', e);
+  }
   walletState.orders = (walletState.orders || []).filter(o => o.id !== id);
   saveWalletState();
   showToast('Order cancelled', 'info');
@@ -6758,9 +6800,12 @@ async function ensurePaperSession() {
         token = res.token;
         username = res.username;
         balance = res.balance || 10000;
+        currentUserEmail = res.email || `${username.toLowerCase()}@vtrade.paper`;
         safeStorageSet('ct_token', token);
         safeStorageSet('ct_username', username);
         safeStorageSet('ct_balance', balance.toString());
+        safeStorageSet('ct_email', currentUserEmail);
+        renderAccountsScreen();
         return token;
       }
     } catch (e) {

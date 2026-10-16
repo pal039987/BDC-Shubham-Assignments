@@ -911,19 +911,10 @@
         </div>
       </div>
 
-      <!-- Open Orders Panel -->
+      <!-- Open Orders Panel (Clean Single Card View for Mobile) -->
       <div class="bottom-panel hidden" id="panel-orders">
         <div class="pos-cards-list" id="orders-cards-list"></div>
-        <div class="panel-scroll">
-          <table class="data-table shark-data-table">
-            <thead><tr>
-              <th>Symbol</th><th>Side</th><th>Type</th><th>Price</th><th>Amount</th><th>Status</th><th>Action</th>
-            </tr></thead>
-            <tbody id="orders-tbody">
-              <!-- Rendered dynamically -->
-            </tbody>
-          </table>
-        </div>
+        <tbody id="orders-tbody" style="display:none;"></tbody>
       </div>
 
       <!-- Order History Panel -->
@@ -1090,32 +1081,36 @@
             <button type="button" class="tform-side-btn short" id="side-sell-btn" onclick="setTradeSide('sell')">Short</button>
           </div>
 
-          <!-- Margin Mode & Leverage Row -->
+          <!-- Margin Mode & Leverage Row (Positioned inline directly under respective buttons) -->
           <div class="tform-controls-row">
-            <button type="button" class="tform-select-btn" id="btn-margin-mode-select" onclick="toggleMarginModeDropdown(event)">
-              <span id="margin-mode-display-label">Isolated</span>
-              <span>▾</span>
-            </button>
-            <button type="button" class="tform-select-btn" id="btn-leverage-select" onclick="toggleLeverageDropdown(event)">
-              <span id="btn-lev-label">150x</span>
-              <span>▾</span>
-            </button>
-          </div>
-          <!-- Keep Dropdowns -->
-          <div class="margin-mode-dropdown-menu hidden" id="margin-mode-dropdown-menu">
-            <div class="mm-dropdown-item active" onclick="selectMarginModeMenu('isolated')">Isolated Margin Mode</div>
-            <div class="mm-dropdown-item" onclick="selectMarginModeMenu('cross')">Cross Margin Mode</div>
-          </div>
-          <div class="leverage-dropdown-menu hidden" id="leverage-dropdown-menu">
-            <div class="lev-dropdown-title">Select Leverage</div>
-            <div class="lev-dropdown-grid">
-              <button type="button" class="ld-chip" onclick="selectLeverageMenu(1)">1x</button>
-              <button type="button" class="ld-chip" onclick="selectLeverageMenu(5)">5x</button>
-              <button type="button" class="ld-chip" onclick="selectLeverageMenu(10)">10x</button>
-              <button type="button" class="ld-chip" onclick="selectLeverageMenu(25)">25x</button>
-              <button type="button" class="ld-chip" onclick="selectLeverageMenu(50)">50x</button>
-              <button type="button" class="ld-chip" onclick="selectLeverageMenu(100)">100x</button>
-              <button type="button" class="ld-chip active" onclick="selectLeverageMenu(150)">150x</button>
+            <div class="tform-control-item" style="position:relative; flex:1;">
+              <button type="button" class="tform-select-btn" id="btn-margin-mode-select" onclick="toggleMarginModeDropdown(event)">
+                <span id="margin-mode-display-label">Isolated</span>
+                <span>▾</span>
+              </button>
+              <div class="margin-mode-dropdown-menu hidden" id="margin-mode-dropdown-menu">
+                <div class="mm-dropdown-item active" onclick="selectMarginModeMenu('isolated')">Isolated Margin Mode</div>
+                <div class="mm-dropdown-item" onclick="selectMarginModeMenu('cross')">Cross Margin Mode</div>
+              </div>
+            </div>
+
+            <div class="tform-control-item" style="position:relative; flex:1;">
+              <button type="button" class="tform-select-btn" id="btn-leverage-select" onclick="toggleLeverageDropdown(event)">
+                <span id="btn-lev-label">150x</span>
+                <span>▾</span>
+              </button>
+              <div class="leverage-dropdown-menu hidden" id="leverage-dropdown-menu">
+                <div class="lev-dropdown-title">Select Leverage</div>
+                <div class="lev-dropdown-grid">
+                  <button type="button" class="ld-chip" onclick="selectLeverageMenu(1)">1x</button>
+                  <button type="button" class="ld-chip" onclick="selectLeverageMenu(5)">5x</button>
+                  <button type="button" class="ld-chip" onclick="selectLeverageMenu(10)">10x</button>
+                  <button type="button" class="ld-chip" onclick="selectLeverageMenu(25)">25x</button>
+                  <button type="button" class="ld-chip" onclick="selectLeverageMenu(50)">50x</button>
+                  <button type="button" class="ld-chip" onclick="selectLeverageMenu(100)">100x</button>
+                  <button type="button" class="ld-chip active" onclick="selectLeverageMenu(150)">150x</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1262,21 +1257,21 @@
 
     <!-- ══════════════════════ SCREEN 4: PROFILE / ACCOUNTS VIEW (Screenshot 4 & 5 Match) ══════════════════════ -->
     <div class="vtrade-accounts-panel hidden" id="view-accounts-panel">
-      <!-- Header: Version, Avatar, Name, Email, Phone (Screenshot 4) -->
+      <!-- Header: Version, Avatar (Functional DP Upload), Name, Real User Email (Screenshot 2 Match) -->
       <div class="vacc-header">
         <span class="vacc-version">Version : 4.3.01</span>
-        <div class="vacc-avatar-wrap">
-          <img src="https://assets.coingecko.com/coins/images/325/small/Tether.png" class="vacc-avatar-img" id="vacc-avatar-img" alt="Avatar" />
+        <div class="vacc-avatar-wrap" onclick="triggerAvatarUpload()" title="Tap to change profile picture from phone storage" style="cursor:pointer; position:relative; display:inline-block;">
+          <img src="https://assets.coingecko.com/coins/images/325/small/Tether.png" class="vacc-avatar-img" id="vacc-avatar-img" alt="Avatar" style="object-fit:cover;" />
+          <div class="vacc-avatar-badge" style="position:absolute; bottom:2px; right:2px; background:var(--v-primary); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid #0f121d; box-shadow:0 2px 8px rgba(0,0,0,0.5);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <input type="file" id="vacc-avatar-input" accept="image/*" style="display:none;" onchange="handleAvatarFileSelect(event)" />
         </div>
         <div class="vacc-user-greeting">
           <span id="vacc-username">Hi flipfishtrust !</span>
           <span style="font-size:14px; cursor:pointer;" onclick="editUsernameDialog()" title="Edit Name">✏️</span>
         </div>
-        <div class="vacc-user-email" id="vacc-email">pal******@gmail.com</div>
-        <div class="vacc-user-phone">
-          <span id="vacc-phone">+91 *****95636</span>
-          <span style="cursor:pointer;" onclick="togglePhoneVisibility()" title="Toggle Phone Mask">👁</span>
-        </div>
+        <div class="vacc-user-email" id="vacc-email">user@vtrade.paper</div>
       </div>
 
       <!-- Total Balance Card (Screenshot 4) -->

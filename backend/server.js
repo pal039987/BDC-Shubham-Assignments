@@ -144,21 +144,22 @@ app.post('/api/auth/paper-session', (req, res) => {
   try {
     const { username } = req.body || {};
     const preferredName = username || 'flipfishtrust';
-    let user = db.prepare('SELECT id, username, balance FROM users WHERE username = ?').get(preferredName);
+    let user = db.prepare('SELECT id, username, email, balance FROM users WHERE username = ?').get(preferredName);
     if (!user) {
-      user = db.prepare('SELECT id, username, balance FROM users ORDER BY id ASC LIMIT 1').get();
+      user = db.prepare('SELECT id, username, email, balance FROM users ORDER BY id ASC LIMIT 1').get();
     }
     if (!user) {
       const hash = bcrypt.hashSync('papertrading123', 10);
+      const userEmail = `${preferredName.toLowerCase()}@vtrade.paper`;
       const ins = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(
         preferredName,
-        `${preferredName.toLowerCase()}@vtrade.paper`,
+        userEmail,
         hash
       );
-      user = { id: ins.lastInsertRowid, username: preferredName, balance: STARTING_BALANCE };
+      user = { id: ins.lastInsertRowid, username: preferredName, email: userEmail, balance: STARTING_BALANCE };
     }
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '365d' });
-    res.json({ token, username: user.username, balance: user.balance });
+    const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '365d' });
+    res.json({ token, username: user.username, email: user.email, balance: user.balance });
   } catch (err) {
     res.status(500).json({ error: 'Failed to create paper session: ' + (err.message || 'unknown') });
   }
@@ -195,8 +196,8 @@ app.post('/api/auth/login', (req, res) => {
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, username: user.username, balance: user.balance });
+    const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, username: user.username, email: user.email, balance: user.balance });
   } catch (err) {
     res.status(500).json({ error: 'Login failed: ' + (err.message || 'unknown') });
   }
@@ -901,7 +902,7 @@ app.post('/api/positions/:id/tpsl', authenticateToken, async (req, res) => {
 // ─── ORDERS & AUTO-FILL ───────────────────────────────────────────────────────
 app.get('/api/orders', authenticateToken, (req, res) => {
   try {
-    const orders = db.prepare(`SELECT * FROM orders WHERE user_id = ? AND status = 'pending' ORDER BY created_at DESC`).all(req.user.id);
+    const orders = db.prepare(`SELECT * FROM orders WHERE user_id = ? AND status = 'pending' AND type = 'limit' ORDER BY created_at DESC`).all(req.user.id);
     res.json(orders);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch orders' });

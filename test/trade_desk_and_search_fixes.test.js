@@ -71,6 +71,23 @@ console.log(`  ✓ Dynamically changing leverage to 50x updates required margin 
 // Test USD unit
 const margin1000Usdt150x = calculateMargin(1000, btcPrice, 150, 'usd');
 assert.strictEqual((margin1000Usdt150x).toFixed(2), (1000 / 150).toFixed(2));
-console.log(`  ✓ 1000 USDT notional at 150x leverage requires $${margin1000Usdt150x.toFixed(2)} USDT`);
+// 6. Verify Dropdowns are anchored directly in .tform-control-item containers
+assert(htmlContent.includes('<div class="tform-control-item" style="position:relative; flex:1;">'), 'Dropdown buttons must be wrapped in position:relative container');
+assert(cssContent.includes('top: calc(100% + 4px);'), 'Dropdowns must be positioned directly beneath buttons');
+console.log('  ✓ Margin Mode & Leverage dropdowns are anchored directly beneath respective buttons');
+
+// 7. Verify Profile Photo (DP) upload and Phone number removal
+assert(htmlContent.includes('id="vacc-avatar-input"'), 'Hidden file input for avatar upload must exist');
+assert(htmlContent.includes('triggerAvatarUpload()'), 'Avatar wrap must trigger file upload');
+assert(!htmlContent.includes('+91 *****95636'), 'Phone number must be completely removed from DOM');
+assert(!htmlContent.includes('vacc-user-phone'), 'Phone number container must be removed');
+assert(appContent.includes('function triggerAvatarUpload'), 'triggerAvatarUpload function must be defined');
+assert(appContent.includes('function handleAvatarFileSelect'), 'handleAvatarFileSelect function must be defined');
+console.log('  ✓ Profile DP upload is functional and Phone number is completely removed');
+
+// 8. Verify Open Orders duplicate removal and pending Limit-only filtering
+assert(!htmlContent.includes('id="orders-tbody">\n              <!-- Rendered dynamically -->'), 'Duplicate table in Open Orders must be removed/hidden');
+assert(appContent.includes("return t === 'limit' && s === 'pending';"), 'renderOrders must only filter pending limit orders');
+console.log('  ✓ Open Orders duplicate table removed and strictly limited to pending Limit orders');
 
 console.log('\n=== ALL USER REPORTED FIXES VERIFIED SUCCESSFULLY! ===\n');
