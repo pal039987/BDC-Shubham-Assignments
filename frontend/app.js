@@ -6718,6 +6718,7 @@ function renderPositions() {
   renderFundsBalance();
   renderAccountsScreen();
   if (typeof renderHomeScreen === 'function') renderHomeScreen();
+  if (typeof renderMarketsScreen === 'function') renderMarketsScreen();
   const tbody = document.getElementById('pos-tbody');
   const cardsList = document.getElementById('pos-cards-list');
   const summaryEl = document.getElementById('pos-total-pnl-summary');
@@ -8081,9 +8082,684 @@ function closeGenericModal() {
   if (modal) modal.classList.add('hidden');
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// DELTA EXCHANGE INDIA – MARKETS CATEGORY ENGINE (SCREENSHOTS 1, 2, 3, 4, 5)
+// ══════════════════════════════════════════════════════════════════════════
+
+let marketsTopTab = 'futures'; // 'watchlist', 'futures', 'options', 'rwa', 'straddles'
+let marketsFuturesChip = 'all'; // 'all', 'new', 'commodity', 'usstock', 'l1', 'smart', 'solana', 'meme', 'defi', 'ai', 'l2', 'gaming', 'nft'
+let marketsSortCol = 'vol';
+let deltaMarketsSortAsc = false;
+let deltaMarketsSearchQuery = '';
+
+// Watchlist saved in localStorage (initially empty to match Screenshot 1)
+let userWatchlist = [];
+try {
+  const savedWl = localStorage.getItem('vtrade_watchlist');
+  if (savedWl) userWatchlist = JSON.parse(savedWl);
+} catch (e) {
+  userWatchlist = [];
+}
+
+// 20+ Real Contracts Matching Screenshot 2, 3, 4 with exact leverage & fee badges
+const MARKETS_FUTURES_DATA = [
+  {
+    id: 'bitcoin',
+    symbol: 'BTCUSD',
+    name: 'Bitcoin Perpetual',
+    leverage: '200x',
+    categories: ['all', 'l1', 'smart'],
+    basePrice: 82144,
+    baseVol: 1120000000,
+    baseChange: 1.59,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'xaut-perp',
+    symbol: 'XAUTUSD',
+    name: 'Tether Gold Token P...',
+    leverage: '100x',
+    categories: ['all', 'commodity'],
+    basePrice: 4178.58,
+    baseVol: 751480000,
+    baseChange: 0.60,
+    feeBadge: 'Fee 0.01%',
+    isNew: false
+  },
+  {
+    id: 'ethereum',
+    symbol: 'ETHUSD',
+    name: 'Ethereum Perpetual',
+    leverage: '200x',
+    categories: ['all', 'l1', 'smart'],
+    basePrice: 2463.1,
+    baseVol: 731520000,
+    baseChange: 4.40,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'solana',
+    symbol: 'SOLUSD',
+    name: 'Solana Perpetual',
+    leverage: '100x',
+    categories: ['all', 'l1', 'solana'],
+    basePrice: 106.623,
+    baseVol: 151360000,
+    baseChange: 4.53,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'paxg-perp',
+    symbol: 'PAXGUSD',
+    name: 'PAX Gold Token Per...',
+    leverage: '100x',
+    categories: ['all', 'commodity'],
+    basePrice: 4169.8,
+    baseVol: 124040000,
+    baseChange: 0.49,
+    feeBadge: 'Fee 0.01%',
+    isNew: false
+  },
+  {
+    id: 'akedo',
+    symbol: 'AKEUSD',
+    name: 'Akedo Perpetual',
+    leverage: '20x',
+    categories: ['all', 'gaming'],
+    basePrice: 0.030059,
+    baseVol: 46220000,
+    baseChange: -3.31,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'siren',
+    symbol: 'SIRENUSD',
+    name: 'Siren Perpetual',
+    leverage: '20x',
+    categories: ['all', 'defi', 'new'],
+    basePrice: 0.0289,
+    baseVol: 22500000,
+    baseChange: 30.47,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'ripple',
+    symbol: 'XRPUSD',
+    name: 'Ripple Perpetual',
+    leverage: '100x',
+    categories: ['all', 'l1'],
+    basePrice: 1.3442,
+    baseVol: 13360000,
+    baseChange: 2.99,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'zcash',
+    symbol: 'ZECUSD',
+    name: 'Zcash Perpetual',
+    leverage: '20x',
+    categories: ['all', 'l1'],
+    basePrice: 1235.52,
+    baseVol: 12370000,
+    baseChange: 13.83,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'uniswap',
+    symbol: 'UNIUSD',
+    name: 'Uniswap Perpetual',
+    leverage: '100x',
+    categories: ['all', 'defi'],
+    basePrice: 7.419,
+    baseVol: 11240000,
+    baseChange: 8.20,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'slvon-silver',
+    symbol: 'SLVONUSD',
+    name: 'iShares Silver (XAG) ...',
+    leverage: '50x',
+    categories: ['all', 'commodity'],
+    basePrice: 52.41,
+    baseVol: 10290000,
+    baseChange: 1.93,
+    feeBadge: 'Fee 0.01%',
+    isNew: false
+  },
+  {
+    id: 'bitway',
+    symbol: 'BTWUSD',
+    name: 'Bitway Perpetual',
+    leverage: '10x',
+    categories: ['all', 'new'],
+    basePrice: 1.838,
+    baseVol: 8660000,
+    baseChange: -6.80,
+    feeBadge: null,
+    isNew: true
+  },
+  {
+    id: 'arc-ai',
+    symbol: 'ARCUSD',
+    name: 'AI Rig Complex Perpetual',
+    leverage: '20x',
+    categories: ['all', 'ai'],
+    basePrice: 0.03932,
+    baseVol: 8400000,
+    baseChange: -4.84,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'tsla-perp',
+    symbol: 'TSLAUSD',
+    name: 'Tesla Inc. Token Perp',
+    leverage: '50x',
+    categories: ['all', 'usstock'],
+    basePrice: 220.40,
+    baseVol: 54200000,
+    baseChange: 2.15,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'nvda-perp',
+    symbol: 'NVDAUSD',
+    name: 'Nvidia Corp Token Perp',
+    leverage: '50x',
+    categories: ['all', 'usstock', 'ai'],
+    basePrice: 138.20,
+    baseVol: 82100000,
+    baseChange: 3.40,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'doge-perp',
+    symbol: 'DOGEUSD',
+    name: 'Dogecoin Perpetual',
+    leverage: '100x',
+    categories: ['all', 'meme'],
+    basePrice: 0.1248,
+    baseVol: 65100000,
+    baseChange: 5.12,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'pepe-perp',
+    symbol: 'PEPEUSD',
+    name: 'Pepe Perpetual',
+    leverage: '50x',
+    categories: ['all', 'meme'],
+    basePrice: 0.0094,
+    baseVol: 42800000,
+    baseChange: 7.80,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'arb-perp',
+    symbol: 'ARBUSD',
+    name: 'Arbitrum Perpetual',
+    leverage: '50x',
+    categories: ['all', 'l2'],
+    basePrice: 0.1998,
+    baseVol: 18200000,
+    baseChange: 2.40,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'op-perp',
+    symbol: 'OPUSD',
+    name: 'Optimism Perpetual',
+    leverage: '50x',
+    categories: ['all', 'l2'],
+    basePrice: 1.540,
+    baseVol: 14100000,
+    baseChange: 3.10,
+    feeBadge: null,
+    isNew: false
+  },
+  {
+    id: 'blur-perp',
+    symbol: 'BLURUSD',
+    name: 'Blur NFT Perpetual',
+    leverage: '20x',
+    categories: ['all', 'nft'],
+    basePrice: 0.245,
+    baseVol: 5400000,
+    baseChange: 1.80,
+    feeBadge: null,
+    isNew: false
+  }
+];
+
+// OPTIONS CHAIN DATA (Screenshot 5 Match)
+let activeOptionsUnderlying = 'btc';
+let activeOptionsMetric = 'price'; // 'price', 'oivol', 'greeks'
+const OPTIONS_STRIKES_DATA = [
+  { strike: 81200, callBid: 987, callAsk: 1002, callMark: 1008.6, callIv: 40.0, putMark: 0.4, putIv: 40.9, putBid: 0.1, putAsk: 0.2 },
+  { strike: 81400, callBid: 783, callAsk: 795, callMark: 808.7, callIv: 33.5, putMark: 0.4, putIv: 33.3, putBid: 0.2, putAsk: 0.3 },
+  { strike: 81500, callBid: 685, callAsk: 696, callMark: 708.7, callIv: 28.9, putMark: 0.4, putIv: 30.0, putBid: 0.1, putAsk: 0.2 },
+  { strike: 81600, callBid: 588, callAsk: 598, callMark: 608.9, callIv: 26.9, putMark: 0.6, putIv: 27.3, putBid: 0.7, putAsk: 0.9 },
+  { strike: 81800, callBid: 388, callAsk: 396, callMark: 410.0, callIv: 22.3, putMark: 2.1, putIv: 23.0, putBid: 3.0, putAsk: 4.6 },
+  { strike: 82000, callBid: 202, callAsk: 207, callMark: 220.3, callIv: 20.1, putMark: 11.9, putIv: 20.0, putBid: 13.0, putAsk: 15.0 },
+  { strike: 82200, callBid: 64, callAsk: 67.8, callMark: 69.4, callIv: 19.5, putMark: 66.7, putIv: 19.3, putBid: 74.0, putAsk: 77.0 },
+  // SPOT DIVIDER AT 82208.3
+  { strike: 82400, callBid: 10.5, callAsk: 13.0, callMark: 25.5, callIv: 24.9, putMark: 203.5, putIv: 18.9, putBid: 217.0, putAsk: 222.0 },
+  { strike: 82500, callBid: 6.5, callAsk: 7.0, callMark: 15.1, callIv: 27.4, putMark: 294.9, putIv: 18.8, putBid: 310.0, putAsk: 317.0 },
+  { strike: 82600, callBid: 2.3, callAsk: 3.9, callMark: 10.6, callIv: 30.3, putMark: 391.8, putIv: 14.1, putBid: 404.0, putAsk: 412.0 },
+  { strike: 82800, callBid: 1.0, callAsk: 1.9, callMark: 5.7, callIv: 36.6, putMark: 591.7, putIv: 9.1, putBid: 599.0, putAsk: 609.0 },
+  { strike: 83000, callBid: 0.5, callAsk: 1.2, callMark: 3.5, callIv: 40.8, putMark: 791.7, putIv: 12.7, putBid: 787.0, putAsk: 798.0 }
+];
+
+function renderMarketsScreen() {
+  const mktView = document.getElementById('markets-screen-view');
+  if (!mktView || mktView.style.display === 'none') return;
+
+  if (marketsTopTab === 'watchlist') {
+    renderWatchlistScreen();
+  } else if (marketsTopTab === 'futures') {
+    renderMarketsFutures();
+  } else if (marketsTopTab === 'options') {
+    renderOptionsChain();
+  } else if (marketsTopTab === 'rwa') {
+    renderRwaTokensList();
+  } else if (marketsTopTab === 'straddles') {
+    renderStraddlesList();
+  }
+}
+
+function switchMarketsTopTab(tab) {
+  marketsTopTab = tab;
+
+  // Update tab buttons
+  const tabs = ['watchlist', 'futures', 'options', 'rwa', 'straddles'];
+  tabs.forEach(t => {
+    const el = document.getElementById(`mkt-tab-${t}`);
+    if (el) el.classList.toggle('active', t === tab);
+  });
+
+  // Toggle subviews
+  tabs.forEach(t => {
+    const v = document.getElementById(`mkt-view-${t}`);
+    if (v) v.classList.toggle('hidden', t !== tab);
+  });
+
+  renderMarketsScreen();
+}
+
+// ─── WATCHLIST LOGIC ──────────────────────────────────────────────
+function toggleWatchlist(coinId, e) {
+  if (e) e.stopPropagation();
+
+  const idx = userWatchlist.indexOf(coinId);
+  if (idx >= 0) {
+    userWatchlist.splice(idx, 1);
+    showToast(`Removed from Watchlist`, 'info');
+  } else {
+    userWatchlist.push(coinId);
+    showToast(`Added to Watchlist ★`, 'success');
+  }
+
+  try {
+    localStorage.setItem('vtrade_watchlist', JSON.stringify(userWatchlist));
+  } catch (err) {}
+
+  renderMarketsScreen();
+}
+
+function renderWatchlistScreen() {
+  const emptyState = document.getElementById('watchlist-empty-state');
+  const listEl = document.getElementById('watchlist-contracts-list');
+
+  if (!userWatchlist.length) {
+    if (emptyState) emptyState.classList.remove('hidden');
+    if (listEl) listEl.classList.add('hidden');
+    return;
+  }
+
+  if (emptyState) emptyState.classList.add('hidden');
+  if (listEl) {
+    listEl.classList.remove('hidden');
+    const starredContracts = MARKETS_FUTURES_DATA.filter(c => userWatchlist.includes(c.id));
+    listEl.innerHTML = renderContractRowsHtml(starredContracts);
+  }
+}
+
+// ─── FUTURES TAB LOGIC ────────────────────────────────────────────
+function setFuturesChip(chip) {
+  marketsFuturesChip = chip;
+  const chips = ['all', 'new', 'commodity', 'usstock', 'l1', 'smart', 'solana', 'meme', 'defi', 'ai', 'l2', 'gaming', 'nft'];
+  chips.forEach(c => {
+    const el = document.getElementById(`fchip-${c}`);
+    if (el) el.classList.toggle('active', c === chip);
+  });
+  renderMarketsFutures();
+}
+
+function sortMarketsFutures(col) {
+  if (marketsSortCol === col) {
+    deltaMarketsSortAsc = !deltaMarketsSortAsc;
+  } else {
+    marketsSortCol = col;
+    deltaMarketsSortAsc = false;
+  }
+  renderMarketsFutures();
+}
+
+function renderMarketsFutures() {
+  const listEl = document.getElementById('markets-futures-list');
+  if (!listEl) return;
+
+  let list = [...MARKETS_FUTURES_DATA];
+
+  // Filter by chip category
+  if (marketsFuturesChip !== 'all') {
+    list = list.filter(c => c.categories.includes(marketsFuturesChip));
+  }
+
+  // Filter by search query
+  if (deltaMarketsSearchQuery && deltaMarketsSearchQuery.trim()) {
+    const q = deltaMarketsSearchQuery.trim().toLowerCase();
+    list = list.filter(c => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+  }
+
+  // Sorting
+  if (marketsSortCol === 'symbol') {
+    list.sort((a, b) => deltaMarketsSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
+  } else if (marketsSortCol === 'price') {
+    list.sort((a, b) => deltaMarketsSortAsc ? a.basePrice - b.basePrice : b.basePrice - a.basePrice);
+  } else if (marketsSortCol === 'vol') {
+    list.sort((a, b) => deltaMarketsSortAsc ? a.baseVol - b.baseVol : b.baseVol - a.baseVol);
+  } else if (marketsSortCol === 'change') {
+    list.sort((a, b) => deltaMarketsSortAsc ? a.baseChange - b.baseChange : b.baseChange - a.baseChange);
+  }
+
+  listEl.innerHTML = renderContractRowsHtml(list);
+}
+
+function renderContractRowsHtml(contractsList) {
+  if (!contractsList.length) {
+    return `<div style="text-align:center; padding: 32px; color:#8f96a3; font-size:13px;">No matching contracts found</div>`;
+  }
+
+  return contractsList.map(c => {
+    // Dynamic price if available from live websocket/ticks
+    let price = c.basePrice;
+    let change = c.baseChange;
+    if (c.id === 'bitcoin' && currentPrices['bitcoin']?.price) {
+      price = currentPrices['bitcoin'].price;
+      change = currentPrices['bitcoin'].change || change;
+    } else if (c.id === 'ethereum' && currentPrices['ethereum']?.price) {
+      price = currentPrices['ethereum'].price;
+      change = currentPrices['ethereum'].change || change;
+    } else if (c.id === 'solana' && currentPrices['solana']?.price) {
+      price = currentPrices['solana'].price;
+      change = currentPrices['solana'].change || change;
+    }
+
+    let priceStr = '';
+    if (price >= 1000) {
+      priceStr = `$${price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}`;
+    } else if (price >= 1) {
+      priceStr = `$${price.toFixed(price < 10 ? 3 : 2)}`;
+    } else if (price >= 0.01) {
+      priceStr = `$${price.toFixed(4)}`;
+    } else {
+      priceStr = `$${price.toFixed(6)}`;
+    }
+
+    let volStr = '';
+    if (c.baseVol >= 1e9) {
+      volStr = `$${(c.baseVol / 1e9).toFixed(2)}B`;
+    } else if (c.baseVol >= 1e6) {
+      volStr = `$${(c.baseVol / 1e6).toFixed(2)}M`;
+    } else if (c.baseVol >= 1e3) {
+      volStr = `$${(c.baseVol / 1e3).toFixed(2)}K`;
+    } else {
+      volStr = `$${c.baseVol.toFixed(2)}`;
+    }
+
+    const isStarred = userWatchlist.includes(c.id);
+    const isGain = change >= 0;
+    const changeBadgeStr = (isGain ? '' : '') + change.toFixed(change % 1 === 0 ? 1 : 2) + '%';
+
+    return `
+      <div class="contract-row" onclick="selectContractRow('${c.id}')">
+        <div class="c-cell-identity">
+          <div class="c-name-wrap">
+            <button class="c-star-btn ${isStarred ? 'starred' : ''}" onclick="toggleWatchlist('${c.id}', event)">
+              ${isStarred ? '★' : '☆'}
+            </button>
+            <span class="c-symbol">${c.symbol}</span>
+            ${c.isNew ? '<span class="c-badge-new">NEW</span>' : ''}
+            <span class="c-lev-badge">${c.leverage}</span>
+          </div>
+          <span class="c-name">${c.name}</span>
+          ${c.feeBadge ? `<span class="c-fee-badge"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>${c.feeBadge}</span>` : ''}
+        </div>
+        <div class="c-cell-price">
+          <span class="c-price">${priceStr}</span>
+          <span class="c-vol">${volStr}</span>
+        </div>
+        <div class="c-cell-change">
+          <span class="change-badge ${isGain ? 'gain' : 'loss'}">${changeBadgeStr}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── SEARCH IN MARKETS ────────────────────────────────────────────
+function toggleMarketsSearch() {
+  const box = document.getElementById('mkt-search-expandable');
+  if (!box) return;
+  const isHidden = box.classList.contains('hidden');
+  box.classList.toggle('hidden', !isHidden);
+  if (isHidden) {
+    const inp = document.getElementById('mkt-search-input');
+    if (inp) {
+      inp.focus();
+    }
+  } else {
+    clearMarketsSearch();
+  }
+}
+
+function handleMarketsSearch(val) {
+  deltaMarketsSearchQuery = val || '';
+  renderMarketsScreen();
+}
+
+function clearMarketsSearch() {
+  deltaMarketsSearchQuery = '';
+  const inp = document.getElementById('mkt-search-input');
+  if (inp) inp.value = '';
+  const box = document.getElementById('mkt-search-expandable');
+  if (box) box.classList.add('hidden');
+  renderMarketsScreen();
+}
+
+// ─── OPTIONS CHAIN LOGIC (SCREENSHOT 5) ───────────────────────────
+function setOptionsUnderlying(asset) {
+  activeOptionsUnderlying = asset;
+  ['btc', 'eth', 'xaut'].forEach(a => {
+    const el = document.getElementById(`opt-und-${a}`);
+    if (el) el.classList.toggle('active', a === asset);
+  });
+  renderOptionsChain();
+}
+
+function setOptionsMetric(metric) {
+  activeOptionsMetric = metric;
+  ['price', 'oivol', 'greeks'].forEach(m => {
+    const el = document.getElementById(`opt-metric-${m}`);
+    if (el) el.classList.toggle('active', m === metric);
+  });
+  renderOptionsChain();
+}
+
+function toggleExpiryDropdown() {
+  showToast('Options Expiry: 16 Oct (1h: 6m remaining)', 'info');
+}
+
+function openStrategyBuilder() {
+  showGenericModal('Options Strategy Builder', 'Design customized multi-leg Spreads, Straddles, Strangles, and Iron Condors with real-time payoff graphs.');
+}
+
+function openOptionsMoreMenu() {
+  showGenericModal('Options Preferences', 'Configure IV Model (Black-Scholes / Bjerksund-Stensland), Strike intervals, and Order presets.');
+}
+
+function renderOptionsChain() {
+  const bodyEl = document.getElementById('opt-chain-rows');
+  if (!bodyEl) return;
+
+  const btcSpot = currentPrices['bitcoin']?.price || 82208.3;
+  let rowsHtml = '';
+  let spotDividerRendered = false;
+
+  OPTIONS_STRIKES_DATA.forEach(row => {
+    // Check if we cross spot price to render the divider
+    if (!spotDividerRendered && row.strike > btcSpot) {
+      spotDividerRendered = true;
+      rowsHtml += `
+        <div class="opt-spot-divider">
+          <div class="opt-spot-pill">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#00c087" stroke-width="2.5"><polyline points="3 17 9 11 13 15 21 7"/></svg>
+            <span>BTC ${btcSpot.toFixed(1)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const isItmCalls = row.strike < btcSpot;
+    const isItmPuts = row.strike > btcSpot;
+
+    let callLeftHtml = '';
+    let putRightHtml = '';
+
+    if (activeOptionsMetric === 'price') {
+      callLeftHtml = `
+        <div class="opt-val-col">
+          <span class="opt-val-green">$${row.callBid}</span>
+          <span class="opt-val-red">$${row.callAsk}</span>
+        </div>
+        <div class="opt-val-col">
+          <span class="opt-val-white">$${row.callMark}</span>
+          <span class="opt-val-muted">${row.callIv}%</span>
+        </div>
+      `;
+      putRightHtml = `
+        <div class="opt-val-col">
+          <span class="opt-val-white">$${row.putMark}</span>
+          <span class="opt-val-muted">${row.putIv}%</span>
+        </div>
+        <div class="opt-val-col">
+          <span class="opt-val-green">$${row.putBid}</span>
+          <span class="opt-val-red">$${row.putAsk}</span>
+        </div>
+      `;
+    } else if (activeOptionsMetric === 'oivol') {
+      callLeftHtml = `
+        <div class="opt-val-col"><span class="opt-val-white">OI: 450</span><span class="opt-val-muted">Vol: 1.2K</span></div>
+        <div class="opt-val-col"><span class="opt-val-white">$${row.callMark}</span></div>
+      `;
+      putRightHtml = `
+        <div class="opt-val-col"><span class="opt-val-white">$${row.putMark}</span></div>
+        <div class="opt-val-col"><span class="opt-val-white">OI: 280</span><span class="opt-val-muted">Vol: 840</span></div>
+      `;
+    } else {
+      // Greeks
+      const delta = (row.strike < btcSpot ? 0.65 : 0.35).toFixed(2);
+      const theta = (-12.4).toFixed(1);
+      callLeftHtml = `
+        <div class="opt-val-col"><span class="opt-val-green">Δ ${delta}</span></div>
+        <div class="opt-val-col"><span class="opt-val-muted">θ ${theta}</span></div>
+      `;
+      putRightHtml = `
+        <div class="opt-val-col"><span class="opt-val-muted">θ ${theta}</span></div>
+        <div class="opt-val-col"><span class="opt-val-red">Δ -${(1 - delta).toFixed(2)}</span></div>
+      `;
+    }
+
+    rowsHtml += `
+      <div class="opt-chain-row ${isItmCalls ? 'itm-calls' : ''} ${isItmPuts ? 'itm-puts' : ''}" onclick="selectOptionStrike(${row.strike})">
+        <div class="opt-call-side">
+          ${callLeftHtml}
+        </div>
+        <div class="opt-strike-center">
+          ${row.strike}
+        </div>
+        <div class="opt-put-side">
+          ${putRightHtml}
+        </div>
+      </div>
+    `;
+  });
+
+  bodyEl.innerHTML = rowsHtml;
+}
+
+function selectOptionStrike(strike) {
+  showToast(`Selected Strike: ${strike} Call/Put`, 'info');
+}
+
+// ─── RWA & STRADDLES LOGIC ────────────────────────────────────────
+function renderRwaTokensList() {
+  const listEl = document.getElementById('markets-rwa-list');
+  if (!listEl) return;
+  const rwaItems = MARKETS_FUTURES_DATA.filter(c => c.categories.includes('commodity'));
+  listEl.innerHTML = renderContractRowsHtml(rwaItems);
+}
+
+function renderStraddlesList() {
+  const listEl = document.getElementById('markets-straddles-list');
+  if (!listEl) return;
+  listEl.innerHTML = `
+    <div class="contract-row" onclick="showToast('BTC 82000 Straddle loaded', 'info')">
+      <div class="c-cell-identity">
+        <span class="c-symbol">BTC-STRADDLE-82000</span>
+        <span class="c-name">Delta-Neutral Volatility Play</span>
+      </div>
+      <div class="c-cell-price">
+        <span class="c-price">$232.2</span>
+        <span class="c-vol">$4.20M</span>
+      </div>
+      <div class="c-cell-change">
+        <span class="change-badge gain">+8.40%</span>
+      </div>
+    </div>
+    <div class="contract-row" onclick="showToast('ETH 2450 Straddle loaded', 'info')">
+      <div class="c-cell-identity">
+        <span class="c-symbol">ETH-STRADDLE-2450</span>
+        <span class="c-name">Delta-Neutral Volatility Play</span>
+      </div>
+      <div class="c-cell-price">
+        <span class="c-price">$48.6</span>
+        <span class="c-vol">$1.85M</span>
+      </div>
+      <div class="c-cell-change">
+        <span class="change-badge gain">+12.10%</span>
+      </div>
+    </div>
+  `;
+}
+
 // ─── BOTTOM NAVIGATION HANDLER ───────────────────────────────────
 function showBottomTab(tab, btn) {
-  // Support both legacy and new category tabs
   activeBottomTab = tab || 'home';
 
   // Highlight bottom nav buttons
@@ -8093,19 +8769,27 @@ function showBottomTab(tab, btn) {
     if (el) el.classList.toggle('active', t === activeBottomTab);
   });
 
+  const homeView = document.getElementById('home-screen-view');
+  const mktView = document.getElementById('markets-screen-view');
+
   if (activeBottomTab === 'home') {
-    const homeView = document.getElementById('home-screen-view');
     if (homeView) homeView.style.display = 'flex';
+    if (mktView) mktView.style.display = 'none';
     renderHomeScreen();
+  } else if (activeBottomTab === 'markets') {
+    if (homeView) homeView.style.display = 'none';
+    if (mktView) mktView.style.display = 'flex';
+    renderMarketsScreen();
   } else {
     showToast(`Navigating to ${activeBottomTab.toUpperCase()}...`, 'info');
   }
 }
 
-// Initialize Home Screen on boot
+// Initialize on boot
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(renderHomeScreen, 150);
   });
 }
+
 

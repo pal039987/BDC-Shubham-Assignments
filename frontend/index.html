@@ -294,6 +294,207 @@
 
     </div><!-- End #home-screen-view -->
 
+    <!-- ══════════════════════ MARKETS CATEGORY SCREEN (DELTA SPEC) ══════════════════════ -->
+    <div id="markets-screen-view" class="markets-screen-container" style="display:none;">
+
+      <!-- Markets Top Navigation Bar -->
+      <header class="markets-top-bar">
+        <div class="markets-top-tabs-scroll" id="markets-top-tabs">
+          <button class="mkt-top-tab" id="mkt-tab-watchlist" onclick="switchMarketsTopTab('watchlist')">Watchlist</button>
+          <button class="mkt-top-tab active" id="mkt-tab-futures" onclick="switchMarketsTopTab('futures')">Futures</button>
+          <button class="mkt-top-tab" id="mkt-tab-options" onclick="switchMarketsTopTab('options')">Options</button>
+          <button class="mkt-top-tab has-badge" id="mkt-tab-rwa" onclick="switchMarketsTopTab('rwa')">
+            <span class="mkt-badge-new">NEW</span>
+            <span>RWA Tokens</span>
+          </button>
+          <button class="mkt-top-tab" id="mkt-tab-straddles" onclick="switchMarketsTopTab('straddles')">Straddles</button>
+        </div>
+        <button class="mkt-search-trigger-btn" id="mkt-search-trigger" onclick="toggleMarketsSearch()" aria-label="Search Markets">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </button>
+      </header>
+
+      <!-- Expandable Search Input in Markets -->
+      <div class="mkt-search-expandable hidden" id="mkt-search-expandable">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8f96a3" stroke-width="2.2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="mkt-search-input" placeholder="Search markets (BTC, XAUT, INJ...)" oninput="handleMarketsSearch(this.value)" />
+        <button class="mkt-search-clear-btn" onclick="clearMarketsSearch()">✕</button>
+      </div>
+
+      <!-- Main Scrollable Content Area for Markets -->
+      <main class="markets-scroll-content" id="markets-scroll-container">
+
+        <!-- 1. WATCHLIST TAB VIEW -->
+        <section class="mkt-subview hidden" id="mkt-view-watchlist">
+          <div class="watchlist-empty-container" id="watchlist-empty-state">
+            <div class="wl-empty-art">
+              <div class="wl-glow-circle"></div>
+              <div class="wl-tag tag-left">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#3d4659">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="wl-tag-hole"></span>
+              </div>
+              <div class="wl-tag tag-right">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="#2d3545">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="wl-tag-hole"></span>
+              </div>
+              <span class="wl-sparkle s1">✦</span>
+              <span class="wl-sparkle s2">✦</span>
+              <span class="wl-sparkle s3">✦</span>
+            </div>
+            <h3 class="wl-empty-title">Watchlist Empty</h3>
+            <p class="wl-empty-subtitle">Tap the ☆ beside any contract to add them to your watchlist</p>
+          </div>
+
+          <div class="contracts-list hidden" id="watchlist-contracts-list">
+            <!-- Dynamic Starred Contracts rendered here -->
+          </div>
+        </section>
+
+        <!-- 2. FUTURES TAB VIEW -->
+        <section class="mkt-subview" id="mkt-view-futures">
+          <!-- Horizontal Filter Chips Strip -->
+          <div class="futures-filter-chips-scroll" id="futures-chips-container">
+            <button class="f-chip active" id="fchip-all" onclick="setFuturesChip('all')">All</button>
+            <button class="f-chip" id="fchip-new" onclick="setFuturesChip('new')">New</button>
+            <button class="f-chip" id="fchip-commodity" onclick="setFuturesChip('commodity')">Commodity Tokens</button>
+            <button class="f-chip" id="fchip-usstock" onclick="setFuturesChip('usstock')">US Stock Tokens</button>
+            <button class="f-chip" id="fchip-l1" onclick="setFuturesChip('l1')">Layer 1</button>
+            <button class="f-chip" id="fchip-smart" onclick="setFuturesChip('smart')">Smart Contracts</button>
+            <button class="f-chip" id="fchip-solana" onclick="setFuturesChip('solana')">Solana Ecosystem</button>
+            <button class="f-chip" id="fchip-meme" onclick="setFuturesChip('meme')">Meme</button>
+            <button class="f-chip" id="fchip-defi" onclick="setFuturesChip('defi')">DeFi</button>
+            <button class="f-chip" id="fchip-ai" onclick="setFuturesChip('ai')">AI</button>
+            <button class="f-chip" id="fchip-l2" onclick="setFuturesChip('l2')">Layer 2</button>
+            <button class="f-chip" id="fchip-gaming" onclick="setFuturesChip('gaming')">Gaming</button>
+            <button class="f-chip" id="fchip-nft" onclick="setFuturesChip('nft')">Nft</button>
+          </div>
+
+          <!-- Table Header -->
+          <div class="mkt-table-header">
+            <span class="mcol-contract" onclick="sortMarketsFutures('symbol')">Contract</span>
+            <span class="mcol-price-vol" onclick="sortMarketsFutures('price')">Price ↕ | Vol ↕</span>
+            <span class="mcol-change" onclick="sortMarketsFutures('change')">24h Chg. ↕</span>
+          </div>
+
+          <!-- Contracts List -->
+          <div class="contracts-list" id="markets-futures-list">
+            <!-- Dynamic rows injected via app.js -->
+          </div>
+        </section>
+
+        <!-- 3. OPTIONS TAB VIEW (OPTIONS CHAIN T-SHAPE) -->
+        <section class="mkt-subview hidden" id="mkt-view-options">
+          <!-- Underlying Assets & Strategy Builder Row -->
+          <div class="options-top-controls">
+            <div class="opt-underlying-group">
+              <button class="opt-underlying-btn active" id="opt-und-btc" onclick="setOptionsUnderlying('btc')">BTC</button>
+              <button class="opt-underlying-btn" id="opt-und-eth" onclick="setOptionsUnderlying('eth')">ETH</button>
+              <button class="opt-underlying-btn has-new" id="opt-und-xaut" onclick="setOptionsUnderlying('xaut')">
+                <span class="mkt-badge-new micro">NEW</span>
+                <span>XAUT</span>
+              </button>
+            </div>
+            <button class="opt-strategy-builder-btn" onclick="openStrategyBuilder()">Strategy Builder</button>
+          </div>
+
+          <!-- Expiry & T-Shape Controls Row -->
+          <div class="options-expiry-row">
+            <div class="expiry-selector-box" onclick="toggleExpiryDropdown()">
+              <span class="exp-date-label" id="exp-current-date">16 Oct</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+              <span class="exp-countdown-tag" id="exp-countdown">Expires in 1h: 6m</span>
+            </div>
+            <div class="shape-controls-box">
+              <div class="shape-dropdown-pill">
+                <span>T-Shape</span>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
+              <button class="options-more-btn" onclick="openOptionsMoreMenu()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <circle cx="12" cy="5" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="12" cy="19" r="2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Price / OI-Vol / Greeks Sub-Tabs -->
+          <div class="options-metric-tabs">
+            <button class="opt-metric-pill active" id="opt-metric-price" onclick="setOptionsMetric('price')">Price</button>
+            <button class="opt-metric-pill" id="opt-metric-oivol" onclick="setOptionsMetric('oivol')">OI/Vol</button>
+            <button class="opt-metric-pill" id="opt-metric-greeks" onclick="setOptionsMetric('greeks')">Greeks</button>
+          </div>
+
+          <!-- Options Chain Table -->
+          <div class="options-chain-table" id="options-chain-table">
+            <!-- Table Header Row -->
+            <div class="opt-chain-head">
+              <div class="opt-head-calls">
+                <span class="opt-head-side-title calls-title">Calls</span>
+                <div class="opt-head-subcols">
+                  <span class="subcol bid-ask">BID<br><span class="ask-text">ASK</span></span>
+                  <span class="subcol mark-iv">Mark<br>Price / IV</span>
+                </div>
+              </div>
+
+              <div class="opt-head-strike">
+                <span>Strike ↕</span>
+              </div>
+
+              <div class="opt-head-puts">
+                <span class="opt-head-side-title puts-title">Puts</span>
+                <div class="opt-head-subcols">
+                  <span class="subcol mark-iv">Mark<br>Price / IV</span>
+                  <span class="subcol bid-ask">BID<br><span class="ask-text">ASK</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Options Chain Rows with Spot Indicator -->
+            <div class="opt-chain-body" id="opt-chain-rows">
+              <!-- Injected by JavaScript -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. RWA TOKENS TAB VIEW -->
+        <section class="mkt-subview hidden" id="mkt-view-rwa">
+          <div class="rwa-banner-card">
+            <div class="rwa-badge">Real World Assets</div>
+            <h3 class="rwa-title">Tokenized Commodities & Yield Coins</h3>
+            <p class="rwa-desc">Trade Gold, Silver, and Institutional Treasury perps with up to 100x leverage and near-zero slippage.</p>
+          </div>
+          <div class="contracts-list" id="markets-rwa-list">
+            <!-- Injected by JavaScript -->
+          </div>
+        </section>
+
+        <!-- 5. STRADDLES TAB VIEW -->
+        <section class="mkt-subview hidden" id="mkt-view-straddles">
+          <div class="straddles-intro-card">
+            <h3 class="straddle-title">Pre-built Volatility Straddles</h3>
+            <p class="straddle-subtitle">Profit from sharp market breakouts in either direction without directional bias.</p>
+          </div>
+          <div class="straddles-list" id="markets-straddles-list">
+            <!-- Injected by JavaScript -->
+          </div>
+        </section>
+
+      </main>
+
+    </div><!-- End #markets-screen-view -->
+
     <!-- Hidden compatibility layers for test assertions & tab switching -->
     <div class="test-compatibility-fixture" style="display:none;">
       <div id="vfunds-curr-toggle-group">
