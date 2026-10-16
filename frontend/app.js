@@ -348,6 +348,7 @@ document.addEventListener('visibilitychange', () => {
 // ─── Boot ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadWalletState();
+  ensurePaperSession();
   if (typeof applySettingsToTradePanel === 'function') applySettingsToTradePanel();
   if (typeof initDownloadApkVisibility === 'function') initDownloadApkVisibility();
 
@@ -2673,9 +2674,7 @@ async function executeQuickTrade(side) {
   if (isQuickTrading) return; // Prevent double-clicks
 
   if (!token) {
-    showToast('Please sign in or create an account to paper-trade', 'error');
-    openAuthModal('login');
-    return;
+    await ensurePaperSession();
   }
 
   const quickInput = document.getElementById('tv-quick-size-input');
@@ -5439,9 +5438,7 @@ async function syncWithBackend() {
 // ─── TRADE EXECUTION (Requirement B & C & D) ───────────────────
 async function executeTrade() {
   if (!token) {
-    openAuthModal('login');
-    showToast('Please log in or register to trade', 'info');
-    return;
+    await ensurePaperSession();
   }
 
   // Requirement: Reject any new order when market data is stale (> 3 minutes / 180s)
@@ -6631,33 +6628,110 @@ const post = async (url, body) => {
     throw e;
   }
 };
-const authGet = async url => {
+let paperSessionPromise = null;
+async function ensurePaperSession() {
+  if (paperSessionPromise) return paperSessionPromise;
+  paperSessionPromise = (async () => {
+    try {
+      const res = await fetch(`${API}/auth/paper-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: (typeof userCustomName !== 'undefined' ? userCustomName : 'flipfishtrust') })
+      }).then(r => r.json());
+      if (res && res.token) {
+        token = res.token;
+        username = res.username;
+        balance = res.balance || 10000;
+        safeStorageSet('ct_token', token);
+        safeStorageSet('ct_username', username);
+        safeStorageSet('ct_balance', balance.toString());
+        return token;
+      }
+    } catch (e) {
+      console.warn('Auto paper session failed:', e);
+    } finally {
+      paperSessionPromise = null;
+    }
+    return token;
+  })();
+  return paperSessionPromise;
+}
+
+function handleRefreshedToken(response) {
+  try {
+    const refreshed = response.headers.get('X-Refreshed-Token');
+    if (refreshed && refreshed !== token) {
+      token = refreshed;
+      safeStorageSet('ct_token', token);
+    }
+  } catch (_) {}
+}
+
+const authGet = async (url, isRetry = false) => {
+  if (!token) await ensurePaperSession();
   try {
     const r = await fetchWithTimeout(url, { headers: { Authorization: `Bearer ${token}` } }, 5000);
+    handleRefreshedToken(r);
     const d = await safeJson(r);
-    if (!r.ok) throw new Error(d.error || 'Error');
+    if (!r.ok) {
+      if ((r.status === 401 || r.status === 403 || (d.error && d.error.includes('token'))) && !isRetry) {
+        await ensurePaperSession();
+        return authGet(url, true);
+      }
+      throw new Error(d.error || 'Error');
+    }
     return d;
   } catch (e) {
+    if ((e.message && e.message.includes('token')) && !isRetry) {
+      await ensurePaperSession();
+      return authGet(url, true);
+    }
     throw e;
   }
 };
-const authPost = async (url, body) => {
+
+const authPost = async (url, body, isRetry = false) => {
+  if (!token) await ensurePaperSession();
   try {
     const r = await fetchWithTimeout(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) }, 5000);
+    handleRefreshedToken(r);
     const d = await safeJson(r);
-    if (!r.ok) throw new Error(d.error || 'Error');
+    if (!r.ok) {
+      if ((r.status === 401 || r.status === 403 || (d.error && d.error.includes('token'))) && !isRetry) {
+        await ensurePaperSession();
+        return authPost(url, body, true);
+      }
+      throw new Error(d.error || 'Error');
+    }
     return d;
   } catch (e) {
+    if ((e.message && e.message.includes('token')) && !isRetry) {
+      await ensurePaperSession();
+      return authPost(url, body, true);
+    }
     throw e;
   }
 };
-const authDelete = async url => {
+
+const authDelete = async (url, isRetry = false) => {
+  if (!token) await ensurePaperSession();
   try {
     const r = await fetchWithTimeout(url, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }, 5000);
+    handleRefreshedToken(r);
     const d = await safeJson(r);
-    if (!r.ok) throw new Error(d.error || 'Error');
+    if (!r.ok) {
+      if ((r.status === 401 || r.status === 403 || (d.error && d.error.includes('token'))) && !isRetry) {
+        await ensurePaperSession();
+        return authDelete(url, true);
+      }
+      throw new Error(d.error || 'Error');
+    }
     return d;
   } catch (e) {
+    if ((e.message && e.message.includes('token')) && !isRetry) {
+      await ensurePaperSession();
+      return authDelete(url, true);
+    }
     throw e;
   }
 };
