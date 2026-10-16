@@ -171,4 +171,74 @@ function testSelectViewFlow() {
 testSelectViewFlow();
 console.log('  ✓ Select View modal flow verified (open, select Calls, close)');
 
-console.log('\n=== ALL 12 MARKETS & OPTIONS TESTS PASSED! ===\n');
+// 6. Test XAUT Options strikes (Screenshots 1, 2, 3)
+const xautMatch = jsContent.match(/const XAUT_OPTIONS_STRIKES_DATA = (\[[\s\S]*?\]);/);
+assert.ok(xautMatch, 'Must match XAUT_OPTIONS_STRIKES_DATA array');
+const xautOptions = eval(xautMatch[1]);
+assert.strictEqual(xautOptions.length, 12, 'XAUT options strikes must contain 12 strikes (4120 to 4230)');
+assert.strictEqual(xautOptions[0].strike, 4120);
+assert.strictEqual(xautOptions[0].callBid, '57.4');
+assert.strictEqual(xautOptions[0].callAsk, '59.6');
+assert.strictEqual(xautOptions[0].callMark, '58.43');
+assert.strictEqual(xautOptions[0].putMark, '0.21');
+assert.strictEqual(xautOptions[0].callVol, '$68.51K');
+assert.strictEqual(xautOptions[0].callVolChg, '33.68%');
+assert.strictEqual(xautOptions[0].callOi, '$95.99K');
+assert.strictEqual(xautOptions[0].putOi, '$2.34M');
+assert.strictEqual(xautOptions[0].putVol, '$3.07M');
+assert.strictEqual(xautOptions[0].putVolChg, '-95.88%');
+assert.strictEqual(xautOptions[0].callTheta, '-4.01');
+assert.strictEqual(xautOptions[0].callDelta, '0.98');
+assert.strictEqual(xautOptions[0].putDelta, '-0.02');
+assert.strictEqual(xautOptions[0].putTheta, '-4.19');
+console.log('  ✓ XAUT Options strikes strictly match Screenshots 1 (Price), 2 (OI/Vol) & 3 (Greeks)');
+
+// 7. Test RWA Tokens Data and Controls (Screenshot 4)
+const rwaMatch = jsContent.match(/const MARKETS_RWA_DATA = (\[[\s\S]*?\]);/);
+assert.ok(rwaMatch, 'Must match MARKETS_RWA_DATA array');
+const rwaData = eval(rwaMatch[1]);
+assert.strictEqual(rwaData.length, 13, 'RWA data must contain 13 token contracts (Screenshot 4)');
+assert.strictEqual(rwaData[0].symbol, 'XAUTUSD');
+assert.strictEqual(rwaData[0].leverage, '100x');
+assert.strictEqual(rwaData[0].basePrice, 4179.43);
+assert.strictEqual(rwaData[0].baseChange, 0.54);
+assert.strictEqual(rwaData[1].symbol, 'PAXGUSD');
+assert.strictEqual(rwaData[2].symbol, 'SLVONUSD');
+assert.strictEqual(rwaData[7].symbol, 'KORUBUSD');
+assert.strictEqual(rwaData[7].isNew, true);
+assert.strictEqual(rwaData[11].symbol, 'CRCLXUSD');
+assert.strictEqual(rwaData[11].baseChange, 12.14);
+assert.ok(htmlContent.includes('id="rwa-chips-container"'), 'RWA chips strip must exist');
+assert.ok(htmlContent.includes('onclick="setRwaChip(\'commodity\')"'), 'Commodity filter chip present');
+assert.ok(htmlContent.includes('onclick="setRwaChip(\'usstock\')"'), 'US Stock filter chip present');
+console.log('  ✓ RWA Tokens contracts and filter chips strictly match Screenshot 4');
+
+// 8. Test Straddles Data and Controls (Screenshot 5)
+const straddleMatch = jsContent.match(/const MARKETS_STRADDLE_DATA = (\[[\s\S]*?\]);/);
+assert.ok(straddleMatch, 'Must match MARKETS_STRADDLE_DATA array');
+const straddleData = eval(straddleMatch[1]);
+assert.strictEqual(straddleData.length, 13, 'Straddles data must contain 13 contracts (Screenshot 5)');
+assert.strictEqual(straddleData[0].symbol, 'MV-BTC');
+assert.strictEqual(straddleData[0].subtitle, '82400-171026');
+assert.strictEqual(straddleData[0].isNeutral, true);
+assert.strictEqual(straddleData[1].subtitle, '82400-161026');
+assert.strictEqual(straddleData[1].price, 385);
+assert.strictEqual(straddleData[1].change, -61.03);
+assert.strictEqual(straddleData[2].price, 601);
+assert.strictEqual(straddleData[2].change, -44.2);
+assert.strictEqual(straddleData[3].price, 1056);
+assert.strictEqual(straddleData[3].change, 11.49);
+assert.strictEqual(straddleData[7].price, 1368);
+assert.strictEqual(straddleData[7].change, 45.38);
+
+// Floating button and modal
+assert.ok(htmlContent.includes('class="what-are-straddles-btn"'), 'Floating button must exist');
+assert.ok(htmlContent.includes('id="what-are-straddles-modal"'), 'What are Straddles modal must exist');
+assert.ok(cssContent.includes('.what-are-straddles-btn'), 'CSS must style floating button');
+assert.ok(cssContent.includes('.straddle-info-sheet'), 'CSS must style straddle info sheet');
+assert.ok(jsContent.includes('function openWhatAreStraddlesModal()'), 'openWhatAreStraddlesModal defined');
+assert.ok(jsContent.includes('function closeWhatAreStraddlesModal()'), 'closeWhatAreStraddlesModal defined');
+console.log('  ✓ Straddles contracts, floating action button, and modal strictly match Screenshot 5');
+
+console.log('\n=== ALL 15 MARKETS & OPTIONS TESTS PASSED! ===\n');
+

@@ -2279,5 +2279,121 @@ html, body {
   opacity: 0.22;
 }
 
+/* ══════════════════════ STRADDLE FAB & MODAL (SCREENSHOT 5) ══════════════════════ */
+.straddle-fab-container {
+  position: fixed;
+  bottom: 68px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 80;
+}
+
+.what-are-straddles-btn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #10141f;
+  border: 1.5px solid var(--delta-orange);
+  color: var(--delta-orange);
+  border-radius: 26px;
+  padding: 10px 24px;
+  font-weight: 700;
+  font-size: 13.5px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.75), 0 0 14px rgba(255, 85, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  backdrop-filter: blur(10px);
+}
+
+.what-are-straddles-btn:active {
+  transform: scale(0.96);
+  background: #1d1815;
+}
+
+.straddles-contracts-list {
+  padding-bottom: 96px !important;
+}
+
+.change-badge.neutral {
+  background: #191e2b;
+  color: #7e8799;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.straddle-info-sheet {
+  background: #141824;
+  border-radius: 20px 20px 0 0;
+  padding: 18px 18px 32px 18px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.straddle-hero-box {
+  background: linear-gradient(135deg, rgba(255, 85, 0, 0.12), rgba(19, 23, 34, 0.6));
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.straddle-badge-glow {
+  display: inline-block;
+  background: rgba(255, 85, 0, 0.2);
+  color: var(--delta-orange);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.straddle-hero-box h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.straddle-hero-desc {
+  font-size: 12.5px;
+  color: #c0c6d4;
+  line-height: 1.5;
+}
+
+.straddle-features-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sfeature-card {
+  background: #10141f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.sfeature-card h5 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sfeature-card p {
+  font-size: 12px;
+  color: #8b92a4;
+  line-height: 1.4;
+  margin: 0;
+}
+
 
 

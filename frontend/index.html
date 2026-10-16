@@ -307,7 +307,9 @@
             <span class="mkt-badge-new">NEW</span>
             <span>RWA Tokens</span>
           </button>
-          <button class="mkt-top-tab" id="mkt-tab-straddles" onclick="switchMarketsTopTab('straddles')">Straddles</button>
+          <button class="mkt-top-tab" id="mkt-tab-straddles" onclick="switchMarketsTopTab('straddles')">Straddle</button>
+          <button class="mkt-top-tab" id="mkt-tab-spot" onclick="switchMarketsTopTab('spot')">Spot</button>
+          <button class="mkt-top-tab" id="mkt-tab-analytics" onclick="switchMarketsTopTab('analytics')">Analytics</button>
         </div>
         <button class="mkt-search-trigger-btn" id="mkt-search-trigger" onclick="toggleMarketsSearch()" aria-label="Search Markets">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -468,25 +470,72 @@
           </div>
         </section>
 
-        <!-- 4. RWA TOKENS TAB VIEW -->
+        <!-- 4. RWA TOKENS TAB VIEW (Screenshot 4) -->
         <section class="mkt-subview hidden" id="mkt-view-rwa">
-          <div class="rwa-banner-card">
-            <div class="rwa-badge">Real World Assets</div>
-            <h3 class="rwa-title">Tokenized Commodities & Yield Coins</h3>
-            <p class="rwa-desc">Trade Gold, Silver, and Institutional Treasury perps with up to 100x leverage and near-zero slippage.</p>
+          <!-- Filter Chips Strip (Screenshot 4) -->
+          <div class="futures-filter-chips-scroll" id="rwa-chips-container">
+            <button class="f-chip active" id="rwachip-all" onclick="setRwaChip('all')">All</button>
+            <button class="f-chip" id="rwachip-new" onclick="setRwaChip('new')">New</button>
+            <button class="f-chip" id="rwachip-commodity" onclick="setRwaChip('commodity')">Commodity Tokens</button>
+            <button class="f-chip" id="rwachip-usstock" onclick="setRwaChip('usstock')">US Stock Tokens</button>
           </div>
+
+          <!-- Table Header -->
+          <div class="mkt-table-header">
+            <span class="mcol-contract" onclick="sortMarketsRwa('symbol')">Contract</span>
+            <span class="mcol-price-vol" onclick="sortMarketsRwa('price')">Price ↕ | Vol ↕</span>
+            <span class="mcol-change" onclick="sortMarketsRwa('change')">24h Chg. ↕</span>
+          </div>
+
+          <!-- Contracts List -->
           <div class="contracts-list" id="markets-rwa-list">
+            <!-- Dynamic rows injected via app.js -->
+          </div>
+        </section>
+
+        <!-- 5. STRADDLE TAB VIEW (Screenshot 5) -->
+        <section class="mkt-subview hidden" id="mkt-view-straddles">
+          <!-- Table Header -->
+          <div class="mkt-table-header">
+            <span class="mcol-contract" onclick="sortMarketsStraddles('symbol')">Contract</span>
+            <span class="mcol-price-vol" onclick="sortMarketsStraddles('price')">Price ↕ | Vol ↕</span>
+            <span class="mcol-change" onclick="sortMarketsStraddles('change')">24h Chg. ↕</span>
+          </div>
+
+          <!-- Straddles Contract Rows List -->
+          <div class="contracts-list straddles-contracts-list" id="markets-straddles-list">
+            <!-- Dynamic rows injected via app.js -->
+          </div>
+
+          <!-- Floating "What are Straddles?" Button (Screenshot 5) -->
+          <div class="straddle-fab-container">
+            <button class="what-are-straddles-btn" onclick="openWhatAreStraddlesModal()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="18" height="18" rx="3" />
+                <path d="M9 9h6v6H9z" />
+                <path d="M12 11v2" />
+                <circle cx="12" cy="15" r="0.5" fill="currentColor" />
+              </svg>
+              <span>What are Straddles?</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 6. SPOT TAB VIEW -->
+        <section class="mkt-subview hidden" id="mkt-view-spot">
+          <div class="mkt-table-header">
+            <span class="mcol-contract" onclick="sortMarketsSpot('symbol')">Pair</span>
+            <span class="mcol-price-vol" onclick="sortMarketsSpot('price')">Price ↕ | Vol ↕</span>
+            <span class="mcol-change" onclick="sortMarketsSpot('change')">24h Chg. ↕</span>
+          </div>
+          <div class="contracts-list" id="markets-spot-list">
             <!-- Injected by JavaScript -->
           </div>
         </section>
 
-        <!-- 5. STRADDLES TAB VIEW -->
-        <section class="mkt-subview hidden" id="mkt-view-straddles">
-          <div class="straddles-intro-card">
-            <h3 class="straddle-title">Pre-built Volatility Straddles</h3>
-            <p class="straddle-subtitle">Profit from sharp market breakouts in either direction without directional bias.</p>
-          </div>
-          <div class="straddles-list" id="markets-straddles-list">
+        <!-- 7. ANALYTICS TAB VIEW -->
+        <section class="mkt-subview hidden" id="mkt-view-analytics">
+          <div class="analytics-cards-container" id="markets-analytics-list">
             <!-- Injected by JavaScript -->
           </div>
         </section>
@@ -655,6 +704,41 @@
           <span class="vopt-name">Puts</span>
           <span class="vopt-check"></span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- What are Straddles Modal (Screenshot 5) -->
+  <div id="what-are-straddles-modal" class="vmodal-backdrop hidden" onclick="if(event.target===this) closeWhatAreStraddlesModal()">
+    <div class="vmodal-sheet straddle-info-sheet">
+      <div class="vmodal-header">
+        <h3 class="vmodal-title">What are Straddles?</h3>
+        <button class="vmodal-close-btn" onclick="closeWhatAreStraddlesModal()">✕</button>
+      </div>
+      <div class="vmodal-body straddle-info-body">
+        <div class="straddle-hero-box">
+          <div class="straddle-badge-glow">Delta-Neutral Volatility</div>
+          <h4>Trade Market Volatility Without Picking a Direction</h4>
+          <p class="straddle-hero-desc">A Straddle consists of buying both a <strong>Call</strong> and a <strong>Put</strong> option with the same strike price and expiration date. You profit whenever the market makes a significant price move up OR down.</p>
+        </div>
+        <div class="straddle-features-grid">
+          <div class="sfeature-card">
+            <span class="sfeature-icon">🚀</span>
+            <h5>Sharp Breakouts</h5>
+            <p>Profit from major news, regulatory announcements, and high volatility events.</p>
+          </div>
+          <div class="sfeature-card">
+            <span class="sfeature-icon">🛡️</span>
+            <h5>Defined Risk</h5>
+            <p>Maximum loss is strictly capped at the premium paid, while upside is unlimited.</p>
+          </div>
+          <div class="sfeature-card">
+            <span class="sfeature-icon">⚡</span>
+            <h5>Up to 200x Leverage</h5>
+            <p>Trade MOVE contracts on Delta Exchange with capital efficiency.</p>
+          </div>
+        </div>
+        <button class="deposit-confirm-btn" onclick="closeWhatAreStraddlesModal()">Got It, Explore Straddles</button>
       </div>
     </div>
   </div>

@@ -8594,52 +8594,403 @@ const ETH_OPTIONS_STRIKES_DATA = [
   }
 ];
 
-// XAUT OPTIONS DATA
+// XAUT OPTIONS DATA (SCREENSHOTS 1, 2, 3)
 const XAUT_OPTIONS_STRIKES_DATA = [
   {
-    strike: 2600,
-    callBid: '48.5', callAsk: '52.0', callMark: '50.2', callIv: '18.4',
-    putMark: '1.2', putIv: '19.2', putBid: '1.0', putAsk: '1.5',
-    callVol: '$420K', callVolChg: '12.4%', callOi: '$1.1M', callOiBar: 30, callOiBarColor: 'green-tint',
-    putOi: '$2.4M', putOiBar: 60, putOiBarColor: 'green-tint', putVol: '$310K', putVolChg: '-5.2%',
-    callTheta: '-4.2', callVega: '0.08', callDelta: '0.85', callGamma: '0.001',
-    putDelta: '-0.15', putGamma: '0.001', putTheta: '-6.4', putVega: '0.09'
+    strike: 4120,
+    callBid: '57.4', callAsk: '59.6', callMark: '58.43', callIv: '28.5',
+    putMark: '0.21', putIv: '30.07', putBid: '0.3', putAsk: '0.4',
+    putMarkBar: 25, putMarkBarColor: 'green-tint',
+    callVol: '$68.51K', callVolChg: '33.68%', callOi: '$95.99K', callOiBar: 8, callOiBarColor: 'green-tint',
+    putOi: '$2.34M', putOiBar: 40, putOiBarColor: 'green-tint', putVol: '$3.07M', putVolChg: '-95.88%',
+    callTheta: '-4.01', callVega: '0.05', callDelta: '0.98', callGamma: '0.00187',
+    putDelta: '-0.02', putGamma: '0.00192', putTheta: '-4.19', putVega: '0.05'
   },
   {
-    strike: 2620,
-    callBid: '31.0', callAsk: '34.5', callMark: '32.8', callIv: '17.8',
-    putMark: '3.8', putIv: '18.1', putBid: '3.5', putAsk: '4.2',
-    callVol: '$680K', callVolChg: '8.1%', callOi: '$1.8M', callOiBar: 50, callOiBarColor: 'green-tint',
-    putOi: '$1.9M', putOiBar: 52, putOiBarColor: 'green-tint', putVol: '$450K', putVolChg: '-12.0%',
-    callTheta: '-5.8', callVega: '0.12', callDelta: '0.68', callGamma: '0.002',
-    putDelta: '-0.32', putGamma: '0.002', putTheta: '-7.9', putVega: '0.13'
+    strike: 4130,
+    callBid: '47.8', callAsk: '49.7', callMark: '48.74', callIv: '29.35',
+    putMark: '0.4', putIv: '28.7', putBid: '0.22', putAsk: '0.6',
+    putMarkBar: 30, putMarkBarColor: 'green-tint',
+    callVol: '$315.59K', callVolChg: '48.03%', callOi: '$73.83K', callOiBar: 6, callOiBarColor: 'green-tint',
+    putOi: '$742.67K', putOiBar: 15, putOiBarColor: 'green-tint', putVol: '$6.69M', putVolChg: '-96.00%',
+    callTheta: '-6.7', callVega: '0.08', callDelta: '0.96', callGamma: '0.00336',
+    putDelta: '-0.04', putGamma: '0.00326', putTheta: '-6.32', putVega: '0.08'
   },
   {
-    strike: 2640,
-    callBid: '16.5', callAsk: '19.0', callMark: '17.7', callIv: '16.9',
-    putMark: '9.2', putIv: '17.0', putBid: '8.8', putAsk: '9.8',
-    callVol: '$1.25M', callVolChg: '4.2%', callOi: '$2.9M', callOiBar: 80, callOiBarColor: 'green-tint',
-    putOi: '$2.6M', putOiBar: 72, putOiBarColor: 'green-tint', putVol: '$980K', putVolChg: '-18.5%',
-    callTheta: '-7.4', callVega: '0.16', callDelta: '0.50', callGamma: '0.003',
-    putDelta: '-0.50', putGamma: '0.003', putTheta: '-8.6', putVega: '0.16'
+    strike: 4140,
+    callBid: '38.4', callAsk: '40', callMark: '39.17', callIv: '28.05',
+    callMarkBar: 10, callMarkBarColor: 'red-tint',
+    putMark: '0.85', putIv: '27.87', putBid: '0.71', putAsk: '1',
+    putMarkBar: 35, putMarkBarColor: 'green-tint',
+    callVol: '$1.67M', callVolChg: '35.69%', callOi: '$440.73K', callOiBar: 10, callOiBarColor: 'red-tint',
+    putOi: '$2.35M', putOiBar: 40, putOiBarColor: 'green-tint', putVol: '$10.62M', putVolChg: '-96.34%',
+    callTheta: '-11.02', callVega: '0.14', callDelta: '0.92', callGamma: '0.00579',
+    putDelta: '-0.08', putGamma: '0.00568', putTheta: '-10.35', putVega: '0.14'
   },
   {
-    strike: 2660,
-    callBid: '6.2', callAsk: '8.0', callMark: '7.1', callIv: '17.2',
-    putMark: '19.4', putIv: '17.5', putBid: '18.8', putAsk: '20.1',
-    callVol: '$890K', callVolChg: '-22.0%', callOi: '$2.1M', callOiBar: 60, callOiBarColor: 'red-tint',
-    putOi: '$1.4M', putOiBar: 40, putOiBarColor: 'green-tint', putVol: '$1.1M', putVolChg: '-28.0%',
-    callTheta: '-6.1', callVega: '0.14', callDelta: '0.32', callGamma: '0.002',
-    putDelta: '-0.68', putGamma: '0.002', putTheta: '-9.2', putVega: '0.14'
+    strike: 4150,
+    callBid: '29.5', callAsk: '30.7', callMark: '30.14', callIv: '27.63',
+    callMarkBar: 12, callMarkBarColor: 'red-tint',
+    putMark: '1.79', putIv: '27.33', putBid: '1.6', putAsk: '2',
+    putMarkBar: 38, putMarkBarColor: 'green-tint',
+    callVol: '$6.40M', callVolChg: '15.79%', callOi: '$877.75K', callOiBar: 15, callOiBarColor: 'red-tint',
+    putOi: '$2.03M', putOiBar: 35, putOiBarColor: 'green-tint', putVol: '$4.75M', putVolChg: '-90.57%',
+    callTheta: '-16.43', callVega: '0.22', callDelta: '0.85', callGamma: '0.00906',
+    putDelta: '-0.15', putGamma: '0.00906', putTheta: '-16.23', putVega: '0.22'
   },
   {
-    strike: 2680,
-    callBid: '1.8', callAsk: '3.0', callMark: '2.4', callIv: '18.0',
-    putMark: '34.8', putIv: '18.4', putBid: '33.5', putAsk: '36.0',
-    callVol: '$340K', callVolChg: '-45.0%', callOi: '$1.2M', callOiBar: 35, callOiBarColor: 'red-tint',
-    putOi: '$780K', putOiBar: 22, putOiBarColor: 'green-tint', putVol: '$820K', putVolChg: '-40.0%',
-    callTheta: '-4.5', callVega: '0.09', callDelta: '0.16', callGamma: '0.001',
-    putDelta: '-0.84', putGamma: '0.001', putTheta: '-7.1', putVega: '0.09'
+    strike: 4160,
+    callBid: '21.4', callAsk: '22.3', callMark: '21.85', callIv: '27.02',
+    callMarkBar: 15, callMarkBarColor: 'red-tint',
+    putMark: '3.54', putIv: '26.96', putBid: '3.3', putAsk: '3.7',
+    putMarkBar: 40, putMarkBarColor: 'green-tint',
+    callVol: '$4.75M', callVolChg: '-3.85%', callOi: '$354.47K', callOiBar: 8, callOiBarColor: 'red-tint',
+    putOi: '$738.00K', putOiBar: 15, putOiBarColor: 'green-tint', putVol: '$7.93M', putVolChg: '-86.61%',
+    callTheta: '-22.19', callVega: '0.3', callDelta: '0.74', callGamma: '0.01258',
+    putDelta: '-0.26', putGamma: '0.01265', putTheta: '-21.86', putVega: '0.3'
+  },
+  {
+    strike: 4170,
+    callBid: '14.5', callAsk: '15.1', callMark: '14.79', callIv: '26.74',
+    putMark: '6.44', putIv: '26.55', putBid: '6.3', putAsk: '6.6',
+    putMarkBar: 45, putMarkBarColor: 'green-tint',
+    callVol: '$7.94M', callVolChg: '-14.11%', callOi: '$2.68M', callOiBar: 35, callOiBarColor: 'red-tint',
+    putOi: '$666.59K', putOiBar: 12, putOiBarColor: 'green-tint', putVol: '$2.54M', putVolChg: '-79.81%',
+    callTheta: '-26.05', callVega: '0.36', callDelta: '0.60', callGamma: '0.0152',
+    putDelta: '-0.40', putGamma: '0.01533', putTheta: '-25.81', putVega: '0.36'
+  },
+  // SPOT DIVIDER: XAUT 4178.29
+  {
+    strike: 4180,
+    callBid: '9.1', callAsk: '9.4', callMark: '9.24', callIv: '26.62',
+    callMarkBar: 15, callMarkBarColor: 'red-tint',
+    putMark: '10.89', putIv: '26.45', putBid: '10.7', putAsk: '11',
+    putMarkBar: 35, putMarkBarColor: 'green-tint',
+    callVol: '$10.50M', callVolChg: '-23.58%', callOi: '$5.49M', callOiBar: 70, callOiBarColor: 'red-tint',
+    putOi: '$828.97K', putOiBar: 18, putOiBarColor: 'green-tint', putVol: '$3.80M', putVolChg: '-73.56%',
+    callTheta: '-26.5', callVega: '0.37', callDelta: '0.45', callGamma: '0.0157',
+    putDelta: '-0.55', putGamma: '0.01583', putTheta: '-26.27', putVega: '0.37'
+  },
+  {
+    strike: 4190,
+    callBid: '5.2', callAsk: '5.5', callMark: '5.33', callIv: '26.73',
+    putMark: '16.94', putIv: '26.44', putBid: '16.6', putAsk: '17.3',
+    callVol: '$5.30M', callVolChg: '-41.38%', callOi: '$3.42M', callOiBar: 45, callOiBarColor: 'red-tint',
+    putOi: '$57.27K', putOiBar: 3, putOiBarColor: 'green-tint', putVol: '$1.10M', putVolChg: '-59.27%',
+    callTheta: '-23.49', callVega: '0.32', callDelta: '0.30', callGamma: '0.01366',
+    putDelta: '-0.70', putGamma: '0.01376', putTheta: '-23.2', putVega: '0.32'
+  },
+  {
+    strike: 4200,
+    callBid: '2.7', callAsk: '3', callMark: '2.86', callIv: '27.09',
+    putMark: '24.5', putIv: '26.8', putBid: '24', putAsk: '25',
+    putMarkBar: 25, putMarkBarColor: 'green-tint',
+    callVol: '$10.63M', callVolChg: '-63.53%', callOi: '$3.84M', callOiBar: 50, callOiBarColor: 'red-tint',
+    putOi: '$362.79K', putOiBar: 8, putOiBarColor: 'green-tint', putVol: '$299.57K', putVolChg: '-60.44%',
+    callTheta: '-18.15', callVega: '0.25', callDelta: '0.18', callGamma: '0.01027',
+    putDelta: '-0.82', putGamma: '0.01029', putTheta: '-17.73', putVega: '0.24'
+  },
+  {
+    strike: 4210,
+    callBid: '1.3', callAsk: '1.6', callMark: '1.43', callIv: '27.49',
+    callMarkBar: 10, callMarkBarColor: 'red-tint',
+    putMark: '33.03', putIv: '26.8', putBid: '32.4', putAsk: '33.7',
+    callVol: '$1.98M', callVolChg: '8.33%', callOi: '$589.46K', callOiBar: 12, callOiBarColor: 'red-tint',
+    putOi: '$7.32K', putOiBar: 1, putOiBarColor: 'green-tint', putVol: '$7.65K', putVolChg: '-39.06%',
+    callTheta: '-12.3', callVega: '0.16', callDelta: '0.10', callGamma: '0.00678',
+    putDelta: '-0.91', putGamma: '0.00664', putTheta: '-11.33', putVega: '0.15'
+  },
+  {
+    strike: 4220,
+    callBid: '0.5', callAsk: '0.8', callMark: '0.67', callIv: '28.02',
+    callMarkBar: 8, callMarkBarColor: 'red-tint',
+    putMark: '42.29', putIv: '27.04', putBid: '41.4', putAsk: '43.1',
+    callVol: '$2.14M', callVolChg: '-76.47%', callOi: '$772.10K', callOiBar: 14, callOiBarColor: 'red-tint',
+    putOi: '$17.56K', putOiBar: 1, putOiBarColor: 'green-tint', putVol: '$17.12K', putVolChg: '-32.08%',
+    callTheta: '-7.24', callVega: '0.09', callDelta: '0.05', callGamma: '0.00393',
+    putDelta: '-0.96', putGamma: '0.0037', putTheta: '-6.36', putVega: '0.08'
+  },
+  {
+    strike: 4230,
+    callBid: '0.2', callAsk: '0.5', callMark: '0.35', callIv: '29.2',
+    callMarkBar: 5, callMarkBarColor: 'red-tint',
+    putMark: '51.9', putIv: '26.55', putBid: '50.9', putAsk: '52.9',
+    callVol: '$170.95K', callVolChg: '-44.44%', callOi: '$86.61K', callOiBar: 3, callOiBarColor: 'red-tint',
+    putOi: '$0.00', putOiBar: 0, putOiBarColor: 'green-tint', putVol: '$83.59K', putVolChg: '-1.96%',
+    callTheta: '-4.14', callVega: '0.05', callDelta: '0.02', callGamma: '0.00213',
+    putDelta: '-0.98', putGamma: '0.00174', putTheta: '-2.97', putVega: '0.04'
+  }
+];
+
+// ─── RWA TOKENS DATA (SCREENSHOT 4) ───────────────────────────────
+const MARKETS_RWA_DATA = [
+  {
+    id: 'xaut-usd',
+    symbol: 'XAUTUSD',
+    name: 'Tether Gold Token Perpetual',
+    basePrice: 4179.43,
+    baseVol: 763050000,
+    baseChange: 0.54,
+    leverage: '100x',
+    feeBadge: 'Fee 0.01%',
+    isNew: false,
+    categories: ['all', 'commodity']
+  },
+  {
+    id: 'paxg-usd',
+    symbol: 'PAXGUSD',
+    name: 'PAX Gold Token Perpetual',
+    basePrice: 4171.7,
+    baseVol: 125200000,
+    baseChange: 0.46,
+    leverage: '100x',
+    feeBadge: 'Fee 0.01%',
+    isNew: false,
+    categories: ['all', 'commodity']
+  },
+  {
+    id: 'slvon-usd',
+    symbol: 'SLVONUSD',
+    name: 'iShares Silver (XAG) Token Perpetual',
+    basePrice: 52.5,
+    baseVol: 10050000,
+    baseChange: 2.0,
+    leverage: '50x',
+    feeBadge: 'Fee 0.01%',
+    isNew: false,
+    categories: ['all', 'commodity']
+  },
+  {
+    id: 'sndkb-usd',
+    symbol: 'SNDKBUSD',
+    name: 'SanDisk bStocks Token Perpetual',
+    basePrice: 1363.23,
+    baseVol: 6200000,
+    baseChange: 1.9,
+    leverage: '25x',
+    isNew: false,
+    categories: ['all', 'usstock']
+  },
+  {
+    id: 'soxlb-usd',
+    symbol: 'SOXLBUSD',
+    name: 'Semicon Bull 3X ETF bStocks Perpetual',
+    basePrice: 103.6,
+    baseVol: 3160000,
+    baseChange: 2.22,
+    leverage: '25x',
+    isNew: false,
+    categories: ['all', 'usstock']
+  },
+  {
+    id: 'qqqx-usd',
+    symbol: 'QQQXUSD',
+    name: 'Nasdaq xStock Token Perpetual',
+    basePrice: 727.58,
+    baseVol: 2090000,
+    baseChange: 1.04,
+    leverage: '25x',
+    isNew: false,
+    categories: ['all', 'usstock']
+  },
+  {
+    id: 'oil-usd',
+    symbol: 'OILUSD',
+    name: 'US Oil fund ONDO Token Perpetual',
+    basePrice: 156.2,
+    baseVol: 1980000,
+    baseChange: 2.43,
+    leverage: '25x',
+    isNew: false,
+    categories: ['all', 'commodity']
+  },
+  {
+    id: 'korub-usd',
+    symbol: 'KORUBUSD',
+    name: 'South Korea Bull 3X ETF bStocks Perpetual',
+    basePrice: 11.79,
+    baseVol: 1930000,
+    baseChange: 10.19,
+    leverage: '25x',
+    isNew: true,
+    categories: ['all', 'new', 'usstock']
+  },
+  {
+    id: 'mrnab-usd',
+    symbol: 'MRNABUSD',
+    name: 'Moderna bStocks Token Perpetual',
+    basePrice: 236.2,
+    baseVol: 1450000,
+    baseChange: 6.6,
+    leverage: '25x',
+    isNew: true,
+    categories: ['all', 'new', 'usstock']
+  },
+  {
+    id: 'spcxx-usd',
+    symbol: 'SPCXXUSD',
+    name: 'SpaceX xStock Token Perpetual',
+    basePrice: 151.6,
+    baseVol: 1340000,
+    baseChange: 1.78,
+    leverage: '25x',
+    isNew: false,
+    categories: ['all', 'usstock']
+  },
+  {
+    id: 'tslax-usd',
+    symbol: 'TSLAXUSD',
+    name: 'Tesla xStock Token Perpetual',
+    basePrice: 375.45,
+    baseVol: 1030000,
+    baseChange: 3.52,
+    leverage: '25x',
+    isNew: false,
+    categories: ['all', 'usstock']
+  },
+  {
+    id: 'crclx-usd',
+    symbol: 'CRCLXUSD',
+    name: 'Circle xStock Token Perpetual',
+    basePrice: 86.35,
+    baseVol: 505570,
+    baseChange: 12.14,
+    leverage: '25x',
+    isNew: false,
+    categories: ['all', 'usstock']
+  },
+  {
+    id: 'liteb-usd',
+    symbol: 'LITEBUSD',
+    name: 'Lumentum Holdings bStocks Perpetual',
+    basePrice: 871.4,
+    baseVol: 494980,
+    baseChange: 2.16,
+    leverage: '25x',
+    isNew: false,
+    categories: ['all', 'usstock']
+  }
+];
+
+// ─── STRADDLE DATA (SCREENSHOT 5) ─────────────────────────────────
+const MARKETS_STRADDLE_DATA = [
+  {
+    id: 'mv-btc-82400-171026',
+    symbol: 'MV-BTC',
+    subtitle: '82400-171026',
+    leverage: '200x',
+    priceStr: '-',
+    volStr: '-',
+    changeStr: '-',
+    isNeutral: true
+  },
+  {
+    id: 'mv-btc-82400-161026',
+    symbol: 'MV-BTC',
+    subtitle: '82400-161026',
+    leverage: '200x',
+    price: 385,
+    vol: 6200000,
+    change: -61.03
+  },
+  {
+    id: 'mv-btc-82200-161026',
+    symbol: 'MV-BTC',
+    subtitle: '82200-161026',
+    leverage: '200x',
+    price: 601,
+    vol: 17850000,
+    change: -44.2
+  },
+  {
+    id: 'mv-btc-82200-171026',
+    symbol: 'MV-BTC',
+    subtitle: '82200-171026',
+    leverage: '200x',
+    price: 1056,
+    vol: 26160,
+    change: 11.49
+  },
+  {
+    id: 'mv-btc-82000-161026',
+    symbol: 'MV-BTC',
+    subtitle: '82000-161026',
+    leverage: '200x',
+    price: 896,
+    vol: 11660000,
+    change: -22.09
+  },
+  {
+    id: 'mv-btc-82000-171026',
+    symbol: 'MV-BTC',
+    subtitle: '82000-171026',
+    leverage: '200x',
+    price: 1162,
+    vol: 1360000,
+    change: 25.22
+  },
+  {
+    id: 'mv-btc-81800-161026',
+    symbol: 'MV-BTC',
+    subtitle: '81800-161026',
+    leverage: '200x',
+    price: 814,
+    vol: 2770000,
+    change: -32.67
+  },
+  {
+    id: 'mv-btc-81800-171026',
+    symbol: 'MV-BTC',
+    subtitle: '81800-171026',
+    leverage: '200x',
+    price: 1368,
+    vol: 110870,
+    change: 45.38
+  },
+  {
+    id: 'mv-btc-81600-161026',
+    symbol: 'MV-BTC',
+    subtitle: '81600-161026',
+    leverage: '200x',
+    price: 1321,
+    vol: 742370,
+    change: 7.22
+  },
+  {
+    id: 'mv-btc-81400-161026',
+    symbol: 'MV-BTC',
+    subtitle: '81400-161026',
+    leverage: '200x',
+    price: 1106,
+    vol: 504950,
+    change: -12.5
+  },
+  {
+    id: 'mv-btc-81200-161026',
+    symbol: 'MV-BTC',
+    subtitle: '81200-161026',
+    leverage: '200x',
+    price: 1663,
+    vol: 5450000,
+    change: 21.48
+  },
+  {
+    id: 'mv-btc-81000-161026',
+    symbol: 'MV-BTC',
+    subtitle: '81000-161026',
+    leverage: '200x',
+    price: 1874,
+    vol: 8030000,
+    change: 35.11
+  },
+  {
+    id: 'mv-btc-80800-161026',
+    symbol: 'MV-BTC',
+    subtitle: '80800-161026',
+    leverage: '200x',
+    price: 1965,
+    vol: 1240000,
+    change: 18.5
   }
 ];
 
@@ -8655,19 +9006,24 @@ function renderMarketsScreen() {
     renderOptionsChain();
   } else if (marketsTopTab === 'rwa') {
     renderRwaTokensList();
-  } else if (marketsTopTab === 'straddles') {
+  } else if (marketsTopTab === 'straddles' || marketsTopTab === 'straddle') {
     renderStraddlesList();
+  } else if (marketsTopTab === 'spot') {
+    renderSpotList();
+  } else if (marketsTopTab === 'analytics') {
+    renderAnalyticsView();
   }
 }
 
 function switchMarketsTopTab(tab) {
+  if (tab === 'straddle') tab = 'straddles';
   marketsTopTab = tab;
 
   // Update tab buttons
-  const tabs = ['watchlist', 'futures', 'options', 'rwa', 'straddles'];
+  const tabs = ['watchlist', 'futures', 'options', 'rwa', 'straddles', 'spot', 'analytics'];
   tabs.forEach(t => {
     const el = document.getElementById(`mkt-tab-${t}`);
-    if (el) el.classList.toggle('active', t === tab);
+    if (el) el.classList.toggle('active', t === tab || (t === 'straddles' && tab === 'straddle'));
   });
 
   // Toggle subviews
@@ -8882,6 +9238,16 @@ function setOptionsUnderlying(asset) {
   if (sub) {
     sub.textContent = `${asset.toUpperCase()} Options expire at 5:30 pm`;
   }
+  const countTag = document.getElementById('exp-countdown');
+  if (countTag) {
+    if (asset === 'xaut') {
+      countTag.textContent = 'Expires in 4h: 31m';
+    } else if (asset === 'eth') {
+      countTag.textContent = 'Expires in 51m';
+    } else {
+      countTag.textContent = 'Expires in 53m';
+    }
+  }
   renderOptionsChain();
 }
 
@@ -8930,7 +9296,13 @@ function selectExpiry(idx) {
     const dateLabel = document.getElementById('exp-current-date');
     if (dateLabel) dateLabel.textContent = exp.shortDate;
     const countTag = document.getElementById('exp-countdown');
-    if (countTag) countTag.textContent = exp.countdown;
+    if (countTag) {
+      if (activeOptionsUnderlying === 'xaut') {
+        countTag.textContent = 'Expires in 4h: 31m';
+      } else {
+        countTag.textContent = exp.countdown;
+      }
+    }
     showToast(`Expiry selected: ${exp.dateStr}`, 'success');
   }
   closeExpiryModal();
@@ -8993,7 +9365,7 @@ function renderOptionsChain() {
     spotPrice = 2468.97;
     spotLabel = 'ETH';
   } else if (activeOptionsUnderlying === 'xaut') {
-    spotPrice = 2640.50;
+    spotPrice = 4178.29;
     spotLabel = 'XAUT';
   }
 
@@ -9217,43 +9589,185 @@ function selectOptionStrike(strike) {
   showToast(`Selected Strike: ${strike} (${activeOptionsUnderlying.toUpperCase()})`, 'info');
 }
 
-// ─── RWA & STRADDLES LOGIC ────────────────────────────────────────
+// ─── RWA TOKENS LOGIC (SCREENSHOT 4) ──────────────────────────────
+let marketsRwaChip = 'all'; // 'all', 'new', 'commodity', 'usstock'
+let marketsRwaSortCol = '';
+let marketsRwaSortAsc = false;
+
+function setRwaChip(chip) {
+  marketsRwaChip = chip;
+  const chips = ['all', 'new', 'commodity', 'usstock'];
+  chips.forEach(c => {
+    const el = document.getElementById(`rwachip-${c}`);
+    if (el) el.classList.toggle('active', c === chip);
+  });
+  renderRwaTokensList();
+}
+
+function sortMarketsRwa(col) {
+  if (marketsRwaSortCol === col) {
+    marketsRwaSortAsc = !marketsRwaSortAsc;
+  } else {
+    marketsRwaSortCol = col;
+    marketsRwaSortAsc = false;
+  }
+  renderRwaTokensList();
+}
+
 function renderRwaTokensList() {
   const listEl = document.getElementById('markets-rwa-list');
   if (!listEl) return;
-  const rwaItems = MARKETS_FUTURES_DATA.filter(c => c.categories.includes('commodity'));
-  listEl.innerHTML = renderContractRowsHtml(rwaItems);
+
+  let list = [...MARKETS_RWA_DATA];
+
+  // Filter by chip category
+  if (marketsRwaChip !== 'all') {
+    list = list.filter(c => c.categories.includes(marketsRwaChip));
+  }
+
+  // Filter by search query
+  if (deltaMarketsSearchQuery && deltaMarketsSearchQuery.trim()) {
+    const q = deltaMarketsSearchQuery.trim().toLowerCase();
+    list = list.filter(c => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+  }
+
+  // Sorting
+  if (marketsRwaSortCol === 'symbol') {
+    list.sort((a, b) => marketsRwaSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
+  } else if (marketsRwaSortCol === 'price') {
+    list.sort((a, b) => marketsRwaSortAsc ? a.basePrice - b.basePrice : b.basePrice - a.basePrice);
+  } else if (marketsRwaSortCol === 'vol') {
+    list.sort((a, b) => marketsRwaSortAsc ? a.baseVol - b.baseVol : b.baseVol - a.baseVol);
+  } else if (marketsRwaSortCol === 'change') {
+    list.sort((a, b) => marketsRwaSortAsc ? a.baseChange - b.baseChange : b.baseChange - a.baseChange);
+  }
+
+  listEl.innerHTML = renderContractRowsHtml(list);
+}
+
+// ─── STRADDLES LOGIC (SCREENSHOT 5) ───────────────────────────────
+let marketsStraddlesSortCol = '';
+let marketsStraddlesSortAsc = false;
+
+function sortMarketsStraddles(col) {
+  if (marketsStraddlesSortCol === col) {
+    marketsStraddlesSortAsc = !marketsStraddlesSortAsc;
+  } else {
+    marketsStraddlesSortCol = col;
+    marketsStraddlesSortAsc = false;
+  }
+  renderStraddlesList();
+}
+
+function openWhatAreStraddlesModal() {
+  const modal = document.getElementById('what-are-straddles-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeWhatAreStraddlesModal() {
+  const modal = document.getElementById('what-are-straddles-modal');
+  if (modal) modal.classList.add('hidden');
 }
 
 function renderStraddlesList() {
   const listEl = document.getElementById('markets-straddles-list');
   if (!listEl) return;
+
+  let list = [...MARKETS_STRADDLE_DATA];
+
+  if (deltaMarketsSearchQuery && deltaMarketsSearchQuery.trim()) {
+    const q = deltaMarketsSearchQuery.trim().toLowerCase();
+    list = list.filter(c => c.symbol.toLowerCase().includes(q) || (c.subtitle && c.subtitle.toLowerCase().includes(q)));
+  }
+
+  if (marketsStraddlesSortCol === 'symbol') {
+    list.sort((a, b) => marketsStraddlesSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
+  } else if (marketsStraddlesSortCol === 'price') {
+    list.sort((a, b) => {
+      const pA = a.price !== undefined ? a.price : -999999;
+      const pB = b.price !== undefined ? b.price : -999999;
+      return marketsStraddlesSortAsc ? pA - pB : pB - pA;
+    });
+  } else if (marketsStraddlesSortCol === 'change') {
+    list.sort((a, b) => {
+      const cA = a.change !== undefined ? a.change : -999999;
+      const cB = b.change !== undefined ? b.change : -999999;
+      return marketsStraddlesSortAsc ? cA - cB : cB - cA;
+    });
+  }
+
+  listEl.innerHTML = list.map(item => {
+    const isStarred = userWatchlist.includes(item.id);
+    let priceDisplay = '-';
+    let volDisplay = '-';
+    let changeBadgeHtml = '';
+
+    if (item.price !== undefined) {
+      priceDisplay = `$${item.price.toLocaleString('en-US')}`;
+    }
+    if (item.vol !== undefined) {
+      if (item.vol >= 1e6) {
+        volDisplay = `$${(item.vol / 1e6).toFixed(2)}M`;
+      } else if (item.vol >= 1e3) {
+        volDisplay = `$${(item.vol / 1e3).toFixed(2)}K`;
+      } else {
+        volDisplay = `$${item.vol}`;
+      }
+    }
+
+    if (item.change !== undefined) {
+      const isPos = item.change >= 0;
+      const chgStr = (isPos ? '+' : '') + item.change.toFixed(item.change % 1 === 0 ? 0 : 2) + '%';
+      changeBadgeHtml = `<span class="change-badge ${isPos ? 'gain' : 'loss'}">${chgStr}</span>`;
+    } else {
+      changeBadgeHtml = `<span class="change-badge neutral">-</span>`;
+    }
+
+    return `
+      <div class="contract-row" onclick="showToast('Straddle ${item.symbol} ${item.subtitle} loaded', 'info')">
+        <div class="c-cell-identity">
+          <div class="c-name-wrap">
+            <button class="c-star-btn ${isStarred ? 'starred' : ''}" onclick="toggleWatchlist('${item.id}', event)">
+              ${isStarred ? '★' : '☆'}
+            </button>
+            <span class="c-symbol">${item.symbol}</span>
+            <span class="c-lev-badge">${item.leverage}</span>
+          </div>
+          <span class="c-name">${item.subtitle}</span>
+        </div>
+        <div class="c-cell-price">
+          <span class="c-price">${priceDisplay}</span>
+          <span class="c-vol">${volDisplay}</span>
+        </div>
+        <div class="c-cell-change">
+          ${changeBadgeHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── SPOT & ANALYTICS VIEWS ───────────────────────────────────────
+function renderSpotList() {
+  const listEl = document.getElementById('markets-spot-list');
+  if (!listEl) return;
+  const spotItems = MARKETS_FUTURES_DATA.slice(0, 8).map(c => ({
+    ...c,
+    symbol: c.symbol.replace('USD', '/USDT'),
+    leverage: 'SPOT',
+    feeBadge: '0% Maker Fee'
+  }));
+  listEl.innerHTML = renderContractRowsHtml(spotItems);
+}
+
+function renderAnalyticsView() {
+  const listEl = document.getElementById('markets-analytics-list');
+  if (!listEl) return;
   listEl.innerHTML = `
-    <div class="contract-row" onclick="showToast('BTC 82000 Straddle loaded', 'info')">
-      <div class="c-cell-identity">
-        <span class="c-symbol">BTC-STRADDLE-82000</span>
-        <span class="c-name">Delta-Neutral Volatility Play</span>
-      </div>
-      <div class="c-cell-price">
-        <span class="c-price">$232.2</span>
-        <span class="c-vol">$4.20M</span>
-      </div>
-      <div class="c-cell-change">
-        <span class="change-badge gain">+8.40%</span>
-      </div>
-    </div>
-    <div class="contract-row" onclick="showToast('ETH 2450 Straddle loaded', 'info')">
-      <div class="c-cell-identity">
-        <span class="c-symbol">ETH-STRADDLE-2450</span>
-        <span class="c-name">Delta-Neutral Volatility Play</span>
-      </div>
-      <div class="c-cell-price">
-        <span class="c-price">$48.6</span>
-        <span class="c-vol">$1.85M</span>
-      </div>
-      <div class="c-cell-change">
-        <span class="change-badge gain">+12.10%</span>
-      </div>
+    <div class="rwa-banner-card" style="margin: 8px 14px;">
+      <div class="rwa-badge" style="background: rgba(0, 192, 135, 0.15); color: #00c087;">Live Options Heatmap</div>
+      <h3 class="rwa-title">Open Interest & Volume Distribution</h3>
+      <p class="rwa-desc">BTC 82000-83000 strikes represent 68% of total volume with heavy call build-up and bullish skew.</p>
     </div>
   `;
 }
