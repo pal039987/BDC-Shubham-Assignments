@@ -7764,4 +7764,112 @@ body:has(.fullscreen-chart) .groww-bottom-nav {
   font-weight: 900;
 }
 
+/* ══════════════ SCREEN 5: SETTINGS, APP LOCK, HAPTIC & HELP CARD ══════════════ */
+.vacc-toggle-wrap {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.vacc-toggle-wrap input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.vacc-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #242938;
+  transition: .25s ease;
+  border-radius: 24px;
+}
+.vacc-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: .25s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.vacc-toggle-wrap input:checked + .vacc-toggle-slider {
+  background-color: var(--v-primary);
+  box-shadow: 0 0 10px var(--v-primary-glow);
+}
+.vacc-toggle-wrap input:checked + .vacc-toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* Help & Support Banner Card (Screenshot 5 Match) */
+.vacc-help-card {
+  margin: 10px 0 14px 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0e1828 0%, #152238 100%);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.vacc-help-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+}
+.vacc-help-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.vacc-help-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #60a5fa;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.vacc-help-text-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.vacc-help-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.vacc-help-sub {
+  font-size: 11.5px;
+  color: var(--v-text-secondary);
+  line-height: 1.3;
+}
+.vacc-help-arrow {
+  color: #60a5fa;
+  font-size: 18px;
+  font-weight: 800;
+  margin-left: 8px;
+}
+.vacc-row-logout {
+  color: var(--v-red);
+}
+.vacc-row-logout .vacc-row-text {
+  color: var(--v-red);
+}
+.vacc-row-logout .vacc-row-icon {
+  color: var(--v-red);
+}
+
+
 

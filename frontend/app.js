@@ -4370,6 +4370,47 @@ function showFeeRebateDialog() {
   showToast('Zero Fee Scalping Offer Tier Active: 0% Maker and 0% Taker fees applied!', 'success');
 }
 
+// ─── SCREEN 5: SETTINGS, HAPTICS, APP LOCK & SUPPORT HANDLERS ───
+function showReferDialog() {
+  showToast('Refer & Earn: Invite traders to VTrade paper trading and earn VIP rebate badges!', 'info');
+}
+
+let appLockActive = false;
+function toggleAppLock(checked) {
+  appLockActive = checked;
+  showToast(checked ? 'App Lock PIN enabled for VTrade' : 'App Lock disabled', checked ? 'success' : 'info');
+}
+
+let currentThemeIdx = 0;
+const availableThemes = ['Cyber Violet', 'Midnight Onyx', 'Neon Emerald'];
+function cycleThemeChoice() {
+  currentThemeIdx = (currentThemeIdx + 1) % availableThemes.length;
+  const lbl = document.getElementById('vacc-theme-label');
+  if (lbl) lbl.textContent = `${availableThemes[currentThemeIdx]} ›`;
+  showToast(`Theme switched to ${availableThemes[currentThemeIdx]}`, 'success');
+}
+
+let hapticFeedbackActive = true;
+function toggleHapticFeedback(checked) {
+  hapticFeedbackActive = checked;
+  if (checked && navigator.vibrate) navigator.vibrate(30);
+  showToast(checked ? 'Haptic feedback enabled' : 'Haptic feedback disabled', 'info');
+}
+
+function openSupportModal() {
+  showToast('Need help? Our 24/7 Virtual Trading Support is available at support@vtrade.io', 'info');
+}
+
+function showFeeStructureDialog() {
+  showToast('Fee Structure: 0.00% Maker / 0.00% Taker on all Virtual Futures (Scalping Offer active)', 'success');
+}
+
+function handleAccountsLogout() {
+  if (confirm('Are you sure you want to reset your paper-trading session?')) {
+    openResetWalletDialog();
+  }
+}
+
 function openProfileScreen() {
   switchMainTab('accounts');
 }
