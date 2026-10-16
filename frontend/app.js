@@ -6717,6 +6717,7 @@ function renderPositions() {
   renderTvChartOverlay();
   renderFundsBalance();
   renderAccountsScreen();
+  if (typeof renderHomeScreen === 'function') renderHomeScreen();
   const tbody = document.getElementById('pos-tbody');
   const cardsList = document.getElementById('pos-cards-list');
   const summaryEl = document.getElementById('pos-total-pnl-summary');
@@ -7632,3 +7633,479 @@ if (typeof window !== 'undefined') {
     }
   }
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// DELTA EXCHANGE INDIA – HOME CATEGORY LOGIC & ENGINE (SCREENSHOTS 1 & 2)
+// ══════════════════════════════════════════════════════════════════════════
+
+let homeSearchQuery = '';
+let activeContractTab = 'futures'; // 'futures', 'options', 'rwa'
+let activeContractFilter = 'gainers'; // 'new', 'gainers', 'volume', 'oi'
+let contractSortCol = 'change'; // 'symbol', 'price', 'change'
+let contractSortAsc = false;
+let isHomeBalanceMasked = false;
+
+// Contracts matching Delta Exchange India mobile layout exactly (Screenshot 1 & 2)
+const DELTA_CONTRACTS = [
+  { id: 'siren', symbol: 'SIRENUSD', name: 'Siren Perpetual', category: 'futures', isNew: true, basePrice: 0.02891, baseVol: 22230000, baseChange: 41.02, oi: 15400000, binanceSymbol: 'BTCUSDT' },
+  { id: 'injective', symbol: 'INJUSD', name: 'Injective Perpetual', category: 'futures', isNew: false, basePrice: 9.281, baseVol: 3180000, baseChange: 30.46, oi: 8200000, binanceSymbol: 'INJUSDT' },
+  { id: 'celestia', symbol: 'TIAUSD', name: 'Celestia Perpetual', category: 'futures', isNew: false, basePrice: 0.6716, baseVol: 2320000, baseChange: 26.07, oi: 5900000, binanceSymbol: 'TIAUSDT' },
+  { id: 'layerzero', symbol: 'ZROUSD', name: 'LayerZero Perpetual', category: 'futures', isNew: true, basePrice: 2.2028, baseVol: 1190000, baseChange: 16.54, oi: 3400000, binanceSymbol: 'ZROUSDT' },
+  { id: 'etherfi', symbol: 'ETHFIUSD', name: 'Ether.fi Perpetual', category: 'futures', isNew: true, basePrice: 0.6982, baseVol: 162890, baseChange: 16.33, oi: 950000, binanceSymbol: 'ETHFIUSDT' },
+  { id: 'stbl', symbol: 'STBLUSD', name: 'STBL Perpetual', category: 'futures', isNew: true, basePrice: 0.02399, baseVol: 2760000, baseChange: 15.50, oi: 2100000, binanceSymbol: 'USDCUSDT' },
+  { id: 'arbitrum', symbol: 'ARBUSD', name: 'Arbitrum Perpetual', category: 'futures', isNew: false, basePrice: 0.19983, baseVol: 200630, baseChange: 15.24, oi: 1200000, binanceSymbol: 'ARBUSDT' },
+  { id: 'near', symbol: 'NEARUSD', name: 'NEAR Perpetual', category: 'futures', isNew: false, basePrice: 5.273, baseVol: 1380000, baseChange: 14.87, oi: 4800000, binanceSymbol: 'NEARUSDT' },
+  { id: 'river', symbol: 'RIVERUSD', name: 'River Perpetual', category: 'futures', isNew: true, basePrice: 1.103, baseVol: 817410, baseChange: 13.95, oi: 760000, binanceSymbol: 'SUIUSDT' },
+  { id: 'worldcoin', symbol: 'WLDUSD', name: 'Worldcoin Perpetual', category: 'futures', isNew: false, basePrice: 0.5294, baseVol: 156350, baseChange: 13.17, oi: 610000, binanceSymbol: 'WLDUSDT' },
+  { id: 'zcash', symbol: 'ZECUSD', name: 'Zcash Perpetual', category: 'futures', isNew: false, basePrice: 1227.18, baseVol: 12360000, baseChange: 12.70, oi: 11200000, binanceSymbol: 'ZECUSDT' },
+  { id: 'solv', symbol: 'SOLVUSD', name: 'Solv Protocol Perpetual', category: 'futures', isNew: true, basePrice: 0.004253, baseVol: 170430, baseChange: 12.63, oi: 490000, binanceSymbol: 'BTCUSDT' },
+  { id: 'bitcoin', symbol: 'BTCUSD', name: 'Bitcoin Perpetual', category: 'futures', isNew: false, basePrice: 82017.0, baseVol: 15300000000, baseChange: 1.11, oi: 450000000, binanceSymbol: 'BTCUSDT' },
+  { id: 'ethereum', symbol: 'ETHUSD', name: 'Ethereum Perpetual', category: 'futures', isNew: false, basePrice: 2452.55, baseVol: 10180000000, baseChange: 3.63, oi: 280000000, binanceSymbol: 'ETHUSDT' },
+  { id: 'solana', symbol: 'SOLUSD', name: 'Solana Perpetual', category: 'futures', isNew: false, basePrice: 105.12, baseVol: 1900000000, baseChange: 2.30, oi: 95000000, binanceSymbol: 'SOLUSDT' },
+  // Options Category
+  { id: 'btc-opt-85000', symbol: 'BTC-85000-C', name: 'BTC Call Option', category: 'options', isNew: false, basePrice: 1420.00, baseVol: 85000000, baseChange: 8.45, oi: 52000000 },
+  { id: 'eth-opt-2600', symbol: 'ETH-2600-C', name: 'ETH Call Option', category: 'options', isNew: false, basePrice: 94.50, baseVol: 42000000, baseChange: 14.20, oi: 29000000 },
+  { id: 'xaut-opt-4200', symbol: 'XAUT-4200-C', name: 'XAUT Gold Call Option', category: 'options', isNew: false, basePrice: 48.00, baseVol: 12000000, baseChange: 4.10, oi: 9400000 },
+  // RWA Tokens Category
+  { id: 'xaut-rwa', symbol: 'XAUTUSD', name: 'Tether Gold RWA', category: 'rwa', isNew: false, basePrice: 4181.20, baseVol: 45000000, baseChange: 0.42, oi: 21000000 },
+  { id: 'usyc-rwa', symbol: 'USYCUSD', name: 'Yield Coin RWA', category: 'rwa', isNew: true, basePrice: 1.054, baseVol: 32000000, baseChange: 5.12, oi: 18000000 },
+  { id: 'buidl-rwa', symbol: 'BUIDLUSD', name: 'BlackRock BUIDL RWA', category: 'rwa', isNew: true, basePrice: 1.002, baseVol: 78000000, baseChange: 2.85, oi: 44000000 }
+];
+
+// Sparkline Mock Series for Top Strip
+const SPARKLINE_DATA = {
+  BTCUSD: [81200, 81450, 81100, 81700, 81650, 81900, 82017],
+  ETHUSD: [2380, 2395, 2370, 2410, 2430, 2445, 2452.55],
+  XAUT: [4160, 4165, 4172, 4168, 4175, 4179, 4181.20],
+  SOLUSD: [102.5, 103.1, 102.8, 104.2, 103.9, 104.8, 105.12]
+};
+
+function generateSparklineSvg(dataPoints, isPositive = true) {
+  const width = 148;
+  const height = 34;
+  const min = Math.min(...dataPoints);
+  const max = Math.max(...dataPoints);
+  const range = max - min || 1;
+  const strokeColor = isPositive ? '#00c087' : '#f43f5e';
+  const fillGradientId = 'spk-grad-' + Math.random().toString(36).substr(2, 9);
+
+  const coords = dataPoints.map((val, idx) => {
+    const x = (idx / (dataPoints.length - 1)) * width;
+    const y = height - ((val - min) / range) * (height - 8) - 4;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+
+  const lineD = 'M ' + coords.join(' L ');
+  const areaD = `${lineD} L ${width},${height} L 0,${height} Z`;
+
+  return `
+    <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%; height:100%;">
+      <defs>
+        <linearGradient id="${fillGradientId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.35" />
+          <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0.0" />
+        </linearGradient>
+      </defs>
+      <path d="${areaD}" fill="url(#${fillGradientId})" />
+      <path d="${lineD}" fill="none" stroke="${strokeColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  `;
+}
+
+function renderHomeScreen() {
+  const homeScreen = document.getElementById('home-screen-view');
+  if (!homeScreen) return;
+
+  // 1. Account Value Equity Calculation
+  const equityUsd = typeof computeNetEquity === 'function' ? computeNetEquity() : (walletState.cashBalance || 10000);
+  const inrRate = 86.5;
+  const equityInr = equityUsd * inrRate;
+
+  const inrEl = document.getElementById('home-balance-inr');
+  const usdEl = document.getElementById('home-balance-usd');
+
+  if (inrEl && usdEl) {
+    if (isHomeBalanceMasked) {
+      inrEl.textContent = '₹••••••';
+      usdEl.textContent = '$••••';
+    } else {
+      inrEl.textContent = '₹' + equityInr.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      usdEl.textContent = '$' + equityUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+  }
+
+  // 2. UPNL Calculation
+  let totalUpnl = 0;
+  const positions = walletState.positions || [];
+  positions.forEach(p => {
+    const curPrice = currentPrices[p.coin]?.price || p.entry_price || 0;
+    const diff = (p.direction === 'long') ? (curPrice - p.entry_price) : (p.entry_price - curPrice);
+    totalUpnl += (diff * p.size);
+  });
+
+  const upnlInrEl = document.getElementById('home-upnl-inr');
+  const upnlUsdEl = document.getElementById('home-upnl-usd');
+
+  if (upnlInrEl && upnlUsdEl) {
+    if (isHomeBalanceMasked) {
+      upnlInrEl.textContent = '₹••••';
+      upnlUsdEl.textContent = '$••••';
+      upnlInrEl.className = 'metric-val-inr upnl-neutral';
+    } else {
+      const upnlInr = totalUpnl * inrRate;
+      const isPositive = totalUpnl > 0.001;
+      const isNegative = totalUpnl < -0.001;
+
+      upnlInrEl.textContent = (isPositive ? '+₹' : (isNegative ? '-₹' : '₹')) + Math.abs(upnlInr).toFixed(2);
+      upnlUsdEl.textContent = (isPositive ? '+$' : (isNegative ? '-$' : '$')) + Math.abs(totalUpnl).toFixed(2);
+
+      upnlInrEl.className = 'metric-val-inr ' + (isPositive ? 'upnl-green' : (isNegative ? 'upnl-red' : 'upnl-neutral'));
+    }
+  }
+
+  // 3. Positions / Orders Count
+  const posCount = positions.length;
+  const ordCount = (walletState.orders || []).length;
+  const posOrdEl = document.getElementById('home-pos-orders-count');
+  if (posOrdEl) {
+    posOrdEl.textContent = `${posCount} / ${ordCount}`;
+  }
+
+  // 4. Mini Sparkline Strip Render
+  renderSparklinesStrip();
+
+  // 5. Contracts List Render
+  renderContractsList();
+}
+
+function renderSparklinesStrip() {
+  const container = document.getElementById('home-sparklines-strip');
+  if (!container) return;
+
+  const sparklineItems = [
+    {
+      symbol: 'BTCUSD',
+      price: currentPrices['bitcoin']?.price || 82017.0,
+      change: currentPrices['bitcoin']?.change || 1.11,
+      coinId: 'bitcoin',
+      data: SPARKLINE_DATA.BTCUSD
+    },
+    {
+      symbol: 'ETHUSD',
+      price: currentPrices['ethereum']?.price || 2452.55,
+      change: currentPrices['ethereum']?.change || 3.63,
+      coinId: 'ethereum',
+      data: SPARKLINE_DATA.ETHUSD
+    },
+    {
+      symbol: 'XAUT',
+      price: 4181.20,
+      change: 0.42,
+      coinId: 'xaut-rwa',
+      data: SPARKLINE_DATA.XAUT
+    },
+    {
+      symbol: 'SOLUSD',
+      price: currentPrices['solana']?.price || 105.12,
+      change: currentPrices['solana']?.change || 2.30,
+      coinId: 'solana',
+      data: SPARKLINE_DATA.SOLUSD
+    }
+  ];
+
+  container.innerHTML = sparklineItems.map(item => {
+    const isUp = item.change >= 0;
+    const formattedPrice = item.price >= 1000
+      ? `$${item.price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}`
+      : `$${item.price.toFixed(2)}`;
+
+    return `
+      <div class="sparkline-card" onclick="selectContractRow('${item.coinId}')">
+        <div class="spk-header">
+          <span class="spk-symbol">${item.symbol}</span>
+          <span class="spk-change ${isUp ? 'up' : 'down'}">
+            <span>${isUp ? '▲' : '▼'}</span>
+            <span>${Math.abs(item.change).toFixed(2)}%</span>
+          </span>
+        </div>
+        <div class="spk-price">${formattedPrice}</div>
+        <div class="spk-chart-canvas">
+          ${generateSparklineSvg(item.data, isUp)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderContractsList() {
+  const listEl = document.getElementById('home-contracts-list');
+  if (!listEl) return;
+
+  // Filter by category tab
+  let list = DELTA_CONTRACTS.filter(c => c.category === activeContractTab);
+
+  // Filter by search query
+  if (homeSearchQuery && homeSearchQuery.trim()) {
+    const q = homeSearchQuery.trim().toLowerCase();
+    list = list.filter(c =>
+      c.symbol.toLowerCase().includes(q) ||
+      c.name.toLowerCase().includes(q)
+    );
+  }
+
+  // Filter by sub-chips
+  if (activeContractFilter === 'new') {
+    list = list.filter(c => c.isNew);
+  } else if (activeContractFilter === 'gainers') {
+    list.sort((a, b) => b.baseChange - a.baseChange);
+  } else if (activeContractFilter === 'volume') {
+    list.sort((a, b) => b.baseVol - a.baseVol);
+  } else if (activeContractFilter === 'oi') {
+    list.sort((a, b) => b.oi - a.oi);
+  }
+
+  // Sort if requested
+  if (contractSortCol === 'symbol') {
+    list.sort((a, b) => contractSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
+  } else if (contractSortCol === 'price') {
+    list.sort((a, b) => contractSortAsc ? a.basePrice - b.basePrice : b.basePrice - a.basePrice);
+  } else if (contractSortCol === 'change') {
+    list.sort((a, b) => contractSortAsc ? a.baseChange - b.baseChange : b.baseChange - a.baseChange);
+  }
+
+  if (!list.length) {
+    listEl.innerHTML = `<div style="text-align:center; padding: 24px; color:#8f96a3; font-size:13px;">No contracts found matching "${homeSearchQuery}"</div>`;
+    return;
+  }
+
+  listEl.innerHTML = list.map(c => {
+    // Dynamic price from Binance or basePrice
+    let price = c.basePrice;
+    let change = c.baseChange;
+    if (c.id === 'bitcoin' && currentPrices['bitcoin']?.price) {
+      price = currentPrices['bitcoin'].price;
+      change = currentPrices['bitcoin'].change || change;
+    } else if (c.id === 'ethereum' && currentPrices['ethereum']?.price) {
+      price = currentPrices['ethereum'].price;
+      change = currentPrices['ethereum'].change || change;
+    } else if (c.id === 'solana' && currentPrices['solana']?.price) {
+      price = currentPrices['solana'].price;
+      change = currentPrices['solana'].change || change;
+    }
+
+    let priceStr = '';
+    if (price >= 1000) {
+      priceStr = `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    } else if (price >= 1) {
+      priceStr = `$${price.toFixed(price < 10 ? 3 : 2)}`;
+    } else if (price >= 0.01) {
+      priceStr = `$${price.toFixed(4)}`;
+    } else {
+      priceStr = `$${price.toFixed(6)}`;
+    }
+
+    let volStr = '';
+    if (c.baseVol >= 1e9) {
+      volStr = `$${(c.baseVol / 1e9).toFixed(2)}B`;
+    } else if (c.baseVol >= 1e6) {
+      volStr = `$${(c.baseVol / 1e6).toFixed(2)}M`;
+    } else if (c.baseVol >= 1e3) {
+      volStr = `$${(c.baseVol / 1e3).toFixed(2)}K`;
+    } else {
+      volStr = `$${c.baseVol.toFixed(2)}`;
+    }
+
+    const isGain = change >= 0;
+    const changeBadgeStr = (isGain ? '+' : '') + change.toFixed(2) + '%';
+
+    return `
+      <div class="contract-row" onclick="selectContractRow('${c.id}')">
+        <div class="c-cell-identity">
+          <span class="c-symbol">${c.symbol}</span>
+          <span class="c-name">${c.name}</span>
+        </div>
+        <div class="c-cell-price">
+          <span class="c-price">${priceStr}</span>
+          <span class="c-vol">${volStr}</span>
+        </div>
+        <div class="c-cell-change">
+          <span class="change-badge ${isGain ? 'gain' : 'loss'}">${changeBadgeStr}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function handleHomeSearch(val) {
+  homeSearchQuery = val || '';
+  renderContractsList();
+}
+
+function switchContractTab(tab) {
+  activeContractTab = tab;
+  document.querySelectorAll('.contract-tab-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(`tab-${tab}`);
+  if (activeBtn) activeBtn.classList.add('active');
+  renderContractsList();
+}
+
+function setContractFilter(filter) {
+  activeContractFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+  const activeChip = document.getElementById(`chip-${filter}`);
+  if (activeChip) activeChip.classList.add('active');
+  renderContractsList();
+}
+
+function sortContracts(col) {
+  if (contractSortCol === col) {
+    contractSortAsc = !contractSortAsc;
+  } else {
+    contractSortCol = col;
+    contractSortAsc = false;
+  }
+  renderContractsList();
+}
+
+function selectContractRow(coinId) {
+  selectedCoin = coinId;
+  showToast(`Selected contract: ${coinId.toUpperCase()}`, 'info');
+}
+
+function toggleBalanceVisibility() {
+  isHomeBalanceMasked = !isHomeBalanceMasked;
+  renderHomeScreen();
+}
+
+// ─── ADD FUNDS PAPER MODAL ───────────────────────────────────────
+let selectedDepositAmount = 1000;
+
+function openAddFundsModal() {
+  const modal = document.getElementById('add-funds-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeAddFundsModal() {
+  const modal = document.getElementById('add-funds-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function selectDepositPreset(amount) {
+  selectedDepositAmount = amount;
+  const input = document.getElementById('deposit-custom-amount');
+  if (input) input.value = amount;
+}
+
+function confirmDeposit() {
+  const input = document.getElementById('deposit-custom-amount');
+  const amountInr = input && input.value ? parseFloat(input.value) : selectedDepositAmount;
+
+  if (!amountInr || amountInr <= 0) {
+    showToast('Please enter a valid deposit amount', 'error');
+    return;
+  }
+
+  const inrRate = 86.5;
+  const usdAmount = amountInr / inrRate;
+  walletState.cashBalance = (walletState.cashBalance || 0) + usdAmount;
+  saveWalletState();
+  closeAddFundsModal();
+  renderHomeScreen();
+  showToast(`₹${amountInr.toLocaleString('en-IN')} successfully deposited!`, 'success');
+}
+
+// ─── REKYC MODAL ─────────────────────────────────────────────────
+function openKycModal() {
+  const modal = document.getElementById('rekyc-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeKycModal() {
+  const modal = document.getElementById('rekyc-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function completeKycSimulation() {
+  closeKycModal();
+  showToast('KYC Verified! Account active for all contracts.', 'success');
+}
+
+// ─── QUICK ACTIONS & FEATURE MODALS ──────────────────────────────
+function openQrModal() {
+  showGenericModal('Scan QR Code', 'Point your camera at a QR code to transfer funds or connect desktop session.');
+}
+
+function openWalletModal() {
+  showGenericModal('Delta Wallet', 'Manage INR deposits, UPI transfers, and Crypto Tether balances.');
+}
+
+function openNotificationsModal() {
+  showGenericModal('Notifications', 'Diwali Scalper Offer active: 0 closing fees on all Perpetual Futures!');
+}
+
+function openProfileModal() {
+  showGenericModal('User Profile', 'Delta Exchange ID: #DX-98241\nTier: VIP 1 Trader\nStatus: Verified');
+}
+
+function showDistTooltip() {
+  showToast('Advancers (208) vs Decliners (21) across all listed perpetuals.', 'info');
+}
+
+function openQuickAction(action) {
+  if (action === 'research') {
+    showGenericModal('Delta Research', 'Daily crypto market intelligence, technical breakout signals, and macro analysis.');
+  } else if (action === 'usstocks') {
+    showGenericModal('US Stocks – Token Perps', 'Trade NVDA, TSLA, AAPL, AMZN with up to 50x leverage 24/7.');
+  } else if (action === 'algohub') {
+    showGenericModal('Algo Hub', 'Automated grid trading bots, DCA bots, and scalping strategies.');
+  } else if (action === 'livechat') {
+    showGenericModal('Live Support Chat', 'Delta Exchange 24/7 VIP desk is online. Average response time: < 2 minutes.');
+  } else if (action === 'more') {
+    showGenericModal('More Services', 'API Management, Referral Program, Trading Fees, and Security Center.');
+  }
+}
+
+function showGenericModal(title, bodyText) {
+  const modal = document.getElementById('generic-action-modal');
+  const titleEl = document.getElementById('generic-modal-title');
+  const bodyEl = document.getElementById('generic-modal-body');
+  if (modal && titleEl && bodyEl) {
+    titleEl.textContent = title;
+    bodyEl.innerHTML = `<p style="line-height:1.6; color:#c0c6d4; font-size:14px;">${bodyText}</p>`;
+    modal.classList.remove('hidden');
+  }
+}
+
+function closeGenericModal() {
+  const modal = document.getElementById('generic-action-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+// ─── BOTTOM NAVIGATION HANDLER ───────────────────────────────────
+function showBottomTab(tab, btn) {
+  // Support both legacy and new category tabs
+  activeBottomTab = tab || 'home';
+
+  // Highlight bottom nav buttons
+  const navTabs = ['home', 'markets', 'trade', 'charts', 'portfolio'];
+  navTabs.forEach(t => {
+    const el = document.getElementById(`nav-btn-${t}`);
+    if (el) el.classList.toggle('active', t === activeBottomTab);
+  });
+
+  if (activeBottomTab === 'home') {
+    const homeView = document.getElementById('home-screen-view');
+    if (homeView) homeView.style.display = 'flex';
+    renderHomeScreen();
+  } else {
+    showToast(`Navigating to ${activeBottomTab.toUpperCase()}...`, 'info');
+  }
+}
+
+// Initialize Home Screen on boot
+if (typeof window !== 'undefined') {
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(renderHomeScreen, 150);
+  });
+}
+
