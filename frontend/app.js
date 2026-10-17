@@ -1258,6 +1258,15 @@ let liveTickerInterval = null;
 function initVTradeApp() {
   console.log('🚀 Initializing VTrade 120 FPS Paper Trading App...');
 
+  // Ensure native mobile safe areas are properly applied
+  try {
+    const isCap = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+    const isAnd = /Android/i.test(navigator.userAgent);
+    if (isCap || isAnd) {
+      document.documentElement.classList.add('is-native-apk', 'is-mobile-app');
+    }
+  } catch (e) {}
+
   // Setup Currency Button state
   const iconEl = document.getElementById('curr-toggle-icon');
   const labelEl = document.getElementById('curr-toggle-label');

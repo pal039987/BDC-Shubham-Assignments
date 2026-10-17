@@ -21,6 +21,20 @@
   --gold: #ff9900;
   --gold-bg: rgba(255, 153, 0, 0.14);
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Status Bar & Safe Area Insets for Mobile / Android Notch */
+  --safe-area-top-fallback: 0px;
+  --safe-area-top: var(--safe-area-inset-top, var(--safe-area-top-fallback, env(safe-area-inset-top, 0px)));
+  --safe-area-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-area-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --safe-area-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+}
+
+/* Enforce minimum safe-area padding for Android APK / mobile standalone */
+.is-native-apk,
+.is-native-android,
+.is-mobile-app {
+  --safe-area-top-fallback: 38px;
 }
 
 *, *::before, *::after {
@@ -62,16 +76,30 @@ html, body {
 
 /* ══════════════════════ 1. TOP HEADER BAR ══════════════════════ */
 .app-top-header {
-  height: 56px;
-  padding: 0 16px;
+  min-height: calc(56px + var(--safe-area-top, 0px));
+  height: calc(56px + var(--safe-area-top, 0px));
+  padding-top: var(--safe-area-top, 0px);
+  padding-bottom: 0;
+  padding-left: max(16px, var(--safe-area-left, 0px));
+  padding-right: max(16px, var(--safe-area-right, 0px));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(8, 11, 17, 0.85);
+  background: rgba(8, 11, 17, 0.95);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border-light);
   flex-shrink: 0;
   z-index: 50;
+  box-sizing: border-box;
+}
+
+/* Specific rule for native APK / mobile devices ensuring header is never covered by status bar */
+.is-native-apk .app-top-header,
+.is-native-android .app-top-header,
+.is-mobile-app .app-top-header {
+  padding-top: max(38px, var(--safe-area-top, 38px));
+  height: calc(56px + max(38px, var(--safe-area-top, 38px)));
+  min-height: calc(56px + max(38px, var(--safe-area-top, 38px)));
 }
 
 .header-brand-wrap {
@@ -197,7 +225,7 @@ html, body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 84px; /* Space for bottom nav */
+  padding-bottom: calc(84px + var(--safe-area-bottom, 0px)); /* Space for bottom nav */
 }
 
 /* ══════════════════════ 3. HOME SCREEN (COINBASE-STYLE) ══════════════════════ */
@@ -1172,7 +1200,9 @@ html, body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  min-height: calc(60px + var(--safe-area-bottom, 0px));
+  height: calc(60px + var(--safe-area-bottom, 0px));
+  padding-bottom: var(--safe-area-bottom, 0px);
   background: rgba(8, 11, 17, 0.95);
   backdrop-filter: blur(18px);
   border-top: 1px solid var(--border-light);
@@ -1180,6 +1210,7 @@ html, body {
   align-items: center;
   justify-content: space-around;
   z-index: 60;
+  box-sizing: border-box;
 }
 
 .vnav-item {
@@ -1238,7 +1269,7 @@ html, body {
   background: #0f1420;
   border-radius: 24px 24px 0 0;
   border-top: 1px solid var(--border-active);
-  padding: 12px 20px 28px 20px;
+  padding: 12px 20px calc(28px + var(--safe-area-bottom, 0px)) 20px;
   max-height: 88vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -1564,7 +1595,7 @@ html, body {
   background: #0f1420;
   border-radius: 24px 24px 0 0;
   border-top: 1px solid var(--border-active);
-  padding: 16px 20px 30px 20px;
+  padding: 16px 20px calc(30px + var(--safe-area-bottom, 0px)) 20px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -1618,7 +1649,7 @@ html, body {
 /* ══════════════════════ 10. TOAST NOTIFICATIONS ══════════════════════ */
 .toast-container {
   position: fixed;
-  bottom: 74px;
+  bottom: calc(74px + var(--safe-area-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;

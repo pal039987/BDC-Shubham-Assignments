@@ -21,9 +21,14 @@
     "allowMixedContent": true
   },
   "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    },
     "SplashScreen": {
       "launchShowDuration": 2000,
-      "backgroundColor": "#0b0e11",
+      "backgroundColor": "#080b11",
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_CROP"
     }
