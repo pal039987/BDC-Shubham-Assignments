@@ -11141,7 +11141,9 @@ function showBottomTab(tab, btn) {
 // Initialize on boot
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(renderHomeScreen, 150);
+    if (document.getElementById('home-screen-view')) {
+      setTimeout(renderHomeScreen, 150);
+    }
   });
 }
 
