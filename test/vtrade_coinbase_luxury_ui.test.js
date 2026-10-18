@@ -173,19 +173,22 @@ assert.strictEqual(goldCoin.binanceSym, 'PAXGUSDT', 'Gold Binance symbol must ma
 assert.strictEqual(goldCoin.tvSymbol, 'OANDA:XAUUSD', 'Gold TradingView symbol must map to OANDA:XAUUSD');
 console.log('  ✓ Gold Spot (XAU/USD) with real-time PAXG price & TradingView chart mapping verified');
 
-// 16. Verify Luxury Sign In & Sign Up Modal and Session Management
+// 16. Verify Luxury Sign In & Sign Up Modal, Database Verification and Authorization Wall
 assert.ok(html.includes('id="auth-modal-overlay"'), 'Auth modal overlay present in HTML');
 assert.ok(html.includes('id="auth-login-form"'), 'Sign In form present in HTML');
 assert.ok(html.includes('id="auth-register-form"'), 'Create Account form present in HTML');
-assert.ok(html.includes('continueAsGuestTrader()'), 'Continue as Guest button present');
+assert.ok(!html.includes('class="auth-guest-btn"'), 'Guest bypass button strictly removed from HTML');
+assert.ok(html.includes('id="auth-footer-note"'), 'Database verification footer note present in HTML');
 assert.ok(js.includes('function handleAuthLogin('), 'handleAuthLogin defined in app.js');
 assert.ok(js.includes('function handleAuthRegister('), 'handleAuthRegister defined in app.js');
-assert.ok(js.includes('function continueAsGuestTrader()'), 'continueAsGuestTrader defined in app.js');
+assert.ok(js.includes('function handleBackdropClick('), 'handleBackdropClick defined in app.js');
 assert.ok(js.includes('function togglePasswordVisibility('), 'togglePasswordVisibility defined in app.js');
 assert.ok(js.includes('function getAuthSession()'), 'getAuthSession defined in app.js');
+assert.ok(js.includes('SEED_DATABASE_USERS'), 'SEED_DATABASE_USERS defined in app.js');
 assert.ok(css.includes('.auth-modal-overlay'), 'Auth modal overlay CSS present');
 assert.ok(css.includes('.auth-primary-btn'), 'Auth primary button CSS present');
-console.log('  ✓ Luxury Sign In / Sign Up Modal, Auto-login session, and Guest trader flow verified');
+assert.ok(css.includes('.auth-footer-note'), 'Auth footer note CSS present');
+console.log('  ✓ Luxury Sign In / Sign Up Modal, Database Auth, and Authorization Wall verified');
 
 // 17. Verify Coinbase USD Live Price Feeds for BTC, ETH, SOL
 assert.ok(js.includes('api.coinbase.com/v2/prices/BTC-USD/spot'), 'Coinbase BTC-USD spot feed configured');

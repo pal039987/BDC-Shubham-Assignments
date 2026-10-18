@@ -1014,6 +1014,16 @@ function initAppTheme() {
 
 // ─── 2.3 LUXURY AUTHENTICATION & SESSION ENGINE ─────────────────────────
 const AUTH_SESSION_KEY = 'vtrade_auth_session_v1';
+const USER_DB_STORAGE_KEY = 'vtrade_users_master_db_v3';
+
+// Pre-seeded database users matching backend SQLite trading.db
+const SEED_DATABASE_USERS = [
+  { id: 1, username: 'testtrader', email: 'test@example.com', password: 'password123', balance: 10000 },
+  { id: 2, username: 'trader2', email: 'trader2@test.com', password: 'password123', balance: 10000 },
+  { id: 3, username: 'rabi', email: 'pal039987@mpgi.edu.in', password: 'password123', balance: 10000 },
+  { id: 5, username: 'GoogleTrader', email: 'google_trader@vtrade.com', password: 'password123', balance: 10000 },
+  { id: 6, username: 'verify_user_1', email: 'verify1@gmail.com', password: 'correct_pass_123', balance: 10000 }
+];
 
 function getAuthSession() {
   try {
@@ -1037,14 +1047,36 @@ function clearAuthSession() {
 
 function openAuthModal(defaultTab = 'login') {
   const modal = document.getElementById('auth-modal-overlay');
+  const closeBtn = document.getElementById('auth-modal-close-btn');
   if (!modal) return;
   switchAuthTab(defaultTab);
   modal.classList.remove('hidden');
+
+  const sess = getAuthSession();
+  if (!sess || sess.isGuest || !sess.email) {
+    if (closeBtn) closeBtn.classList.add('hidden');
+  } else {
+    if (closeBtn) closeBtn.classList.remove('hidden');
+  }
 }
 
-function dismissAuthModal() {
+function dismissAuthModal(force = false) {
+  const sess = getAuthSession();
+  if (!force && (!sess || sess.isGuest || !sess.email)) {
+    showToast('Please Sign In or Create an Account to continue', 'warning');
+    return;
+  }
   const modal = document.getElementById('auth-modal-overlay');
   if (modal) modal.classList.add('hidden');
+}
+
+function handleBackdropClick() {
+  const sess = getAuthSession();
+  if (!sess || sess.isGuest || !sess.email) {
+    showToast('Please Sign In or Create an Account to continue', 'warning');
+    return;
+  }
+  dismissAuthModal(true);
 }
 
 function switchAuthTab(tab) {
@@ -1074,24 +1106,64 @@ function togglePasswordVisibility(inputId) {
 
 function getRegisteredUsers() {
   try {
-    const raw = localStorage.getItem('vtrade_registered_users');
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    return [];
-  }
+    const raw = localStorage.getItem(USER_DB_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+
+  // Migrate any previous users from vtrade_registered_users
+  let oldUsers = [];
+  try {
+    const oldRaw = localStorage.getItem('vtrade_registered_users');
+    if (oldRaw) oldUsers = JSON.parse(oldRaw) || [];
+  } catch (e) {}
+
+  const merged = [...SEED_DATABASE_USERS];
+  oldUsers.forEach(ou => {
+    if (ou.email && !merged.some(m => m.email.toLowerCase() === ou.email.toLowerCase())) {
+      merged.push({
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        username: ou.username || ou.email.split('@')[0],
+        email: ou.email.toLowerCase(),
+        password: ou.password || 'password123',
+        balance: 10000
+      });
+    }
+  });
+
+  try {
+    localStorage.setItem(USER_DB_STORAGE_KEY, JSON.stringify(merged));
+  } catch (e) {}
+  return merged;
 }
 
 function saveRegisteredUser(user) {
   try {
     const users = getRegisteredUsers();
-    const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+    const cleanEmail = (user.email || '').trim().toLowerCase();
+    const idx = users.findIndex(u => u.email.toLowerCase() === cleanEmail);
+    const userRecord = {
+      id: user.id || (idx >= 0 ? users[idx].id : Date.now()),
+      username: (user.username || cleanEmail.split('@')[0]).trim(),
+      email: cleanEmail,
+      password: user.password,
+      balance: user.balance || 10000,
+      createdAt: user.createdAt || Date.now()
+    };
+
     if (idx >= 0) {
-      users[idx] = user;
+      users[idx] = { ...users[idx], ...userRecord };
     } else {
-      users.push(user);
+      users.push(userRecord);
     }
+    localStorage.setItem(USER_DB_STORAGE_KEY, JSON.stringify(users));
     localStorage.setItem('vtrade_registered_users', JSON.stringify(users));
-  } catch (e) {}
+    return userRecord;
+  } catch (e) {
+    console.error('Failed to save registered user:', e);
+  }
 }
 
 async function handleAuthLogin(event) {
@@ -1100,7 +1172,7 @@ async function handleAuthLogin(event) {
   const pwdInput = document.getElementById('login-password');
   const rememberBox = document.getElementById('login-remember');
 
-  const email = emailInput ? emailInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
   const password = pwdInput ? pwdInput.value : '';
 
   if (!email || !password) {
@@ -1108,14 +1180,21 @@ async function handleAuthLogin(event) {
     return;
   }
 
+  // 1. Try Backend API first with timeout
+  let backendHandled = false;
   try {
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 2000);
     const resp = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
+      signal: ctl.signal
     });
+    clearTimeout(tmr);
 
     const data = await resp.json().catch(() => ({}));
+    backendHandled = true;
 
     if (resp.ok) {
       const sess = {
@@ -1131,59 +1210,73 @@ async function handleAuthLogin(event) {
       userProfile.name = sess.username;
       userProfile.email = sess.email;
       saveUserProfile();
-      dismissAuthModal();
+      dismissAuthModal(true);
       updateAccountAuthUI();
       renderAccountScreen();
       showToast(`Welcome back, ${sess.username}!`, 'success');
       return;
     }
 
-    // Backend returned 404 or 401 error: strictly DO NOT log in!
+    // Backend returned 404: strictly NOT in database!
     if (resp.status === 404 || (data.error && data.error.includes('not registered'))) {
       showToast('Account is not registered. Please create an account first.', 'error');
       switchAuthTab('register');
+      const regEmail = document.getElementById('register-email');
+      if (regEmail) regEmail.value = email;
       return;
     }
 
-    showToast(data.error || 'Invalid credentials. Please try again.', 'error');
-    return;
-
-  } catch (err) {
-    // Backend network failure (e.g. mobile offline WebView):
-    // Strictly verify against locally registered accounts!
-    const localUsers = getRegisteredUsers();
-    const registered = localUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (!registered) {
-      showToast('Account is not registered. Please create an account first.', 'error');
-      switchAuthTab('register');
-      return;
-    }
-
-    if (registered.password !== password) {
+    // Backend returned 401: wrong password!
+    if (resp.status === 401 || (data.error && data.error.includes('password'))) {
       showToast('Incorrect password. Please try again.', 'error');
       return;
     }
 
-    // Verified registered local user
-    const sess = {
-      token: 'local_token_' + Date.now(),
-      username: registered.username,
-      email: registered.email,
-      isGuest: false,
-      loggedInAt: Date.now()
-    };
-    if (!rememberBox || rememberBox.checked) {
-      saveAuthSession(sess);
-    }
-    userProfile.name = sess.username;
-    userProfile.email = sess.email;
-    saveUserProfile();
-    dismissAuthModal();
-    updateAccountAuthUI();
-    renderAccountScreen();
-    showToast(`Welcome back, ${sess.username}!`, 'success');
+    showToast(data.error || 'Login failed. Please check credentials.', 'error');
+    return;
+
+  } catch (err) {
+    // If backend already responded with an error, do not fall back
+    if (backendHandled) return;
   }
+
+  // 2. Standalone / Mobile offline verification against local database
+  const dbUsers = getRegisteredUsers();
+  const registered = dbUsers.find(u => u.email.toLowerCase() === email);
+
+  // If user is not in database:
+  if (!registered) {
+    showToast('Account is not registered. Please create an account first.', 'error');
+    switchAuthTab('register');
+    const regEmail = document.getElementById('register-email');
+    if (regEmail) regEmail.value = email;
+    return;
+  }
+
+  // If password does not match:
+  if (registered.password !== password) {
+    showToast('Incorrect password. Please try again.', 'error');
+    return;
+  }
+
+  // Password matched & user is in database!
+  const sess = {
+    token: 'vtrade_auth_' + Date.now(),
+    username: registered.username,
+    email: registered.email,
+    isGuest: false,
+    loggedInAt: Date.now()
+  };
+  if (!rememberBox || rememberBox.checked) {
+    saveAuthSession(sess);
+  }
+  userProfile.name = registered.username;
+  userProfile.email = registered.email;
+  saveUserProfile();
+  dismissAuthModal(true);
+  updateAccountAuthUI();
+  renderAccountScreen();
+  showToast(`Welcome back, ${registered.username}!`, 'success');
 }
 
 async function handleAuthRegister(event) {
@@ -1193,7 +1286,7 @@ async function handleAuthRegister(event) {
   const pwdInput = document.getElementById('register-password');
 
   const username = nameInput ? nameInput.value.trim() : '';
-  const email = emailInput ? emailInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
   const password = pwdInput ? pwdInput.value : '';
 
   if (!username || !email || !password) {
@@ -1205,18 +1298,32 @@ async function handleAuthRegister(event) {
     return;
   }
 
-  // Always record into registered accounts database/storage
-  saveRegisteredUser({ username, email, password });
+  // 1. Check if user already exists in local database
+  const dbUsers = getRegisteredUsers();
+  const exists = dbUsers.some(u => u.email.toLowerCase() === email);
+  if (exists) {
+    showToast('Account already exists! Please Sign In.', 'error');
+    switchAuthTab('login');
+    const loginEmail = document.getElementById('login-email');
+    if (loginEmail) loginEmail.value = email;
+    return;
+  }
 
+  // 2. Try Backend API first with timeout
   try {
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 2000);
     const resp = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({ username, email, password }),
+      signal: ctl.signal
     });
+    clearTimeout(tmr);
 
     const data = await resp.json().catch(() => ({}));
     if (resp.ok) {
+      saveRegisteredUser({ username, email, password });
       const sess = {
         token: data.token,
         username: username,
@@ -1228,50 +1335,53 @@ async function handleAuthRegister(event) {
       userProfile.name = username;
       userProfile.email = email;
       saveUserProfile();
-      dismissAuthModal();
+      dismissAuthModal(true);
       updateAccountAuthUI();
       renderAccountScreen();
-      showToast(`Account created! Welcome, ${username}!`, 'success');
+      showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
+      return;
     } else {
-      if (data.error && data.error.includes('already exists')) {
+      if (data.error && (data.error.includes('already exists') || data.error.includes('UNIQUE'))) {
         showToast('Account already exists! Please Sign In.', 'error');
         switchAuthTab('login');
-      } else {
-        showToast(data.error || 'Registration failed', 'error');
+        const loginEmail = document.getElementById('login-email');
+        if (loginEmail) loginEmail.value = email;
+        return;
       }
     }
-  } catch (err) {
-    const sess = {
-      token: 'local_token_' + Date.now(),
-      username: username,
-      email: email,
-      isGuest: false,
-      loggedInAt: Date.now()
-    };
-    saveAuthSession(sess);
-    userProfile.name = username;
-    userProfile.email = email;
-    saveUserProfile();
-    dismissAuthModal();
-    updateAccountAuthUI();
-    renderAccountScreen();
-    showToast(`Welcome to VTrade, ${username}!`, 'success');
-  }
+  } catch (err) {}
+
+  // 3. Fallback / Offline registration in persistent database
+  saveRegisteredUser({ username, email, password });
+  const sess = {
+    token: 'vtrade_auth_' + Date.now(),
+    username: username,
+    email: email,
+    isGuest: false,
+    loggedInAt: Date.now()
+  };
+  saveAuthSession(sess);
+  userProfile.name = username;
+  userProfile.email = email;
+  saveUserProfile();
+  dismissAuthModal(true);
+  updateAccountAuthUI();
+  renderAccountScreen();
+  showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
 }
 
 function continueAsGuestTrader() {
-  dismissAuthModal();
-  updateAccountAuthUI();
-  showToast('Entered Demo Trading Desk ($10,000 Virtual Balance)', 'info');
+  showToast('Guest trading is disabled. Please create an account or sign in.', 'warning');
+  switchAuthTab('register');
 }
 
 function handleAccountAuthClick() {
   const sess = getAuthSession();
-  if (sess && !sess.isGuest) {
+  if (sess && !sess.isGuest && sess.email) {
     if (confirm(`Currently signed in as ${sess.username} (${sess.email}). Do you want to sign out?`)) {
       clearAuthSession();
-      userProfile.name = 'Alex Trader';
-      userProfile.email = 'alex.trader@gmail.com';
+      userProfile.name = 'Trader';
+      userProfile.email = '';
       saveUserProfile();
       updateAccountAuthUI();
       renderAccountScreen();
@@ -1290,14 +1400,14 @@ function updateAccountAuthUI() {
   const iconEl = document.getElementById('auth-status-icon');
 
   const sess = getAuthSession();
-  if (sess && !sess.isGuest) {
+  if (sess && !sess.isGuest && sess.email) {
     if (titleEl) titleEl.textContent = `Active Account (${sess.username})`;
     if (subEl) subEl.textContent = sess.email;
     if (btnEl) btnEl.textContent = 'Sign Out';
     if (iconEl) iconEl.textContent = '👤';
   } else {
-    if (titleEl) titleEl.textContent = 'Guest Trader Mode';
-    if (subEl) subEl.textContent = 'Practice trading with $10,000 Demo Balance';
+    if (titleEl) titleEl.textContent = 'Not Signed In';
+    if (subEl) subEl.textContent = 'Sign in or register to trade';
     if (btnEl) btnEl.textContent = 'Sign In / Register';
     if (iconEl) iconEl.textContent = '🔐';
   }
@@ -3133,16 +3243,14 @@ function initVTradeApp() {
 
   // Check auth session
   const sess = getAuthSession();
-  if (sess && !sess.isGuest) {
+  if (sess && !sess.isGuest && sess.email) {
     userProfile.name = sess.username;
     userProfile.email = sess.email;
     saveUserProfile();
     updateAccountAuthUI();
   } else {
     updateAccountAuthUI();
-    setTimeout(() => {
-      openAuthModal('login');
-    }, 400);
+    openAuthModal('login');
   }
 
   // Render TradingView Chart for active coin

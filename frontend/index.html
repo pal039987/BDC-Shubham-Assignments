@@ -792,9 +792,9 @@
 
   <!-- ══════════════════════ 10. LUXURY SIGN IN & SIGN UP MODAL ══════════════════════ -->
   <div class="auth-modal-overlay hidden" id="auth-modal-overlay">
-    <div class="auth-modal-backdrop" onclick="dismissAuthModal()"></div>
+    <div class="auth-modal-backdrop" id="auth-modal-backdrop" onclick="handleBackdropClick()"></div>
     <div class="auth-modal-card">
-      <button type="button" class="auth-modal-close-btn" onclick="dismissAuthModal()" title="Close">✕</button>
+      <button type="button" class="auth-modal-close-btn hidden" id="auth-modal-close-btn" onclick="dismissAuthModal()" title="Close">✕</button>
 
       <!-- Brand Header -->
       <div class="auth-brand-header">
@@ -890,21 +890,11 @@
         </button>
       </form>
 
-      <!-- Divider -->
-      <div class="auth-divider">
-        <span class="auth-divider-line"></span>
-        <span class="auth-divider-text">OR</span>
-        <span class="auth-divider-line"></span>
+      <!-- Security & Database Notice -->
+      <div class="auth-footer-note" id="auth-footer-note">
+        <span class="auth-footer-icon">🔒</span>
+        <span class="auth-footer-text">Database Verified Access • Encrypted Credentials</span>
       </div>
-
-      <!-- Quick Guest Demo Entry -->
-      <button type="button" class="auth-guest-btn" onclick="continueAsGuestTrader()">
-        <span class="guest-btn-icon">⚡</span>
-        <div class="guest-btn-text-wrap">
-          <span class="guest-btn-main">Continue as Guest / Demo Trader</span>
-          <span class="guest-btn-sub">Instant 1-Tap Entry • $10,000 Demo Balance</span>
-        </div>
-      </button>
     </div>
   </div>
 

@@ -166,23 +166,32 @@ app.post('/api/auth/paper-session', (req, res) => {
 });
 app.post('/api/auth/register', (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password } = req.body || {};
     if (!username || !email || !password) {
-      return res.status(400).json({ error: 'All fields required' });
+      return res.status(400).json({ error: 'All fields required (username, email, password)' });
     }
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanUsername = username.trim();
+
+    // Explicit duplicate check
+    const existing = db.prepare('SELECT id FROM users WHERE LOWER(email) = ? OR LOWER(username) = ?').get(cleanEmail, cleanUsername.toLowerCase());
+    if (existing) {
+      return res.status(400).json({ error: 'Account already exists! Please Sign In.' });
+    }
+
     const hash = bcrypt.hashSync(password, 10);
-    const result = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(username, email, hash);
+    const result = db.prepare('INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, ?)').run(cleanUsername, cleanEmail, hash, STARTING_BALANCE);
     
-    // Initialize portfolio strictly for the 3 supported pairs
+    // Initialize portfolio strictly for the supported pairs
     db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(result.lastInsertRowid, 'bitcoin');
     db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(result.lastInsertRowid, 'ethereum');
     db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(result.lastInsertRowid, 'solana');
     
-    const token = jwt.sign({ id: result.lastInsertRowid, username }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, username, balance: STARTING_BALANCE });
+    const token = jwt.sign({ id: result.lastInsertRowid, username: cleanUsername, email: cleanEmail }, JWT_SECRET, { expiresIn: '365d' });
+    res.json({ token, username: cleanUsername, email: cleanEmail, balance: STARTING_BALANCE });
   } catch (err) {
     if (err.message && err.message.includes('UNIQUE')) {
-      return res.status(400).json({ error: 'Username or email already exists' });
+      return res.status(400).json({ error: 'Account already exists! Please Sign In.' });
     }
     res.status(500).json({ error: 'Registration failed: ' + (err.message || 'unknown') });
   }
@@ -190,16 +199,17 @@ app.post('/api/auth/register', (req, res) => {
 
 app.post('/api/auth/login', (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const cleanEmail = email.trim().toLowerCase();
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
     if (!user) {
       return res.status(404).json({ error: 'Account is not registered. Please create an account first.' });
     }
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: 'Incorrect password. Please try again.' });
     }
-    const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '365d' });
     res.json({ token, username: user.username, email: user.email, balance: user.balance });
   } catch (err) {
     res.status(500).json({ error: 'Login failed: ' + (err.message || 'unknown') });

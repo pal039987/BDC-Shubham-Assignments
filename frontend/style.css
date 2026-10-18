@@ -2643,6 +2643,29 @@ html, body {
   letter-spacing: 0.8px;
 }
 
+.auth-footer-note {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 183, 0, 0.06);
+  border: 1px dashed rgba(255, 183, 0, 0.28);
+  border-radius: 12px;
+}
+
+.auth-footer-icon {
+  font-size: 14px;
+}
+
+.auth-footer-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a0aec0;
+  letter-spacing: 0.2px;
+}
+
 .auth-guest-btn {
   width: 100%;
   background: var(--bg-card-subtle);
