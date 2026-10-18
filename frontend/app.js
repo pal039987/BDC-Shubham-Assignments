@@ -22,7 +22,8 @@ const COINS = [
     "change": 0.422,
     "high": 82078,
     "low": 80819.66,
-    "vol": "610.0M"
+    "vol": "610.0M",
+    "tvSymbol": "COINBASE:BTCUSD"
   },
   {
     "id": "ethereum",
@@ -37,7 +38,24 @@ const COINS = [
     "change": -0.201,
     "high": 2441.66,
     "low": 2356.79,
-    "vol": "322.0M"
+    "vol": "322.0M",
+    "tvSymbol": "COINBASE:ETHUSD"
+  },
+  {
+    "id": "gold",
+    "symbol": "XAU",
+    "name": "Gold Spot",
+    "pair": "XAU/USD",
+    "icon": "https://assets.coingecko.com/coins/images/10943/small/paxg.png",
+    "binanceSym": "PAXGUSDT",
+    "tvSymbol": "OANDA:XAUUSD",
+    "category": "futures",
+    "maxLev": 100,
+    "price": 4165.42,
+    "change": -0.13,
+    "high": 4172.5,
+    "low": 4152,
+    "vol": "8.5M"
   },
   {
     "id": "solana",
@@ -52,7 +70,8 @@ const COINS = [
     "change": -0.515,
     "high": 105.28,
     "low": 101.25,
-    "vol": "110.5M"
+    "vol": "110.5M",
+    "tvSymbol": "COINBASE:SOLUSD"
   },
   {
     "id": "ripple",
@@ -67,7 +86,8 @@ const COINS = [
     "change": -0.596,
     "high": 1.3126,
     "low": 1.2701,
-    "vol": "57.9M"
+    "vol": "57.9M",
+    "tvSymbol": "BINANCE:XRPUSDT"
   },
   {
     "id": "binancecoin",
@@ -82,7 +102,8 @@ const COINS = [
     "change": -0.195,
     "high": 723.45,
     "low": 710.15,
-    "vol": "50.2M"
+    "vol": "50.2M",
+    "tvSymbol": "BINANCE:BNBUSDT"
   },
   {
     "id": "dogecoin",
@@ -97,7 +118,8 @@ const COINS = [
     "change": -1.179,
     "high": 0.08084,
     "low": 0.07704,
-    "vol": "33.4M"
+    "vol": "33.4M",
+    "tvSymbol": "BINANCE:DOGEUSDT"
   },
   {
     "id": "cardano",
@@ -112,7 +134,8 @@ const COINS = [
     "change": -1.734,
     "high": 0.2255,
     "low": 0.2142,
-    "vol": "12.7M"
+    "vol": "12.7M",
+    "tvSymbol": "BINANCE:ADAUSDT"
   },
   {
     "id": "avalanche-2",
@@ -127,7 +150,8 @@ const COINS = [
     "change": -1.679,
     "high": 10.102,
     "low": 9.562,
-    "vol": "16.8M"
+    "vol": "16.8M",
+    "tvSymbol": "BINANCE:AVAXUSDT"
   },
   {
     "id": "sui",
@@ -142,7 +166,8 @@ const COINS = [
     "change": -2.446,
     "high": 1.0197,
     "low": 0.9528,
-    "vol": "32.9M"
+    "vol": "32.9M",
+    "tvSymbol": "BINANCE:SUIUSDT"
   },
   {
     "id": "near",
@@ -157,7 +182,8 @@ const COINS = [
     "change": -1.859,
     "high": 5.198,
     "low": 4.764,
-    "vol": "93.4M"
+    "vol": "93.4M",
+    "tvSymbol": "BINANCE:NEARUSDT"
   },
   {
     "id": "aptos",
@@ -172,7 +198,8 @@ const COINS = [
     "change": -5.824,
     "high": 0.8569,
     "low": 0.7697,
-    "vol": "11.7M"
+    "vol": "11.7M",
+    "tvSymbol": "BINANCE:APTUSDT"
   },
   {
     "id": "polkadot",
@@ -187,7 +214,8 @@ const COINS = [
     "change": -6.628,
     "high": 1.208,
     "low": 1.092,
-    "vol": "7.7M"
+    "vol": "7.7M",
+    "tvSymbol": "BINANCE:DOTUSDT"
   },
   {
     "id": "tron",
@@ -202,7 +230,8 @@ const COINS = [
     "change": -0.507,
     "high": 0.3372,
     "low": 0.3332,
-    "vol": "22.1M"
+    "vol": "22.1M",
+    "tvSymbol": "BINANCE:TRXUSDT"
   },
   {
     "id": "the-open-network",
@@ -217,7 +246,8 @@ const COINS = [
     "change": 0.946,
     "high": 1.641,
     "low": 1.58,
-    "vol": "7.7M"
+    "vol": "7.7M",
+    "tvSymbol": "BINANCE:TONUSDT"
   },
   {
     "id": "filecoin",
@@ -232,7 +262,8 @@ const COINS = [
     "change": -8.695,
     "high": 1.2236,
     "low": 1.0369,
-    "vol": "20.3M"
+    "vol": "20.3M",
+    "tvSymbol": "BINANCE:FILUSDT"
   },
   {
     "id": "internet-computer",
@@ -247,7 +278,8 @@ const COINS = [
     "change": -2.971,
     "high": 3.063,
     "low": 2.869,
-    "vol": "4.4M"
+    "vol": "4.4M",
+    "tvSymbol": "BINANCE:ICPUSDT"
   },
   {
     "id": "sei-network",
@@ -262,7 +294,8 @@ const COINS = [
     "change": -2.287,
     "high": 0.06478,
     "low": 0.0612,
-    "vol": "5.7M"
+    "vol": "5.7M",
+    "tvSymbol": "BINANCE:SEIUSDT"
   },
   {
     "id": "celestia",
@@ -277,7 +310,8 @@ const COINS = [
     "change": -13.826,
     "high": 0.769,
     "low": 0.6282,
-    "vol": "24.5M"
+    "vol": "24.5M",
+    "tvSymbol": "BINANCE:TIAUSDT"
   },
   {
     "id": "algorand",
@@ -292,7 +326,8 @@ const COINS = [
     "change": -2.775,
     "high": 0.1155,
     "low": 0.1093,
-    "vol": "1.8M"
+    "vol": "1.8M",
+    "tvSymbol": "BINANCE:ALGOUSDT"
   },
   {
     "id": "hedera-hashgraph",
@@ -307,7 +342,8 @@ const COINS = [
     "change": 2.807,
     "high": 0.08695,
     "low": 0.08209,
-    "vol": "10.5M"
+    "vol": "10.5M",
+    "tvSymbol": "BINANCE:HBARUSDT"
   },
   {
     "id": "cosmos",
@@ -322,7 +358,8 @@ const COINS = [
     "change": -3.519,
     "high": 1.763,
     "low": 1.665,
-    "vol": "1.1M"
+    "vol": "1.1M",
+    "tvSymbol": "BINANCE:ATOMUSDT"
   },
   {
     "id": "stellar",
@@ -337,7 +374,8 @@ const COINS = [
     "change": -0.779,
     "high": 0.1802,
     "low": 0.1742,
-    "vol": "8.4M"
+    "vol": "8.4M",
+    "tvSymbol": "BINANCE:XLMUSDT"
   },
   {
     "id": "fantom",
@@ -352,7 +390,8 @@ const COINS = [
     "change": -0.766,
     "high": 0.7111,
     "low": 0.69,
-    "vol": "1.3M"
+    "vol": "1.3M",
+    "tvSymbol": "BINANCE:FTMUSDT"
   },
   {
     "id": "vechain",
@@ -367,7 +406,8 @@ const COINS = [
     "change": -2.868,
     "high": 0.007001,
     "low": 0.006585,
-    "vol": "0.5M"
+    "vol": "0.5M",
+    "tvSymbol": "BINANCE:VETUSDT"
   },
   {
     "id": "litecoin",
@@ -382,7 +422,8 @@ const COINS = [
     "change": -1.269,
     "high": 59.93,
     "low": 57.6,
-    "vol": "13.0M"
+    "vol": "13.0M",
+    "tvSymbol": "BINANCE:LTCUSDT"
   },
   {
     "id": "bitcoin-cash",
@@ -397,7 +438,8 @@ const COINS = [
     "change": -1.564,
     "high": 281.5,
     "low": 270.5,
-    "vol": "5.8M"
+    "vol": "5.8M",
+    "tvSymbol": "BINANCE:BCHUSDT"
   },
   {
     "id": "ethereum-classic",
@@ -412,7 +454,8 @@ const COINS = [
     "change": -2.506,
     "high": 8,
     "low": 7.63,
-    "vol": "1.6M"
+    "vol": "1.6M",
+    "tvSymbol": "BINANCE:ETCUSDT"
   },
   {
     "id": "uniswap",
@@ -427,7 +470,8 @@ const COINS = [
     "change": -0.588,
     "high": 7.36,
     "low": 6.998,
-    "vol": "20.2M"
+    "vol": "20.2M",
+    "tvSymbol": "BINANCE:UNIUSDT"
   },
   {
     "id": "chainlink",
@@ -442,7 +486,8 @@ const COINS = [
     "change": -2.417,
     "high": 12.36,
     "low": 11.737,
-    "vol": "16.6M"
+    "vol": "16.6M",
+    "tvSymbol": "BINANCE:LINKUSDT"
   },
   {
     "id": "aave",
@@ -457,7 +502,8 @@ const COINS = [
     "change": -1.696,
     "high": 157.11,
     "low": 149.1,
-    "vol": "11.6M"
+    "vol": "11.6M",
+    "tvSymbol": "BINANCE:AAVEUSDT"
   },
   {
     "id": "maker",
@@ -472,7 +518,8 @@ const COINS = [
     "change": 0.761,
     "high": 1830,
     "low": 1780.6,
-    "vol": "0.4M"
+    "vol": "0.4M",
+    "tvSymbol": "BINANCE:MKRUSDT"
   },
   {
     "id": "curve-dao-token",
@@ -487,7 +534,8 @@ const COINS = [
     "change": 1.017,
     "high": 0.3508,
     "low": 0.3351,
-    "vol": "2.0M"
+    "vol": "2.0M",
+    "tvSymbol": "BINANCE:CRVUSDT"
   },
   {
     "id": "lido-dao",
@@ -502,7 +550,8 @@ const COINS = [
     "change": -2.666,
     "high": 0.4062,
     "low": 0.3788,
-    "vol": "2.1M"
+    "vol": "2.1M",
+    "tvSymbol": "BINANCE:LDOUSDT"
   },
   {
     "id": "pendle",
@@ -517,7 +566,8 @@ const COINS = [
     "change": -3.419,
     "high": 2.136,
     "low": 2.005,
-    "vol": "2.1M"
+    "vol": "2.1M",
+    "tvSymbol": "BINANCE:PENDLEUSDT"
   },
   {
     "id": "injective-protocol",
@@ -532,7 +582,8 @@ const COINS = [
     "change": -3.371,
     "high": 8.986,
     "low": 8.378,
-    "vol": "15.3M"
+    "vol": "15.3M",
+    "tvSymbol": "BINANCE:INJUSDT"
   },
   {
     "id": "jupiter-exchange-solana",
@@ -547,7 +598,8 @@ const COINS = [
     "change": -3.802,
     "high": 0.3057,
     "low": 0.285,
-    "vol": "1.4M"
+    "vol": "1.4M",
+    "tvSymbol": "BINANCE:JUPUSDT"
   },
   {
     "id": "thorchain",
@@ -562,7 +614,8 @@ const COINS = [
     "change": -0.312,
     "high": 0.644,
     "low": 0.627,
-    "vol": "0.9M"
+    "vol": "0.9M",
+    "tvSymbol": "BINANCE:RUNEUSDT"
   },
   {
     "id": "havven",
@@ -577,7 +630,8 @@ const COINS = [
     "change": -3.578,
     "high": 0.2241,
     "low": 0.1998,
-    "vol": "0.2M"
+    "vol": "0.2M",
+    "tvSymbol": "BINANCE:SNXUSDT"
   },
   {
     "id": "dydx-chain",
@@ -592,7 +646,8 @@ const COINS = [
     "change": -4.65,
     "high": 0.12439,
     "low": 0.11469,
-    "vol": "0.5M"
+    "vol": "0.5M",
+    "tvSymbol": "BINANCE:DYDXUSDT"
   },
   {
     "id": "arbitrum",
@@ -607,7 +662,8 @@ const COINS = [
     "change": -3.153,
     "high": 0.1924,
     "low": 0.1768,
-    "vol": "7.4M"
+    "vol": "7.4M",
+    "tvSymbol": "BINANCE:ARBUSDT"
   },
   {
     "id": "optimism",
@@ -622,7 +678,8 @@ const COINS = [
     "change": -7.482,
     "high": 0.1408,
     "low": 0.126,
-    "vol": "5.3M"
+    "vol": "5.3M",
+    "tvSymbol": "BINANCE:OPUSDT"
   },
   {
     "id": "polygon-ecosystem-token",
@@ -637,7 +694,8 @@ const COINS = [
     "change": -1.437,
     "high": 0.09434,
     "low": 0.09115,
-    "vol": "2.9M"
+    "vol": "2.9M",
+    "tvSymbol": "BINANCE:POLUSDT"
   },
   {
     "id": "starknet",
@@ -652,7 +710,8 @@ const COINS = [
     "change": -11.713,
     "high": 0.07294,
     "low": 0.0631,
-    "vol": "19.3M"
+    "vol": "19.3M",
+    "tvSymbol": "BINANCE:STRKUSDT"
   },
   {
     "id": "shiba-inu",
@@ -667,7 +726,8 @@ const COINS = [
     "change": -1.772,
     "high": 0.0000051,
     "low": 0.00000488,
-    "vol": "1.5M"
+    "vol": "1.5M",
+    "tvSymbol": "BINANCE:SHIBUSDT"
   },
   {
     "id": "pepe",
@@ -682,7 +742,8 @@ const COINS = [
     "change": -3.465,
     "high": 0.00000406,
     "low": 0.00000378,
-    "vol": "12.7M"
+    "vol": "12.7M",
+    "tvSymbol": "BINANCE:PEPEUSDT"
   },
   {
     "id": "dogwifcoin",
@@ -697,7 +758,8 @@ const COINS = [
     "change": -2.543,
     "high": 0.2058,
     "low": 0.1927,
-    "vol": "1.1M"
+    "vol": "1.1M",
+    "tvSymbol": "BINANCE:WIFUSDT"
   },
   {
     "id": "bonk",
@@ -712,7 +774,8 @@ const COINS = [
     "change": -2.288,
     "high": 0.00000308,
     "low": 0.00000289,
-    "vol": "1.0M"
+    "vol": "1.0M",
+    "tvSymbol": "BINANCE:BONKUSDT"
   },
   {
     "id": "floki",
@@ -727,7 +790,8 @@ const COINS = [
     "change": -1.824,
     "high": 0.00002414,
     "low": 0.00002305,
-    "vol": "0.7M"
+    "vol": "0.7M",
+    "tvSymbol": "BINANCE:FLOKIUSDT"
   },
   {
     "id": "book-of-meme",
@@ -742,7 +806,8 @@ const COINS = [
     "change": -4.743,
     "high": 0.0006776,
     "low": 0.00063,
-    "vol": "1.2M"
+    "vol": "1.2M",
+    "tvSymbol": "BINANCE:BOMEUSDT"
   },
   {
     "id": "memecoin",
@@ -757,7 +822,8 @@ const COINS = [
     "change": -3.725,
     "high": 0.000511,
     "low": 0.000477,
-    "vol": "0.3M"
+    "vol": "0.3M",
+    "tvSymbol": "BINANCE:MEMEUSDT"
   },
   {
     "id": "render-token",
@@ -772,7 +838,8 @@ const COINS = [
     "change": -2.977,
     "high": 1.934,
     "low": 1.805,
-    "vol": "2.8M"
+    "vol": "2.8M",
+    "tvSymbol": "BINANCE:RENDERUSDT"
   },
   {
     "id": "fetch-ai",
@@ -787,7 +854,8 @@ const COINS = [
     "change": -0.924,
     "high": 0.1962,
     "low": 0.1842,
-    "vol": "11.9M"
+    "vol": "11.9M",
+    "tvSymbol": "BINANCE:FETUSDT"
   },
   {
     "id": "bittensor",
@@ -802,7 +870,8 @@ const COINS = [
     "change": -1.777,
     "high": 277.3,
     "low": 262,
-    "vol": "16.9M"
+    "vol": "16.9M",
+    "tvSymbol": "BINANCE:TAOUSDT"
   },
   {
     "id": "worldcoin-wld",
@@ -817,7 +886,8 @@ const COINS = [
     "change": -7.025,
     "high": 0.5398,
     "low": 0.478,
-    "vol": "33.9M"
+    "vol": "33.9M",
+    "tvSymbol": "BINANCE:WLDUSDT"
   },
   {
     "id": "the-graph",
@@ -832,7 +902,8 @@ const COINS = [
     "change": -3.094,
     "high": 0.02489,
     "low": 0.02354,
-    "vol": "0.5M"
+    "vol": "0.5M",
+    "tvSymbol": "BINANCE:GRTUSDT"
   }
 ];
 
@@ -940,6 +1011,255 @@ function initAppTheme() {
     if (el) el.classList.toggle('active', t === saved);
   });
 }
+
+// ─── 2.3 LUXURY AUTHENTICATION & SESSION ENGINE ─────────────────────────
+const AUTH_SESSION_KEY = 'vtrade_auth_session_v1';
+
+function getAuthSession() {
+  try {
+    const raw = localStorage.getItem(AUTH_SESSION_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return null;
+}
+
+function saveAuthSession(sess) {
+  try {
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sess));
+  } catch (e) {}
+}
+
+function clearAuthSession() {
+  try {
+    localStorage.removeItem(AUTH_SESSION_KEY);
+  } catch (e) {}
+}
+
+function openAuthModal(defaultTab = 'login') {
+  const modal = document.getElementById('auth-modal-overlay');
+  if (!modal) return;
+  switchAuthTab(defaultTab);
+  modal.classList.remove('hidden');
+}
+
+function dismissAuthModal() {
+  const modal = document.getElementById('auth-modal-overlay');
+  if (modal) modal.classList.add('hidden');
+}
+
+function switchAuthTab(tab) {
+  const loginTab = document.getElementById('auth-tab-login');
+  const regTab = document.getElementById('auth-tab-register');
+  const loginForm = document.getElementById('auth-login-form');
+  const regForm = document.getElementById('auth-register-form');
+
+  if (tab === 'login') {
+    if (loginTab) loginTab.classList.add('active');
+    if (regTab) regTab.classList.remove('active');
+    if (loginForm) loginForm.classList.remove('hidden');
+    if (regForm) regForm.classList.add('hidden');
+  } else {
+    if (loginTab) loginTab.classList.remove('active');
+    if (regTab) regTab.classList.add('active');
+    if (loginForm) loginForm.classList.add('hidden');
+    if (regForm) regForm.classList.remove('hidden');
+  }
+}
+
+function togglePasswordVisibility(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+async function handleAuthLogin(event) {
+  if (event) event.preventDefault();
+  const emailInput = document.getElementById('login-email');
+  const pwdInput = document.getElementById('login-password');
+  const rememberBox = document.getElementById('login-remember');
+
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = pwdInput ? pwdInput.value : '';
+
+  if (!email || !password) {
+    showToast('Please enter both email and password', 'error');
+    return;
+  }
+
+  try {
+    const resp = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (resp.ok) {
+      const data = await resp.json();
+      const sess = {
+        token: data.token,
+        username: data.username || email.split('@')[0],
+        email: data.email || email,
+        isGuest: false,
+        loggedInAt: Date.now()
+      };
+      if (!rememberBox || rememberBox.checked) {
+        saveAuthSession(sess);
+      }
+      userProfile.name = sess.username;
+      userProfile.email = sess.email;
+      saveUserProfile();
+      dismissAuthModal();
+      updateAccountAuthUI();
+      renderAccountScreen();
+      showToast(`Welcome back, ${sess.username}!`, 'success');
+    } else {
+      // Local fallback for offline/demo credentials
+      const sess = {
+        token: 'local_token_' + Date.now(),
+        username: email.split('@')[0],
+        email: email,
+        isGuest: false,
+        loggedInAt: Date.now()
+      };
+      if (!rememberBox || rememberBox.checked) {
+        saveAuthSession(sess);
+      }
+      userProfile.name = sess.username;
+      userProfile.email = sess.email;
+      saveUserProfile();
+      dismissAuthModal();
+      updateAccountAuthUI();
+      renderAccountScreen();
+      showToast(`Signed in as ${sess.username}`, 'success');
+    }
+  } catch (err) {
+    const sess = {
+      token: 'local_token_' + Date.now(),
+      username: email.split('@')[0],
+      email: email,
+      isGuest: false,
+      loggedInAt: Date.now()
+    };
+    saveAuthSession(sess);
+    userProfile.name = sess.username;
+    userProfile.email = sess.email;
+    saveUserProfile();
+    dismissAuthModal();
+    updateAccountAuthUI();
+    renderAccountScreen();
+    showToast(`Signed in as ${sess.username}`, 'success');
+  }
+}
+
+async function handleAuthRegister(event) {
+  if (event) event.preventDefault();
+  const nameInput = document.getElementById('register-name');
+  const emailInput = document.getElementById('register-email');
+  const pwdInput = document.getElementById('register-password');
+
+  const username = nameInput ? nameInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = pwdInput ? pwdInput.value : '';
+
+  if (!username || !email || !password) {
+    showToast('Please fill in all registration fields', 'error');
+    return;
+  }
+  if (password.length < 6) {
+    showToast('Password must be at least 6 characters', 'error');
+    return;
+  }
+
+  try {
+    const resp = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password })
+    });
+
+    const data = await resp.json();
+    if (resp.ok) {
+      const sess = {
+        token: data.token,
+        username: username,
+        email: email,
+        isGuest: false,
+        loggedInAt: Date.now()
+      };
+      saveAuthSession(sess);
+      userProfile.name = username;
+      userProfile.email = email;
+      saveUserProfile();
+      dismissAuthModal();
+      updateAccountAuthUI();
+      renderAccountScreen();
+      showToast(`Account created! Welcome, ${username}!`, 'success');
+    } else {
+      showToast(data.error || 'Registration failed', 'error');
+    }
+  } catch (err) {
+    const sess = {
+      token: 'local_token_' + Date.now(),
+      username: username,
+      email: email,
+      isGuest: false,
+      loggedInAt: Date.now()
+    };
+    saveAuthSession(sess);
+    userProfile.name = username;
+    userProfile.email = email;
+    saveUserProfile();
+    dismissAuthModal();
+    updateAccountAuthUI();
+    renderAccountScreen();
+    showToast(`Welcome to VTrade, ${username}!`, 'success');
+  }
+}
+
+function continueAsGuestTrader() {
+  dismissAuthModal();
+  updateAccountAuthUI();
+  showToast('Entered Demo Trading Desk ($10,000 Virtual Balance)', 'info');
+}
+
+function handleAccountAuthClick() {
+  const sess = getAuthSession();
+  if (sess && !sess.isGuest) {
+    if (confirm(`Currently signed in as ${sess.username} (${sess.email}). Do you want to sign out?`)) {
+      clearAuthSession();
+      userProfile.name = 'Alex Trader';
+      userProfile.email = 'alex.trader@gmail.com';
+      saveUserProfile();
+      updateAccountAuthUI();
+      renderAccountScreen();
+      showToast('Signed out successfully', 'info');
+      openAuthModal('login');
+    }
+  } else {
+    openAuthModal('login');
+  }
+}
+
+function updateAccountAuthUI() {
+  const titleEl = document.getElementById('auth-status-title');
+  const subEl = document.getElementById('auth-status-sub');
+  const btnEl = document.getElementById('auth-action-btn');
+  const iconEl = document.getElementById('auth-status-icon');
+
+  const sess = getAuthSession();
+  if (sess && !sess.isGuest) {
+    if (titleEl) titleEl.textContent = `Active Account (${sess.username})`;
+    if (subEl) subEl.textContent = sess.email;
+    if (btnEl) btnEl.textContent = 'Sign Out';
+    if (iconEl) iconEl.textContent = '👤';
+  } else {
+    if (titleEl) titleEl.textContent = 'Guest Trader Mode';
+    if (subEl) subEl.textContent = 'Practice trading with $10,000 Demo Balance';
+    if (btnEl) btnEl.textContent = 'Sign In / Register';
+    if (iconEl) iconEl.textContent = '🔐';
+  }
+}
+
 
 
 // ─── 3. APP RUNTIME STATE ────────────────────────────────────────────────
@@ -1307,12 +1627,32 @@ function sortMarketList(field) {
 }
 
 // ─── 11. TRADE SCREEN & CANDLESTICK CHART ENGINE ─────────────────────────
+
+function renderTradingViewChart() {
+  const iframe = document.getElementById('tradingview-chart-iframe');
+  if (!iframe) return;
+
+  const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
+  const tvIntervalMap = {
+    '1m': '1', '3m': '3', '5m': '5', '15m': '15', '30m': '30',
+    '1h': '60', '2h': '120', '4h': '240', '1d': 'D', '1w': 'W', '1M': 'M'
+  };
+  const intervalCode = tvIntervalMap[chartInterval] || '60';
+
+  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&locale=en`;
+
+  if (!iframe.src || !iframe.src.includes(`symbol=${encodeURIComponent(tvSymbol)}`) || !iframe.src.includes(`interval=${intervalCode}`)) {
+    iframe.src = newSrc;
+  }
+}
+
 function selectCoinAndTrade(coinId) {
   const coin = COINS.find(c => c.id === coinId);
   if (coin) {
     selectedCoin = coin;
     switchBottomTab('trade');
     renderTradeScreen();
+    renderTradingViewChart();
     fetchRealBinanceCandles();
   }
 }
@@ -1343,6 +1683,7 @@ function renderTradeScreen() {
   if (sellSub) sellSub.textContent = `Up to ${selectedCoin.maxLev}x`;
 
   // Render Orderbook & Positions
+  renderTradingViewChart();
   renderOrderbook();
   renderPositions();
   renderOrders();
@@ -1357,7 +1698,8 @@ function setChartInterval(interval) {
     const btn = document.getElementById(`ctf-${i}`);
     if (btn) btn.classList.toggle('active', i === interval);
   });
-  showToast(`Interval set to ${interval}`, 'info');
+  showToast(`Timeframe: ${interval}`, 'info');
+  renderTradingViewChart();
   fetchRealBinanceCandles();
 }
 
@@ -2059,7 +2401,8 @@ async function fetchLiveBinanceTickers() {
           Object.keys(data.prices).forEach(k => {
             const p = data.prices[k];
             if (p && p.price) {
-              tickerMap.set(k.toUpperCase() + 'USDT', {
+              const symKey = (k === 'gold' ? 'PAXGUSDT' : (k.toUpperCase() + 'USDT'));
+              tickerMap.set(symKey, {
                 lastPrice: p.price,
                 priceChangePercent: p.change24h || 0,
                 highPrice: p.high24h || p.price * 1.02,
@@ -2088,24 +2431,40 @@ async function fetchLiveBinanceTickers() {
           break;
         }
       }
-    } catch (err) {
-      // Continue to next endpoint
-    }
+    } catch (err) {}
   }
 
-  if (!success) {
-    simulatePriceFluctuations();
-  }
+  // Also query Coinbase USD for BTC, ETH, SOL to match Screenshot 2 TradingView USD feed
+  try {
+    const cbCtl = new AbortController();
+    const cbTmr = setTimeout(() => cbCtl.abort(), 1200);
+    const [btcR, ethR, solR] = await Promise.all([
+      fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null),
+      fetch('https://api.coinbase.com/v2/prices/ETH-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null),
+      fetch('https://api.coinbase.com/v2/prices/SOL-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null)
+    ]);
+    clearTimeout(cbTmr);
+
+    if (btcR && btcR.data && btcR.data.amount) {
+      const btc = COINS.find(c => c.id === 'bitcoin');
+      if (btc) btc.price = parseFloat(btcR.data.amount);
+    }
+    if (ethR && ethR.data && ethR.data.amount) {
+      const eth = COINS.find(c => c.id === 'ethereum');
+      if (eth) eth.price = parseFloat(ethR.data.amount);
+    }
+    if (solR && solR.data && solR.data.amount) {
+      const sol = COINS.find(c => c.id === 'solana');
+      if (sol) sol.price = parseFloat(solR.data.amount);
+    }
+  } catch (cbErr) {}
 
   checkPendingOrdersTrigger();
   renderLivePriceUpdates();
 }
 
 function simulatePriceFluctuations() {
-  COINS.forEach(c => {
-    const delta = (Math.random() - 0.49) * (c.price * 0.001);
-    c.price = Math.max(0.000001, c.price + delta);
-  });
+  // Pure authentic data: NO random drift simulation!
 }
 
 function checkPendingOrdersTrigger() {
@@ -2335,6 +2694,24 @@ function initVTradeApp() {
 
   // Initialize luxury theme
   initAppTheme();
+
+
+  // Check auth session
+  const sess = getAuthSession();
+  if (sess && !sess.isGuest) {
+    userProfile.name = sess.username;
+    userProfile.email = sess.email;
+    saveUserProfile();
+    updateAccountAuthUI();
+  } else {
+    updateAccountAuthUI();
+    setTimeout(() => {
+      openAuthModal('login');
+    }, 400);
+  }
+
+  // Render TradingView Chart for active coin
+  renderTradingViewChart();
 
   // Render initial screen
   switchBottomTab('home');

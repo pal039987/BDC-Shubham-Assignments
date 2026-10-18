@@ -207,6 +207,7 @@ app.post('/api/auth/login', (req, res) => {
 const SUPPORTED_COINS = [
   'bitcoin',
   'ethereum',
+  'gold',
   'solana',
   'binancecoin',
   'dogecoin',
@@ -221,6 +222,7 @@ const SUPPORTED_COINS = [
 const COIN_METADATA = {
   'bitcoin':      { symbol: 'BTC',  pair: 'BTC/USDT',  name: 'Bitcoin',       basePrice: 83800.00, baseCap: 1676759000000, baseVol: 31513000000, baseChange: -0.10 },
   'ethereum':     { symbol: 'ETH',  pair: 'ETH/USDT',  name: 'Ethereum',      basePrice: 2515.00,  baseCap: 307174000000,  baseVol: 16497000000, baseChange: -1.60 },
+  'gold':         { symbol: 'XAU',  pair: 'XAU/USD',   name: 'Gold Spot',     basePrice: 4165.42,  baseCap: 15000000000000, baseVol: 85000000000, baseChange: -0.13 },
   'solana':       { symbol: 'SOL',  pair: 'SOL/USDT',  name: 'Solana',        basePrice: 107.50,   baseCap: 63637000000,   baseVol: 4059000000,  baseChange: -3.70 },
   'binancecoin':  { symbol: 'BNB',  pair: 'BNB/USDT',  name: 'BNB',           basePrice: 744.00,   baseCap: 107000000000,  baseVol: 1850000000,  baseChange: -0.14 },
   'dogecoin':     { symbol: 'DOGE', pair: 'DOGE/USDT', name: 'Dogecoin',      basePrice: 0.085,    baseCap: 12500000000,   baseVol: 850000000,   baseChange: -0.65 },
@@ -235,6 +237,7 @@ const COIN_METADATA = {
 const BINANCE_SYMBOL_MAP = {
   'BTCUSDT': 'bitcoin',
   'ETHUSDT': 'ethereum',
+  'PAXGUSDT': 'gold',
   'SOLUSDT': 'solana',
   'BNBUSDT': 'binancecoin',
   'DOGEUSDT': 'dogecoin',
@@ -487,8 +490,8 @@ async function handleChartRequest(req, res) {
       return res.json(cached.data);
     }
 
-    // Step 1: Try Binance live klines for accurate real-time candles (BTCUSDT matches TradingView BINANCE:BTCUSDT)
-    const binanceSymbols = { 'bitcoin': 'BTCUSDT', 'ethereum': 'ETHUSDT', 'solana': 'SOLUSDT' };
+    // Step 1: Try Binance live klines for accurate real-time candles
+    const binanceSymbols = { 'bitcoin': 'BTCUSDT', 'ethereum': 'ETHUSDT', 'gold': 'PAXGUSDT', 'solana': 'SOLUSDT' };
     const binanceIntervals = { '1m':'1m', '3m':'3m', '5m':'5m', '15m':'15m', '1h':'1h', '4h':'4h', '1d':'1d', '1w':'1w' };
     const bSymbol = binanceSymbols[coin];
     const bInterval = binanceIntervals[tf] || '15m';

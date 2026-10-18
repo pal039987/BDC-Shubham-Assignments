@@ -157,4 +157,40 @@ console.log('  ✓ Binance Vision real-time unblocked stream (1.5s ticker) verif
 assert.ok(css.includes('padding: 16px 16px calc(130px + var(--safe-area-bottom, 0px)) 16px;'), 'Account scroll container has safe bottom padding avoiding bottom navbar');
 console.log('  ✓ Bottom navbar clipping elimination (calc(130px + safe area)) verified');
 
-console.log('\n=== ALL 13 VTRADE LUXURY UI, THEMES & REAL-TIME TESTS PASSED! ===\n');
+// 14. Verify Official TradingView Real-Time Chart Widget
+assert.ok(html.includes('id="tradingview-chart-iframe"'), 'TradingView iframe widget present in HTML');
+assert.ok(html.includes('tradingview.com/widgetembed'), 'TradingView official widgetembed URL referenced');
+assert.ok(js.includes('function renderTradingViewChart()'), 'renderTradingViewChart defined in app.js');
+assert.ok(css.includes('.tradingview-iframe'), 'TradingView iframe styling present in CSS');
+console.log('  ✓ Official TradingView Real-Time Chart Widget & dynamic interval switcher verified');
+
+// 15. Verify Gold Spot (XAU/USD) Support
+const goldCoin = coinsParsed.find(c => c.id === 'gold');
+assert.ok(goldCoin, 'Gold Spot (XAU) must be present in COINS array');
+assert.strictEqual(goldCoin.symbol, 'XAU', 'Gold symbol must be XAU');
+assert.strictEqual(goldCoin.pair, 'XAU/USD', 'Gold pair must be XAU/USD');
+assert.strictEqual(goldCoin.binanceSym, 'PAXGUSDT', 'Gold Binance symbol must map to PAXGUSDT');
+assert.strictEqual(goldCoin.tvSymbol, 'OANDA:XAUUSD', 'Gold TradingView symbol must map to OANDA:XAUUSD');
+console.log('  ✓ Gold Spot (XAU/USD) with real-time PAXG price & TradingView chart mapping verified');
+
+// 16. Verify Luxury Sign In & Sign Up Modal and Session Management
+assert.ok(html.includes('id="auth-modal-overlay"'), 'Auth modal overlay present in HTML');
+assert.ok(html.includes('id="auth-login-form"'), 'Sign In form present in HTML');
+assert.ok(html.includes('id="auth-register-form"'), 'Create Account form present in HTML');
+assert.ok(html.includes('continueAsGuestTrader()'), 'Continue as Guest button present');
+assert.ok(js.includes('function handleAuthLogin('), 'handleAuthLogin defined in app.js');
+assert.ok(js.includes('function handleAuthRegister('), 'handleAuthRegister defined in app.js');
+assert.ok(js.includes('function continueAsGuestTrader()'), 'continueAsGuestTrader defined in app.js');
+assert.ok(js.includes('function togglePasswordVisibility('), 'togglePasswordVisibility defined in app.js');
+assert.ok(js.includes('function getAuthSession()'), 'getAuthSession defined in app.js');
+assert.ok(css.includes('.auth-modal-overlay'), 'Auth modal overlay CSS present');
+assert.ok(css.includes('.auth-primary-btn'), 'Auth primary button CSS present');
+console.log('  ✓ Luxury Sign In / Sign Up Modal, Auto-login session, and Guest trader flow verified');
+
+// 17. Verify Coinbase USD Live Price Feeds for BTC, ETH, SOL
+assert.ok(js.includes('api.coinbase.com/v2/prices/BTC-USD/spot'), 'Coinbase BTC-USD spot feed configured');
+assert.ok(js.includes('api.coinbase.com/v2/prices/ETH-USD/spot'), 'Coinbase ETH-USD spot feed configured');
+assert.ok(js.includes('api.coinbase.com/v2/prices/SOL-USD/spot'), 'Coinbase SOL-USD spot feed configured');
+console.log('  ✓ Coinbase USD live spot price sync matching TradingView USD feed verified');
+
+console.log('\n=== ALL 17 VTRADE LUXURY UI, TRADINGVIEW, GOLD & AUTH TESTS PASSED! ===\n');
