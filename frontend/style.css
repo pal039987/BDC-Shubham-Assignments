@@ -37,6 +37,55 @@
   --safe-area-top-fallback: 38px;
 }
 
+/* ══════════════════════ 4 LUXURY DARK THEMES ══════════════════════ */
+/* 1. Dark Obsidian (Default Flagship Gold) */
+[data-theme="obsidian"], :root {
+  --bg-app: #080b11;
+  --bg-card: #0f1420;
+  --bg-card-subtle: #141b2b;
+  --bg-card-highlight: #1b2338;
+  --border-light: rgba(255, 255, 255, 0.07);
+  --border-active: rgba(255, 255, 255, 0.16);
+  --gold: #ff9900;
+  --gold-bg: rgba(255, 153, 0, 0.14);
+}
+
+/* 2. Midnight Navy (Deep Space Blue & Electric Cyan) */
+[data-theme="midnight"] {
+  --bg-app: #060a12;
+  --bg-card: #0b1322;
+  --bg-card-subtle: #101c30;
+  --bg-card-highlight: #172742;
+  --border-light: rgba(0, 210, 255, 0.12);
+  --border-active: rgba(0, 210, 255, 0.28);
+  --gold: #00d2ff;
+  --gold-bg: rgba(0, 210, 255, 0.16);
+}
+
+/* 3. OLED Pure Black (True Black & Emerald Green) */
+[data-theme="oled"] {
+  --bg-app: #000000;
+  --bg-card: #0a0a0c;
+  --bg-card-subtle: #121216;
+  --bg-card-highlight: #1a1a20;
+  --border-light: rgba(255, 255, 255, 0.1);
+  --border-active: rgba(0, 192, 135, 0.35);
+  --gold: #00c087;
+  --gold-bg: rgba(0, 192, 135, 0.15);
+}
+
+/* 4. Cyber Neon (Dark Violet & Electric Purple) */
+[data-theme="cyber"] {
+  --bg-app: #0c0814;
+  --bg-card: #150f22;
+  --bg-card-subtle: #1d1530;
+  --bg-card-highlight: #281d42;
+  --border-light: rgba(186, 104, 200, 0.12);
+  --border-active: rgba(186, 104, 200, 0.3);
+  --gold: #b347eb;
+  --gold-bg: rgba(179, 71, 235, 0.16);
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -1197,7 +1246,7 @@ html, body {
 
 /* ══════════════════════ 7. ACCOUNTS & PROFILE SCREEN ══════════════════════ */
 .account-scroll-container {
-  padding: 16px;
+  padding: 16px 16px calc(130px + var(--safe-area-bottom, 0px)) 16px;
 }
 
 .account-hero-card {
@@ -1377,6 +1426,70 @@ html, body {
   background: var(--gold-bg);
   color: var(--gold);
   border-color: rgba(255, 153, 0, 0.45);
+}
+
+/* ════════ THEME SELECTOR UI ════════ */
+.theme-selector-card {
+  padding: 16px;
+}
+
+.themes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.theme-card-option {
+  background: var(--bg-card-subtle);
+  border: 1.5px solid var(--border-light);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-smooth);
+}
+
+.theme-card-option:active {
+  transform: scale(0.97);
+}
+
+.theme-card-option.active {
+  border-color: var(--gold);
+  background: var(--gold-bg);
+  box-shadow: 0 0 14px rgba(255, 153, 0, 0.22);
+}
+
+.theme-preview-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.dot-obsidian { background: linear-gradient(135deg, #080b11 50%, #ff9900 50%); }
+.dot-midnight { background: linear-gradient(135deg, #060a12 50%, #00d2ff 50%); }
+.dot-oled { background: linear-gradient(135deg, #000000 50%, #00c087 50%); }
+.dot-cyber { background: linear-gradient(135deg, #0c0814 50%, #b347eb 50%); }
+
+.theme-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.theme-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.theme-sub {
+  font-size: 9.5px;
+  color: var(--text-muted);
 }
 
 /* ════════ REFILL DEMO BALANCE CARD ════════ */

@@ -9,21 +9,831 @@
 const INR_RATE = 83.50; // 1 USD = 83.50 INR
 
 const COINS = [
-  { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', pair: 'BTC/USDT', icon: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png', binanceSym: 'BTCUSDT', price: 82180.50, change: 2.45, high: 83450.00, low: 80920.00, vol: '1.45B', category: 'futures', maxLev: 150 },
-  { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', pair: 'ETH/USDT', icon: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png', binanceSym: 'ETHUSDT', price: 2465.20, change: 4.12, high: 2510.00, low: 2380.00, vol: '840M', category: 'futures', maxLev: 150 },
-  { id: 'solana', symbol: 'SOL', name: 'Solana', pair: 'SOL/USDT', icon: 'https://assets.coingecko.com/coins/images/4128/small/solana.png', binanceSym: 'SOLUSDT', price: 106.45, change: 3.85, high: 108.50, low: 101.20, vol: '320M', category: 'l1', maxLev: 100 },
-  { id: 'ripple', symbol: 'XRP', name: 'XRP', pair: 'XRP/USDT', icon: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png', binanceSym: 'XRPUSDT', price: 1.342, change: -1.25, high: 1.390, low: 1.310, vol: '185M', category: 'l1', maxLev: 100 },
-  { id: 'binancecoin', symbol: 'BNB', name: 'BNB', pair: 'BNB/USDT', icon: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png', binanceSym: 'BNBUSDT', price: 742.80, change: 0.85, high: 755.00, low: 730.00, vol: '140M', category: 'l1', maxLev: 100 },
-  { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin', pair: 'DOGE/USDT', icon: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png', binanceSym: 'DOGEUSDT', price: 0.0825, change: 5.60, high: 0.0850, low: 0.0780, vol: '95M', category: 'meme', maxLev: 75 },
-  { id: 'cardano', symbol: 'ADA', name: 'Cardano', pair: 'ADA/USDT', icon: 'https://assets.coingecko.com/coins/images/975/small/cardano.png', binanceSym: 'ADAUSDT', price: 0.238, change: -0.65, high: 0.245, low: 0.232, vol: '45M', category: 'l1', maxLev: 50 },
-  { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche', pair: 'AVAX/USDT', icon: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png', binanceSym: 'AVAXUSDT', price: 10.45, change: -2.15, high: 10.90, low: 10.15, vol: '55M', category: 'l1', maxLev: 75 },
-  { id: 'sui', symbol: 'SUI', name: 'Sui', pair: 'SUI/USDT', icon: 'https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png', binanceSym: 'SUIUSDT', price: 1.065, change: 7.40, high: 1.120, low: 0.980, vol: '68M', category: 'l1', maxLev: 50 },
-  { id: 'near', symbol: 'NEAR', name: 'NEAR Protocol', pair: 'NEAR/USDT', icon: 'https://assets.coingecko.com/coins/images/10365/small/near.png', binanceSym: 'NEARUSDT', price: 5.08, change: 1.95, high: 5.25, low: 4.90, vol: '42M', category: 'l1', maxLev: 50 },
-  { id: 'uniswap', symbol: 'UNI', name: 'Uniswap', pair: 'UNI/USDT', icon: 'https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png', binanceSym: 'UNIUSDT', price: 7.45, change: 4.80, high: 7.70, low: 7.05, vol: '38M', category: 'defi', maxLev: 75 },
-  { id: 'chainlink', symbol: 'LINK', name: 'Chainlink', pair: 'LINK/USDT', icon: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png', binanceSym: 'LINKUSDT', price: 13.85, change: 3.20, high: 14.20, low: 13.30, vol: '50M', category: 'defi', maxLev: 75 },
-  { id: 'pepe', symbol: 'PEPE', name: 'Pepe', pair: 'PEPE/USDT', icon: 'https://assets.coingecko.com/coins/images/29850/small/pepe-token.png', binanceSym: 'PEPEUSDT', price: 0.00000412, change: 8.90, high: 0.00000435, low: 0.00000375, vol: '110M', category: 'meme', maxLev: 50 },
-  { id: 'shiba-inu', symbol: 'SHIB', name: 'Shiba Inu', pair: 'SHIB/USDT', icon: 'https://assets.coingecko.com/coins/images/11939/small/shiba.png', binanceSym: 'SHIBUSDT', price: 0.00000518, change: -1.80, high: 0.00000540, low: 0.00000505, vol: '60M', category: 'meme', maxLev: 50 },
-  { id: 'litecoin', symbol: 'LTC', name: 'Litecoin', pair: 'LTC/USDT', icon: 'https://assets.coingecko.com/coins/images/2/small/litecoin.png', binanceSym: 'LTCUSDT', price: 68.40, change: 1.15, high: 70.10, low: 67.20, vol: '32M', category: 'spot', maxLev: 50 }
+  {
+    "id": "bitcoin",
+    "symbol": "BTC",
+    "name": "Bitcoin",
+    "pair": "BTC/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/1/small/bitcoin.png",
+    "binanceSym": "BTCUSDT",
+    "category": "futures",
+    "maxLev": 150,
+    "price": 81911.91,
+    "change": 0.422,
+    "high": 82078,
+    "low": 80819.66,
+    "vol": "610.0M"
+  },
+  {
+    "id": "ethereum",
+    "symbol": "ETH",
+    "name": "Ethereum",
+    "pair": "ETH/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/279/small/ethereum.png",
+    "binanceSym": "ETHUSDT",
+    "category": "futures",
+    "maxLev": 150,
+    "price": 2423.02,
+    "change": -0.201,
+    "high": 2441.66,
+    "low": 2356.79,
+    "vol": "322.0M"
+  },
+  {
+    "id": "solana",
+    "symbol": "SOL",
+    "name": "Solana",
+    "pair": "SOL/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/4128/small/solana.png",
+    "binanceSym": "SOLUSDT",
+    "category": "l1",
+    "maxLev": 100,
+    "price": 104.3,
+    "change": -0.515,
+    "high": 105.28,
+    "low": 101.25,
+    "vol": "110.5M"
+  },
+  {
+    "id": "ripple",
+    "symbol": "XRP",
+    "name": "XRP",
+    "pair": "XRP/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png",
+    "binanceSym": "XRPUSDT",
+    "category": "l1",
+    "maxLev": 100,
+    "price": 1.301,
+    "change": -0.596,
+    "high": 1.3126,
+    "low": 1.2701,
+    "vol": "57.9M"
+  },
+  {
+    "id": "binancecoin",
+    "symbol": "BNB",
+    "name": "BNB",
+    "pair": "BNB/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png",
+    "binanceSym": "BNBUSDT",
+    "category": "l1",
+    "maxLev": 100,
+    "price": 721.57,
+    "change": -0.195,
+    "high": 723.45,
+    "low": 710.15,
+    "vol": "50.2M"
+  },
+  {
+    "id": "dogecoin",
+    "symbol": "DOGE",
+    "name": "Dogecoin",
+    "pair": "DOGE/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/5/small/dogecoin.png",
+    "binanceSym": "DOGEUSDT",
+    "category": "meme",
+    "maxLev": 75,
+    "price": 0.07963,
+    "change": -1.179,
+    "high": 0.08084,
+    "low": 0.07704,
+    "vol": "33.4M"
+  },
+  {
+    "id": "cardano",
+    "symbol": "ADA",
+    "name": "Cardano",
+    "pair": "ADA/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/975/small/cardano.png",
+    "binanceSym": "ADAUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.221,
+    "change": -1.734,
+    "high": 0.2255,
+    "low": 0.2142,
+    "vol": "12.7M"
+  },
+  {
+    "id": "avalanche-2",
+    "symbol": "AVAX",
+    "name": "Avalanche",
+    "pair": "AVAX/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png",
+    "binanceSym": "AVAXUSDT",
+    "category": "l1",
+    "maxLev": 75,
+    "price": 9.835,
+    "change": -1.679,
+    "high": 10.102,
+    "low": 9.562,
+    "vol": "16.8M"
+  },
+  {
+    "id": "sui",
+    "symbol": "SUI",
+    "name": "Sui",
+    "pair": "SUI/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png",
+    "binanceSym": "SUIUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.9891,
+    "change": -2.446,
+    "high": 1.0197,
+    "low": 0.9528,
+    "vol": "32.9M"
+  },
+  {
+    "id": "near",
+    "symbol": "NEAR",
+    "name": "NEAR Protocol",
+    "pair": "NEAR/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/10365/small/near.png",
+    "binanceSym": "NEARUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 5.016,
+    "change": -1.859,
+    "high": 5.198,
+    "low": 4.764,
+    "vol": "93.4M"
+  },
+  {
+    "id": "aptos",
+    "symbol": "APT",
+    "name": "Aptos",
+    "pair": "APT/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/26455/small/aptos_round.png",
+    "binanceSym": "APTUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.794,
+    "change": -5.824,
+    "high": 0.8569,
+    "low": 0.7697,
+    "vol": "11.7M"
+  },
+  {
+    "id": "polkadot",
+    "symbol": "DOT",
+    "name": "Polkadot",
+    "pair": "DOT/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/12171/small/polkadot.png",
+    "binanceSym": "DOTUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 1.113,
+    "change": -6.628,
+    "high": 1.208,
+    "low": 1.092,
+    "vol": "7.7M"
+  },
+  {
+    "id": "tron",
+    "symbol": "TRX",
+    "name": "TRON",
+    "pair": "TRX/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/1094/small/tron-logo.png",
+    "binanceSym": "TRXUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.3335,
+    "change": -0.507,
+    "high": 0.3372,
+    "low": 0.3332,
+    "vol": "22.1M"
+  },
+  {
+    "id": "the-open-network",
+    "symbol": "TON",
+    "name": "Toncoin",
+    "pair": "TON/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/17980/small/ton_symbol.png",
+    "binanceSym": "TONUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 1.6,
+    "change": 0.946,
+    "high": 1.641,
+    "low": 1.58,
+    "vol": "7.7M"
+  },
+  {
+    "id": "filecoin",
+    "symbol": "FIL",
+    "name": "Filecoin",
+    "pair": "FIL/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/12817/small/filecoin.png",
+    "binanceSym": "FILUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 1.0679,
+    "change": -8.695,
+    "high": 1.2236,
+    "low": 1.0369,
+    "vol": "20.3M"
+  },
+  {
+    "id": "internet-computer",
+    "symbol": "ICP",
+    "name": "Internet Computer",
+    "pair": "ICP/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/14495/small/Internet_Computer_logo.png",
+    "binanceSym": "ICPUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 2.939,
+    "change": -2.971,
+    "high": 3.063,
+    "low": 2.869,
+    "vol": "4.4M"
+  },
+  {
+    "id": "sei-network",
+    "symbol": "SEI",
+    "name": "Sei",
+    "pair": "SEI/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/28205/small/Sei_Logo_-_Transparent.png",
+    "binanceSym": "SEIUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.06282,
+    "change": -2.287,
+    "high": 0.06478,
+    "low": 0.0612,
+    "vol": "5.7M"
+  },
+  {
+    "id": "celestia",
+    "symbol": "TIA",
+    "name": "Celestia",
+    "pair": "TIA/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/31967/small/tia.png",
+    "binanceSym": "TIAUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.637,
+    "change": -13.826,
+    "high": 0.769,
+    "low": 0.6282,
+    "vol": "24.5M"
+  },
+  {
+    "id": "algorand",
+    "symbol": "ALGO",
+    "name": "Algorand",
+    "pair": "ALGO/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/4380/small/download.png",
+    "binanceSym": "ALGOUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.1121,
+    "change": -2.775,
+    "high": 0.1155,
+    "low": 0.1093,
+    "vol": "1.8M"
+  },
+  {
+    "id": "hedera-hashgraph",
+    "symbol": "HBAR",
+    "name": "Hedera",
+    "pair": "HBAR/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/3688/small/hbar.png",
+    "binanceSym": "HBARUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.08644,
+    "change": 2.807,
+    "high": 0.08695,
+    "low": 0.08209,
+    "vol": "10.5M"
+  },
+  {
+    "id": "cosmos",
+    "symbol": "ATOM",
+    "name": "Cosmos Hub",
+    "pair": "ATOM/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/1481/small/cosmos_hub.png",
+    "binanceSym": "ATOMUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 1.7,
+    "change": -3.519,
+    "high": 1.763,
+    "low": 1.665,
+    "vol": "1.1M"
+  },
+  {
+    "id": "stellar",
+    "symbol": "XLM",
+    "name": "Stellar",
+    "pair": "XLM/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/100/small/Stellar_symbol_black_RGB.png",
+    "binanceSym": "XLMUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.1784,
+    "change": -0.779,
+    "high": 0.1802,
+    "low": 0.1742,
+    "vol": "8.4M"
+  },
+  {
+    "id": "fantom",
+    "symbol": "FTM",
+    "name": "Fantom",
+    "pair": "FTM/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png",
+    "binanceSym": "FTMUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.6994,
+    "change": -0.766,
+    "high": 0.7111,
+    "low": 0.69,
+    "vol": "1.3M"
+  },
+  {
+    "id": "vechain",
+    "symbol": "VET",
+    "name": "VeChain",
+    "pair": "VET/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/1167/small/VET_Token_Icon.png",
+    "binanceSym": "VETUSDT",
+    "category": "l1",
+    "maxLev": 50,
+    "price": 0.006773,
+    "change": -2.868,
+    "high": 0.007001,
+    "low": 0.006585,
+    "vol": "0.5M"
+  },
+  {
+    "id": "litecoin",
+    "symbol": "LTC",
+    "name": "Litecoin",
+    "pair": "LTC/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/2/small/litecoin.png",
+    "binanceSym": "LTCUSDT",
+    "category": "spot",
+    "maxLev": 50,
+    "price": 59.15,
+    "change": -1.269,
+    "high": 59.93,
+    "low": 57.6,
+    "vol": "13.0M"
+  },
+  {
+    "id": "bitcoin-cash",
+    "symbol": "BCH",
+    "name": "Bitcoin Cash",
+    "pair": "BCH/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/780/small/bitcoin-cash-circle.png",
+    "binanceSym": "BCHUSDT",
+    "category": "spot",
+    "maxLev": 50,
+    "price": 277,
+    "change": -1.564,
+    "high": 281.5,
+    "low": 270.5,
+    "vol": "5.8M"
+  },
+  {
+    "id": "ethereum-classic",
+    "symbol": "ETC",
+    "name": "Ethereum Classic",
+    "pair": "ETC/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/453/small/ethereum-classic-logo.png",
+    "binanceSym": "ETCUSDT",
+    "category": "spot",
+    "maxLev": 50,
+    "price": 7.78,
+    "change": -2.506,
+    "high": 8,
+    "low": 7.63,
+    "vol": "1.6M"
+  },
+  {
+    "id": "uniswap",
+    "symbol": "UNI",
+    "name": "Uniswap",
+    "pair": "UNI/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png",
+    "binanceSym": "UNIUSDT",
+    "category": "defi",
+    "maxLev": 75,
+    "price": 7.27,
+    "change": -0.588,
+    "high": 7.36,
+    "low": 6.998,
+    "vol": "20.2M"
+  },
+  {
+    "id": "chainlink",
+    "symbol": "LINK",
+    "name": "Chainlink",
+    "pair": "LINK/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png",
+    "binanceSym": "LINKUSDT",
+    "category": "defi",
+    "maxLev": 75,
+    "price": 12.033,
+    "change": -2.417,
+    "high": 12.36,
+    "low": 11.737,
+    "vol": "16.6M"
+  },
+  {
+    "id": "aave",
+    "symbol": "AAVE",
+    "name": "Aave",
+    "pair": "AAVE/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/12645/small/AAVE.png",
+    "binanceSym": "AAVEUSDT",
+    "category": "defi",
+    "maxLev": 75,
+    "price": 153.64,
+    "change": -1.696,
+    "high": 157.11,
+    "low": 149.1,
+    "vol": "11.6M"
+  },
+  {
+    "id": "maker",
+    "symbol": "MKR",
+    "name": "Maker",
+    "pair": "MKR/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/1364/small/Mark_Maker.png",
+    "binanceSym": "MKRUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 1813.7,
+    "change": 0.761,
+    "high": 1830,
+    "low": 1780.6,
+    "vol": "0.4M"
+  },
+  {
+    "id": "curve-dao-token",
+    "symbol": "CRV",
+    "name": "Curve DAO",
+    "pair": "CRV/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/12124/small/Curve.png",
+    "binanceSym": "CRVUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 0.3476,
+    "change": 1.017,
+    "high": 0.3508,
+    "low": 0.3351,
+    "vol": "2.0M"
+  },
+  {
+    "id": "lido-dao",
+    "symbol": "LDO",
+    "name": "Lido DAO",
+    "pair": "LDO/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/13573/small/Lido_DAO.png",
+    "binanceSym": "LDOUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 0.3906,
+    "change": -2.666,
+    "high": 0.4062,
+    "low": 0.3788,
+    "vol": "2.1M"
+  },
+  {
+    "id": "pendle",
+    "symbol": "PENDLE",
+    "name": "Pendle",
+    "pair": "PENDLE/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/15069/small/Pendle_Logo_Normal-03.png",
+    "binanceSym": "PENDLEUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 2.062,
+    "change": -3.419,
+    "high": 2.136,
+    "low": 2.005,
+    "vol": "2.1M"
+  },
+  {
+    "id": "injective-protocol",
+    "symbol": "INJ",
+    "name": "Injective",
+    "pair": "INJ/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/12882/small/Secondary_Symbol.png",
+    "binanceSym": "INJUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 8.628,
+    "change": -3.371,
+    "high": 8.986,
+    "low": 8.378,
+    "vol": "15.3M"
+  },
+  {
+    "id": "jupiter-exchange-solana",
+    "symbol": "JUP",
+    "name": "Jupiter",
+    "pair": "JUP/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/34188/small/jup.png",
+    "binanceSym": "JUPUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 0.2935,
+    "change": -3.802,
+    "high": 0.3057,
+    "low": 0.285,
+    "vol": "1.4M"
+  },
+  {
+    "id": "thorchain",
+    "symbol": "RUNE",
+    "name": "THORChain",
+    "pair": "RUNE/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/6595/small/thorchain.png",
+    "binanceSym": "RUNEUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 0.64,
+    "change": -0.312,
+    "high": 0.644,
+    "low": 0.627,
+    "vol": "0.9M"
+  },
+  {
+    "id": "havven",
+    "symbol": "SNX",
+    "name": "Synthetix",
+    "pair": "SNX/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/3406/small/SNX.png",
+    "binanceSym": "SNXUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 0.2156,
+    "change": -3.578,
+    "high": 0.2241,
+    "low": 0.1998,
+    "vol": "0.2M"
+  },
+  {
+    "id": "dydx-chain",
+    "symbol": "DYDX",
+    "name": "dYdX",
+    "pair": "DYDX/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/32578/small/dydx.png",
+    "binanceSym": "DYDXUSDT",
+    "category": "defi",
+    "maxLev": 50,
+    "price": 0.11791,
+    "change": -4.65,
+    "high": 0.12439,
+    "low": 0.11469,
+    "vol": "0.5M"
+  },
+  {
+    "id": "arbitrum",
+    "symbol": "ARB",
+    "name": "Arbitrum",
+    "pair": "ARB/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/16547/small/arbitrum_logo.png",
+    "binanceSym": "ARBUSDT",
+    "category": "l2",
+    "maxLev": 50,
+    "price": 0.1843,
+    "change": -3.153,
+    "high": 0.1924,
+    "low": 0.1768,
+    "vol": "7.4M"
+  },
+  {
+    "id": "optimism",
+    "symbol": "OP",
+    "name": "Optimism",
+    "pair": "OP/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/25244/small/Optimism.png",
+    "binanceSym": "OPUSDT",
+    "category": "l2",
+    "maxLev": 50,
+    "price": 0.1286,
+    "change": -7.482,
+    "high": 0.1408,
+    "low": 0.126,
+    "vol": "5.3M"
+  },
+  {
+    "id": "polygon-ecosystem-token",
+    "symbol": "POL",
+    "name": "Polygon Ecosystem",
+    "pair": "POL/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/4713/small/polygon.png",
+    "binanceSym": "POLUSDT",
+    "category": "l2",
+    "maxLev": 50,
+    "price": 0.0926,
+    "change": -1.437,
+    "high": 0.09434,
+    "low": 0.09115,
+    "vol": "2.9M"
+  },
+  {
+    "id": "starknet",
+    "symbol": "STRK",
+    "name": "Starknet",
+    "pair": "STRK/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/33139/small/Starknet.png",
+    "binanceSym": "STRKUSDT",
+    "category": "l2",
+    "maxLev": 50,
+    "price": 0.06339,
+    "change": -11.713,
+    "high": 0.07294,
+    "low": 0.0631,
+    "vol": "19.3M"
+  },
+  {
+    "id": "shiba-inu",
+    "symbol": "SHIB",
+    "name": "Shiba Inu",
+    "pair": "SHIB/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/11939/small/shiba.png",
+    "binanceSym": "SHIBUSDT",
+    "category": "meme",
+    "maxLev": 50,
+    "price": 0.00000499,
+    "change": -1.772,
+    "high": 0.0000051,
+    "low": 0.00000488,
+    "vol": "1.5M"
+  },
+  {
+    "id": "pepe",
+    "symbol": "PEPE",
+    "name": "Pepe",
+    "pair": "PEPE/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/29850/small/pepe-token.png",
+    "binanceSym": "PEPEUSDT",
+    "category": "meme",
+    "maxLev": 50,
+    "price": 0.0000039,
+    "change": -3.465,
+    "high": 0.00000406,
+    "low": 0.00000378,
+    "vol": "12.7M"
+  },
+  {
+    "id": "dogwifcoin",
+    "symbol": "WIF",
+    "name": "dogwifhat",
+    "pair": "WIF/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/33566/small/dogwifhat.png",
+    "binanceSym": "WIFUSDT",
+    "category": "meme",
+    "maxLev": 50,
+    "price": 0.1993,
+    "change": -2.543,
+    "high": 0.2058,
+    "low": 0.1927,
+    "vol": "1.1M"
+  },
+  {
+    "id": "bonk",
+    "symbol": "BONK",
+    "name": "Bonk",
+    "pair": "BONK/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/28600/small/bonk.jpg",
+    "binanceSym": "BONKUSDT",
+    "category": "meme",
+    "maxLev": 50,
+    "price": 0.00000299,
+    "change": -2.288,
+    "high": 0.00000308,
+    "low": 0.00000289,
+    "vol": "1.0M"
+  },
+  {
+    "id": "floki",
+    "symbol": "FLOKI",
+    "name": "Floki",
+    "pair": "FLOKI/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/16746/small/FLOKI.png",
+    "binanceSym": "FLOKIUSDT",
+    "category": "meme",
+    "maxLev": 50,
+    "price": 0.00002368,
+    "change": -1.824,
+    "high": 0.00002414,
+    "low": 0.00002305,
+    "vol": "0.7M"
+  },
+  {
+    "id": "book-of-meme",
+    "symbol": "BOME",
+    "name": "BOOK OF MEME",
+    "pair": "BOME/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/36070/small/bome.png",
+    "binanceSym": "BOMEUSDT",
+    "category": "meme",
+    "maxLev": 50,
+    "price": 0.0006427,
+    "change": -4.743,
+    "high": 0.0006776,
+    "low": 0.00063,
+    "vol": "1.2M"
+  },
+  {
+    "id": "memecoin",
+    "symbol": "MEME",
+    "name": "Memecoin",
+    "pair": "MEME/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/32684/small/memecoin.png",
+    "binanceSym": "MEMEUSDT",
+    "category": "meme",
+    "maxLev": 50,
+    "price": 0.000491,
+    "change": -3.725,
+    "high": 0.000511,
+    "low": 0.000477,
+    "vol": "0.3M"
+  },
+  {
+    "id": "render-token",
+    "symbol": "RENDER",
+    "name": "Render",
+    "pair": "RENDER/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/11636/small/rndr.png",
+    "binanceSym": "RENDERUSDT",
+    "category": "ai",
+    "maxLev": 50,
+    "price": 1.858,
+    "change": -2.977,
+    "high": 1.934,
+    "low": 1.805,
+    "vol": "2.8M"
+  },
+  {
+    "id": "fetch-ai",
+    "symbol": "FET",
+    "name": "Artificial Superintelligence",
+    "pair": "FET/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/5681/small/Fetch.jpg",
+    "binanceSym": "FETUSDT",
+    "category": "ai",
+    "maxLev": 50,
+    "price": 0.193,
+    "change": -0.924,
+    "high": 0.1962,
+    "low": 0.1842,
+    "vol": "11.9M"
+  },
+  {
+    "id": "bittensor",
+    "symbol": "TAO",
+    "name": "Bittensor",
+    "pair": "TAO/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/28552/small/bittensor-tao.png",
+    "binanceSym": "TAOUSDT",
+    "category": "ai",
+    "maxLev": 50,
+    "price": 270.8,
+    "change": -1.777,
+    "high": 277.3,
+    "low": 262,
+    "vol": "16.9M"
+  },
+  {
+    "id": "worldcoin-wld",
+    "symbol": "WLD",
+    "name": "Worldcoin",
+    "pair": "WLD/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/31062/small/worldcoin.png",
+    "binanceSym": "WLDUSDT",
+    "category": "ai",
+    "maxLev": 50,
+    "price": 0.495,
+    "change": -7.025,
+    "high": 0.5398,
+    "low": 0.478,
+    "vol": "33.9M"
+  },
+  {
+    "id": "the-graph",
+    "symbol": "GRT",
+    "name": "The Graph",
+    "pair": "GRT/USDT",
+    "icon": "https://assets.coingecko.com/coins/images/13397/small/Graph_Token.png",
+    "binanceSym": "GRTUSDT",
+    "category": "ai",
+    "maxLev": 50,
+    "price": 0.02412,
+    "change": -3.094,
+    "high": 0.02489,
+    "low": 0.02354,
+    "vol": "0.5M"
+  }
 ];
 
 // ─── 2. PERSISTENT STATE ─────────────────────────────────────────────────
@@ -92,6 +902,45 @@ function saveUserProfile() {
     console.error('Failed to save user profile:', e);
   }
 }
+
+// ─── 2.2 THEME ENGINE (4 LUXURY DARK THEMES) ───────────────────────────
+const THEME_STORAGE_KEY = 'vtrade_app_theme';
+
+function setAppTheme(themeName) {
+  const valid = ['obsidian', 'midnight', 'oled', 'cyber'];
+  if (!valid.includes(themeName)) themeName = 'obsidian';
+
+  document.documentElement.setAttribute('data-theme', themeName);
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, themeName);
+  } catch (e) {}
+
+  valid.forEach(t => {
+    const el = document.getElementById(`theme-opt-${t}`);
+    if (el) el.classList.toggle('active', t === themeName);
+  });
+
+  const names = {
+    obsidian: 'Dark Obsidian (Gold)',
+    midnight: 'Midnight Navy (Electric Cyan)',
+    oled: 'OLED Pure Black (Emerald Green)',
+    cyber: 'Cyber Neon (Electric Violet)'
+  };
+  showToast(`Active Theme: ${names[themeName] || themeName}`, 'info');
+}
+
+function initAppTheme() {
+  let saved = 'obsidian';
+  try {
+    saved = localStorage.getItem(THEME_STORAGE_KEY) || 'obsidian';
+  } catch (e) {}
+  document.documentElement.setAttribute('data-theme', saved);
+  ['obsidian', 'midnight', 'oled', 'cyber'].forEach(t => {
+    const el = document.getElementById(`theme-opt-${t}`);
+    if (el) el.classList.toggle('active', t === saved);
+  });
+}
+
 
 // ─── 3. APP RUNTIME STATE ────────────────────────────────────────────────
 let activeTab = 'home';
@@ -440,7 +1289,7 @@ function clearMarketSearch() {
 
 function setMarketCategory(cat) {
   marketCategory = cat;
-  ['all', 'futures', 'spot', 'l1', 'meme', 'defi'].forEach(c => {
+  ['all', 'futures', 'spot', 'l1', 'l2', 'ai', 'meme', 'defi'].forEach(c => {
     const chip = document.getElementById(`mcat-${c}`);
     if (chip) chip.classList.toggle('active', c === cat);
   });
@@ -523,34 +1372,46 @@ async function fetchRealBinanceCandles() {
 
   const bTf = binanceTfMap[chartInterval] || '1h';
   const sym = selectedCoin.binanceSym || 'BTCUSDT';
-  const url = `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${bTf}&limit=32`;
 
-  try {
-    const ctl = new AbortController();
-    const tmr = setTimeout(() => ctl.abort(), 4000);
-    const resp = await fetch(url, { signal: ctl.signal });
-    clearTimeout(tmr);
+  const urls = [
+    `https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${bTf}&limit=32`,
+    `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${bTf}&limit=32`
+  ];
 
-    if (resp.ok) {
-      const klines = await resp.json();
-      chartCandlesData = klines.map(k => ({
-        time: k[0],
-        open: parseFloat(k[1]),
-        high: parseFloat(k[2]),
-        low: parseFloat(k[3]),
-        close: parseFloat(k[4]),
-        vol: parseFloat(k[5])
-      }));
-    } else {
-      generateSimulatedCandles();
+  let loaded = false;
+  for (const u of urls) {
+    try {
+      const ctl = new AbortController();
+      const tmr = setTimeout(() => ctl.abort(), 3500);
+      const resp = await fetch(u, { signal: ctl.signal });
+      clearTimeout(tmr);
+
+      if (resp.ok) {
+        const klines = await resp.json();
+        if (Array.isArray(klines) && klines.length > 0) {
+          chartCandlesData = klines.map(k => ({
+            time: k[0],
+            open: parseFloat(k[1]),
+            high: parseFloat(k[2]),
+            low: parseFloat(k[3]),
+            close: parseFloat(k[4]),
+            vol: parseFloat(k[5])
+          }));
+          loaded = true;
+          break;
+        }
+      }
+    } catch (err) {
+      // Fall through to next endpoint
     }
-  } catch (err) {
-    console.warn('Real Binance feed unreachable, generating simulated candles:', err);
-    generateSimulatedCandles();
-  } finally {
-    if (loader) loader.classList.add('hidden');
-    renderCandlestickSvg();
   }
+
+  if (!loaded) {
+    generateSimulatedCandles();
+  }
+
+  if (loader) loader.classList.add('hidden');
+  renderCandlestickSvg();
 }
 
 function generateSimulatedCandles() {
@@ -1175,35 +2036,69 @@ function selectCoinFromPicker(coinId) {
 
 // ─── 19. LIVE PRICE TICK STREAMING (BINANCE API + SIMULATOR) ───────────
 async function fetchLiveBinanceTickers() {
-  try {
-    const ctl = new AbortController();
-    const tmr = setTimeout(() => ctl.abort(), 3500);
-    const resp = await fetch('https://api.binance.com/api/v3/ticker/24hr', { signal: ctl.signal });
-    clearTimeout(tmr);
+  const endpoints = [
+    'https://data-api.binance.vision/api/v3/ticker/24hr',
+    'https://api.binance.com/api/v3/ticker/24hr',
+    '/api/prices'
+  ];
 
-    if (resp.ok) {
-      const data = await resp.json();
-      const tickerMap = new Map();
-      data.forEach(t => tickerMap.set(t.symbol, t));
+  let success = false;
+  for (const url of endpoints) {
+    try {
+      const ctl = new AbortController();
+      const tmr = setTimeout(() => ctl.abort(), 2500);
+      const resp = await fetch(url, { signal: ctl.signal });
+      clearTimeout(tmr);
 
-      COINS.forEach(c => {
-        const t = tickerMap.get(c.binanceSym);
-        if (t) {
-          c.price = parseFloat(t.lastPrice);
-          c.change = parseFloat(t.priceChangePercent);
-          c.high = parseFloat(t.highPrice);
-          c.low = parseFloat(t.lowPrice);
+      if (resp.ok) {
+        const data = await resp.json();
+        const tickerMap = new Map();
+        if (Array.isArray(data)) {
+          data.forEach(t => tickerMap.set(t.symbol, t));
+        } else if (data && data.prices) {
+          Object.keys(data.prices).forEach(k => {
+            const p = data.prices[k];
+            if (p && p.price) {
+              tickerMap.set(k.toUpperCase() + 'USDT', {
+                lastPrice: p.price,
+                priceChangePercent: p.change24h || 0,
+                highPrice: p.high24h || p.price * 1.02,
+                lowPrice: p.low24h || p.price * 0.98,
+                quoteVolume: p.volume24h || 50000000
+              });
+            }
+          });
         }
-      });
-    } else {
-      simulatePriceFluctuations();
+
+        if (tickerMap.size > 0) {
+          COINS.forEach(c => {
+            const t = tickerMap.get(c.binanceSym);
+            if (t) {
+              c.price = parseFloat(t.lastPrice);
+              c.change = parseFloat(t.priceChangePercent);
+              c.high = parseFloat(t.highPrice);
+              c.low = parseFloat(t.lowPrice);
+              if (t.quoteVolume) {
+                const qv = parseFloat(t.quoteVolume);
+                c.vol = qv >= 1e9 ? (qv / 1e9).toFixed(2) + 'B' : (qv / 1e6).toFixed(1) + 'M';
+              }
+            }
+          });
+          success = true;
+          break;
+        }
+      }
+    } catch (err) {
+      // Continue to next endpoint
     }
-  } catch (err) {
-    simulatePriceFluctuations();
-  } finally {
-    checkPendingOrdersTrigger();
-    renderLivePriceUpdates();
   }
+
+  if (!success) {
+    simulatePriceFluctuations();
+  }
+
+  checkPendingOrdersTrigger();
+  renderLivePriceUpdates();
 }
 
 function simulatePriceFluctuations() {
@@ -1438,6 +2333,9 @@ function initVTradeApp() {
   if (iconEl) iconEl.textContent = getCurrencySymbol();
   if (labelEl) labelEl.textContent = walletState.currency;
 
+  // Initialize luxury theme
+  initAppTheme();
+
   // Render initial screen
   switchBottomTab('home');
 
@@ -1447,7 +2345,7 @@ function initVTradeApp() {
   // Start continuous 3-second live price ticker
   fetchLiveBinanceTickers();
   if (!liveTickerInterval) {
-    liveTickerInterval = setInterval(fetchLiveBinanceTickers, 3000);
+    liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500);
   }
 }
 

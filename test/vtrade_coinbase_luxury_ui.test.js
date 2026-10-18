@@ -128,4 +128,33 @@ assert.ok(js.includes('function selectPresetAvatar('), 'selectPresetAvatar defin
 assert.ok(js.includes('function openProfileEditModal()'), 'openProfileEditModal defined in app.js');
 console.log('  ✓ Accounts Category, User Profile (DP + Gmail), and Moved Refill block verified');
 
-console.log('\n=== ALL 9 VTRADE LUXURY UI & ACCOUNTS TESTS PASSED! ===\n');
+// 10. Verify 4 Luxury Dark Themes Switcher
+assert.ok(html.includes('id="theme-opt-obsidian"'), 'Obsidian theme card present');
+assert.ok(html.includes('id="theme-opt-midnight"'), 'Midnight Navy theme card present');
+assert.ok(html.includes('id="theme-opt-oled"'), 'OLED Pure Black theme card present');
+assert.ok(html.includes('id="theme-opt-cyber"'), 'Cyber Neon theme card present');
+assert.ok(css.includes('[data-theme="obsidian"]'), 'Obsidian CSS variables defined');
+assert.ok(css.includes('[data-theme="midnight"]'), 'Midnight CSS variables defined');
+assert.ok(css.includes('[data-theme="oled"]'), 'OLED CSS variables defined');
+assert.ok(css.includes('[data-theme="cyber"]'), 'Cyber CSS variables defined');
+assert.ok(js.includes('function setAppTheme('), 'setAppTheme function defined');
+assert.ok(js.includes('function initAppTheme()'), 'initAppTheme function defined');
+console.log('  ✓ 4 Luxury Dark Themes (Obsidian, Midnight Navy, OLED Pure Black, Cyber Neon) verified');
+
+// 11. Verify 50+ Cryptocurrencies with Live Data
+const coinsMatch = js.match(/const COINS = (\[[\s\S]*?\]);/);
+assert.ok(coinsMatch, 'COINS array must be defined in app.js');
+const coinsParsed = eval(coinsMatch[1]);
+assert.ok(Array.isArray(coinsParsed) && coinsParsed.length >= 50, `COINS must have at least 50 coins, found ${coinsParsed.length}`);
+console.log(`  ✓ Expanded catalog of ${coinsParsed.length} cryptocurrencies with live ticker mapping verified`);
+
+// 12. Verify Unblocked Binance Vision Real-Time Feed & Accurate Streaming
+assert.ok(js.includes('data-api.binance.vision'), 'Binance Vision unblocked public stream configured in app.js');
+assert.ok(js.includes('liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500)'), 'Live ticker refresh configured to 1500ms (1-2s tick speed)');
+console.log('  ✓ Binance Vision real-time unblocked stream (1.5s ticker) verified');
+
+// 13. Verify Accounts Bottom Navbar Clipping Elimination
+assert.ok(css.includes('padding: 16px 16px calc(130px + var(--safe-area-bottom, 0px)) 16px;'), 'Account scroll container has safe bottom padding avoiding bottom navbar');
+console.log('  ✓ Bottom navbar clipping elimination (calc(130px + safe area)) verified');
+
+console.log('\n=== ALL 13 VTRADE LUXURY UI, THEMES & REAL-TIME TESTS PASSED! ===\n');

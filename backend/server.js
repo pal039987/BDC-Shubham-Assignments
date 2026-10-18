@@ -319,8 +319,13 @@ async function fetchPrices() {
       await updateDailyOpenPrices();
     }
     const bSymbols = encodeURIComponent(JSON.stringify(Object.keys(BINANCE_SYMBOL_MAP)));
-    const bUrl = `https://api.binance.com/api/v3/ticker/24hr?symbols=${bSymbols}`;
-    const bResp = await fetch(bUrl, { headers: { 'Accept': 'application/json' }, timeout: 3000 });
+    let bResp = null;
+    try {
+      bResp = await fetch(`https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${bSymbols}`, { headers: { 'Accept': 'application/json' }, timeout: 3000 });
+    } catch (e) {}
+    if (!bResp || !bResp.ok) {
+      bResp = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${bSymbols}`, { headers: { 'Accept': 'application/json' }, timeout: 3000 });
+    }
     if (bResp.ok) {
       const bList = await bResp.json();
       if (Array.isArray(bList) && bList.length >= 3) {
@@ -489,8 +494,13 @@ async function handleChartRequest(req, res) {
     const bInterval = binanceIntervals[tf] || '15m';
 
     try {
-      const klineUrl = `https://api.binance.com/api/v3/klines?symbol=${bSymbol}&interval=${bInterval}&limit=100`;
-      const kResp = await fetch(klineUrl, { timeout: 3500 });
+      let kResp = null;
+      try {
+        kResp = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${bSymbol}&interval=${bInterval}&limit=100`, { timeout: 3500 });
+      } catch (e) {}
+      if (!kResp || !kResp.ok) {
+        kResp = await fetch(`https://api.binance.com/api/v3/klines?symbol=${bSymbol}&interval=${bInterval}&limit=100`, { timeout: 3500 });
+      }
       if (kResp.ok) {
         const klines = await kResp.json();
         if (Array.isArray(klines) && klines.length > 0) {

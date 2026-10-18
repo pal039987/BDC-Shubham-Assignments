@@ -162,6 +162,8 @@
           <button class="mkt-cat-chip" id="mcat-futures" onclick="setMarketCategory('futures')">Futures (150x)</button>
           <button class="mkt-cat-chip" id="mcat-spot" onclick="setMarketCategory('spot')">Spot</button>
           <button class="mkt-cat-chip" id="mcat-l1" onclick="setMarketCategory('l1')">Layer 1</button>
+          <button class="mkt-cat-chip" id="mcat-l2" onclick="setMarketCategory('l2')">Layer 2</button>
+          <button class="mkt-cat-chip" id="mcat-ai" onclick="setMarketCategory('ai')">AI & Data</button>
           <button class="mkt-cat-chip" id="mcat-meme" onclick="setMarketCategory('meme')">Meme</button>
           <button class="mkt-cat-chip" id="mcat-defi" onclick="setMarketCategory('defi')">DeFi</button>
         </div>
@@ -396,6 +398,44 @@
             <button class="preset-avatar-btn" id="pab-ethereum" onclick="selectPresetAvatar('ethereum')" title="Ethereum">⟠ Ethereum</button>
             <button class="preset-avatar-btn" id="pab-bull" onclick="selectPresetAvatar('bull')" title="Bull Trader">🐂 Bull</button>
             <button class="preset-avatar-btn" id="pab-fox" onclick="selectPresetAvatar('fox')" title="Crypto Fox">🦊 Fox</button>
+          </div>
+        </div>
+
+        <!-- ════════ LUXURY THEMES SELECTOR CARD ════════ -->
+        <div class="account-card theme-selector-card">
+          <div class="account-card-header">
+            <span class="acc-card-title">Theme & Appearance</span>
+            <span class="acc-card-subtitle">Select luxury dark palette</span>
+          </div>
+          <div class="themes-grid">
+            <div class="theme-card-option active" id="theme-opt-obsidian" onclick="setAppTheme('obsidian')">
+              <div class="theme-preview-dot dot-obsidian"></div>
+              <div class="theme-info">
+                <span class="theme-name">Obsidian Gold</span>
+                <span class="theme-sub">Flagship Dark</span>
+              </div>
+            </div>
+            <div class="theme-card-option" id="theme-opt-midnight" onclick="setAppTheme('midnight')">
+              <div class="theme-preview-dot dot-midnight"></div>
+              <div class="theme-info">
+                <span class="theme-name">Midnight Navy</span>
+                <span class="theme-sub">Electric Cyan</span>
+              </div>
+            </div>
+            <div class="theme-card-option" id="theme-opt-oled" onclick="setAppTheme('oled')">
+              <div class="theme-preview-dot dot-oled"></div>
+              <div class="theme-info">
+                <span class="theme-name">OLED Pure Black</span>
+                <span class="theme-sub">Emerald Green</span>
+              </div>
+            </div>
+            <div class="theme-card-option" id="theme-opt-cyber" onclick="setAppTheme('cyber')">
+              <div class="theme-preview-dot dot-cyber"></div>
+              <div class="theme-info">
+                <span class="theme-name">Cyber Neon</span>
+                <span class="theme-sub">Electric Violet</span>
+              </div>
+            </div>
           </div>
         </div>
 
