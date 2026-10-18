@@ -56,6 +56,43 @@ function saveWalletState() {
   }
 }
 
+// ─── 2.1 USER PROFILE STATE ──────────────────────────────────────────────
+const USER_PROFILE_KEY = 'vtrade_user_profile_v1';
+
+const PRESET_AVATARS = {
+  cyberpunk: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=160&auto=format&fit=crop&q=80',
+  bitcoin: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
+  ethereum: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
+  bull: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=160&auto=format&fit=crop&q=80',
+  fox: 'https://images.unsplash.com/photo-1516934024742-b461fba47600?w=160&auto=format&fit=crop&q=80'
+};
+
+function loadUserProfile() {
+  try {
+    const raw = localStorage.getItem(USER_PROFILE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.warn('Failed to load user profile, initializing default:', e);
+  }
+  return {
+    name: 'Alex Trader',
+    email: 'alex.trader@gmail.com',
+    avatar: PRESET_AVATARS.cyberpunk,
+    selectedPreset: 'cyberpunk',
+    uid: '84920158'
+  };
+}
+
+let userProfile = loadUserProfile();
+
+function saveUserProfile() {
+  try {
+    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(userProfile));
+  } catch (e) {
+    console.error('Failed to save user profile:', e);
+  }
+}
+
 // ─── 3. APP RUNTIME STATE ────────────────────────────────────────────────
 let activeTab = 'home';
 let selectedCoin = COINS[0]; // Default BTC
@@ -163,7 +200,7 @@ function clearTradeHistory() {
 function switchBottomTab(tab) {
   activeTab = tab || 'home';
 
-  const tabs = ['home', 'markets', 'trade', 'portfolio'];
+  const tabs = ['home', 'markets', 'trade', 'portfolio', 'account'];
   tabs.forEach(t => {
     const btn = document.getElementById(`vnav-${t}`);
     const screen = document.getElementById(`screen-${t}`);
@@ -175,6 +212,7 @@ function switchBottomTab(tab) {
   else if (activeTab === 'markets') renderMarketsScreen();
   else if (activeTab === 'trade') renderTradeScreen();
   else if (activeTab === 'portfolio') renderPortfolioScreen();
+  else if (activeTab === 'account') renderAccountScreen();
 }
 
 // ─── 8. NET EQUITY & PnL CALCULATIONS ────────────────────────────────────
@@ -1242,6 +1280,8 @@ function renderLivePriceUpdates() {
     renderOrderbook();
   } else if (activeTab === 'portfolio') {
     renderPortfolioScreen();
+  } else if (activeTab === 'account') {
+    renderAccountScreen();
   }
 }
 
@@ -1250,6 +1290,131 @@ function renderAllViews() {
   renderMarketsScreen();
   renderTradeScreen();
   renderPortfolioScreen();
+  renderAccountScreen();
+}
+
+// ─── 19. ACCOUNTS & PROFILE SCREEN CONTROLLER ────────────────────────────
+function renderAccountScreen() {
+  const dpImg = document.getElementById('account-dp-img');
+  const nameEl = document.getElementById('account-display-name');
+  const emailEl = document.getElementById('account-display-email');
+  const uidEl = document.getElementById('account-display-uid');
+  const refillBalEl = document.getElementById('account-refill-balance-display');
+  const currStatusEl = document.getElementById('acc-curr-status');
+
+  if (dpImg && userProfile.avatar) dpImg.src = userProfile.avatar;
+  if (nameEl) nameEl.textContent = userProfile.name;
+  if (emailEl) emailEl.textContent = userProfile.email;
+  if (uidEl) uidEl.textContent = `UID: ${userProfile.uid}`;
+
+  // Highlight active preset chip if applicable
+  ['cyberpunk', 'bitcoin', 'ethereum', 'bull', 'fox'].forEach(key => {
+    const btn = document.getElementById(`pab-${key}`);
+    if (btn) btn.classList.toggle('active', userProfile.selectedPreset === key);
+  });
+
+  // Update current available cash in refill card
+  if (refillBalEl) {
+    refillBalEl.textContent = `${getCurrencySymbol()}${fmtPrice(walletState.cashBalance)}`;
+  }
+  if (currStatusEl) {
+    currStatusEl.textContent = `${walletState.currency} (${getCurrencySymbol()})`;
+  }
+}
+
+function triggerAvatarUpload() {
+  const input = document.getElementById('account-dp-file-input');
+  if (input) input.click();
+}
+
+function handleAvatarFileSelect(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select a valid image file', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    userProfile.avatar = dataUrl;
+    userProfile.selectedPreset = null;
+    saveUserProfile();
+    renderAccountScreen();
+    showToast('Profile photo updated successfully!', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function selectPresetAvatar(presetKey) {
+  if (PRESET_AVATARS[presetKey]) {
+    userProfile.avatar = PRESET_AVATARS[presetKey];
+    userProfile.selectedPreset = presetKey;
+    saveUserProfile();
+    renderAccountScreen();
+    showToast(`Avatar updated to ${presetKey}!`, 'success');
+  }
+}
+
+function openProfileEditModal() {
+  const modal = document.getElementById('edit-profile-modal-backdrop');
+  const nameInput = document.getElementById('epm-input-name');
+  const emailInput = document.getElementById('epm-input-email');
+  if (nameInput) nameInput.value = userProfile.name;
+  if (emailInput) emailInput.value = userProfile.email;
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeProfileEditModal() {
+  const modal = document.getElementById('edit-profile-modal-backdrop');
+  if (modal) modal.classList.add('hidden');
+}
+
+function handleProfileEditSubmit(event) {
+  event.preventDefault();
+  const nameInput = document.getElementById('epm-input-name');
+  const emailInput = document.getElementById('epm-input-email');
+  if (nameInput && nameInput.value.trim()) {
+    userProfile.name = nameInput.value.trim();
+  }
+  if (emailInput && emailInput.value.trim()) {
+    userProfile.email = emailInput.value.trim();
+  }
+  saveUserProfile();
+  renderAccountScreen();
+  closeProfileEditModal();
+  showToast('Profile updated successfully!', 'success');
+}
+
+function copyAccountUID() {
+  const uidText = userProfile.uid;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(uidText).then(() => {
+      showToast(`UID ${uidText} copied to clipboard!`, 'info');
+    }).catch(() => {
+      showToast(`UID: ${uidText}`, 'info');
+    });
+  } else {
+    showToast(`UID: ${uidText}`, 'info');
+  }
+}
+
+function resetDemoAccountFull() {
+  if (confirm('Are you sure you want to reset your virtual account to $10,000 and clear all positions?')) {
+    walletState = {
+      cashBalance: 10000.00,
+      positions: [],
+      orders: [],
+      tradesHistory: [],
+      balanceVisible: true,
+      currency: walletState.currency || 'USD'
+    };
+    saveWalletState();
+    renderAllViews();
+    showToast('Demo Account successfully reset to $10,000', 'success');
+  }
 }
 
 // ─── 20. INITIALIZATION ON BOOT ──────────────────────────────────────────

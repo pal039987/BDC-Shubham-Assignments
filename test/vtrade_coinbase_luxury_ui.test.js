@@ -16,7 +16,7 @@ const js = fs.readFileSync(path.join(__dirname, '../frontend/app.js'), 'utf8');
 
 // 1. Verify Header & Currency Toggle (USD $ ⇄ INR ₹)
 assert.ok(html.includes('id="currency-toggle-btn"'), 'Currency toggle button present in HTML');
-assert.ok(html.includes('id="header-faucet-btn"'), 'Demo Faucet refill button present in Header');
+assert.ok(html.includes('id="account-refill-btn"'), 'Demo Faucet refill button present in Accounts Screen');
 assert.ok(js.includes('function toggleCurrency()'), 'toggleCurrency function defined in app.js');
 assert.ok(js.includes('const INR_RATE = 83.50'), 'INR conversion rate defined');
 console.log('  ✓ Top Header, Logo branding, and USD ⇄ INR Currency Toggle verified');
@@ -113,4 +113,19 @@ assert.ok(css.includes('.order-sheet-container'), 'Order sheet container CSS pre
 assert.ok(css.includes('.dock-action-btn:active'), 'Tactile active button scale present');
 console.log('  ✓ 120 FPS CSS hardware acceleration, fluid easing curves, and tactile animations verified');
 
-console.log('\n=== ALL 8 VTRADE 120 FPS LUXURY UI TESTS PASSED! ===\n');
+// 9. Verify Accounts Category & User Profile Functionality
+assert.ok(html.includes('id="vnav-account"'), 'Accounts tab present in Bottom Navigation');
+assert.ok(html.includes('id="screen-account"'), 'Accounts screen container present');
+assert.ok(html.includes('id="account-dp-img"'), 'Profile avatar image present');
+assert.ok(html.includes('id="account-dp-file-input"'), 'Profile photo upload file input present');
+assert.ok(html.includes('id="account-display-name"'), 'User display name element present');
+assert.ok(html.includes('id="account-display-email"'), 'User Gmail element present');
+assert.ok(html.includes('id="pab-bitcoin"'), 'Bitcoin preset avatar chip present');
+assert.ok(html.includes('id="account-refill-btn"'), 'Refill block present inside Accounts screen');
+assert.ok(js.includes('function renderAccountScreen()'), 'renderAccountScreen defined in app.js');
+assert.ok(js.includes('function handleAvatarFileSelect('), 'handleAvatarFileSelect defined in app.js');
+assert.ok(js.includes('function selectPresetAvatar('), 'selectPresetAvatar defined in app.js');
+assert.ok(js.includes('function openProfileEditModal()'), 'openProfileEditModal defined in app.js');
+console.log('  ✓ Accounts Category, User Profile (DP + Gmail), and Moved Refill block verified');
+
+console.log('\n=== ALL 9 VTRADE LUXURY UI & ACCOUNTS TESTS PASSED! ===\n');

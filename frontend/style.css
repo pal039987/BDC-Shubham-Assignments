@@ -221,7 +221,8 @@ html, body {
 .home-scroll-container,
 .markets-scroll-container,
 .trade-scroll-container,
-.portfolio-scroll-container {
+.portfolio-scroll-container,
+.account-scroll-container {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -1194,7 +1195,512 @@ html, body {
   cursor: pointer;
 }
 
-/* ══════════════════════ 7. BOTTOM NAVIGATION BAR ══════════════════════ */
+/* ══════════════════════ 7. ACCOUNTS & PROFILE SCREEN ══════════════════════ */
+.account-scroll-container {
+  padding: 16px;
+}
+
+.account-hero-card {
+  background: linear-gradient(145deg, #121826 0%, #0c101a 100%);
+  border: 1px solid var(--border-active);
+  border-radius: 20px;
+  padding: 20px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.account-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.account-avatar-container {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  padding: 3px;
+  background: linear-gradient(135deg, #ff9900, #ff5500);
+  box-shadow: 0 0 16px rgba(255, 153, 0, 0.35);
+  transition: transform 0.2s var(--ease-smooth);
+}
+
+.account-avatar-container:active {
+  transform: scale(0.95);
+}
+
+.account-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #141b2b;
+  display: block;
+}
+
+.avatar-camera-badge {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ff9900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #080b11;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.account-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.account-user-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-edit-btn {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.account-edit-btn:active {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.account-user-email {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.acc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.acc-badge.verified {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+.acc-badge.uid {
+  background: var(--bg-card-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+  cursor: pointer;
+  user-select: all;
+}
+
+.acc-badge.uid:active {
+  color: #ffffff;
+  border-color: var(--gold);
+}
+
+/* Preset Crypto Avatars */
+.preset-avatars-card {
+  padding: 14px 16px;
+}
+
+.preset-avatars-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 2px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.preset-avatars-list::-webkit-scrollbar { display: none; }
+
+.preset-avatar-btn {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.18s var(--ease-smooth);
+}
+
+.preset-avatar-btn.active, .preset-avatar-btn:hover {
+  background: var(--gold-bg);
+  color: var(--gold);
+  border-color: rgba(255, 153, 0, 0.45);
+}
+
+/* ════════ REFILL DEMO BALANCE CARD ════════ */
+.refill-balance-card {
+  background: linear-gradient(145deg, #1b160b 0%, #10141f 100%);
+  border: 1px solid rgba(255, 153, 0, 0.35);
+  box-shadow: 0 4px 20px rgba(255, 153, 0, 0.12);
+  padding: 18px;
+}
+
+.refill-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.acc-card-badge-gold {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.refill-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.refill-header-cash {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--green);
+}
+
+.refill-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 10px 0 14px 0;
+}
+
+.account-refill-action-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #ff9900 0%, #e67e00 100%);
+  color: #000000;
+  border: none;
+  border-radius: 12px;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(255, 153, 0, 0.35);
+  transition: all 0.2s var(--ease-smooth);
+}
+
+.account-refill-action-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(255, 153, 0, 0.2);
+}
+
+/* Account Cards & Settings List */
+.account-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.account-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.acc-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.acc-card-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.account-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.acc-setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+}
+
+.acc-setting-item:last-child {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+
+.acc-setting-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.acc-setting-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bg-card-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.acc-setting-icon.danger {
+  background: var(--red-bg);
+}
+
+.acc-setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.acc-setting-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.acc-setting-label.text-danger {
+  color: var(--red);
+}
+
+.acc-setting-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.acc-setting-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.acc-setting-val.danger {
+  color: var(--red);
+}
+
+.acc-setting-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+.app-info-card {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.app-info-val {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Edit Profile Modal */
+.edit-profile-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: opacity 0.2s var(--ease-smooth);
+}
+
+.edit-profile-modal-backdrop.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.edit-profile-modal {
+  width: 100%;
+  max-width: 360px;
+  background: #111622;
+  border: 1px solid var(--border-active);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+  animation: modalScaleIn 0.2s var(--ease-smooth);
+}
+
+@keyframes modalScaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.epm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.epm-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.epm-close-btn {
+  background: var(--bg-card-subtle);
+  border: none;
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.epm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.epm-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.epm-input-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.epm-input-group input {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  height: 42px;
+  padding: 0 12px;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.epm-input-group input:focus {
+  border-color: var(--gold);
+}
+
+.epm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.epm-btn {
+  flex: 1;
+  padding: 11px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.epm-btn.cancel {
+  background: var(--bg-card-subtle);
+  color: var(--text-secondary);
+}
+
+.epm-btn.save {
+  background: var(--gold);
+  color: #000000;
+}
+
+.epm-btn:active {
+  transform: scale(0.97);
+}
+
+/* ══════════════════════ 8. BOTTOM NAVIGATION BAR ══════════════════════ */
 .vtrade-bottom-nav {
   position: absolute;
   bottom: 0;
