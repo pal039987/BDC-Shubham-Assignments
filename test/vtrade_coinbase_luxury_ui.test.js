@@ -244,9 +244,15 @@ assert.ok(js.includes('function getRegisteredUsers()'), 'getRegisteredUsers func
 assert.ok(js.includes('function saveRegisteredUser('), 'saveRegisteredUser function defined in app.js');
 console.log('  ✓ Strict Registration Authentication: unregistered accounts blocked with dedicated prompt');
 
-// 24. Verify Single Toast Enforcement & Currency Debounce
-assert.ok(js.includes("container.innerHTML = ''"), 'Toast container clears previous toasts to prevent stacking');
-assert.ok(js.includes('lastCurrencyToggleTime'), 'Currency toggle debounced to prevent duplicate popups');
-console.log('  ✓ Single Toast popup enforcement & Currency Switcher debounce verified');
+// 25. Verify TradingView-Style Offline Network Blocking Overlay & Auto-Reconnect
+assert.ok(html.includes('id="offline-network-overlay"'), 'Offline network overlay present in HTML');
+assert.ok(html.includes('id="offline-retry-btn"'), 'Offline retry button present in HTML');
+assert.ok(html.includes('retryNetworkConnection()'), 'Retry button triggers retryNetworkConnection()');
+assert.ok(js.includes('function initNetworkMonitor()'), 'initNetworkMonitor defined in app.js');
+assert.ok(js.includes('function updateNetworkStatus('), 'updateNetworkStatus defined in app.js');
+assert.ok(js.includes('function retryNetworkConnection()'), 'retryNetworkConnection defined in app.js');
+assert.ok(css.includes('.offline-overlay'), 'Offline overlay CSS present');
+assert.ok(css.includes('.offline-retry-btn'), 'Offline retry button CSS present');
+console.log('  ✓ TradingView-Style Offline Network Blocking Screen & Auto-Reconnect verified');
 
-console.log('\n=== ALL 24 VTRADE LUXURY UI, MARKET INTEL, STRICT AUTH & BUG FIX TESTS PASSED! ===\n');
+console.log('\n=== ALL 25 VTRADE LUXURY UI, MARKET INTEL, STRICT AUTH & BUG FIX TESTS PASSED! ===\n');

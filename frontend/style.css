@@ -3019,3 +3019,156 @@ html, body {
   display: block;
 }
 
+/* ══════════════════════ 13. TRADINGVIEW-STYLE OFFLINE BLOCKING OVERLAY ══════════════════════ */
+.offline-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(8, 9, 12, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeInOffline 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInOffline {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.offline-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 77, 79, 0.35);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 77, 79, 0.18);
+  border-radius: 24px;
+  padding: 32px 24px 26px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.offline-icon-pulse {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.offline-radar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 77, 79, 0.4);
+  animation: radarWave 2s ease-out infinite;
+}
+
+.offline-radar-ring.r2 {
+  animation-delay: 1s;
+}
+
+@keyframes radarWave {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.offline-icon-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 77, 79, 0.12);
+  border: 1.5px solid rgba(255, 77, 79, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(255, 77, 79, 0.35);
+}
+
+.offline-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  margin: 0 0 10px 0;
+}
+
+.offline-desc {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0 0 18px 0;
+}
+
+.offline-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 77, 79, 0.1);
+  border: 1px solid rgba(255, 77, 79, 0.3);
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 22px;
+}
+
+.offline-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff4d4f;
+  box-shadow: 0 0 8px #ff4d4f;
+}
+
+.offline-status-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ff7875;
+}
+
+.offline-retry-btn {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, #ff9900, #ffb700);
+  border: none;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0b0c10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(255, 153, 0, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-bottom: 14px;
+}
+
+.offline-retry-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 12px rgba(255, 153, 0, 0.2);
+}
+
+.offline-retry-btn.loading .retry-icon {
+  animation: spinRetry 0.8s linear infinite;
+}
+
+@keyframes spinRetry {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.offline-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+  opacity: 0.8;
+}
+

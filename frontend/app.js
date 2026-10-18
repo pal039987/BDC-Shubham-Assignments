@@ -1168,6 +1168,13 @@ function saveRegisteredUser(user) {
 
 async function handleAuthLogin(event) {
   if (event) event.preventDefault();
+
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    if (typeof updateNetworkStatus === 'function') updateNetworkStatus(false);
+    showToast('Internet connection is required to sign in. Please connect to internet.', 'error');
+    return;
+  }
+
   const emailInput = document.getElementById('login-email');
   const pwdInput = document.getElementById('login-password');
   const rememberBox = document.getElementById('login-remember');
@@ -1281,6 +1288,13 @@ async function handleAuthLogin(event) {
 
 async function handleAuthRegister(event) {
   if (event) event.preventDefault();
+
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    if (typeof updateNetworkStatus === 'function') updateNetworkStatus(false);
+    showToast('Internet connection is required to create an account. Please connect to internet.', 'error');
+    return;
+  }
+
   const nameInput = document.getElementById('register-name');
   const emailInput = document.getElementById('register-email');
   const pwdInput = document.getElementById('register-password');
@@ -1410,6 +1424,77 @@ function updateAccountAuthUI() {
     if (subEl) subEl.textContent = 'Sign in or register to trade';
     if (btnEl) btnEl.textContent = 'Sign In / Register';
     if (iconEl) iconEl.textContent = '🔐';
+  }
+}
+
+// ─── 2.4 REAL-TIME NETWORK CONNECTIVITY MONITOR (TRADINGVIEW STYLE) ─────
+let isNetworkOnline = typeof navigator !== 'undefined' ? (navigator.onLine !== false) : true;
+
+function updateNetworkStatus(online) {
+  isNetworkOnline = online;
+  const overlay = document.getElementById('offline-network-overlay');
+  const statusText = document.getElementById('offline-status-text');
+
+  if (!online) {
+    if (liveTickerInterval) {
+      clearInterval(liveTickerInterval);
+      liveTickerInterval = null;
+    }
+    if (overlay) overlay.classList.remove('hidden');
+    if (statusText) statusText.textContent = 'Network Offline • Disconnected';
+  } else {
+    if (overlay) overlay.classList.add('hidden');
+    fetchLiveBinanceTickers();
+    if (!liveTickerInterval) {
+      liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500);
+    }
+    fetchRealBinanceCandles();
+  }
+}
+
+async function retryNetworkConnection() {
+  const statusText = document.getElementById('offline-status-text');
+  const btn = document.getElementById('offline-retry-btn');
+  if (btn) btn.classList.add('loading');
+  if (statusText) statusText.textContent = 'Checking connectivity...';
+
+  let connected = false;
+  try {
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 3000);
+    const res = await fetch('https://api.binance.com/api/v3/ping', { method: 'GET', signal: ctl.signal, cache: 'no-store' });
+    clearTimeout(tmr);
+    if (res.ok) connected = true;
+  } catch (e) {}
+
+  if (!connected && typeof navigator !== 'undefined' && navigator.onLine) {
+    connected = true;
+  }
+
+  if (connected) {
+    updateNetworkStatus(true);
+    showToast('Internet connected! Real-time feeds resumed.', 'success');
+  } else {
+    updateNetworkStatus(false);
+    if (statusText) statusText.textContent = 'Still Offline • Please check data/Wi-Fi';
+    showToast('No internet detected. Please turn on Wi-Fi or Mobile Data.', 'error');
+  }
+  if (btn) btn.classList.remove('loading');
+}
+
+function initNetworkMonitor() {
+  if (typeof window === 'undefined') return;
+  window.addEventListener('online', () => {
+    updateNetworkStatus(true);
+    showToast('Internet reconnected! Live market feeds active.', 'success');
+  });
+  window.addEventListener('offline', () => {
+    updateNetworkStatus(false);
+    showToast('Internet connection lost. Trading feeds paused.', 'error');
+  });
+
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    updateNetworkStatus(false);
   }
 }
 
@@ -2545,6 +2630,21 @@ function updateOrderSheetCalculations() {
 
 // ─── 15. ORDER EXECUTION (REAL WORKING PAPER TRADING) ───────────────────
 function executeOrderFromSheet() {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    if (typeof updateNetworkStatus === 'function') updateNetworkStatus(false);
+    showToast('Cannot execute trade while offline. Please connect to internet.', 'error');
+    return;
+  }
+
+  const sess = getAuthSession();
+  const dbUsers = getRegisteredUsers();
+  const isValidDbUser = sess && sess.email && dbUsers.some(u => u.email.toLowerCase() === sess.email.toLowerCase());
+  if (!sess || sess.isGuest || !isValidDbUser) {
+    showToast('Authentication required. Please sign in with a registered account to trade.', 'error');
+    openAuthModal('login');
+    return;
+  }
+
   const price = sheetOrderType === 'limit' 
     ? (parseFloat(document.getElementById('sheet-limit-price')?.value) || selectedCoin.price)
     : selectedCoin.price;
@@ -3240,15 +3340,21 @@ function initVTradeApp() {
   // Initialize luxury theme
   initAppTheme();
 
+  // Initialize TradingView-style Network Monitor
+  initNetworkMonitor();
 
-  // Check auth session
+  // Check auth session & strictly validate against database users
   const sess = getAuthSession();
-  if (sess && !sess.isGuest && sess.email) {
+  const dbUsers = getRegisteredUsers();
+  const isValidDbUser = sess && sess.email && dbUsers.some(u => u.email.toLowerCase() === sess.email.toLowerCase());
+
+  if (sess && !sess.isGuest && isValidDbUser) {
     userProfile.name = sess.username;
     userProfile.email = sess.email;
     saveUserProfile();
     updateAccountAuthUI();
   } else {
+    clearAuthSession();
     updateAccountAuthUI();
     openAuthModal('login');
   }

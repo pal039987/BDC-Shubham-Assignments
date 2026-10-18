@@ -925,10 +925,48 @@
     </div>
   </div>
 
+  <!-- ══════════════════════ 12. TRADINGVIEW-STYLE OFFLINE BLOCKING OVERLAY ══════════════════════ -->
+  <div class="offline-overlay hidden" id="offline-network-overlay">
+    <div class="offline-card">
+      <div class="offline-icon-pulse">
+        <div class="offline-radar-ring"></div>
+        <div class="offline-radar-ring r2"></div>
+        <div class="offline-icon-circle">
+          <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="#ff4d4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+            <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" y1="20" x2="12.01" y2="20" stroke-width="3"></line>
+          </svg>
+        </div>
+      </div>
+
+      <h2 class="offline-title">No Internet Connection</h2>
+      <p class="offline-desc">
+        VTrade requires an active internet connection to stream live exchange prices, update orderbooks, and authenticate accounts.
+      </p>
+
+      <div class="offline-status-pill">
+        <span class="offline-status-dot"></span>
+        <span class="offline-status-text" id="offline-status-text">Network Offline • Disconnected</span>
+      </div>
+
+      <button type="button" class="offline-retry-btn" id="offline-retry-btn" onclick="retryNetworkConnection()">
+        <span class="retry-icon">🔄</span>
+        <span>Retry Connection</span>
+      </button>
+
+      <p class="offline-hint">Check your Wi-Fi, 5G/4G Mobile Data, or Airplane mode.</p>
+    </div>
+  </div>
+
   <!-- Toast Notification Layer -->
   <div id="toast-container" class="toast-container"></div>
   <div id="toast" class="toast hidden"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2.0"></script>
 </body>
 </html>

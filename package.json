@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node backend/server.js",
     "test": "node test/vtrade.test.js && node test/order_placement_e2e.test.js && node test/vtrade_coinbase_luxury_ui.test.js && node test/strict_auth_and_user_db.test.js",
-    "build:apk": "npx cap sync android && cd android && ./gradlew assembleDebug && cd .. && cp android/app/build/outputs/apk/debug/app-debug.apk downloads/VTrade.apk",
+    "build:apk": "rm -f frontend/vtrade.apk && npx cap sync android && cd android && ./gradlew assembleDebug && cd .. && cp android/app/build/outputs/apk/debug/app-debug.apk downloads/VTrade.apk",
     "cap:add-android": "npx cap add android",
     "cap:sync": "npx cap sync android",
     "cap:open": "npx cap open android"
