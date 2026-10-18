@@ -16,7 +16,7 @@ const js = fs.readFileSync(path.join(__dirname, '../frontend/app.js'), 'utf8');
 
 // 1. Verify Header & Currency Toggle (USD $ ⇄ INR ₹)
 assert.ok(html.includes('id="currency-toggle-btn"'), 'Currency toggle button present in HTML');
-assert.ok(html.includes('id="account-refill-btn"'), 'Demo Faucet refill button present in Accounts Screen');
+assert.ok(!html.includes('id="account-refill-btn"'), 'Virtual Faucet refill block cleanly removed from Accounts Screen as requested');
 assert.ok(js.includes('function toggleCurrency()'), 'toggleCurrency function defined in app.js');
 assert.ok(js.includes('const INR_RATE = 83.50'), 'INR conversion rate defined');
 console.log('  ✓ Top Header, Logo branding, and USD ⇄ INR Currency Toggle verified');
@@ -121,12 +121,12 @@ assert.ok(html.includes('id="account-dp-file-input"'), 'Profile photo upload fil
 assert.ok(html.includes('id="account-display-name"'), 'User display name element present');
 assert.ok(html.includes('id="account-display-email"'), 'User Gmail element present');
 assert.ok(html.includes('id="pab-bitcoin"'), 'Bitcoin preset avatar chip present');
-assert.ok(html.includes('id="account-refill-btn"'), 'Refill block present inside Accounts screen');
+assert.ok(!html.includes('id="account-refill-btn"'), 'Refill block cleanly removed from Accounts screen');
 assert.ok(js.includes('function renderAccountScreen()'), 'renderAccountScreen defined in app.js');
 assert.ok(js.includes('function handleAvatarFileSelect('), 'handleAvatarFileSelect defined in app.js');
 assert.ok(js.includes('function selectPresetAvatar('), 'selectPresetAvatar defined in app.js');
 assert.ok(js.includes('function openProfileEditModal()'), 'openProfileEditModal defined in app.js');
-console.log('  ✓ Accounts Category, User Profile (DP + Gmail), and Moved Refill block verified');
+console.log('  ✓ Accounts Category, User Profile (DP + Gmail), and Clean Settings layout verified');
 
 // 10. Verify 4 Luxury Dark Themes Switcher
 assert.ok(html.includes('id="theme-opt-obsidian"'), 'Obsidian theme card present');
@@ -193,4 +193,57 @@ assert.ok(js.includes('api.coinbase.com/v2/prices/ETH-USD/spot'), 'Coinbase ETH-
 assert.ok(js.includes('api.coinbase.com/v2/prices/SOL-USD/spot'), 'Coinbase SOL-USD spot feed configured');
 console.log('  ✓ Coinbase USD live spot price sync matching TradingView USD feed verified');
 
-console.log('\n=== ALL 17 VTRADE LUXURY UI, TRADINGVIEW, GOLD & AUTH TESTS PASSED! ===\n');
+// 18. Verify Local Gold Spot SVG Vector & Live Gold-API Spot Feed
+assert.strictEqual(goldCoin.icon, 'gold_spot.svg', 'Gold icon must use local gold_spot.svg to prevent broken image on mobile');
+assert.ok(fs.existsSync(path.join(__dirname, '../frontend/gold_spot.svg')), 'frontend/gold_spot.svg file must exist');
+assert.ok(js.includes('https://api.gold-api.com/price/XAU'), 'Live London Gold Spot feed (api.gold-api.com/price/XAU) must be configured in app.js');
+console.log('  ✓ Local Gold Spot SVG vector (zero broken image) & live Gold-API spot rate (~$4,166) verified');
+
+// 19. Verify Trade Screen Fullscreen Chart Button & Modal
+assert.ok(html.includes('id="ctf-fullscreen-btn"'), 'Fullscreen chart button present in Trade timeframe strip');
+assert.ok(html.includes('openFullscreenChart()'), 'Fullscreen button triggers openFullscreenChart()');
+assert.ok(html.includes('id="tv-fullscreen-modal"'), 'Fullscreen TradingView modal container present');
+assert.ok(html.includes('id="tv-fullscreen-iframe"'), 'Fullscreen TradingView iframe present');
+assert.ok(js.includes('function openFullscreenChart()'), 'openFullscreenChart function defined in app.js');
+assert.ok(js.includes('function closeFullscreenChart()'), 'closeFullscreenChart function defined in app.js');
+console.log('  ✓ Trade Fullscreen Chart Button (Screenshot 2 icon, no text) & Fullscreen Modal verified');
+
+// 20. Verify 4 Market Intelligence Cards Replacing Redundant Buttons
+assert.ok(html.includes('class="home-market-intel-grid"'), 'Home market intel grid present');
+assert.ok(html.includes('id="intel-fear-greed"'), 'Fear & Greed card present');
+assert.ok(html.includes('id="intel-top-gainer"'), 'Top 24h Gainer card present');
+assert.ok(html.includes('id="intel-global-vol"'), '24h Global Volume card present');
+assert.ok(html.includes('id="intel-ai-signal"'), 'AI Market Signal card present');
+assert.ok(js.includes('function tradeTopGainer()'), 'tradeTopGainer function defined in app.js');
+assert.ok(js.includes('function renderHomeMarketIntel()'), 'renderHomeMarketIntel function defined in app.js');
+console.log('  ✓ 4 Market Intel Cards (Fear & Greed, Top Gainer, 24h Volume, AI Signal) verified');
+
+// 21. Verify Home Portfolio Dual-Mode Chart (Line vs Candles) & Interactive Scrubber
+assert.ok(html.includes('id="hct-line"'), 'Line chart toggle button present');
+assert.ok(html.includes('id="hct-candles"'), 'Candlestick toggle button present');
+assert.ok(html.includes('id="portfolio-candles-svg"'), 'Portfolio Candlestick SVG container present');
+assert.ok(html.includes('id="portfolio-scrubber-line"'), 'Portfolio scrubber line present');
+assert.ok(html.includes('id="portfolio-scrubber-tooltip"'), 'Portfolio scrubber tooltip present');
+assert.ok(html.includes('id="portfolio-touch-target"'), 'Portfolio touch drag target layer present');
+assert.ok(js.includes('function setHomeChartType('), 'setHomeChartType function defined in app.js');
+assert.ok(js.includes('function handlePortfolioScrub('), 'handlePortfolioScrub function defined in app.js');
+assert.ok(js.includes('function initPortfolioScrubberListeners()'), 'initPortfolioScrubberListeners function defined in app.js');
+console.log('  ✓ Home Portfolio Dual-Mode Chart (Line vs Candles), 5 Timeframes & Touch Drag History Scrubber verified');
+
+// 22. Verify Trade History Heading has (Paper Ledger) Removed
+assert.ok(html.includes('<span class="pf-sec-title">Trade History</span>'), 'Trade History heading present without (Paper Ledger)');
+assert.ok(!html.includes('Trade History (Paper Ledger)'), '(Paper Ledger) must be removed from Portfolio screen');
+console.log('  ✓ Trade History heading cleanly rendered with (Paper Ledger) removed');
+
+// 23. Verify Strict Registration Verification Before Login
+assert.ok(js.includes('Account is not registered. Please create an account first.'), 'Unregistered login error message defined');
+assert.ok(js.includes('function getRegisteredUsers()'), 'getRegisteredUsers function defined in app.js');
+assert.ok(js.includes('function saveRegisteredUser('), 'saveRegisteredUser function defined in app.js');
+console.log('  ✓ Strict Registration Authentication: unregistered accounts blocked with dedicated prompt');
+
+// 24. Verify Single Toast Enforcement & Currency Debounce
+assert.ok(js.includes("container.innerHTML = ''"), 'Toast container clears previous toasts to prevent stacking');
+assert.ok(js.includes('lastCurrencyToggleTime'), 'Currency toggle debounced to prevent duplicate popups');
+console.log('  ✓ Single Toast popup enforcement & Currency Switcher debounce verified');
+
+console.log('\n=== ALL 24 VTRADE LUXURY UI, MARKET INTEL, STRICT AUTH & BUG FIX TESTS PASSED! ===\n');

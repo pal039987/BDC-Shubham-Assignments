@@ -46,15 +46,15 @@ const COINS = [
     "symbol": "XAU",
     "name": "Gold Spot",
     "pair": "XAU/USD",
-    "icon": "https://assets.coingecko.com/coins/images/10943/small/paxg.png",
+    "icon": "gold_spot.svg",
     "binanceSym": "PAXGUSDT",
     "tvSymbol": "OANDA:XAUUSD",
     "category": "futures",
     "maxLev": 100,
-    "price": 4165.42,
+    "price": 4166.10,
     "change": -0.13,
-    "high": 4172.5,
-    "low": 4152,
+    "high": 4175.0,
+    "low": 4152.0,
     "vol": "8.5M"
   },
   {
@@ -1072,6 +1072,28 @@ function togglePasswordVisibility(inputId) {
   input.type = input.type === 'password' ? 'text' : 'password';
 }
 
+function getRegisteredUsers() {
+  try {
+    const raw = localStorage.getItem('vtrade_registered_users');
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveRegisteredUser(user) {
+  try {
+    const users = getRegisteredUsers();
+    const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+    if (idx >= 0) {
+      users[idx] = user;
+    } else {
+      users.push(user);
+    }
+    localStorage.setItem('vtrade_registered_users', JSON.stringify(users));
+  } catch (e) {}
+}
+
 async function handleAuthLogin(event) {
   if (event) event.preventDefault();
   const emailInput = document.getElementById('login-email');
@@ -1093,8 +1115,9 @@ async function handleAuthLogin(event) {
       body: JSON.stringify({ email, password })
     });
 
+    const data = await resp.json().catch(() => ({}));
+
     if (resp.ok) {
-      const data = await resp.json();
       const sess = {
         token: data.token,
         username: data.username || email.split('@')[0],
@@ -1112,42 +1135,54 @@ async function handleAuthLogin(event) {
       updateAccountAuthUI();
       renderAccountScreen();
       showToast(`Welcome back, ${sess.username}!`, 'success');
-    } else {
-      // Local fallback for offline/demo credentials
-      const sess = {
-        token: 'local_token_' + Date.now(),
-        username: email.split('@')[0],
-        email: email,
-        isGuest: false,
-        loggedInAt: Date.now()
-      };
-      if (!rememberBox || rememberBox.checked) {
-        saveAuthSession(sess);
-      }
-      userProfile.name = sess.username;
-      userProfile.email = sess.email;
-      saveUserProfile();
-      dismissAuthModal();
-      updateAccountAuthUI();
-      renderAccountScreen();
-      showToast(`Signed in as ${sess.username}`, 'success');
+      return;
     }
+
+    // Backend returned 404 or 401 error: strictly DO NOT log in!
+    if (resp.status === 404 || (data.error && data.error.includes('not registered'))) {
+      showToast('Account is not registered. Please create an account first.', 'error');
+      switchAuthTab('register');
+      return;
+    }
+
+    showToast(data.error || 'Invalid credentials. Please try again.', 'error');
+    return;
+
   } catch (err) {
+    // Backend network failure (e.g. mobile offline WebView):
+    // Strictly verify against locally registered accounts!
+    const localUsers = getRegisteredUsers();
+    const registered = localUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!registered) {
+      showToast('Account is not registered. Please create an account first.', 'error');
+      switchAuthTab('register');
+      return;
+    }
+
+    if (registered.password !== password) {
+      showToast('Incorrect password. Please try again.', 'error');
+      return;
+    }
+
+    // Verified registered local user
     const sess = {
       token: 'local_token_' + Date.now(),
-      username: email.split('@')[0],
-      email: email,
+      username: registered.username,
+      email: registered.email,
       isGuest: false,
       loggedInAt: Date.now()
     };
-    saveAuthSession(sess);
+    if (!rememberBox || rememberBox.checked) {
+      saveAuthSession(sess);
+    }
     userProfile.name = sess.username;
     userProfile.email = sess.email;
     saveUserProfile();
     dismissAuthModal();
     updateAccountAuthUI();
     renderAccountScreen();
-    showToast(`Signed in as ${sess.username}`, 'success');
+    showToast(`Welcome back, ${sess.username}!`, 'success');
   }
 }
 
@@ -1170,6 +1205,9 @@ async function handleAuthRegister(event) {
     return;
   }
 
+  // Always record into registered accounts database/storage
+  saveRegisteredUser({ username, email, password });
+
   try {
     const resp = await fetch('/api/auth/register', {
       method: 'POST',
@@ -1177,7 +1215,7 @@ async function handleAuthRegister(event) {
       body: JSON.stringify({ username, email, password })
     });
 
-    const data = await resp.json();
+    const data = await resp.json().catch(() => ({}));
     if (resp.ok) {
       const sess = {
         token: data.token,
@@ -1195,7 +1233,12 @@ async function handleAuthRegister(event) {
       renderAccountScreen();
       showToast(`Account created! Welcome, ${username}!`, 'success');
     } else {
-      showToast(data.error || 'Registration failed', 'error');
+      if (data.error && data.error.includes('already exists')) {
+        showToast('Account already exists! Please Sign In.', 'error');
+        switchAuthTab('login');
+      } else {
+        showToast(data.error || 'Registration failed', 'error');
+      }
     }
   } catch (err) {
     const sess = {
@@ -1267,8 +1310,11 @@ let activeTab = 'home';
 let selectedCoin = COINS[0]; // Default BTC
 let chartInterval = '1h'; // Default 1h
 let chartCandlesData = [];
-let chartIsFetching = false;
 let portfolioTimeframe = '1D';
+let homeChartType = 'line'; // 'line' or 'candles'
+let portfolioHistorySeries = [];
+let isScrubbingPortfolio = false;
+let scrubberListenersInitialized = false;
 
 // Markets & Home filter state
 let homeMarketTab = 'all';
@@ -1313,22 +1359,43 @@ function fmtPrice(usdPrice) {
   return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+let toastTimer = null;
 function showToast(msg, type = 'info') {
   const container = document.getElementById('toast-container');
   if (!container) return;
+
+  // Clear any existing toasts immediately so only 1 popup is ever visible
+  container.innerHTML = '';
+  if (toastTimer) {
+    clearTimeout(toastTimer);
+    toastTimer = null;
+  }
+
   const t = document.createElement('div');
   t.className = `toast ${type}`;
   t.innerHTML = `<span>${msg}</span>`;
   container.appendChild(t);
-  setTimeout(() => {
+
+  toastTimer = setTimeout(() => {
     t.style.opacity = '0';
     t.style.transform = 'translateY(-8px)';
-    setTimeout(() => t.remove(), 250);
-  }, 2800);
+    setTimeout(() => {
+      t.remove();
+      toastTimer = null;
+    }, 200);
+  }, 2200);
 }
 
 // ─── 5. CURRENCY SWITCHER (USD $ ⇄ INR ₹) ───────────────────────────────
+let lastCurrencyToggleTime = 0;
 function toggleCurrency() {
+  const now = Date.now();
+  if (now - lastCurrencyToggleTime < 450) {
+    // Debounce rapid tap / double-touch event
+    return;
+  }
+  lastCurrencyToggleTime = now;
+
   walletState.currency = isINR() ? 'USD' : 'INR';
   saveWalletState();
 
@@ -1410,27 +1477,41 @@ function getNetEquity() {
 function renderHomeScreen() {
   renderHomeBalanceCard();
   renderPortfolioCurve();
+  renderHomeMarketIntel();
   renderHomeMarketList();
+  initPortfolioScrubberListeners();
 }
 
 function renderHomeBalanceCard() {
   const netEquity = getNetEquity();
-  const { totalPnL } = calculateUnrealizedPnL();
   const curSymEl = document.getElementById('hbal-curr-sym');
   const amountEl = document.getElementById('hbal-amount-val');
-  const pnlBadgeEl = document.getElementById('hbal-pnl-badge');
 
   if (curSymEl) curSymEl.textContent = getCurrencySymbol();
-  if (amountEl) {
+  if (amountEl && !isScrubbingPortfolio) {
     amountEl.textContent = walletState.balanceVisible ? fmtMoney(netEquity) : '••••••••';
   }
+}
 
-  if (pnlBadgeEl) {
-    const isUp = totalPnL >= 0;
-    const pct = netEquity > 0 ? (totalPnL / netEquity) * 100 : 0;
-    pnlBadgeEl.className = `hbal-pnl-badge ${isUp ? 'up' : 'down'}`;
-    pnlBadgeEl.textContent = `${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(Math.abs(totalPnL))} (${isUp ? '+' : ''}${pct.toFixed(2)}%)`;
+function setHomeChartType(type) {
+  homeChartType = type;
+  const lineBtn = document.getElementById('hct-line');
+  const candlesBtn = document.getElementById('hct-candles');
+  const curveSvg = document.getElementById('portfolio-curve-svg');
+  const candlesSvg = document.getElementById('portfolio-candles-svg');
+
+  if (lineBtn) lineBtn.classList.toggle('active', type === 'line');
+  if (candlesBtn) candlesBtn.classList.toggle('active', type === 'candles');
+
+  if (type === 'line') {
+    if (curveSvg) curveSvg.classList.remove('hidden');
+    if (candlesSvg) candlesSvg.classList.add('hidden');
+  } else {
+    if (curveSvg) curveSvg.classList.add('hidden');
+    if (candlesSvg) candlesSvg.classList.remove('hidden');
   }
+
+  renderPortfolioCurve();
 }
 
 function setPortfolioTimeframe(tf) {
@@ -1443,41 +1524,337 @@ function setPortfolioTimeframe(tf) {
   renderPortfolioCurve();
 }
 
+function generatePortfolioDataForTimeframe(tf, currentEquity) {
+  const equity = Math.max(100, currentEquity || 10000);
+  let count = 24;
+  let subLabel = '24h profit';
+  let totalDeltaPct = 0.018; // +1.8% intraday default
+  let noiseAmp = 0.008;
+
+  if (tf === '1D') {
+    count = 24;
+    subLabel = '24h profit';
+    totalDeltaPct = 0.018;
+    noiseAmp = 0.009;
+  } else if (tf === '1W') {
+    count = 14;
+    subLabel = '7d profit';
+    totalDeltaPct = 0.045;
+    noiseAmp = 0.018;
+  } else if (tf === '1M') {
+    count = 30;
+    subLabel = '30d profit';
+    totalDeltaPct = 0.082;
+    noiseAmp = 0.026;
+  } else if (tf === '1Y') {
+    count = 12;
+    subLabel = '1y profit';
+    totalDeltaPct = 0.345;
+    noiseAmp = 0.042;
+  } else if (tf === 'ALL') {
+    count = 16;
+    subLabel = 'All-time profit';
+    totalDeltaPct = 0.840;
+    noiseAmp = 0.055;
+  }
+
+  const startEquity = equity / (1 + totalDeltaPct);
+  const series = [];
+  const now = new Date();
+
+  for (let i = 0; i < count; i++) {
+    const progress = i / (count - 1);
+    const wave = Math.sin(progress * Math.PI * 3.5) * noiseAmp * equity;
+    const micro = Math.cos(progress * Math.PI * 7.1) * (noiseAmp * 0.4) * equity;
+    const trend = startEquity + (equity - startEquity) * Math.pow(progress, 0.95);
+    const closeVal = i === count - 1 ? equity : Math.max(50, trend + wave + micro);
+
+    const prevClose = i === 0 ? (startEquity * 0.995) : series[i - 1].close;
+    const openVal = prevClose;
+    const highVal = Math.max(openVal, closeVal) + Math.abs(closeVal - openVal) * 0.45 + (equity * 0.002);
+    const lowVal = Math.min(openVal, closeVal) - Math.abs(closeVal - openVal) * 0.45 - (equity * 0.002);
+
+    let timeLabel = '';
+    if (tf === '1D') {
+      const h = (24 - (count - 1 - i)) % 24;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const dispH = h % 12 === 0 ? 12 : h % 12;
+      timeLabel = `Today ${dispH}:00 ${ampm}`;
+    } else if (tf === '1W') {
+      const d = new Date(now.getTime() - (count - 1 - i) * 12 * 3600 * 1000);
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      timeLabel = `${days[d.getDay()]} ${d.getHours() < 12 ? 'AM' : 'PM'}`;
+    } else if (tf === '1M') {
+      const d = new Date(now.getTime() - (count - 1 - i) * 24 * 3600 * 1000);
+      timeLabel = `${d.getDate()} ${d.toLocaleString('default', { month: 'short' })}`;
+    } else if (tf === '1Y') {
+      const d = new Date(now.getFullYear(), now.getMonth() - (count - 1 - i), 1);
+      timeLabel = `${d.toLocaleString('default', { month: 'short' })} ${d.getFullYear()}`;
+    } else {
+      const qNum = ((Math.floor(now.getMonth() / 3) - (count - 1 - i)) % 4 + 4) % 4 + 1;
+      const yr = now.getFullYear() - Math.floor((count - 1 - i) / 4);
+      timeLabel = `Q${qNum} ${yr}`;
+    }
+
+    const pnl = closeVal - startEquity;
+    const pnlPct = startEquity > 0 ? (pnl / startEquity) * 100 : 0;
+
+    series.push({
+      index: i,
+      timeLabel,
+      open: openVal,
+      high: highVal,
+      low: lowVal,
+      close: closeVal,
+      balance: closeVal,
+      pnl,
+      pnlPct
+    });
+  }
+
+  return {
+    series,
+    subLabel,
+    startEquity,
+    endEquity: equity,
+    totalDelta: equity - startEquity,
+    totalDeltaPct: totalDeltaPct * 100
+  };
+}
+
 function renderPortfolioCurve() {
+  const curveSvg = document.getElementById('portfolio-curve-svg');
+  const candlesSvg = document.getElementById('portfolio-candles-svg');
   const pathArea = document.getElementById('pcurve-area');
   const pathLine = document.getElementById('pcurve-line');
-  if (!pathArea || !pathLine) return;
+  const pnlSubEl = document.getElementById('hbal-pnl-sub');
+  const pnlBadgeEl = document.getElementById('hbal-pnl-badge');
 
   const netEquity = getNetEquity();
-  // Generate smooth aesthetic points reflecting chosen timeframe
-  const points = [];
-  const count = 16;
+  const { series, subLabel, totalDelta, totalDeltaPct } = generatePortfolioDataForTimeframe(portfolioTimeframe, netEquity);
+  portfolioHistorySeries = series;
+
+  if (pnlSubEl) pnlSubEl.textContent = subLabel;
+
+  if (!isScrubbingPortfolio && pnlBadgeEl) {
+    const isUp = totalDelta >= 0;
+    pnlBadgeEl.className = `hbal-pnl-badge ${isUp ? 'up' : 'down'}`;
+    pnlBadgeEl.textContent = `${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(Math.abs(totalDelta))} (${isUp ? '+' : ''}${totalDeltaPct.toFixed(2)}%)`;
+  }
+
   const width = 400;
-  const height = 120;
+  const height = 130;
+  const topPad = 14;
+  const botPad = 16;
+  const chartH = height - topPad - botPad;
 
-  let seed = portfolioTimeframe === '1D' ? 0.015 : portfolioTimeframe === '1W' ? 0.03 : 0.05;
-  for (let i = 0; i < count; i++) {
-    const x = (i / (count - 1)) * width;
-    const wave = Math.sin((i / count) * Math.PI * 2.2) * 22;
-    const trend = (i / count) * 35;
-    const y = Math.max(15, Math.min(height - 15, (height / 2) - wave - trend + 15));
-    points.push({ x, y });
-  }
-  // Pin last point near center-top
-  points[count - 1].y = Math.max(10, (height / 2) - 30);
+  let minVal = Infinity;
+  let maxVal = -Infinity;
+  series.forEach(pt => {
+    if (pt.low < minVal) minVal = pt.low;
+    if (pt.high > maxVal) maxVal = pt.high;
+  });
+  if (minVal === maxVal) { minVal *= 0.98; maxVal *= 1.02; }
+  const range = maxVal - minVal;
 
-  // Build SVG Path with smooth curves
-  let d = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 1; i < points.length; i++) {
-    const prev = points[i - 1];
-    const curr = points[i];
-    const mx = (prev.x + curr.x) / 2;
-    d += ` C ${mx} ${prev.y}, ${mx} ${curr.y}, ${curr.x} ${curr.y}`;
+  function scaleY(val) {
+    return topPad + (1 - (val - minVal) / range) * chartH;
   }
 
-  pathLine.setAttribute('d', d);
-  const areaD = `${d} L ${width} ${height} L 0 ${height} Z`;
-  pathArea.setAttribute('d', areaD);
+  const count = series.length;
+  series.forEach((pt, idx) => {
+    pt.x = (idx / (count - 1)) * (width - 24) + 12;
+    pt.y = scaleY(pt.close);
+  });
+
+  // 1. Line mode rendering
+  if (pathLine && pathArea) {
+    let d = `M ${series[0].x} ${series[0].y}`;
+    for (let i = 1; i < series.length; i++) {
+      const prev = series[i - 1];
+      const curr = series[i];
+      const mx = (prev.x + curr.x) / 2;
+      d += ` C ${mx} ${prev.y}, ${mx} ${curr.y}, ${curr.x} ${curr.y}`;
+    }
+    pathLine.setAttribute('d', d);
+    const areaD = `${d} L ${series[series.length - 1].x} ${height} L ${series[0].x} ${height} Z`;
+    pathArea.setAttribute('d', areaD);
+
+    const isUp = totalDelta >= 0;
+    const strokeColor = isUp ? '#00c087' : '#f04f5e';
+    pathLine.setAttribute('stroke', strokeColor);
+
+    const gradStops = document.querySelectorAll('#pcurveGrad stop');
+    if (gradStops && gradStops.length >= 2) {
+      gradStops[0].setAttribute('stop-color', strokeColor);
+      gradStops[1].setAttribute('stop-color', strokeColor);
+    }
+  }
+
+  // 2. Candlesticks mode rendering
+  if (candlesSvg) {
+    candlesSvg.innerHTML = '';
+    const slotW = (width - 16) / count;
+    const candleW = Math.max(3.5, Math.min(13, slotW * 0.68));
+
+    series.forEach(c => {
+      const cx = 8 + (c.index + 0.5) * slotW;
+      const isBull = c.close >= c.open;
+      const color = isBull ? '#00c087' : '#f04f5e';
+      const wickY1 = scaleY(c.high);
+      const wickY2 = scaleY(c.low);
+      const topY = scaleY(Math.max(c.open, c.close));
+      const botY = scaleY(Math.min(c.open, c.close));
+      const bodyH = Math.max(2.5, botY - topY);
+
+      const wickLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      wickLine.setAttribute('x1', cx);
+      wickLine.setAttribute('y1', wickY1);
+      wickLine.setAttribute('x2', cx);
+      wickLine.setAttribute('y2', wickY2);
+      wickLine.setAttribute('stroke', color);
+      wickLine.setAttribute('stroke-width', '1.4');
+      wickLine.setAttribute('stroke-linecap', 'round');
+      candlesSvg.appendChild(wickLine);
+
+      const bodyRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bodyRect.setAttribute('x', cx - candleW / 2);
+      bodyRect.setAttribute('y', topY);
+      bodyRect.setAttribute('width', candleW);
+      bodyRect.setAttribute('height', bodyH);
+      bodyRect.setAttribute('rx', '1.5');
+      bodyRect.setAttribute('fill', color);
+      candlesSvg.appendChild(bodyRect);
+    });
+  }
+}
+
+function handlePortfolioScrub(clientX) {
+  if (!portfolioHistorySeries || portfolioHistorySeries.length === 0) return;
+  const wrap = document.getElementById('home-portfolio-curve-wrap');
+  if (!wrap) return;
+  const rect = wrap.getBoundingClientRect();
+  const relX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+  const ratio = rect.width > 0 ? relX / rect.width : 0;
+  const targetX = ratio * 400;
+
+  let closestPoint = portfolioHistorySeries[0];
+  let minDiff = Infinity;
+  for (const pt of portfolioHistorySeries) {
+    const diff = Math.abs(pt.x - targetX);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestPoint = pt;
+    }
+  }
+
+  const scrubberLine = document.getElementById('portfolio-scrubber-line');
+  const scrubberTip = document.getElementById('portfolio-scrubber-tooltip');
+  const tipVal = document.getElementById('pst-val');
+  const tipTime = document.getElementById('pst-time');
+  const amountEl = document.getElementById('hbal-amount-val');
+  const pnlBadgeEl = document.getElementById('hbal-pnl-badge');
+
+  const pctPos = (closestPoint.x / 400) * 100;
+  if (scrubberLine) {
+    scrubberLine.classList.remove('hidden');
+    scrubberLine.style.left = `${pctPos}%`;
+  }
+  if (scrubberTip) {
+    scrubberTip.classList.remove('hidden');
+    const constrainedPct = Math.max(14, Math.min(86, pctPos));
+    scrubberTip.style.left = `${constrainedPct}%`;
+  }
+
+  if (tipVal) tipVal.textContent = `${getCurrencySymbol()}${fmtMoney(closestPoint.balance)}`;
+  if (tipTime) tipTime.textContent = closestPoint.timeLabel;
+  if (amountEl && walletState.balanceVisible) {
+    amountEl.textContent = fmtMoney(closestPoint.balance);
+  }
+  if (pnlBadgeEl) {
+    const isUp = closestPoint.pnl >= 0;
+    pnlBadgeEl.className = `hbal-pnl-badge ${isUp ? 'up' : 'down'}`;
+    pnlBadgeEl.textContent = `${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(Math.abs(closestPoint.pnl))} (${isUp ? '+' : ''}${closestPoint.pnlPct.toFixed(2)}%)`;
+  }
+}
+
+function initPortfolioScrubberListeners() {
+  if (scrubberListenersInitialized) return;
+  const target = document.getElementById('portfolio-touch-target');
+  if (!target) return;
+
+  function onStart(e) {
+    isScrubbingPortfolio = true;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    handlePortfolioScrub(clientX);
+  }
+
+  function onMove(e) {
+    if (!isScrubbingPortfolio) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    handlePortfolioScrub(clientX);
+    if (e.cancelable && e.type.startsWith('touch')) {
+      e.preventDefault();
+    }
+  }
+
+  function onEnd() {
+    if (!isScrubbingPortfolio) return;
+    isScrubbingPortfolio = false;
+    const scrubberLine = document.getElementById('portfolio-scrubber-line');
+    const scrubberTip = document.getElementById('portfolio-scrubber-tooltip');
+    if (scrubberLine) scrubberLine.classList.add('hidden');
+    if (scrubberTip) scrubberTip.classList.add('hidden');
+
+    renderHomeBalanceCard();
+    renderPortfolioCurve();
+  }
+
+  target.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+
+  target.addEventListener('touchstart', onStart, { passive: false });
+  target.addEventListener('touchmove', onMove, { passive: false });
+  target.addEventListener('touchend', onEnd);
+  target.addEventListener('touchcancel', onEnd);
+
+  scrubberListenersInitialized = true;
+}
+
+function tradeTopGainer() {
+  const sorted = [...COINS].sort((a, b) => b.change - a.change);
+  if (sorted.length > 0) {
+    selectCoinAndTrade(sorted[0].id);
+    showToast(`🚀 Opened ${sorted[0].symbol} (+${sorted[0].change.toFixed(2)}%) Top Gainer`, 'success');
+  }
+}
+
+function renderHomeMarketIntel() {
+  const sorted = [...COINS].sort((a, b) => b.change - a.change);
+  const top = sorted[0];
+  const symEl = document.getElementById('intel-tg-sym');
+  const chgEl = document.getElementById('intel-tg-chg');
+  if (symEl && top) symEl.textContent = top.symbol;
+  if (chgEl && top) {
+    chgEl.textContent = `${top.change >= 0 ? '+' : ''}${top.change.toFixed(1)}%`;
+    chgEl.className = `intel-change ${top.change >= 0 ? 'up' : 'down'}`;
+  }
+
+  const btc = COINS.find(c => c.id === 'bitcoin');
+  const aiEl = document.getElementById('intel-ai-verdict');
+  if (aiEl && btc) {
+    if (btc.change > 1.2) {
+      aiEl.textContent = 'Strong Buy';
+      aiEl.className = 'intel-val strong-buy';
+    } else if (btc.change < -1.2) {
+      aiEl.textContent = 'Bearish Alert';
+      aiEl.className = 'intel-val down';
+    } else {
+      aiEl.textContent = 'Accumulate';
+      aiEl.className = 'intel-val';
+    }
+  }
 }
 
 function setHomeMarketTab(tab) {
@@ -1644,6 +2021,41 @@ function renderTradingViewChart() {
   if (!iframe.src || !iframe.src.includes(`symbol=${encodeURIComponent(tvSymbol)}`) || !iframe.src.includes(`interval=${intervalCode}`)) {
     iframe.src = newSrc;
   }
+}
+
+function openFullscreenChart() {
+  const modal = document.getElementById('tv-fullscreen-modal');
+  const iframe = document.getElementById('tv-fullscreen-iframe');
+  const pairEl = document.getElementById('tv-fs-pair');
+  const priceEl = document.getElementById('tv-fs-price');
+  const chgEl = document.getElementById('tv-fs-change');
+  if (!modal || !iframe) return;
+
+  const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
+  const tvIntervalMap = {
+    '1m': '1', '3m': '3', '5m': '5', '15m': '15', '30m': '30',
+    '1h': '60', '2h': '120', '4h': '240', '1d': 'D', '1w': 'W', '1M': 'M'
+  };
+  const intervalCode = tvIntervalMap[chartInterval] || '60';
+
+  if (pairEl) pairEl.textContent = selectedCoin.pair;
+  if (priceEl) priceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+  if (chgEl) {
+    const isUp = selectedCoin.change >= 0;
+    chgEl.className = `tv-fs-change ${isUp ? 'up' : 'down'}`;
+    chgEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
+  }
+
+  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&locale=en`;
+  iframe.src = url;
+  modal.classList.remove('hidden');
+}
+
+function closeFullscreenChart() {
+  const modal = document.getElementById('tv-fullscreen-modal');
+  const iframe = document.getElementById('tv-fullscreen-iframe');
+  if (modal) modal.classList.add('hidden');
+  if (iframe) iframe.src = '';
 }
 
 function selectCoinAndTrade(coinId) {
@@ -2434,14 +2846,15 @@ async function fetchLiveBinanceTickers() {
     } catch (err) {}
   }
 
-  // Also query Coinbase USD for BTC, ETH, SOL to match Screenshot 2 TradingView USD feed
+  // Also query Coinbase USD for BTC, ETH, SOL and Gold-API for live Gold Spot (XAU/USD)
   try {
     const cbCtl = new AbortController();
     const cbTmr = setTimeout(() => cbCtl.abort(), 1200);
-    const [btcR, ethR, solR] = await Promise.all([
+    const [btcR, ethR, solR, goldR] = await Promise.all([
       fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null),
       fetch('https://api.coinbase.com/v2/prices/ETH-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null),
-      fetch('https://api.coinbase.com/v2/prices/SOL-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null)
+      fetch('https://api.coinbase.com/v2/prices/SOL-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null),
+      fetch('https://api.gold-api.com/price/XAU', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null)
     ]);
     clearTimeout(cbTmr);
 
@@ -2456,6 +2869,14 @@ async function fetchLiveBinanceTickers() {
     if (solR && solR.data && solR.data.amount) {
       const sol = COINS.find(c => c.id === 'solana');
       if (sol) sol.price = parseFloat(solR.data.amount);
+    }
+    if (goldR && goldR.price) {
+      const gold = COINS.find(c => c.id === 'gold');
+      if (gold) {
+        gold.price = parseFloat(goldR.price);
+        if (gold.high < gold.price) gold.high = parseFloat((gold.price * 1.003).toFixed(2));
+        if (gold.low > gold.price) gold.low = parseFloat((gold.price * 0.997).toFixed(2));
+      }
     }
   } catch (cbErr) {}
 
@@ -2518,6 +2939,7 @@ function checkPendingOrdersTrigger() {
 function renderLivePriceUpdates() {
   if (activeTab === 'home') {
     renderHomeBalanceCard();
+    renderHomeMarketIntel();
     renderHomeMarketList();
   } else if (activeTab === 'markets') {
     renderMarketsScreen();
@@ -2536,6 +2958,19 @@ function renderLivePriceUpdates() {
     renderPortfolioScreen();
   } else if (activeTab === 'account') {
     renderAccountScreen();
+  }
+
+  // Live sync fullscreen TradingView modal header if open
+  const fsModal = document.getElementById('tv-fullscreen-modal');
+  if (fsModal && !fsModal.classList.contains('hidden')) {
+    const fsPrice = document.getElementById('tv-fs-price');
+    const fsChange = document.getElementById('tv-fs-change');
+    if (fsPrice) fsPrice.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+    if (fsChange) {
+      const isUp = selectedCoin.change >= 0;
+      fsChange.className = `tv-fs-change ${isUp ? 'up' : 'down'}`;
+      fsChange.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
+    }
   }
 }
 

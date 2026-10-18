@@ -60,13 +60,36 @@
         <!-- Balance Hero Card -->
         <div class="home-balance-card">
           <div class="hbal-top-row">
-            <span class="hbal-title">Total Portfolio</span>
-            <button class="hbal-eye-btn" id="hbal-eye-btn" onclick="toggleBalanceVisibility()" aria-label="Toggle Balance Visibility">
-              <svg id="eye-icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
+            <div class="hbal-top-left">
+              <span class="hbal-title">Total Portfolio</span>
+              <button class="hbal-eye-btn" id="hbal-eye-btn" onclick="toggleBalanceVisibility()" aria-label="Toggle Balance Visibility">
+                <svg id="eye-icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Home Portfolio Chart Type Switcher (Line vs Candlestick) -->
+            <div class="home-chart-type-toggle">
+              <button class="hct-btn active" id="hct-line" onclick="setHomeChartType('line')" title="Line Chart">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 16 6 10 15 2 9"></polyline>
+                </svg>
+                <span>Line</span>
+              </button>
+              <button class="hct-btn" id="hct-candles" onclick="setHomeChartType('candles')" title="Candlestick Chart">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <rect x="5" y="6" width="4" height="12" rx="1" fill="currentColor"></rect>
+                  <line x1="7" y1="2" x2="7" y2="6"></line>
+                  <line x1="7" y1="18" x2="7" y2="22"></line>
+                  <rect x="15" y="4" width="4" height="10" rx="1" fill="currentColor"></rect>
+                  <line x1="17" y1="1" x2="17" y2="4"></line>
+                  <line x1="17" y1="14" x2="17" y2="20"></line>
+                </svg>
+                <span>Candles</span>
+              </button>
+            </div>
           </div>
 
           <div class="hbal-amount-wrap">
@@ -76,11 +99,12 @@
 
           <div class="hbal-pnl-row">
             <span class="hbal-pnl-badge up" id="hbal-pnl-badge">+0.00 (+0.00%)</span>
-            <span class="hbal-pnl-sub">24h profit</span>
+            <span class="hbal-pnl-sub" id="hbal-pnl-sub">24h profit</span>
           </div>
 
-          <!-- Dynamic SVG Portfolio Curve with Gradient -->
+          <!-- Dynamic Dual-Mode Portfolio Chart Box with Interactive Touch & Drag Scrubber -->
           <div class="portfolio-curve-wrap" id="home-portfolio-curve-wrap">
+            <!-- 1. Smooth Area/Line Chart SVG -->
             <svg class="portfolio-curve-svg" id="portfolio-curve-svg" viewBox="0 0 400 130" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="pcurveGrad" x1="0" y1="0" x2="0" y2="1">
@@ -91,6 +115,21 @@
               <path class="pcurve-area" id="pcurve-area" d="" fill="url(#pcurveGrad)" />
               <path class="pcurve-line" id="pcurve-line" d="" fill="none" stroke="#00c087" stroke-width="2.6" stroke-linecap="round" />
             </svg>
+
+            <!-- 2. Portfolio Candlesticks SVG Engine -->
+            <svg class="portfolio-candles-svg hidden" id="portfolio-candles-svg" viewBox="0 0 400 130" preserveAspectRatio="none">
+              <!-- Populated dynamically when Candles mode is active -->
+            </svg>
+
+            <!-- Interactive Crosshair Scrubber Line & Tooltip -->
+            <div class="portfolio-scrubber-line hidden" id="portfolio-scrubber-line"></div>
+            <div class="portfolio-scrubber-tooltip hidden" id="portfolio-scrubber-tooltip">
+              <span class="pst-val" id="pst-val">$10,000.00</span>
+              <span class="pst-time" id="pst-time">Today 11:30 AM</span>
+            </div>
+
+            <!-- Touch Drag Target Layer -->
+            <div class="portfolio-touch-target" id="portfolio-touch-target"></div>
           </div>
 
           <!-- Portfolio Timeframe Selector (1D, 1W, 1M, 1Y, ALL) -->
@@ -103,24 +142,61 @@
           </div>
         </div>
 
-        <!-- Quick Actions Row -->
-        <div class="home-quick-actions">
-          <button class="hqa-item" onclick="refillPaperDemoBalance()">
-            <div class="hqa-icon-circle accent-faucet">🚰</div>
-            <span class="hqa-label">Free Faucet</span>
-          </button>
-          <button class="hqa-item" onclick="switchBottomTab('trade')">
-            <div class="hqa-icon-circle accent-trade">⚡</div>
-            <span class="hqa-label">Quick Trade</span>
-          </button>
-          <button class="hqa-item" onclick="switchBottomTab('markets')">
-            <div class="hqa-icon-circle accent-markets">📊</div>
-            <span class="hqa-label">Markets</span>
-          </button>
-          <button class="hqa-item" onclick="switchBottomTab('portfolio')">
-            <div class="hqa-icon-circle accent-assets">💼</div>
-            <span class="hqa-label">My Positions</span>
-          </button>
+        <!-- 4 Premium Market Intel & Action Cards (Replacing Redundant Buttons) -->
+        <div class="home-market-intel-grid">
+          <!-- 1. Fear & Greed Index -->
+          <div class="intel-card" id="intel-fear-greed" onclick="showToast('Market Sentiment: 74 (Greed - Bullish bias)', 'info')">
+            <div class="intel-top">
+              <span class="intel-badge greed">GREED</span>
+              <span class="intel-icon">🧭</span>
+            </div>
+            <div class="intel-main">
+              <span class="intel-val" id="intel-fg-val">74</span>
+              <span class="intel-sub">Fear & Greed Index</span>
+            </div>
+            <div class="intel-bar-wrap">
+              <div class="intel-bar-fill" style="width: 74%;"></div>
+            </div>
+          </div>
+
+          <!-- 2. Top 24h Gainer -->
+          <div class="intel-card" id="intel-top-gainer" onclick="tradeTopGainer()">
+            <div class="intel-top">
+              <span class="intel-badge gainer">TOP GAINER</span>
+              <span class="intel-icon">🚀</span>
+            </div>
+            <div class="intel-main">
+              <div class="intel-gainer-row">
+                <span class="intel-val" id="intel-tg-sym">PEPE</span>
+                <span class="intel-change up" id="intel-tg-chg">+14.2%</span>
+              </div>
+              <span class="intel-sub">Tap to Trade</span>
+            </div>
+          </div>
+
+          <!-- 3. 24h Global Volume -->
+          <div class="intel-card" id="intel-global-vol" onclick="showToast('24h Aggregate Volume across all tracked assets: $54.8B', 'info')">
+            <div class="intel-top">
+              <span class="intel-badge vol">TURNOVER</span>
+              <span class="intel-icon">📊</span>
+            </div>
+            <div class="intel-main">
+              <span class="intel-val" id="intel-vol-val">$54.8B</span>
+              <span class="intel-sub">24h Market Volume</span>
+            </div>
+          </div>
+
+          <!-- 4. AI Market Signal -->
+          <div class="intel-card" id="intel-ai-signal" onclick="showToast('AI Technical Pulse: BTC/USDT Strong Buy on 1h/4h MACD & RSI Momentum', 'info')">
+            <div class="intel-top">
+              <span class="intel-badge signal">AI SIGNAL</span>
+              <span class="intel-icon">⚡</span>
+            </div>
+            <div class="intel-main">
+              <span class="intel-val strong-buy" id="intel-ai-verdict">Strong Buy</span>
+              <span class="intel-sub">BTC Trend Momentum</span>
+            </div>
+          </div>
         </div>
 
         <!-- Market Highlights & Watchlist -->
@@ -204,7 +280,7 @@
           </div>
         </div>
 
-        <!-- Candlestick Timeframe Selector Strip -->
+        <!-- Candlestick Timeframe Selector Strip with Fullscreen Icon (Screenshot 2 Icon) -->
         <!-- Exact 11 timeframes requested: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 1d, 1w, 1M -->
         <div class="candlestick-timeframe-strip" id="candlestick-timeframe-strip">
           <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
@@ -218,6 +294,15 @@
           <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
           <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
           <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
+          <!-- Fullscreen Chart Button using exact icon from Screenshot 2 (No text) -->
+          <button class="ctf-fullscreen-icon-btn" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Open Fullscreen Chart" aria-label="Fullscreen Chart">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 9V6a2 2 0 0 1 2-2h3"></path>
+              <path d="M20 9V6a2 2 0 0 0-2-2h-3"></path>
+              <path d="M4 15v3a2 2 0 0 0 2 2h3"></path>
+              <path d="M20 15v3a2 2 0 0 1-2 2h-3"></path>
+            </svg>
+          </button>
         </div>
 
         <!-- Interactive TradingView Real-Time Chart Widget Container -->
@@ -338,7 +423,7 @@
         <!-- Trade History Ledger -->
         <div class="pf-section">
           <div class="pf-section-header">
-            <span class="pf-sec-title">Trade History (Paper Ledger)</span>
+            <span class="pf-sec-title">Trade History</span>
             <button class="pf-clear-btn" onclick="clearTradeHistory()">Clear</button>
           </div>
           <div class="pf-history-wrap" id="pf-history-container">
@@ -455,22 +540,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- ════════ REFILL DEMO BALANCE BLOCK (MOVED HERE) ════════ -->
-        <div class="account-card refill-balance-card">
-          <div class="account-card-header">
-            <div class="refill-header-left">
-              <span class="acc-card-badge-gold">VIRTUAL FAUCET</span>
-              <h3 class="refill-card-title">Demo Trading Balance</h3>
-            </div>
-            <div class="refill-header-cash" id="account-refill-balance-display">$10,000.00</div>
-          </div>
-          <p class="refill-card-desc">Practice risk-free crypto futures with virtual funds. Replenish your balance anytime to $10,000 with zero limits.</p>
-          <button class="account-refill-action-btn" id="account-refill-btn" onclick="refillPaperDemoBalance()">
-            <span class="faucet-action-icon">🚰</span>
-            <span class="faucet-action-text">Refill Demo Balance ($10,000)</span>
-          </button>
         </div>
 
         <!-- Trading Preferences & App Settings -->
@@ -836,6 +905,33 @@
           <span class="guest-btn-sub">Instant 1-Tap Entry • $10,000 Demo Balance</span>
         </div>
       </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 11. FULLSCREEN TRADINGVIEW MODAL ══════════════════════ -->
+  <div class="tv-fullscreen-modal hidden" id="tv-fullscreen-modal">
+    <div class="tv-fs-header">
+      <div class="tv-fs-asset-info">
+        <span class="tv-fs-pair" id="tv-fs-pair">BTC/USDT</span>
+        <span class="tv-fs-price" id="tv-fs-price">$81,614.80</span>
+        <span class="tv-fs-change up" id="tv-fs-change">+0.21%</span>
+      </div>
+      <div class="tv-fs-actions">
+        <button class="tv-fs-close-btn" onclick="closeFullscreenChart()" title="Exit Fullscreen">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="tv-fs-body">
+      <iframe id="tv-fullscreen-iframe"
+        class="tv-fullscreen-iframe"
+        src=""
+        title="Full Screen TradingView Chart"
+        allowfullscreen="true">
+      </iframe>
     </div>
   </div>
 

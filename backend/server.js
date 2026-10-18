@@ -193,8 +193,11 @@ app.post('/api/auth/login', (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user) {
+      return res.status(404).json({ error: 'Account is not registered. Please create an account first.' });
+    }
+    if (!bcrypt.compareSync(password, user.password)) {
+      return res.status(401).json({ error: 'Incorrect password. Please try again.' });
     }
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, username: user.username, email: user.email, balance: user.balance });
@@ -222,7 +225,7 @@ const SUPPORTED_COINS = [
 const COIN_METADATA = {
   'bitcoin':      { symbol: 'BTC',  pair: 'BTC/USDT',  name: 'Bitcoin',       basePrice: 83800.00, baseCap: 1676759000000, baseVol: 31513000000, baseChange: -0.10 },
   'ethereum':     { symbol: 'ETH',  pair: 'ETH/USDT',  name: 'Ethereum',      basePrice: 2515.00,  baseCap: 307174000000,  baseVol: 16497000000, baseChange: -1.60 },
-  'gold':         { symbol: 'XAU',  pair: 'XAU/USD',   name: 'Gold Spot',     basePrice: 4165.42,  baseCap: 15000000000000, baseVol: 85000000000, baseChange: -0.13 },
+  'gold':         { symbol: 'XAU',  pair: 'XAU/USD',   name: 'Gold Spot',     basePrice: 4166.10,  baseCap: 15000000000000, baseVol: 85000000000, baseChange: -0.13 },
   'solana':       { symbol: 'SOL',  pair: 'SOL/USDT',  name: 'Solana',        basePrice: 107.50,   baseCap: 63637000000,   baseVol: 4059000000,  baseChange: -3.70 },
   'binancecoin':  { symbol: 'BNB',  pair: 'BNB/USDT',  name: 'BNB',           basePrice: 744.00,   baseCap: 107000000000,  baseVol: 1850000000,  baseChange: -0.14 },
   'dogecoin':     { symbol: 'DOGE', pair: 'DOGE/USDT', name: 'Dogecoin',      basePrice: 0.085,    baseCap: 12500000000,   baseVol: 850000000,   baseChange: -0.65 },
@@ -360,6 +363,15 @@ async function fetchPrices() {
             }
           }
         });
+        try {
+          const goldResp = await fetch('https://api.gold-api.com/price/XAU', { timeout: 2000 }).then(r => r.json()).catch(() => null);
+          if (goldResp && goldResp.price && priceCache['gold']) {
+            const gp = parseFloat(parseFloat(goldResp.price).toFixed(2));
+            priceCache['gold'].price = gp;
+            priceCache['gold'].usdtPrice = gp;
+            priceCache['gold'].usdPrice = gp;
+          }
+        } catch (gErr) {}
         priceCache.updatedAt = Date.now();
         priceCache.isRateLimited = false;
         try { checkPendingOrders(); } catch (e) {}
