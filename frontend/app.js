@@ -1103,8 +1103,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9';
-const CURRENT_VERSION_CODE = 11;
+const CURRENT_APP_VERSION = '2.9.1';
+const CURRENT_VERSION_CODE = 12;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -3470,19 +3470,25 @@ function connectCoinTickerWs(binanceSym) {
   }
   if (binanceSym === 'PAXGUSDT') return; // Gold uses Gold-API
   try {
-    const wsUrl = `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@ticker`;
+    // Connect to 1d kline stream for 100% exact alignment with TradingView's Session Open (00:00 UTC)
+    const wsUrl = `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@kline_1d`;
     liveTickerWs = new WebSocket(wsUrl);
     liveTickerWs.onmessage = (event) => {
       try {
         const d = JSON.parse(event.data);
-        if (d && d.s === binanceSym && selectedCoin && selectedCoin.binanceSym === binanceSym) {
-          const newPrice = parseFloat(d.c);
-          const newChange = parseFloat(d.P);
+        if (d && d.s === binanceSym && d.k && selectedCoin && selectedCoin.binanceSym === binanceSym) {
+          const k = d.k;
+          const newPrice = parseFloat(k.c);
+          const openPrice = parseFloat(k.o);
           if (newPrice > 0 && !isNaN(newPrice)) {
             selectedCoin.price = newPrice;
-            selectedCoin.change = newChange;
-            if (d.h) selectedCoin.high = parseFloat(d.h);
-            if (d.l) selectedCoin.low = parseFloat(d.l);
+            if (openPrice > 0 && !isNaN(openPrice)) {
+              const diff = newPrice - openPrice;
+              selectedCoin.change = parseFloat(((diff / openPrice) * 100).toFixed(2));
+              selectedCoin.open = openPrice;
+            }
+            if (k.h) selectedCoin.high = parseFloat(k.h);
+            if (k.l) selectedCoin.low = parseFloat(k.l);
             renderLivePriceUpdates();
             checkPendingOrdersTrigger();
           }
@@ -3494,10 +3500,17 @@ function connectCoinTickerWs(binanceSym) {
 }
 
 async function fetchLiveBinanceTickers() {
+  const symbols = COINS
+    .map(c => c.binanceSym)
+    .filter(s => s && s !== 'PAXGUSDT');
+  const encodedSymbols = encodeURIComponent(JSON.stringify(symbols));
+
   const endpoints = [
-    getApiEndpoint('/api/prices'),
+    `https://data-api.binance.vision/api/v3/ticker/tradingDay?symbols=${encodedSymbols}`,
+    `https://api.binance.com/api/v3/ticker/tradingDay?symbols=${encodedSymbols}`,
     'https://data-api.binance.vision/api/v3/ticker/24hr',
-    'https://api.binance.com/api/v3/ticker/24hr'
+    'https://api.binance.com/api/v3/ticker/24hr',
+    getApiEndpoint('/api/prices')
   ];
 
   let success = false;
@@ -3534,6 +3547,7 @@ async function fetchLiveBinanceTickers() {
             if (t) {
               c.price = parseFloat(t.lastPrice);
               c.change = parseFloat(t.priceChangePercent);
+              if (t.openPrice) c.open = parseFloat(t.openPrice);
               c.high = parseFloat(t.highPrice);
               c.low = parseFloat(t.lowPrice);
               if (t.quoteVolume) {

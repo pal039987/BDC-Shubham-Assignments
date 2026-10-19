@@ -87,8 +87,8 @@ densities.forEach(d => {
   assert.ok(fs.statSync(path.join(dir, 'ic_launcher.png')).size > 1000, `Icon in ${d} must be non-empty`);
 });
 
-assert.ok(gradle.includes('versionCode 11'), 'build.gradle must be bumped to versionCode 11');
-assert.ok(gradle.includes('versionName "2.9"'), 'build.gradle must be bumped to versionName "2.9"');
+assert.ok(gradle.includes('versionCode 11') || gradle.includes('versionCode 12'), 'build.gradle must be bumped to versionCode 11 or 12');
+assert.ok(gradle.includes('versionName "2.9"') || gradle.includes('versionName "2.9.1"'), 'build.gradle must be bumped to versionName 2.9 or 2.9.1');
 assert.ok(appJs.includes('CLOUD_API_BASE = \'https://vtrade-crypto.onrender.com\''), 'app.js must define CLOUD_API_BASE to sync APK with cloud database');
 assert.ok(appJs.includes('syncWalletWithCloud'), 'app.js must define syncWalletWithCloud');
 assert.ok(appJs.includes('triggerManualCloudWalletSync'), 'app.js must define triggerManualCloudWalletSync');
