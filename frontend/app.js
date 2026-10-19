@@ -1037,6 +1037,17 @@ function isNativePlatform() {
   return false;
 }
 
+const CLOUD_API_BASE = 'https://vtrade-crypto.onrender.com';
+
+function getApiEndpoint(path) {
+  if (typeof window !== 'undefined') {
+    if (isNativePlatform() || window.location.protocol === 'capacitor:' || window.location.protocol === 'file:' || window.location.hostname === 'localhost') {
+      return CLOUD_API_BASE + path;
+    }
+  }
+  return path;
+}
+
 function getAuthSession() {
   try {
     const raw = localStorage.getItem(AUTH_SESSION_KEY);
@@ -1282,52 +1293,61 @@ async function handleAuthLogin(event) {
     updateAccountAuthUI();
     renderAccountScreen();
     showToast(`Welcome back, ${registered.username}!`, 'success');
+
+    // Auto-sync this account to Render cloud database so it works on web too
+    fetch(getApiEndpoint('/api/auth/register'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: registered.username, email: registered.email, password: registered.password })
+    }).catch(() => {});
     return;
   }
 
-  // 2. Web Browser / Server sync check if user registered on PC backend
-  if (!isNativePlatform()) {
-    try {
-      const ctl = new AbortController();
-      const tmr = setTimeout(() => ctl.abort(), 1500);
-      const resp = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        signal: ctl.signal
-      });
-      clearTimeout(tmr);
+  // 2. Cloud Server Sync Check (Enables accounts registered on Web to log in on APK instantly!)
+  try {
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 3500);
+    const resp = await fetch(getApiEndpoint('/api/auth/login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      signal: ctl.signal
+    });
+    clearTimeout(tmr);
 
-      const data = await resp.json().catch(() => ({}));
-      if (resp.ok) {
-        clearAuthAlert();
-        saveRegisteredUser({
-          username: data.username || email.split('@')[0],
-          email: data.email || email,
-          password: password,
-          balance: data.balance || 10000
-        });
-        const sess = {
-          token: data.token,
-          username: data.username || email.split('@')[0],
-          email: data.email || email,
-          isGuest: false,
-          loggedInAt: Date.now()
-        };
-        if (!rememberBox || rememberBox.checked) {
-          saveAuthSession(sess);
-        }
-        userProfile.name = sess.username;
-        userProfile.email = sess.email;
-        saveUserProfile();
-        dismissAuthModal(true);
-        updateAccountAuthUI();
-        renderAccountScreen();
-        showToast(`Welcome back, ${sess.username}!`, 'success');
-        return;
+    const data = await resp.json().catch(() => ({}));
+    if (resp.ok) {
+      clearAuthAlert();
+      saveRegisteredUser({
+        username: data.username || email.split('@')[0],
+        email: data.email || email,
+        password: password,
+        balance: data.balance || 10000
+      });
+      const sess = {
+        token: data.token,
+        username: data.username || email.split('@')[0],
+        email: data.email || email,
+        isGuest: false,
+        loggedInAt: Date.now()
+      };
+      if (!rememberBox || rememberBox.checked) {
+        saveAuthSession(sess);
       }
-    } catch (err) {}
-  }
+      userProfile.name = sess.username;
+      userProfile.email = sess.email;
+      saveUserProfile();
+      dismissAuthModal(true);
+      updateAccountAuthUI();
+      renderAccountScreen();
+      showToast(`Welcome back, ${sess.username}!`, 'success');
+      return;
+    } else if (resp.status === 401) {
+      showAuthAlert('🔒 Incorrect password. Please try again.', 'error');
+      showToast('Incorrect password. Please try again.', 'error');
+      return;
+    }
+  } catch (err) {}
 
   // 3. User is strictly NOT in database:
   showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
@@ -1397,14 +1417,12 @@ async function handleAuthRegister(event) {
   renderAccountScreen();
   showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
 
-  // Background non-blocking sync if on web/server
-  if (!isNativePlatform()) {
-    fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
-    }).catch(() => {});
-  }
+  // 3. Central Cloud Server Sync (registers account in Render database immediately)
+  fetch(getApiEndpoint('/api/auth/register'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, email, password })
+  }).catch(() => {});
 }
 
 function continueAsGuestTrader() {
@@ -3194,7 +3212,7 @@ function connectCoinTickerWs(binanceSym) {
 
 async function fetchLiveBinanceTickers() {
   const endpoints = [
-    '/api/prices',
+    getApiEndpoint('/api/prices'),
     'https://data-api.binance.vision/api/v3/ticker/24hr',
     'https://api.binance.com/api/v3/ticker/24hr'
   ];
@@ -3527,6 +3545,16 @@ function initVTradeApp() {
     userProfile.email = sess.email;
     saveUserProfile();
     updateAccountAuthUI();
+
+    // Auto-sync active user credentials to Render cloud database
+    const localUser = dbUsers.find(u => u.email.toLowerCase() === sess.email.toLowerCase());
+    if (localUser && localUser.password) {
+      fetch(getApiEndpoint('/api/auth/register'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: localUser.username, email: localUser.email, password: localUser.password })
+      }).catch(() => {});
+    }
   }
 
   // Render TradingView Chart for active coin

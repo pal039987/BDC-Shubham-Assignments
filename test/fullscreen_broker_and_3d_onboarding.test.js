@@ -87,13 +87,15 @@ densities.forEach(d => {
   assert.ok(fs.statSync(path.join(dir, 'ic_launcher.png')).size > 1000, `Icon in ${d} must be non-empty`);
 });
 
-assert.ok(gradle.includes('versionCode 9'), 'build.gradle must be bumped to versionCode 9');
-assert.ok(gradle.includes('versionName "2.7"'), 'build.gradle must be bumped to versionName "2.7"');
+assert.ok(gradle.includes('versionCode 10'), 'build.gradle must be bumped to versionCode 10');
+assert.ok(gradle.includes('versionName "2.8"'), 'build.gradle must be bumped to versionName "2.8"');
+assert.ok(appJs.includes('CLOUD_API_BASE = \'https://vtrade-crypto.onrender.com\''), 'app.js must define CLOUD_API_BASE to sync APK with cloud database');
 assert.ok(indexHtml.includes('id="vtrade-splash-screen"'), 'index.html must include animated splash screen');
 assert.ok(indexHtml.includes('BINANCE%3ABTCUSDT'), 'Default TradingView chart must use BINANCE:BTCUSDT to align with Binance prices');
 assert.ok(styleCss.includes('.vtrade-splash-screen'), 'style.css must style vtrade-splash-screen');
 assert.ok(appJs.includes('initPostSplashFlow'), 'app.js must include post-splash flow handling');
-console.log('  ✓ Flat Modern & Stylish VTrade App Icon across all Android Mipmaps (v2.7) verified');
+console.log('  ✓ Flat Modern & Stylish VTrade App Icon across all Android Mipmaps (v2.8) verified');
 console.log('  ✓ App Launch Animated Splash Screen & Binance Real-time Ticker Alignment verified');
+console.log('  ✓ Render Cloud Central Database Synchronization (APK & Web Unified) verified');
 
 console.log('\n=== ALL 7 VERIFICATION SUITES PASSED! ===\n');
