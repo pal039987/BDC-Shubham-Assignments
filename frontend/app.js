@@ -14,7 +14,7 @@ const COINS = [
     "symbol": "BTC",
     "name": "Bitcoin",
     "pair": "BTC/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/1/small/bitcoin.png",
+    "icon": "icons/btc.png",
     "binanceSym": "BTCUSDT",
     "category": "futures",
     "maxLev": 150,
@@ -30,7 +30,7 @@ const COINS = [
     "symbol": "ETH",
     "name": "Ethereum",
     "pair": "ETH/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/279/small/ethereum.png",
+    "icon": "icons/eth.png",
     "binanceSym": "ETHUSDT",
     "category": "futures",
     "maxLev": 150,
@@ -62,7 +62,7 @@ const COINS = [
     "symbol": "SOL",
     "name": "Solana",
     "pair": "SOL/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/4128/small/solana.png",
+    "icon": "icons/sol.png",
     "binanceSym": "SOLUSDT",
     "category": "l1",
     "maxLev": 100,
@@ -78,7 +78,7 @@ const COINS = [
     "symbol": "XRP",
     "name": "XRP",
     "pair": "XRP/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png",
+    "icon": "icons/xrp.png",
     "binanceSym": "XRPUSDT",
     "category": "l1",
     "maxLev": 100,
@@ -94,7 +94,7 @@ const COINS = [
     "symbol": "BNB",
     "name": "BNB",
     "pair": "BNB/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png",
+    "icon": "icons/bnb.png",
     "binanceSym": "BNBUSDT",
     "category": "l1",
     "maxLev": 100,
@@ -110,7 +110,7 @@ const COINS = [
     "symbol": "DOGE",
     "name": "Dogecoin",
     "pair": "DOGE/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/5/small/dogecoin.png",
+    "icon": "icons/doge.png",
     "binanceSym": "DOGEUSDT",
     "category": "meme",
     "maxLev": 75,
@@ -126,7 +126,7 @@ const COINS = [
     "symbol": "ADA",
     "name": "Cardano",
     "pair": "ADA/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/975/small/cardano.png",
+    "icon": "icons/ada.png",
     "binanceSym": "ADAUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -142,7 +142,7 @@ const COINS = [
     "symbol": "AVAX",
     "name": "Avalanche",
     "pair": "AVAX/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png",
+    "icon": "icons/avax.png",
     "binanceSym": "AVAXUSDT",
     "category": "l1",
     "maxLev": 75,
@@ -158,7 +158,7 @@ const COINS = [
     "symbol": "SUI",
     "name": "Sui",
     "pair": "SUI/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/26375/small/sui-ocean-square.png",
+    "icon": "icons/sui.png",
     "binanceSym": "SUIUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -174,7 +174,7 @@ const COINS = [
     "symbol": "NEAR",
     "name": "NEAR Protocol",
     "pair": "NEAR/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/10365/small/near.png",
+    "icon": "icons/near.png",
     "binanceSym": "NEARUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -190,7 +190,7 @@ const COINS = [
     "symbol": "APT",
     "name": "Aptos",
     "pair": "APT/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/26455/small/aptos_round.png",
+    "icon": "icons/apt.png",
     "binanceSym": "APTUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -206,7 +206,7 @@ const COINS = [
     "symbol": "DOT",
     "name": "Polkadot",
     "pair": "DOT/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/12171/small/polkadot.png",
+    "icon": "icons/dot.png",
     "binanceSym": "DOTUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -222,7 +222,7 @@ const COINS = [
     "symbol": "TRX",
     "name": "TRON",
     "pair": "TRX/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/1094/small/tron-logo.png",
+    "icon": "icons/trx.png",
     "binanceSym": "TRXUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -238,7 +238,7 @@ const COINS = [
     "symbol": "TON",
     "name": "Toncoin",
     "pair": "TON/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/17980/small/ton_symbol.png",
+    "icon": "icons/ton.png",
     "binanceSym": "TONUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -254,7 +254,7 @@ const COINS = [
     "symbol": "FIL",
     "name": "Filecoin",
     "pair": "FIL/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/12817/small/filecoin.png",
+    "icon": "icons/fil.png",
     "binanceSym": "FILUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -270,7 +270,7 @@ const COINS = [
     "symbol": "ICP",
     "name": "Internet Computer",
     "pair": "ICP/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/14495/small/Internet_Computer_logo.png",
+    "icon": "icons/icp.png",
     "binanceSym": "ICPUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -286,7 +286,7 @@ const COINS = [
     "symbol": "SEI",
     "name": "Sei",
     "pair": "SEI/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/28205/small/Sei_Logo_-_Transparent.png",
+    "icon": "icons/sei.png",
     "binanceSym": "SEIUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -302,7 +302,7 @@ const COINS = [
     "symbol": "TIA",
     "name": "Celestia",
     "pair": "TIA/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/31967/small/tia.png",
+    "icon": "icons/tia.png",
     "binanceSym": "TIAUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -318,7 +318,7 @@ const COINS = [
     "symbol": "ALGO",
     "name": "Algorand",
     "pair": "ALGO/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/4380/small/download.png",
+    "icon": "icons/algo.png",
     "binanceSym": "ALGOUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -334,7 +334,7 @@ const COINS = [
     "symbol": "HBAR",
     "name": "Hedera",
     "pair": "HBAR/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/3688/small/hbar.png",
+    "icon": "icons/hbar.png",
     "binanceSym": "HBARUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -350,7 +350,7 @@ const COINS = [
     "symbol": "ATOM",
     "name": "Cosmos Hub",
     "pair": "ATOM/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/1481/small/cosmos_hub.png",
+    "icon": "icons/atom.png",
     "binanceSym": "ATOMUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -366,7 +366,7 @@ const COINS = [
     "symbol": "XLM",
     "name": "Stellar",
     "pair": "XLM/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/100/small/Stellar_symbol_black_RGB.png",
+    "icon": "icons/xlm.png",
     "binanceSym": "XLMUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -382,7 +382,7 @@ const COINS = [
     "symbol": "FTM",
     "name": "Fantom",
     "pair": "FTM/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png",
+    "icon": "icons/ftm.png",
     "binanceSym": "FTMUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -398,7 +398,7 @@ const COINS = [
     "symbol": "VET",
     "name": "VeChain",
     "pair": "VET/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/1167/small/VET_Token_Icon.png",
+    "icon": "icons/vet.png",
     "binanceSym": "VETUSDT",
     "category": "l1",
     "maxLev": 50,
@@ -414,7 +414,7 @@ const COINS = [
     "symbol": "LTC",
     "name": "Litecoin",
     "pair": "LTC/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/2/small/litecoin.png",
+    "icon": "icons/ltc.png",
     "binanceSym": "LTCUSDT",
     "category": "spot",
     "maxLev": 50,
@@ -430,7 +430,7 @@ const COINS = [
     "symbol": "BCH",
     "name": "Bitcoin Cash",
     "pair": "BCH/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/780/small/bitcoin-cash-circle.png",
+    "icon": "icons/bch.png",
     "binanceSym": "BCHUSDT",
     "category": "spot",
     "maxLev": 50,
@@ -446,7 +446,7 @@ const COINS = [
     "symbol": "ETC",
     "name": "Ethereum Classic",
     "pair": "ETC/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/453/small/ethereum-classic-logo.png",
+    "icon": "icons/etc.png",
     "binanceSym": "ETCUSDT",
     "category": "spot",
     "maxLev": 50,
@@ -462,7 +462,7 @@ const COINS = [
     "symbol": "UNI",
     "name": "Uniswap",
     "pair": "UNI/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png",
+    "icon": "icons/uni.png",
     "binanceSym": "UNIUSDT",
     "category": "defi",
     "maxLev": 75,
@@ -478,7 +478,7 @@ const COINS = [
     "symbol": "LINK",
     "name": "Chainlink",
     "pair": "LINK/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png",
+    "icon": "icons/link.png",
     "binanceSym": "LINKUSDT",
     "category": "defi",
     "maxLev": 75,
@@ -494,7 +494,7 @@ const COINS = [
     "symbol": "AAVE",
     "name": "Aave",
     "pair": "AAVE/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/12645/small/AAVE.png",
+    "icon": "icons/aave.png",
     "binanceSym": "AAVEUSDT",
     "category": "defi",
     "maxLev": 75,
@@ -510,7 +510,7 @@ const COINS = [
     "symbol": "MKR",
     "name": "Maker",
     "pair": "MKR/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/1364/small/Mark_Maker.png",
+    "icon": "icons/mkr.png",
     "binanceSym": "MKRUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -526,7 +526,7 @@ const COINS = [
     "symbol": "CRV",
     "name": "Curve DAO",
     "pair": "CRV/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/12124/small/Curve.png",
+    "icon": "icons/crv.png",
     "binanceSym": "CRVUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -542,7 +542,7 @@ const COINS = [
     "symbol": "LDO",
     "name": "Lido DAO",
     "pair": "LDO/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/13573/small/Lido_DAO.png",
+    "icon": "icons/ldo.png",
     "binanceSym": "LDOUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -558,7 +558,7 @@ const COINS = [
     "symbol": "PENDLE",
     "name": "Pendle",
     "pair": "PENDLE/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/15069/small/Pendle_Logo_Normal-03.png",
+    "icon": "icons/pendle.png",
     "binanceSym": "PENDLEUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -574,7 +574,7 @@ const COINS = [
     "symbol": "INJ",
     "name": "Injective",
     "pair": "INJ/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/12882/small/Secondary_Symbol.png",
+    "icon": "icons/inj.png",
     "binanceSym": "INJUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -590,7 +590,7 @@ const COINS = [
     "symbol": "JUP",
     "name": "Jupiter",
     "pair": "JUP/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/34188/small/jup.png",
+    "icon": "icons/jup.png",
     "binanceSym": "JUPUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -606,7 +606,7 @@ const COINS = [
     "symbol": "RUNE",
     "name": "THORChain",
     "pair": "RUNE/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/6595/small/thorchain.png",
+    "icon": "icons/rune.png",
     "binanceSym": "RUNEUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -622,7 +622,7 @@ const COINS = [
     "symbol": "SNX",
     "name": "Synthetix",
     "pair": "SNX/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/3406/small/SNX.png",
+    "icon": "icons/snx.png",
     "binanceSym": "SNXUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -638,7 +638,7 @@ const COINS = [
     "symbol": "DYDX",
     "name": "dYdX",
     "pair": "DYDX/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/32578/small/dydx.png",
+    "icon": "icons/dydx.png",
     "binanceSym": "DYDXUSDT",
     "category": "defi",
     "maxLev": 50,
@@ -654,7 +654,7 @@ const COINS = [
     "symbol": "ARB",
     "name": "Arbitrum",
     "pair": "ARB/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/16547/small/arbitrum_logo.png",
+    "icon": "icons/arb.png",
     "binanceSym": "ARBUSDT",
     "category": "l2",
     "maxLev": 50,
@@ -670,7 +670,7 @@ const COINS = [
     "symbol": "OP",
     "name": "Optimism",
     "pair": "OP/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/25244/small/Optimism.png",
+    "icon": "icons/op.png",
     "binanceSym": "OPUSDT",
     "category": "l2",
     "maxLev": 50,
@@ -686,7 +686,7 @@ const COINS = [
     "symbol": "POL",
     "name": "Polygon Ecosystem",
     "pair": "POL/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/4713/small/polygon.png",
+    "icon": "icons/pol.png",
     "binanceSym": "POLUSDT",
     "category": "l2",
     "maxLev": 50,
@@ -702,7 +702,7 @@ const COINS = [
     "symbol": "STRK",
     "name": "Starknet",
     "pair": "STRK/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/33139/small/Starknet.png",
+    "icon": "icons/strk.png",
     "binanceSym": "STRKUSDT",
     "category": "l2",
     "maxLev": 50,
@@ -718,7 +718,7 @@ const COINS = [
     "symbol": "SHIB",
     "name": "Shiba Inu",
     "pair": "SHIB/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/11939/small/shiba.png",
+    "icon": "icons/shib.png",
     "binanceSym": "SHIBUSDT",
     "category": "meme",
     "maxLev": 50,
@@ -734,7 +734,7 @@ const COINS = [
     "symbol": "PEPE",
     "name": "Pepe",
     "pair": "PEPE/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/29850/small/pepe-token.png",
+    "icon": "icons/pepe.png",
     "binanceSym": "PEPEUSDT",
     "category": "meme",
     "maxLev": 50,
@@ -750,7 +750,7 @@ const COINS = [
     "symbol": "WIF",
     "name": "dogwifhat",
     "pair": "WIF/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/33566/small/dogwifhat.png",
+    "icon": "icons/wif.png",
     "binanceSym": "WIFUSDT",
     "category": "meme",
     "maxLev": 50,
@@ -766,7 +766,7 @@ const COINS = [
     "symbol": "BONK",
     "name": "Bonk",
     "pair": "BONK/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/28600/small/bonk.jpg",
+    "icon": "icons/bonk.png",
     "binanceSym": "BONKUSDT",
     "category": "meme",
     "maxLev": 50,
@@ -782,7 +782,7 @@ const COINS = [
     "symbol": "FLOKI",
     "name": "Floki",
     "pair": "FLOKI/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/16746/small/FLOKI.png",
+    "icon": "icons/floki.png",
     "binanceSym": "FLOKIUSDT",
     "category": "meme",
     "maxLev": 50,
@@ -798,7 +798,7 @@ const COINS = [
     "symbol": "BOME",
     "name": "BOOK OF MEME",
     "pair": "BOME/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/36070/small/bome.png",
+    "icon": "icons/bome.png",
     "binanceSym": "BOMEUSDT",
     "category": "meme",
     "maxLev": 50,
@@ -814,7 +814,7 @@ const COINS = [
     "symbol": "MEME",
     "name": "Memecoin",
     "pair": "MEME/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/32684/small/memecoin.png",
+    "icon": "icons/meme.png",
     "binanceSym": "MEMEUSDT",
     "category": "meme",
     "maxLev": 50,
@@ -830,7 +830,7 @@ const COINS = [
     "symbol": "RENDER",
     "name": "Render",
     "pair": "RENDER/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/11636/small/rndr.png",
+    "icon": "icons/render.png",
     "binanceSym": "RENDERUSDT",
     "category": "ai",
     "maxLev": 50,
@@ -846,7 +846,7 @@ const COINS = [
     "symbol": "FET",
     "name": "Artificial Superintelligence",
     "pair": "FET/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/5681/small/Fetch.jpg",
+    "icon": "icons/fet.png",
     "binanceSym": "FETUSDT",
     "category": "ai",
     "maxLev": 50,
@@ -862,7 +862,7 @@ const COINS = [
     "symbol": "TAO",
     "name": "Bittensor",
     "pair": "TAO/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/28552/small/bittensor-tao.png",
+    "icon": "icons/tao.png",
     "binanceSym": "TAOUSDT",
     "category": "ai",
     "maxLev": 50,
@@ -878,7 +878,7 @@ const COINS = [
     "symbol": "WLD",
     "name": "Worldcoin",
     "pair": "WLD/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/31062/small/worldcoin.png",
+    "icon": "icons/wld.png",
     "binanceSym": "WLDUSDT",
     "category": "ai",
     "maxLev": 50,
@@ -894,7 +894,7 @@ const COINS = [
     "symbol": "GRT",
     "name": "The Graph",
     "pair": "GRT/USDT",
-    "icon": "https://assets.coingecko.com/coins/images/13397/small/Graph_Token.png",
+    "icon": "icons/grt.png",
     "binanceSym": "GRTUSDT",
     "category": "ai",
     "maxLev": 50,
@@ -2080,6 +2080,32 @@ function setHomeMarketTab(tab) {
   renderHomeMarketList();
 }
 
+// ─── UNIVERSAL COIN ICON ERROR FALLBACK ──────────────────────────────
+function handleCoinIconError(imgEl, symbol, category) {
+  if (!imgEl) return;
+  imgEl.onerror = null;
+
+  const paletteMap = {
+    l1: ['#3b82f6', '#1d4ed8'],
+    l2: ['#8b5cf6', '#6d28d9'],
+    defi: ['#ec4899', '#be185d'],
+    meme: ['#f59e0b', '#d97706'],
+    ai: ['#06b6d4', '#0891b2'],
+    commodities: ['#fbbf24', '#d97706'],
+    futures: ['#10b981', '#047857'],
+    default: ['#6366f1', '#4338ca']
+  };
+
+  const palette = paletteMap[category] || paletteMap.default;
+  const sym = (symbol || 'COIN').slice(0, 4).toUpperCase();
+  const fontSize = sym.length <= 3 ? 12 : 9.5;
+  const textY = fontSize === 12 ? 20.5 : 19.5;
+
+  const svgData = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><defs><linearGradient id="g_${sym}" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${palette[0]}"/><stop offset="100%" stop-color="${palette[1]}"/></linearGradient></defs><circle cx="16" cy="16" r="15" fill="url(#g_${sym})" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><text x="16" y="${textY}" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="${fontSize}" fill="#ffffff" text-anchor="middle" letter-spacing="-0.3">${sym}</text></svg>`;
+
+  imgEl.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgData);
+}
+
 function renderHomeMarketList() {
   const container = document.getElementById('home-coin-list-container');
   if (!container) return;
@@ -2102,7 +2128,7 @@ function renderHomeMarketList() {
     return `
       <div class="coin-row-card" onclick="selectCoinAndTrade('${coin.id}')">
         <div class="coin-row-left">
-          <img class="coin-avatar-img" src="${coin.icon}" alt="${coin.name}" loading="lazy" />
+          <img class="coin-avatar-img" src="${coin.icon}" alt="${coin.name}" loading="lazy" onerror="handleCoinIconError(this, '${coin.symbol}', '${coin.category || ''}')" />
           <div class="coin-meta-col">
             <div class="coin-sym-row">
               <span class="coin-sym-name">${coin.symbol}</span>
@@ -2161,7 +2187,7 @@ function renderMarketsScreen() {
     return `
       <div class="mkt-coin-item" onclick="selectCoinAndTrade('${c.id}')">
         <div class="coin-row-left">
-          <img class="coin-avatar-img" src="${c.icon}" alt="${c.name}" style="width:28px;height:28px;" />
+          <img class="coin-avatar-img" src="${c.icon}" alt="${c.name}" style="width:28px;height:28px;" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category || ''}')" />
           <div class="coin-meta-col">
             <div class="coin-sym-row">
               <span class="coin-sym-name" style="font-size:13.5px;">${c.symbol}</span>
@@ -2237,12 +2263,16 @@ function renderTradingViewChart() {
   }
 }
 
+let currentFsTab = 'price';
+
 function openFullscreenChart() {
   const modal = document.getElementById('tv-fullscreen-modal');
   const iframe = document.getElementById('tv-fullscreen-iframe');
   const pairEl = document.getElementById('tv-fs-pair');
-  const priceEl = document.getElementById('tv-fs-price');
+  const iconEl = document.getElementById('tv-fs-coin-icon');
   const chgEl = document.getElementById('tv-fs-change');
+  const buySub = document.getElementById('tv-fs-buy-sub');
+  const sellSub = document.getElementById('tv-fs-sell-sub');
   if (!modal || !iframe) return;
 
   const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
@@ -2252,13 +2282,21 @@ function openFullscreenChart() {
   };
   const intervalCode = tvIntervalMap[chartInterval] || '60';
 
-  if (pairEl) pairEl.textContent = selectedCoin.pair;
-  if (priceEl) priceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+  if (iconEl) {
+    iconEl.src = selectedCoin.icon;
+    iconEl.onerror = function() { handleCoinIconError(this, selectedCoin.symbol, selectedCoin.category); };
+  }
+  if (pairEl) pairEl.textContent = `${selectedCoin.symbol}-USDT`;
   if (chgEl) {
     const isUp = selectedCoin.change >= 0;
-    chgEl.className = `tv-fs-change ${isUp ? 'up' : 'down'}`;
+    chgEl.className = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
     chgEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
   }
+  if (buySub) buySub.textContent = `Up to ${selectedCoin.maxLev}x`;
+  if (sellSub) sellSub.textContent = `Up to ${selectedCoin.maxLev}x`;
+
+  switchFsTab('price');
+  renderFsTabContent();
 
   const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&locale=en`;
   iframe.src = url;
@@ -2270,6 +2308,88 @@ function closeFullscreenChart() {
   const iframe = document.getElementById('tv-fullscreen-iframe');
   if (modal) modal.classList.add('hidden');
   if (iframe) iframe.src = '';
+}
+
+function switchFsTab(tab) {
+  currentFsTab = tab;
+  ['price', 'info', 'orderbook', 'trades'].forEach(t => {
+    const btn = document.getElementById(`tv-fs-tab-${t}`);
+    const panel = document.getElementById(`tv-fs-panel-${t === 'price' ? 'chart' : t}`);
+    if (btn) btn.classList.toggle('active', t === tab);
+    if (panel) panel.classList.toggle('active', t === tab);
+  });
+  renderFsTabContent();
+}
+
+function renderFsTabContent() {
+  if (currentFsTab === 'info') {
+    const highEl = document.getElementById('tv-fs-info-high');
+    const lowEl = document.getElementById('tv-fs-info-low');
+    const volEl = document.getElementById('tv-fs-info-vol');
+    const levEl = document.getElementById('tv-fs-info-lev');
+    if (highEl) highEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price * 1.03)}`;
+    if (lowEl) lowEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price * 0.97)}`;
+    if (volEl) volEl.textContent = `${getCurrencySymbol()}${selectedCoin.vol || '12.4M'}`;
+    if (levEl) levEl.textContent = `${selectedCoin.maxLev}x`;
+  } else if (currentFsTab === 'orderbook') {
+    renderFsOrderBook();
+  } else if (currentFsTab === 'trades') {
+    renderFsTrades();
+  }
+}
+
+function renderFsOrderBook() {
+  const asksEl = document.getElementById('tv-fs-ob-asks');
+  const bidsEl = document.getElementById('tv-fs-ob-bids');
+  const midEl = document.getElementById('tv-fs-ob-midprice');
+  if (!asksEl || !bidsEl) return;
+
+  const curPrice = selectedCoin.price;
+  if (midEl) midEl.textContent = `${getCurrencySymbol()}${fmtPrice(curPrice)}`;
+
+  let asksHtml = '';
+  for (let i = 5; i >= 1; i--) {
+    const p = curPrice * (1 + (i * 0.0006));
+    const qty = (Math.random() * 2.5 + 0.1).toFixed(3);
+    asksHtml += `<div class="tv-fs-trade-row sell"><span>${fmtPrice(p)}</span><span style="text-align:right;">${qty}</span></div>`;
+  }
+  asksEl.innerHTML = asksHtml;
+
+  let bidsHtml = '';
+  for (let i = 1; i <= 5; i++) {
+    const p = curPrice * (1 - (i * 0.0006));
+    const qty = (Math.random() * 2.5 + 0.1).toFixed(3);
+    bidsHtml += `<div class="tv-fs-trade-row buy"><span>${fmtPrice(p)}</span><span style="text-align:right;">${qty}</span></div>`;
+  }
+  bidsEl.innerHTML = bidsHtml;
+}
+
+function renderFsTrades() {
+  const listEl = document.getElementById('tv-fs-trades-list');
+  if (!listEl) return;
+  const curPrice = selectedCoin.price;
+  let rows = '';
+  for (let i = 0; i < 10; i++) {
+    const isBuy = Math.random() > 0.48;
+    const p = curPrice * (1 + (Math.random() * 0.002 - 0.001));
+    const qty = (Math.random() * 1.8 + 0.05).toFixed(3);
+    const d = new Date(Date.now() - i * 1400);
+    const tStr = d.toTimeString().split(' ')[0];
+    rows += `<div class="tv-fs-trade-row ${isBuy ? 'buy' : 'sell'}"><span>${tStr}</span><span>${isBuy ? 'BUY' : 'SELL'}</span><span>${fmtPrice(p)}</span><span>${qty}</span></div>`;
+  }
+  listEl.innerHTML = rows;
+}
+
+function toggleFavoriteCurrentCoin() {
+  const btn = document.getElementById('tv-fs-star-btn');
+  if (!btn) return;
+  const isFav = btn.classList.toggle('active');
+  btn.style.color = isFav ? '#fbbf24' : '#cbd5e1';
+  showToast(isFav ? `${selectedCoin.symbol} added to Watchlist` : `${selectedCoin.symbol} removed from Watchlist`);
+}
+
+function toggleFsSettings() {
+  showToast('Chart Indicators & Drawing Tools active');
 }
 
 function selectCoinAndTrade(coinId) {
@@ -2291,7 +2411,10 @@ function renderTradeScreen() {
   const livePriceEl = document.getElementById('trade-header-price');
   const liveChangeEl = document.getElementById('trade-header-change');
 
-  if (curIcon) curIcon.src = selectedCoin.icon;
+  if (curIcon) {
+    curIcon.src = selectedCoin.icon;
+    curIcon.onerror = function() { handleCoinIconError(this, selectedCoin.symbol, selectedCoin.category); };
+  }
   if (curSym) curSym.textContent = selectedCoin.pair;
   if (curFull) curFull.textContent = `${selectedCoin.name} Perpetual`;
 
@@ -2993,7 +3116,7 @@ function renderCoinPickerList(query = '') {
   container.innerHTML = list.map(c => `
     <div class="coin-row-card" style="padding:10px 12px; margin-bottom:4px;" onclick="selectCoinFromPicker('${c.id}')">
       <div class="coin-row-left">
-        <img class="coin-avatar-img" src="${c.icon}" alt="${c.name}" style="width:28px;height:28px;" />
+        <img class="coin-avatar-img" src="${c.icon}" alt="${c.name}" style="width:28px;height:28px;" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category || ''}')" />
         <div class="coin-meta-col">
           <span class="coin-sym-name">${c.pair}</span>
           <span class="coin-full-name">${c.name}</span>
@@ -3014,6 +3137,10 @@ function selectCoinFromPicker(coinId) {
     closeCoinPickerModal();
     renderTradeScreen();
     fetchRealBinanceCandles();
+    const fsModal = document.getElementById('tv-fullscreen-modal');
+    if (fsModal && !fsModal.classList.contains('hidden')) {
+      openFullscreenChart();
+    }
   }
 }
 
@@ -3392,6 +3519,132 @@ function initVTradeApp() {
   if (!liveTickerInterval) {
     liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500);
   }
+
+  // Check and initialize First-Time User 3D Onboarding Walkthrough
+  initOnboarding();
+}
+
+// ─── 16. 3D ANIMATED ONBOARDING WALKTHROUGH ──────────────────────────
+let currentOnboardingSlide = 0;
+const TOTAL_ONBOARDING_SLIDES = 4;
+
+function initOnboarding() {
+  const completed = localStorage.getItem('vtrade_onboarding_completed');
+  if (!completed) {
+    openOnboarding();
+  }
+  setupOnboardingSwipe();
+}
+
+function openOnboarding() {
+  const modal = document.getElementById('vtrade-onboarding-modal');
+  if (modal) {
+    currentOnboardingSlide = 0;
+    updateOnboardingView();
+    modal.classList.remove('hidden');
+  }
+}
+
+function completeOnboarding() {
+  localStorage.setItem('vtrade_onboarding_completed', '1');
+  const modal = document.getElementById('vtrade-onboarding-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+function replayOnboarding() {
+  openOnboarding();
+}
+
+function goToSlide(index) {
+  if (index < 0 || index >= TOTAL_ONBOARDING_SLIDES) return;
+  currentOnboardingSlide = index;
+  updateOnboardingView();
+}
+
+function nextSlide() {
+  if (currentOnboardingSlide < TOTAL_ONBOARDING_SLIDES - 1) {
+    currentOnboardingSlide++;
+    updateOnboardingView();
+  } else {
+    completeOnboarding();
+  }
+}
+
+function prevSlide() {
+  if (currentOnboardingSlide > 0) {
+    currentOnboardingSlide--;
+    updateOnboardingView();
+  }
+}
+
+function updateOnboardingView() {
+  const track = document.getElementById('onboarding-track');
+  const btnText = document.getElementById('onb-btn-text');
+  const btnArrow = document.getElementById('onb-btn-arrow');
+  const nextBtn = document.getElementById('onb-next-btn');
+
+  if (track) {
+    track.style.transform = `translateX(-${currentOnboardingSlide * 25}%)`;
+  }
+
+  // Update dots
+  for (let i = 0; i < TOTAL_ONBOARDING_SLIDES; i++) {
+    const dot = document.querySelector(`.onb-dot:nth-child(${i + 1})`);
+    if (dot) dot.classList.toggle('active', i === currentOnboardingSlide);
+  }
+
+  // Last slide CTA button morphing
+  if (currentOnboardingSlide === TOTAL_ONBOARDING_SLIDES - 1) {
+    if (btnText) btnText.textContent = 'Start Trading Now';
+    if (btnArrow) btnArrow.textContent = '🚀';
+    if (nextBtn) {
+      nextBtn.style.background = 'linear-gradient(135deg, #00c087 0%, #059669 100%)';
+      nextBtn.style.boxShadow = '0 4px 16px rgba(0, 192, 135, 0.4)';
+    }
+  } else {
+    if (btnText) btnText.textContent = 'Next';
+    if (btnArrow) btnArrow.textContent = '→';
+    if (nextBtn) {
+      nextBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+      nextBtn.style.boxShadow = '0 4px 14px rgba(245, 158, 11, 0.35)';
+    }
+  }
+}
+
+function setupOnboardingSwipe() {
+  const wrapper = document.getElementById('onboarding-wrapper');
+  if (!wrapper) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let isSwiping = false;
+
+  wrapper.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    currentX = startX;
+    isSwiping = true;
+  }, { passive: true });
+
+  wrapper.addEventListener('touchmove', (e) => {
+    if (!isSwiping || e.touches.length !== 1) return;
+    currentX = e.touches[0].clientX;
+  }, { passive: true });
+
+  wrapper.addEventListener('touchend', () => {
+    if (!isSwiping) return;
+    isSwiping = false;
+    const deltaX = currentX - startX;
+    if (deltaX < -45) {
+      nextSlide();
+    } else if (deltaX > 45) {
+      prevSlide();
+    }
+  }, { passive: true });
 }
 
 if (typeof window !== 'undefined') {

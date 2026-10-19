@@ -12,8 +12,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=2.5" />
   <script>
     (function() {
       // Early detect native Capacitor APK or mobile Android to apply safe-area padding immediately
@@ -264,7 +264,7 @@
         <!-- Asset Header Bar -->
         <div class="trade-top-asset-bar">
           <div class="trade-asset-picker-btn" id="trade-coin-selector-btn" onclick="openCoinPickerModal()">
-            <img class="trade-asset-icon" id="trade-cur-icon" src="https://assets.coingecko.com/coins/images/1/small/bitcoin.png" alt="Coin" />
+            <img class="trade-asset-icon" id="trade-cur-icon" src="icons/btc.png" alt="Coin" onerror="handleCoinIconError(this, 'BTC', 'futures')" />
             <div class="trade-asset-names">
               <div class="trade-asset-sym-row">
                 <span id="trade-cur-sym">BTC/USDT</span>
@@ -568,6 +568,17 @@
                 </div>
               </div>
               <span class="acc-setting-badge active">Ultra 120 FPS</span>
+            </div>
+
+            <div class="acc-setting-item" onclick="replayOnboarding()">
+              <div class="acc-setting-left">
+                <div class="acc-setting-icon">✨</div>
+                <div class="acc-setting-info">
+                  <span class="acc-setting-label">App Introduction & Tour</span>
+                  <span class="acc-setting-sub">View 3D Animated Features Walkthrough</span>
+                </div>
+              </div>
+              <span class="acc-setting-val">View Tour</span>
             </div>
 
             <div class="acc-setting-item">
@@ -901,30 +912,254 @@
     </div>
   </div>
 
-  <!-- ══════════════════════ 11. FULLSCREEN TRADINGVIEW MODAL ══════════════════════ -->
+  <!-- ══════════════════════ 11. FULLSCREEN TRADINGVIEW MODAL (BROKER LAYOUT) ══════════════════════ -->
   <div class="tv-fullscreen-modal hidden" id="tv-fullscreen-modal">
+    <!-- Top Broker Header -->
     <div class="tv-fs-header">
-      <div class="tv-fs-asset-info">
-        <span class="tv-fs-pair" id="tv-fs-pair">BTC/USDT</span>
-        <span class="tv-fs-price" id="tv-fs-price">$81,614.80</span>
-        <span class="tv-fs-change up" id="tv-fs-change">+0.21%</span>
+      <div class="tv-fs-header-left">
+        <img class="tv-fs-coin-avatar" id="tv-fs-coin-icon" src="icons/btc.png" alt="Coin" onerror="handleCoinIconError(this, 'BTC', 'futures')" />
+        <div class="tv-fs-pair-chip" id="tv-fs-pair-chip" onclick="openCoinPickerModal()">
+          <span class="tv-fs-pair" id="tv-fs-pair">BTC-USDT</span>
+          <span class="tv-fs-arrow">▾</span>
+        </div>
+        <span class="tv-fs-change-pill up" id="tv-fs-change">+1.23%</span>
       </div>
-      <div class="tv-fs-actions">
-        <button class="tv-fs-close-btn" onclick="closeFullscreenChart()" title="Exit Fullscreen">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+      <div class="tv-fs-header-right">
+        <button class="tv-fs-icon-btn" id="tv-fs-star-btn" onclick="toggleFavoriteCurrentCoin()" title="Watchlist">★</button>
+        <button class="tv-fs-icon-btn" id="tv-fs-settings-btn" onclick="toggleFsSettings()" title="Settings">⚙</button>
+        <button class="tv-fs-close-pill" onclick="closeFullscreenChart()" title="Exit Fullscreen">✕</button>
+      </div>
+    </div>
+
+    <!-- Sub-Header Tabs (Broker Style) -->
+    <div class="tv-fs-subtabs">
+      <button class="tv-fs-tab active" id="tv-fs-tab-price" onclick="switchFsTab('price')">Last Traded Price <span class="tv-fs-tab-arrow">▾</span></button>
+      <button class="tv-fs-tab" id="tv-fs-tab-info" onclick="switchFsTab('info')">Info</button>
+      <button class="tv-fs-tab" id="tv-fs-tab-orderbook" onclick="switchFsTab('orderbook')">Order Book</button>
+      <button class="tv-fs-tab" id="tv-fs-tab-trades" onclick="switchFsTab('trades')">Trades</button>
+    </div>
+
+    <!-- Main Content Stage -->
+    <div class="tv-fs-body">
+      <!-- 1. Primary Full Chart View -->
+      <div class="tv-fs-panel active" id="tv-fs-panel-chart">
+        <iframe id="tv-fullscreen-iframe"
+          class="tv-fullscreen-iframe"
+          src=""
+          title="Full Screen TradingView Chart"
+          allowfullscreen="true">
+        </iframe>
+      </div>
+
+      <!-- 2. Info Tab View -->
+      <div class="tv-fs-panel" id="tv-fs-panel-info">
+        <div class="tv-fs-info-grid">
+          <div class="tv-fs-info-card">
+            <span class="tv-fs-ik">24h High</span>
+            <span class="tv-fs-iv" id="tv-fs-info-high">$0.00</span>
+          </div>
+          <div class="tv-fs-info-card">
+            <span class="tv-fs-ik">24h Low</span>
+            <span class="tv-fs-iv" id="tv-fs-info-low">$0.00</span>
+          </div>
+          <div class="tv-fs-info-card">
+            <span class="tv-fs-ik">24h Turnover / Vol</span>
+            <span class="tv-fs-iv" id="tv-fs-info-vol">$0.00</span>
+          </div>
+          <div class="tv-fs-info-card">
+            <span class="tv-fs-ik">Max Leverage</span>
+            <span class="tv-fs-iv gold" id="tv-fs-info-lev">150x</span>
+          </div>
+          <div class="tv-fs-info-card">
+            <span class="tv-fs-ik">Settlement</span>
+            <span class="tv-fs-iv">USDT Perpetual</span>
+          </div>
+          <div class="tv-fs-info-card">
+            <span class="tv-fs-ik">Trading Mode</span>
+            <span class="tv-fs-iv">Isolated Margin</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Order Book Tab View -->
+      <div class="tv-fs-panel" id="tv-fs-panel-orderbook">
+        <div class="tv-fs-ob-wrap">
+          <div class="tv-fs-ob-col asks" id="tv-fs-ob-asks"></div>
+          <div class="tv-fs-ob-spread">
+            <span class="tv-fs-ob-midprice" id="tv-fs-ob-midprice">$0.00</span>
+            <span class="tv-fs-ob-spread-badge">Spread 0.01%</span>
+          </div>
+          <div class="tv-fs-ob-col bids" id="tv-fs-ob-bids"></div>
+        </div>
+      </div>
+
+      <!-- 4. Trades Tab View -->
+      <div class="tv-fs-panel" id="tv-fs-panel-trades">
+        <div class="tv-fs-trades-header">
+          <span>Time</span><span>Side</span><span>Price</span><span>Amount</span>
+        </div>
+        <div class="tv-fs-trades-list" id="tv-fs-trades-list"></div>
+      </div>
+    </div>
+
+    <!-- Bottom "Create New Order ^" Floating Drawer Handle & Quick Actions -->
+    <div class="tv-fs-bottom-dock" id="tv-fs-bottom-dock">
+      <div class="tv-fs-dock-trigger" onclick="openOrderSheet('long')">
+        <div class="tv-fs-dt-left">
+          <span class="tv-fs-dt-bolt">⚡</span>
+          <span class="tv-fs-dt-title">Create New Order</span>
+        </div>
+        <span class="tv-fs-dt-arrow">▲</span>
+      </div>
+      <div class="tv-fs-dock-actions">
+        <button class="tv-fs-quick-btn buy" onclick="openOrderSheet('long')">
+          <span class="tv-fs-qb-lbl">Buy / Long</span>
+          <span class="tv-fs-qb-sub" id="tv-fs-buy-sub">Up to 150x</span>
+        </button>
+        <button class="tv-fs-quick-btn sell" onclick="openOrderSheet('short')">
+          <span class="tv-fs-qb-lbl">Sell / Short</span>
+          <span class="tv-fs-qb-sub" id="tv-fs-sell-sub">Up to 150x</span>
         </button>
       </div>
     </div>
-    <div class="tv-fs-body">
-      <iframe id="tv-fullscreen-iframe"
-        class="tv-fullscreen-iframe"
-        src=""
-        title="Full Screen TradingView Chart"
-        allowfullscreen="true">
-      </iframe>
+  </div>
+
+  <!-- ══════════════════════ 12. 3D ANIMATED ONBOARDING WALKTHROUGH ══════════════════════ -->
+  <div class="onboarding-overlay hidden" id="vtrade-onboarding-modal">
+    <div class="onboarding-container">
+      <div class="onboarding-top-bar">
+        <div class="onboarding-brand">
+          <span class="onboarding-logo-badge">⚡</span>
+          <span class="onboarding-brand-name">VTrade Pro</span>
+        </div>
+        <button class="onboarding-skip-btn" onclick="completeOnboarding()" title="Skip Walkthrough">Skip</button>
+      </div>
+
+      <!-- Horizontal Swipe Track Wrapper -->
+      <div class="onboarding-track-wrapper" id="onboarding-wrapper">
+        <div class="onboarding-track" id="onboarding-track">
+          
+          <!-- SLIDE 1: Crypto & Gold Futures -->
+          <div class="onboarding-slide" data-slide="0">
+            <div class="onboarding-3d-stage">
+              <div class="onboarding-3d-card card-glow-gold">
+                <div class="onboarding-floating-badge badge-top-left">⚡ 150x Leverage</div>
+                <div class="onboarding-floating-badge badge-bottom-right">🥇 Gold Spot</div>
+                <div class="onb-coin-cluster">
+                  <div class="onb-coin onb-coin-btc"><img src="icons/btc.png" alt="BTC" /></div>
+                  <div class="onb-coin onb-coin-eth"><img src="icons/eth.png" alt="ETH" /></div>
+                  <div class="onb-coin onb-coin-gold"><img src="gold_spot.svg" alt="Gold" /></div>
+                </div>
+                <div class="onb-orbital-ring"></div>
+              </div>
+            </div>
+            <div class="onboarding-copy">
+              <h2 class="onboarding-title">Next-Gen Crypto & Gold Futures</h2>
+              <p class="onboarding-desc">Trade 56+ premier cryptocurrencies and live London Gold Spot with institutional precision and up to 150x leverage.</p>
+              <div class="onboarding-features-row">
+                <span class="onb-feature-pill">56+ Assets</span>
+                <span class="onb-feature-pill">London Gold</span>
+                <span class="onb-feature-pill">150x Margin</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLIDE 2: Institutional TradingView Charts -->
+          <div class="onboarding-slide" data-slide="1">
+            <div class="onboarding-3d-stage">
+              <div class="onboarding-3d-card card-glow-cyan">
+                <div class="onboarding-floating-badge badge-top-left">📊 11 Intervals</div>
+                <div class="onboarding-floating-badge badge-bottom-right">🎯 Live Depth</div>
+                <div class="onb-candlestick-matrix">
+                  <div class="onb-candle up" style="height:44px;"><span class="onb-wick"></span></div>
+                  <div class="onb-candle up" style="height:62px;"><span class="onb-wick"></span></div>
+                  <div class="onb-candle down" style="height:38px;"><span class="onb-wick"></span></div>
+                  <div class="onb-candle up" style="height:84px;"><span class="onb-wick"></span></div>
+                  <div class="onb-candle up" style="height:70px;"><span class="onb-wick"></span></div>
+                  <div class="onb-candle down" style="height:50px;"><span class="onb-wick"></span></div>
+                  <div class="onb-candle up" style="height:92px;"><span class="onb-wick"></span></div>
+                </div>
+                <div class="onb-trend-wave"></div>
+              </div>
+            </div>
+            <div class="onboarding-copy">
+              <h2 class="onboarding-title">Institutional TradingView Charts</h2>
+              <p class="onboarding-desc">Master the markets with 11 professional candlestick intervals (1m to 1M), real-time drawing tools, and deep order book analysis.</p>
+              <div class="onboarding-features-row">
+                <span class="onb-feature-pill">TradingView Core</span>
+                <span class="onb-feature-pill">11 Timeframes</span>
+                <span class="onb-feature-pill">Technical Overlays</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLIDE 3: $10,000 Risk-Free Paper Trading -->
+          <div class="onboarding-slide" data-slide="2">
+            <div class="onboarding-3d-stage">
+              <div class="onboarding-3d-card card-glow-emerald">
+                <div class="onboarding-floating-badge badge-top-left">🛡️ 0% Risk</div>
+                <div class="onboarding-floating-badge badge-bottom-right">📈 Live PnL</div>
+                <div class="onb-vault-card">
+                  <div class="onb-vault-icon">💎</div>
+                  <div class="onb-vault-amount">$10,000.00</div>
+                  <div class="onb-vault-label">VIRTUAL TRADING BALANCE</div>
+                </div>
+                <div class="onb-vault-rings"></div>
+              </div>
+            </div>
+            <div class="onboarding-copy">
+              <h2 class="onboarding-title">Risk-Free Paper Trading</h2>
+              <p class="onboarding-desc">Start with $10,000 in virtual funds. Test high-conviction strategies against genuine exchange prices with zero financial risk.</p>
+              <div class="onboarding-features-row">
+                <span class="onb-feature-pill">$10,000 Demo Fund</span>
+                <span class="onb-feature-pill">Real Exchange Feed</span>
+                <span class="onb-feature-pill">Zero Capital Loss</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLIDE 4: 120 FPS Speed & Instant Execution -->
+          <div class="onboarding-slide" data-slide="3">
+            <div class="onboarding-3d-stage">
+              <div class="onboarding-3d-card card-glow-violet">
+                <div class="onboarding-floating-badge badge-top-left">⚡ 120 FPS Gestures</div>
+                <div class="onboarding-floating-badge badge-bottom-right">🚀 0ms Lag</div>
+                <div class="onb-engine-card">
+                  <div class="onb-engine-bolt">⚡</div>
+                  <div class="onb-engine-pulse"></div>
+                </div>
+                <div class="onb-engine-orbits"></div>
+              </div>
+            </div>
+            <div class="onboarding-copy">
+              <h2 class="onboarding-title">120 FPS Tactile Precision</h2>
+              <p class="onboarding-desc">Engineered for ultra-smooth fluidity, instant order executions, and isolated margin safety across all mobile screens.</p>
+              <div class="onboarding-features-row">
+                <span class="onb-feature-pill">Hardware Accelerated</span>
+                <span class="onb-feature-pill">Isolated Margin</span>
+                <span class="onb-feature-pill">Instant Fills</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom Controls & Dots -->
+      <div class="onboarding-bottom-bar">
+        <div class="onboarding-dots" id="onboarding-dots">
+          <span class="onb-dot active" onclick="goToSlide(0)"></span>
+          <span class="onb-dot" onclick="goToSlide(1)"></span>
+          <span class="onb-dot" onclick="goToSlide(2)"></span>
+          <span class="onb-dot" onclick="goToSlide(3)"></span>
+        </div>
+        <div class="onboarding-actions">
+          <button class="onboarding-next-btn" id="onb-next-btn" onclick="nextSlide()">
+            <span id="onb-btn-text">Next</span>
+            <span class="onb-btn-arrow" id="onb-btn-arrow">→</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -970,6 +1205,6 @@
   <div id="toast-container" class="toast-container"></div>
   <div id="toast" class="toast hidden"></div>
 
-  <script src="app.js?v=2.3"></script>
+  <script src="app.js?v=2.5"></script>
 </body>
 </html>

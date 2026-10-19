@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="goldBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="barLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#fde047"/>
+    </linearGradient>
+    <linearGradient id="barShade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+  </defs>
+  <!-- Gold circular background -->
+  <circle cx="32" cy="32" r="30" fill="url(#goldBg)" stroke="#b45309" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="27.5" fill="none" stroke="#fef08a" stroke-width="0.8" opacity="0.6"/>
+
+  <!-- Top Ingot (Center) -->
+  <path d="M25 21 L39 21 L43 27 L21 27 Z" fill="url(#barLight)" stroke="#854d0e" stroke-width="0.8"/>
+  <path d="M21 27 L43 27 L41 30 L23 30 Z" fill="url(#barShade)" stroke="#854d0e" stroke-width="0.8"/>
+
+  <!-- Bottom Left Ingot -->
+  <path d="M16 32 L30 32 L34 38 L12 38 Z" fill="url(#barLight)" stroke="#854d0e" stroke-width="0.8"/>
+  <path d="M12 38 L34 38 L32 41 L14 41 Z" fill="url(#barShade)" stroke="#854d0e" stroke-width="0.8"/>
+
+  <!-- Bottom Right Ingot -->
+  <path d="M34 32 L48 32 L52 38 L30 38 Z" fill="url(#barLight)" stroke="#854d0e" stroke-width="0.8"/>
+  <path d="M30 38 L52 38 L50 41 L32 41 Z" fill="url(#barShade)" stroke="#854d0e" stroke-width="0.8"/>
+</svg>
