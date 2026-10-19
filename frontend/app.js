@@ -1202,7 +1202,7 @@ function saveRegisteredUser(user) {
   }
 }
 
-function handleForgotPassword(event) {
+async function handleForgotPassword(event) {
   if (event) event.preventDefault();
   const emailInput = document.getElementById('login-email');
   const currentVal = emailInput ? emailInput.value.trim().toLowerCase() : '';
@@ -1230,8 +1230,42 @@ function handleForgotPassword(event) {
     return;
   }
 
-  user.password = newPwd;
-  saveRegisteredUser(user);
+  // 1. Try cloud server password reset
+  let cloudUpdated = false;
+  try {
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 4000);
+    const resp = await fetch(getApiEndpoint('/api/auth/reset-password'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail, newPassword: newPwd }),
+      signal: ctl.signal
+    });
+    clearTimeout(tmr);
+    if (resp.ok) {
+      cloudUpdated = true;
+    } else if (resp.status === 404 && !user) {
+      showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
+      showToast('Account is not registered. Please create an account first.', 'error');
+      switchAuthTab('register');
+      const regEmail = document.getElementById('register-email');
+      if (regEmail) regEmail.value = cleanEmail;
+      return;
+    }
+  } catch (err) {}
+
+  if (user) {
+    user.password = newPwd;
+    saveRegisteredUser(user);
+  } else if (cloudUpdated) {
+    saveRegisteredUser({
+      username: cleanEmail.split('@')[0],
+      email: cleanEmail,
+      password: newPwd,
+      balance: 10000
+    });
+  }
+
   clearAuthAlert();
   showToast('Password reset successfully! Please sign in with your new password.', 'success');
   if (emailInput) emailInput.value = cleanEmail;

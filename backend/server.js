@@ -226,6 +226,24 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
+app.post('/api/auth/reset-password', (req, res) => {
+  try {
+    const { email, newPassword } = req.body || {};
+    if (!email || !newPassword) return res.status(400).json({ error: 'Email and new password required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    const cleanEmail = email.trim().toLowerCase();
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
+    if (!user) {
+      return res.status(404).json({ error: 'Account is not registered. Please create an account first.' });
+    }
+    const hash = bcrypt.hashSync(newPassword, 10);
+    db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, user.id);
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reset password: ' + (err.message || 'unknown') });
+  }
+});
+
 // ─── SUPPORTED PAIRS CONFIG (Popular Coins: BTC, ETH, SOL, BNB, DOGE, XRP, ADA, SUI, AVAX, PEPE, NEAR) ───────────
 const SUPPORTED_COINS = [
   'bitcoin', 'ethereum', 'gold', 'solana', 'ripple', 'binancecoin', 'dogecoin', 'cardano',
