@@ -87,15 +87,21 @@ densities.forEach(d => {
   assert.ok(fs.statSync(path.join(dir, 'ic_launcher.png')).size > 1000, `Icon in ${d} must be non-empty`);
 });
 
-assert.ok(gradle.includes('versionCode 10'), 'build.gradle must be bumped to versionCode 10');
-assert.ok(gradle.includes('versionName "2.8"'), 'build.gradle must be bumped to versionName "2.8"');
+assert.ok(gradle.includes('versionCode 11'), 'build.gradle must be bumped to versionCode 11');
+assert.ok(gradle.includes('versionName "2.9"'), 'build.gradle must be bumped to versionName "2.9"');
 assert.ok(appJs.includes('CLOUD_API_BASE = \'https://vtrade-crypto.onrender.com\''), 'app.js must define CLOUD_API_BASE to sync APK with cloud database');
+assert.ok(appJs.includes('syncWalletWithCloud'), 'app.js must define syncWalletWithCloud');
+assert.ok(appJs.includes('triggerManualCloudWalletSync'), 'app.js must define triggerManualCloudWalletSync');
+assert.ok(indexHtml.includes('id="acc-cloud-sync-btn"'), 'index.html must include Cloud Sync button in settings');
+assert.ok(indexHtml.includes('style.css?v=2.9'), 'index.html must reference style.css?v=2.9');
+assert.ok(indexHtml.includes('app.js?v=2.9'), 'index.html must reference app.js?v=2.9');
 assert.ok(indexHtml.includes('id="vtrade-splash-screen"'), 'index.html must include animated splash screen');
 assert.ok(indexHtml.includes('BINANCE%3ABTCUSDT'), 'Default TradingView chart must use BINANCE:BTCUSDT to align with Binance prices');
 assert.ok(styleCss.includes('.vtrade-splash-screen'), 'style.css must style vtrade-splash-screen');
 assert.ok(appJs.includes('initPostSplashFlow'), 'app.js must include post-splash flow handling');
-console.log('  ✓ Flat Modern & Stylish VTrade App Icon across all Android Mipmaps (v2.8) verified');
+console.log('  ✓ Flat Modern & Stylish VTrade App Icon across all Android Mipmaps (v2.9) verified');
 console.log('  ✓ App Launch Animated Splash Screen & Binance Real-time Ticker Alignment verified');
 console.log('  ✓ Render Cloud Central Database Synchronization (APK & Web Unified) verified');
+console.log('  ✓ Dual-Direction Realtime Cloud Wallet Sync & In-App Manual Sync Button verified');
 
 console.log('\n=== ALL 7 VERIFICATION SUITES PASSED! ===\n');

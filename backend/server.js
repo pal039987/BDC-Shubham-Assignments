@@ -82,10 +82,36 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id)
   );
+
+  CREATE TABLE IF NOT EXISTS user_wallets (
+    user_id INTEGER PRIMARY KEY,
+    cash_balance REAL DEFAULT 10000,
+    positions_json TEXT DEFAULT '[]',
+    orders_json TEXT DEFAULT '[]',
+    trades_json TEXT DEFAULT '[]',
+    updated_at INTEGER,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  );
 `);
 
 try {
   db.exec('ALTER TABLE portfolio ADD COLUMN avg_entry_price REAL DEFAULT 0');
+} catch (e) {}
+
+// Auto-seed/sync known existing phone account balance ($6,354)
+try {
+  const targetEmail = 'pal039987@mpgi.edu.in';
+  const targetUser = db.prepare('SELECT id, balance FROM users WHERE LOWER(TRIM(email)) = ?').get(targetEmail);
+  if (targetUser) {
+    if (targetUser.balance === 10000) {
+      db.prepare('UPDATE users SET balance = 6354.00 WHERE id = ?').run(targetUser.id);
+    }
+    db.prepare(`
+      INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
+      VALUES (?, 6354.00, '[]', '[]', '[]', ?)
+      ON CONFLICT(user_id) DO UPDATE SET cash_balance = 6354.00 WHERE cash_balance = 10000
+    `).run(targetUser.id, Date.now());
+  }
 } catch (e) {}
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
@@ -219,8 +245,10 @@ app.post('/api/auth/login', (req, res) => {
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: 'Incorrect password. Please try again.' });
     }
+    const wallet = db.prepare('SELECT cash_balance FROM user_wallets WHERE user_id = ?').get(user.id);
+    const effectiveBalance = wallet && typeof wallet.cash_balance === 'number' ? wallet.cash_balance : user.balance;
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '365d' });
-    res.json({ token, username: user.username, email: user.email, balance: user.balance });
+    res.json({ token, username: user.username, email: user.email, balance: effectiveBalance });
   } catch (err) {
     res.status(500).json({ error: 'Login failed: ' + (err.message || 'unknown') });
   }
@@ -241,6 +269,74 @@ app.post('/api/auth/reset-password', (req, res) => {
     res.json({ success: true, message: 'Password updated successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to reset password: ' + (err.message || 'unknown') });
+  }
+});
+
+// ─── CLOUD WALLET SYNC (APK ⇄ WEB DUAL-DIRECTION REALTIME SYNC) ───────────
+app.post('/api/wallet/sync', (req, res) => {
+  try {
+    const { email, cashBalance, positions, orders, tradesHistory, updatedAt } = req.body || {};
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    const cleanEmail = email.trim().toLowerCase();
+    const user = db.prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const posJson = JSON.stringify(positions || []);
+    const ordJson = JSON.stringify(orders || []);
+    const trdJson = JSON.stringify(tradesHistory || []);
+    const bal = typeof cashBalance === 'number' ? cashBalance : parseFloat(cashBalance || 10000);
+    const ts = updatedAt || Date.now();
+
+    db.prepare(`
+      INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(user_id) DO UPDATE SET
+        cash_balance = excluded.cash_balance,
+        positions_json = excluded.positions_json,
+        orders_json = excluded.orders_json,
+        trades_json = excluded.trades_json,
+        updated_at = excluded.updated_at
+    `).run(user.id, bal, posJson, ordJson, trdJson, ts);
+
+    // Also update base balance in users table
+    db.prepare('UPDATE users SET balance = ? WHERE id = ?').run(bal, user.id);
+
+    res.json({ success: true, cashBalance: bal, updatedAt: ts });
+  } catch (err) {
+    res.status(500).json({ error: 'Wallet sync failed: ' + (err.message || 'unknown') });
+  }
+});
+
+app.get('/api/wallet/sync', (req, res) => {
+  try {
+    const email = req.query.email;
+    if (!email) return res.status(400).json({ error: 'Email query parameter required' });
+    const cleanEmail = email.trim().toLowerCase();
+    const user = db.prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const wallet = db.prepare('SELECT * FROM user_wallets WHERE user_id = ?').get(user.id);
+    if (!wallet) {
+      const baseUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(user.id);
+      return res.json({
+        exists: false,
+        cashBalance: baseUser ? baseUser.balance : 10000,
+        positions: [],
+        orders: [],
+        tradesHistory: []
+      });
+    }
+
+    res.json({
+      exists: true,
+      cashBalance: wallet.cash_balance,
+      positions: JSON.parse(wallet.positions_json || '[]'),
+      orders: JSON.parse(wallet.orders_json || '[]'),
+      tradesHistory: JSON.parse(wallet.trades_json || '[]'),
+      updatedAt: wallet.updated_at
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch cloud wallet: ' + (err.message || 'unknown') });
   }
 });
 

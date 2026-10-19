@@ -931,9 +931,163 @@ let walletState = loadWalletState();
 
 function saveWalletState() {
   try {
+    walletState.lastUpdated = Date.now();
     localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(walletState));
+
+    // Debounced background sync to Cloud Database
+    const sess = getAuthSession();
+    if (sess && sess.email && !sess.isGuest) {
+      fetch(getApiEndpoint('/api/wallet/sync'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: sess.email,
+          cashBalance: walletState.cashBalance,
+          positions: walletState.positions || [],
+          orders: walletState.orders || [],
+          tradesHistory: walletState.tradesHistory || [],
+          updatedAt: walletState.lastUpdated
+        })
+      }).catch(() => {});
+    }
   } catch (e) {
     console.error('Failed to save wallet state:', e);
+  }
+}
+
+let isSyncingWallet = false;
+
+async function pushWalletToCloud(email) {
+  const ctl = new AbortController();
+  const tmr = setTimeout(() => ctl.abort(), 4000);
+  try {
+    await fetch(getApiEndpoint('/api/wallet/sync'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        cashBalance: walletState.cashBalance,
+        positions: walletState.positions || [],
+        orders: walletState.orders || [],
+        tradesHistory: walletState.tradesHistory || [],
+        updatedAt: walletState.lastUpdated || Date.now()
+      }),
+      signal: ctl.signal
+    });
+  } catch (e) {
+  } finally {
+    clearTimeout(tmr);
+  }
+}
+
+function applyCloudWallet(cloud) {
+  if (!cloud || typeof cloud.cashBalance !== 'number') return;
+  const changed = cloud.cashBalance !== walletState.cashBalance ||
+    (Array.isArray(cloud.positions) && cloud.positions.length !== (walletState.positions || []).length) ||
+    (Array.isArray(cloud.tradesHistory) && cloud.tradesHistory.length !== (walletState.tradesHistory || []).length);
+
+  walletState.cashBalance = cloud.cashBalance;
+  if (Array.isArray(cloud.positions)) walletState.positions = cloud.positions;
+  if (Array.isArray(cloud.orders)) walletState.orders = cloud.orders;
+  if (Array.isArray(cloud.tradesHistory)) walletState.tradesHistory = cloud.tradesHistory;
+  walletState.lastUpdated = cloud.updatedAt || Date.now();
+  try { localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(walletState)); } catch (e) {}
+
+  if (changed) {
+    if (typeof renderHomeScreen === 'function') renderHomeScreen();
+    if (typeof renderPositionsTable === 'function') renderPositionsTable();
+    if (typeof renderOrdersTable === 'function') renderOrdersTable();
+    if (typeof renderTradeHistory === 'function') renderTradeHistory();
+    if (typeof renderAccountScreen === 'function') renderAccountScreen();
+  }
+}
+
+async function syncWalletWithCloud(forcePush = false) {
+  if (isSyncingWallet) return;
+  const sess = getAuthSession();
+  if (!sess || !sess.email || sess.isGuest) return;
+  const email = sess.email.toLowerCase();
+
+  isSyncingWallet = true;
+  try {
+    const isApk = isNativePlatform();
+    const localUpdatedAt = walletState.lastUpdated || 0;
+    const hasCustomLocalData = walletState && (
+      walletState.cashBalance !== 10000 ||
+      (walletState.positions && walletState.positions.length > 0) ||
+      (walletState.tradesHistory && walletState.tradesHistory.length > 0)
+    );
+
+    if (forcePush) {
+      await pushWalletToCloud(email);
+      return;
+    }
+
+    // Check Cloud state first
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 4000);
+    const resp = await fetch(getApiEndpoint(`/api/wallet/sync?email=${encodeURIComponent(email)}`), {
+      signal: ctl.signal
+    });
+    clearTimeout(tmr);
+
+    if (resp.ok) {
+      const cloud = await resp.json();
+      const cloudUpdatedAt = cloud.updatedAt || 0;
+
+      // Case 1: Cloud doesn't have custom record, or cloud is default 10000 and APK has real local data ($6,354)
+      if ((!cloud.exists || (cloud.cashBalance === 10000 && isApk && hasCustomLocalData)) && hasCustomLocalData) {
+        await pushWalletToCloud(email);
+      }
+      // Case 2: Cloud has data, and either Web is at 10000 or cloud is newer
+      else if (cloud.exists && (cloudUpdatedAt >= localUpdatedAt || (!isApk && walletState.cashBalance === 10000 && cloud.cashBalance !== 10000))) {
+        applyCloudWallet(cloud);
+      }
+      // Case 3: Local was updated more recently
+      else if (localUpdatedAt > cloudUpdatedAt && hasCustomLocalData) {
+        await pushWalletToCloud(email);
+      }
+      // Case 4: Any balance mismatch fallback
+      else if (cloud.exists && cloud.cashBalance !== walletState.cashBalance) {
+        applyCloudWallet(cloud);
+      }
+    }
+  } catch (err) {
+  } finally {
+    isSyncingWallet = false;
+  }
+}
+
+async function triggerManualCloudWalletSync() {
+  const sess = getAuthSession();
+  if (!sess || !sess.email || sess.isGuest) {
+    showToast('Please sign in to sync cloud portfolio', 'warning');
+    openAuthModal('login');
+    return;
+  }
+  const syncBtn = document.getElementById('acc-cloud-sync-btn');
+  const syncStatus = document.getElementById('acc-cloud-sync-status');
+  if (syncBtn) {
+    syncBtn.textContent = 'Syncing...';
+    syncBtn.style.opacity = '0.7';
+  }
+  if (syncStatus) syncStatus.textContent = 'Contacting Render Cloud...';
+
+  try {
+    await syncWalletWithCloud(isNativePlatform());
+    if (syncBtn) {
+      syncBtn.textContent = 'Synced ✓';
+      syncBtn.style.opacity = '1';
+    }
+    if (syncStatus) syncStatus.textContent = `Synced at ${new Date().toLocaleTimeString()} ($${fmtPrice(walletState.cashBalance)})`;
+    showToast(`Cloud Portfolio Synced! Balance: $${fmtPrice(walletState.cashBalance)}`, 'success');
+    setTimeout(() => {
+      if (syncBtn) syncBtn.textContent = 'Sync Now';
+    }, 3000);
+  } catch (err) {
+    if (syncBtn) syncBtn.textContent = 'Retry';
+    if (syncStatus) syncStatus.textContent = 'Sync failed. Check connection.';
+    showToast('Portfolio sync failed: ' + (err.message || 'Network error'), 'error');
   }
 }
 
@@ -1327,6 +1481,7 @@ async function handleAuthLogin(event) {
     updateAccountAuthUI();
     renderAccountScreen();
     showToast(`Welcome back, ${registered.username}!`, 'success');
+    syncWalletWithCloud();
 
     // Auto-sync this account to Render cloud database so it works on web too
     fetch(getApiEndpoint('/api/auth/register'), {
@@ -1375,6 +1530,7 @@ async function handleAuthLogin(event) {
       updateAccountAuthUI();
       renderAccountScreen();
       showToast(`Welcome back, ${sess.username}!`, 'success');
+      syncWalletWithCloud();
       return;
     } else if (resp.status === 401) {
       showAuthAlert('🔒 Incorrect password. Please try again.', 'error');
@@ -1450,6 +1606,7 @@ async function handleAuthRegister(event) {
   updateAccountAuthUI();
   renderAccountScreen();
   showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
+  syncWalletWithCloud();
 
   // 3. Central Cloud Server Sync (registers account in Render database immediately)
   fetch(getApiEndpoint('/api/auth/register'), {
@@ -3605,6 +3762,10 @@ function initVTradeApp() {
   if (!liveTickerInterval) {
     liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500);
   }
+
+  // Initial and recurring Cloud Wallet Sync
+  syncWalletWithCloud();
+  setInterval(syncWalletWithCloud, 10000);
 
   // Setup touch gestures
   setupOnboardingSwipe();

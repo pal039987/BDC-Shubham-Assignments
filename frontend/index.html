@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=2.8" />
+  <link rel="stylesheet" href="style.css?v=2.9" />
   <script>
     (function() {
       // Early detect native Capacitor APK or mobile Android to apply safe-area padding immediately
@@ -609,6 +609,17 @@
               <span class="acc-setting-badge active">Connected</span>
             </div>
 
+            <div class="acc-setting-item" onclick="triggerManualCloudWalletSync()">
+              <div class="acc-setting-left">
+                <div class="acc-setting-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">☁️</div>
+                <div class="acc-setting-info">
+                  <span class="acc-setting-label">Cloud Portfolio Sync</span>
+                  <span class="acc-setting-sub" id="acc-cloud-sync-status">Realtime Dual-Sync with Render Cloud</span>
+                </div>
+              </div>
+              <span class="acc-setting-val" id="acc-cloud-sync-btn" style="color: #10b981; font-weight: 600;">Sync Now</span>
+            </div>
+
             <div class="acc-setting-item" onclick="resetDemoAccountFull()">
               <div class="acc-setting-left">
                 <div class="acc-setting-icon danger">🔄</div>
@@ -626,7 +637,7 @@
         <div class="account-card app-info-card">
           <div class="app-info-row">
             <span>App Version</span>
-            <span class="app-info-val">v2.4.0 (Coinbase Luxury UI)</span>
+            <span class="app-info-val">v2.9 (Cloud Sync & Live Broker)</span>
           </div>
           <div class="app-info-row">
             <span>Trading Platform</span>
@@ -1222,6 +1233,6 @@
   <div id="toast-container" class="toast-container"></div>
   <div id="toast" class="toast hidden"></div>
 
-  <script src="app.js?v=2.8"></script>
+  <script src="app.js?v=2.9"></script>
 </body>
 </html>
