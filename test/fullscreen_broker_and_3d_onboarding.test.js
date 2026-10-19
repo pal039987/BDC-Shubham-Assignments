@@ -86,8 +86,14 @@ densities.forEach(d => {
   assert.ok(fs.existsSync(path.join(dir, 'ic_launcher_foreground.png')), `ic_launcher_foreground.png must exist in ${d}`);
   assert.ok(fs.statSync(path.join(dir, 'ic_launcher.png')).size > 1000, `Icon in ${d} must be non-empty`);
 });
-assert.ok(gradle.includes('versionCode 8'), 'build.gradle must be bumped to versionCode 8');
-assert.ok(gradle.includes('versionName "2.6"'), 'build.gradle must be bumped to versionName "2.6"');
-console.log('  ✓ Flat Modern & Stylish VTrade App Icon across all Android Mipmaps (v2.6) verified');
+
+assert.ok(gradle.includes('versionCode 9'), 'build.gradle must be bumped to versionCode 9');
+assert.ok(gradle.includes('versionName "2.7"'), 'build.gradle must be bumped to versionName "2.7"');
+assert.ok(indexHtml.includes('id="vtrade-splash-screen"'), 'index.html must include animated splash screen');
+assert.ok(indexHtml.includes('BINANCE%3ABTCUSDT'), 'Default TradingView chart must use BINANCE:BTCUSDT to align with Binance prices');
+assert.ok(styleCss.includes('.vtrade-splash-screen'), 'style.css must style vtrade-splash-screen');
+assert.ok(appJs.includes('initPostSplashFlow'), 'app.js must include post-splash flow handling');
+console.log('  ✓ Flat Modern & Stylish VTrade App Icon across all Android Mipmaps (v2.7) verified');
+console.log('  ✓ App Launch Animated Splash Screen & Binance Real-time Ticker Alignment verified');
 
 console.log('\n=== ALL 7 VERIFICATION SUITES PASSED! ===\n');

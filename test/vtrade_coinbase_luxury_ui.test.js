@@ -190,11 +190,11 @@ assert.ok(css.includes('.auth-primary-btn'), 'Auth primary button CSS present');
 assert.ok(css.includes('.auth-footer-note'), 'Auth footer note CSS present');
 console.log('  ✓ Luxury Sign In / Sign Up Modal, Database Auth, and Authorization Wall verified');
 
-// 17. Verify Coinbase USD Live Price Feeds for BTC, ETH, SOL
-assert.ok(js.includes('api.coinbase.com/v2/prices/BTC-USD/spot'), 'Coinbase BTC-USD spot feed configured');
-assert.ok(js.includes('api.coinbase.com/v2/prices/ETH-USD/spot'), 'Coinbase ETH-USD spot feed configured');
-assert.ok(js.includes('api.coinbase.com/v2/prices/SOL-USD/spot'), 'Coinbase SOL-USD spot feed configured');
-console.log('  ✓ Coinbase USD live spot price sync matching TradingView USD feed verified');
+// 17. Verify Binance Real-Time WebSocket Ticker Stream & TradingView Symbol Alignment
+assert.ok(js.includes('connectCoinTickerWs'), 'Binance real-time WebSocket ticker stream function must be configured');
+assert.ok(js.includes('wss://stream.binance.com:9443/ws/'), 'Binance WebSocket stream endpoint configured');
+assert.ok(js.includes('BINANCE:BTCUSDT'), 'BTC TradingView symbol mapped to BINANCE:BTCUSDT to eliminate price discrepancy');
+console.log('  ✓ Binance real-time WebSocket live ticker & TradingView chart sync verified');
 
 // 18. Verify Local Gold Spot SVG Vector & Live Gold-API Spot Feed
 assert.strictEqual(goldCoin.icon, 'gold_spot.svg', 'Gold icon must use local gold_spot.svg to prevent broken image on mobile');

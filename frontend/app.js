@@ -23,7 +23,7 @@ const COINS = [
     "high": 82078,
     "low": 80819.66,
     "vol": "610.0M",
-    "tvSymbol": "COINBASE:BTCUSD"
+    "tvSymbol": "BINANCE:BTCUSDT"
   },
   {
     "id": "ethereum",
@@ -39,7 +39,7 @@ const COINS = [
     "high": 2441.66,
     "low": 2356.79,
     "vol": "322.0M",
-    "tvSymbol": "COINBASE:ETHUSD"
+    "tvSymbol": "BINANCE:ETHUSDT"
   },
   {
     "id": "gold",
@@ -71,7 +71,7 @@ const COINS = [
     "high": 105.28,
     "low": 101.25,
     "vol": "110.5M",
-    "tvSymbol": "COINBASE:SOLUSD"
+    "tvSymbol": "BINANCE:SOLUSDT"
   },
   {
     "id": "ripple",
@@ -2449,6 +2449,7 @@ function renderTradeScreen() {
   renderOrderbook();
   renderPositions();
   renderOrders();
+  connectCoinTickerWs(selectedCoin.binanceSym);
 }
 
 // ─── 12. EXACT 11 TIMEFRAMES CANDLESTICK ENGINE ──────────────────────────
@@ -3157,19 +3158,52 @@ function selectCoinFromPicker(coinId) {
   }
 }
 
-// ─── 19. LIVE PRICE TICK STREAMING (BINANCE API + SIMULATOR) ───────────
+// ─── 19. LIVE PRICE TICK STREAMING (BINANCE API + WS + PROXY) ───────────
+let liveTickerWs = null;
+
+function connectCoinTickerWs(binanceSym) {
+  if (typeof WebSocket === 'undefined' || !binanceSym) return;
+  if (liveTickerWs) {
+    try { liveTickerWs.close(); } catch (e) {}
+    liveTickerWs = null;
+  }
+  if (binanceSym === 'PAXGUSDT') return; // Gold uses Gold-API
+  try {
+    const wsUrl = `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@ticker`;
+    liveTickerWs = new WebSocket(wsUrl);
+    liveTickerWs.onmessage = (event) => {
+      try {
+        const d = JSON.parse(event.data);
+        if (d && d.s === binanceSym && selectedCoin && selectedCoin.binanceSym === binanceSym) {
+          const newPrice = parseFloat(d.c);
+          const newChange = parseFloat(d.P);
+          if (newPrice > 0 && !isNaN(newPrice)) {
+            selectedCoin.price = newPrice;
+            selectedCoin.change = newChange;
+            if (d.h) selectedCoin.high = parseFloat(d.h);
+            if (d.l) selectedCoin.low = parseFloat(d.l);
+            renderLivePriceUpdates();
+            checkPendingOrdersTrigger();
+          }
+        }
+      } catch (err) {}
+    };
+    liveTickerWs.onerror = () => { try { liveTickerWs.close(); } catch (e) {} };
+  } catch (e) {}
+}
+
 async function fetchLiveBinanceTickers() {
   const endpoints = [
+    '/api/prices',
     'https://data-api.binance.vision/api/v3/ticker/24hr',
-    'https://api.binance.com/api/v3/ticker/24hr',
-    '/api/prices'
+    'https://api.binance.com/api/v3/ticker/24hr'
   ];
 
   let success = false;
   for (const url of endpoints) {
     try {
       const ctl = new AbortController();
-      const tmr = setTimeout(() => ctl.abort(), 2500);
+      const tmr = setTimeout(() => ctl.abort(), 2800);
       const resp = await fetch(url, { signal: ctl.signal });
       clearTimeout(tmr);
 
@@ -3182,8 +3216,7 @@ async function fetchLiveBinanceTickers() {
           Object.keys(data.prices).forEach(k => {
             const p = data.prices[k];
             if (p && p.price) {
-              const symKey = (k === 'gold' ? 'PAXGUSDT' : (k.toUpperCase() + 'USDT'));
-              tickerMap.set(symKey, {
+              tickerMap.set(k, {
                 lastPrice: p.price,
                 priceChangePercent: p.change24h || 0,
                 highPrice: p.high24h || p.price * 1.02,
@@ -3196,7 +3229,7 @@ async function fetchLiveBinanceTickers() {
 
         if (tickerMap.size > 0) {
           COINS.forEach(c => {
-            const t = tickerMap.get(c.binanceSym);
+            const t = tickerMap.get(c.binanceSym) || tickerMap.get(c.id);
             if (t) {
               c.price = parseFloat(t.lastPrice);
               c.change = parseFloat(t.priceChangePercent);
@@ -3215,30 +3248,12 @@ async function fetchLiveBinanceTickers() {
     } catch (err) {}
   }
 
-  // Also query Coinbase USD for BTC, ETH, SOL and Gold-API for live Gold Spot (XAU/USD)
+  // Real live Gold Spot (XAU/USD) query from Gold-API
   try {
-    const cbCtl = new AbortController();
-    const cbTmr = setTimeout(() => cbCtl.abort(), 1200);
-    const [btcR, ethR, solR, goldR] = await Promise.all([
-      fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null),
-      fetch('https://api.coinbase.com/v2/prices/ETH-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null),
-      fetch('https://api.coinbase.com/v2/prices/SOL-USD/spot', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null),
-      fetch('https://api.gold-api.com/price/XAU', { signal: cbCtl.signal }).then(r => r.json()).catch(() => null)
-    ]);
-    clearTimeout(cbTmr);
-
-    if (btcR && btcR.data && btcR.data.amount) {
-      const btc = COINS.find(c => c.id === 'bitcoin');
-      if (btc) btc.price = parseFloat(btcR.data.amount);
-    }
-    if (ethR && ethR.data && ethR.data.amount) {
-      const eth = COINS.find(c => c.id === 'ethereum');
-      if (eth) eth.price = parseFloat(ethR.data.amount);
-    }
-    if (solR && solR.data && solR.data.amount) {
-      const sol = COINS.find(c => c.id === 'solana');
-      if (sol) sol.price = parseFloat(solR.data.amount);
-    }
+    const goldCtl = new AbortController();
+    const goldTmr = setTimeout(() => goldCtl.abort(), 1800);
+    const goldR = await fetch('https://api.gold-api.com/price/XAU', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
+    clearTimeout(goldTmr);
     if (goldR && goldR.price) {
       const gold = COINS.find(c => c.id === 'gold');
       if (gold) {
@@ -3247,7 +3262,7 @@ async function fetchLiveBinanceTickers() {
         if (gold.low > gold.price) gold.low = parseFloat((gold.price * 0.997).toFixed(2));
       }
     }
-  } catch (cbErr) {}
+  } catch (gErr) {}
 
   checkPendingOrdersTrigger();
   renderLivePriceUpdates();
@@ -3512,10 +3527,6 @@ function initVTradeApp() {
     userProfile.email = sess.email;
     saveUserProfile();
     updateAccountAuthUI();
-  } else {
-    clearAuthSession();
-    updateAccountAuthUI();
-    openAuthModal('login');
   }
 
   // Render TradingView Chart for active coin
@@ -3527,36 +3538,60 @@ function initVTradeApp() {
   // Initial fetch of candlesticks
   fetchRealBinanceCandles();
 
-  // Start continuous 3-second live price ticker
+  // Start continuous 1.5-second live price ticker
   fetchLiveBinanceTickers();
   if (!liveTickerInterval) {
     liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500);
   }
 
-  // Check and initialize First-Time User 3D Onboarding Walkthrough
-  initOnboarding();
+  // Setup touch gestures
+  setupOnboardingSwipe();
+
+  // Trigger App Launch Splash Animation -> Then trigger Onboarding or Main screen
+  setTimeout(() => {
+    const splash = document.getElementById('vtrade-splash-screen');
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(() => {
+        splash.style.display = 'none';
+        initPostSplashFlow();
+      }, 450);
+    } else {
+      initPostSplashFlow();
+    }
+  }, 1650);
 }
 
-// ─── 16. 3D ANIMATED ONBOARDING WALKTHROUGH ──────────────────────────
-let currentOnboardingSlide = 0;
-const TOTAL_ONBOARDING_SLIDES = 4;
-
-function initOnboarding() {
+function initPostSplashFlow() {
   const sess = getAuthSession();
   const dbUsers = getRegisteredUsers();
-  const isLoggedIn = sess && sess.email && dbUsers.some(u => u.email.toLowerCase() === sess.email.toLowerCase());
+  const isValidDbUser = sess && sess.email && dbUsers.some(u => u.email.toLowerCase() === sess.email.toLowerCase());
 
   const showOnRelaunch = localStorage.getItem('vtrade_show_onboarding_on_relaunch') === 'true';
   const completed = localStorage.getItem('vtrade_onboarding_completed') === '1';
 
-  // Only show when user is logged out AND (either signed out and relaunched, or first launch)
-  if (!isLoggedIn && (showOnRelaunch || !completed)) {
-    openOnboarding();
+  if (!isValidDbUser) {
+    clearAuthSession();
+    updateAccountAuthUI();
+    if (showOnRelaunch || !completed) {
+      openOnboarding();
+    } else {
+      openAuthModal('login');
+    }
   } else {
-    const modal = document.getElementById('vtrade-onboarding-modal');
-    if (modal) modal.classList.add('hidden');
+    const onbModal = document.getElementById('vtrade-onboarding-modal');
+    if (onbModal) onbModal.classList.add('hidden');
+    const authModal = document.getElementById('auth-modal-overlay');
+    if (authModal) authModal.classList.add('hidden');
   }
-  setupOnboardingSwipe();
+}
+
+// ─── 16. ONBOARDING WALKTHROUGH ──────────────────────────────────────────
+let currentOnboardingSlide = 0;
+const TOTAL_ONBOARDING_SLIDES = 4;
+
+function initOnboarding() {
+  initPostSplashFlow();
 }
 
 function openOnboarding() {
@@ -3612,7 +3647,8 @@ function updateOnboardingView() {
   const nextBtn = document.getElementById('onb-next-btn');
 
   if (track) {
-    track.style.transform = `translateX(-${currentOnboardingSlide * 25}%)`;
+    track.style.transition = 'transform 0.36s cubic-bezier(0.16, 1, 0.3, 1)';
+    track.style.transform = `translate3d(-${currentOnboardingSlide * 25}%, 0, 0)`;
   }
 
   // Update dots
@@ -3641,34 +3677,68 @@ function updateOnboardingView() {
 
 function setupOnboardingSwipe() {
   const wrapper = document.getElementById('onboarding-wrapper');
-  if (!wrapper) return;
+  const track = document.getElementById('onboarding-track');
+  if (!wrapper || !track) return;
 
   let startX = 0;
   let startY = 0;
   let currentX = 0;
-  let isSwiping = false;
+  let startTime = 0;
+  let isDragging = false;
+  let isHorizontal = null;
 
   wrapper.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     currentX = startX;
-    isSwiping = true;
+    startTime = Date.now();
+    isDragging = true;
+    isHorizontal = null;
+    track.style.transition = 'none'; // Instant 1:1 finger tracking
   }, { passive: true });
 
   wrapper.addEventListener('touchmove', (e) => {
-    if (!isSwiping || e.touches.length !== 1) return;
+    if (!isDragging || e.touches.length !== 1) return;
     currentX = e.touches[0].clientX;
+    const deltaX = currentX - startX;
+    const deltaY = e.touches[0].clientY - startY;
+
+    if (isHorizontal === null) {
+      if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+        isHorizontal = Math.abs(deltaX) >= Math.abs(deltaY);
+      }
+    }
+    if (!isHorizontal) return;
+
+    // Resistance on boundary slides
+    let effectiveDeltaX = deltaX;
+    if ((currentOnboardingSlide === 0 && deltaX > 0) ||
+        (currentOnboardingSlide === TOTAL_ONBOARDING_SLIDES - 1 && deltaX < 0)) {
+      effectiveDeltaX = deltaX * 0.35;
+    }
+
+    const basePercent = -(currentOnboardingSlide * 25);
+    track.style.transform = `translate3d(calc(${basePercent}% + ${effectiveDeltaX}px), 0, 0)`;
   }, { passive: true });
 
   wrapper.addEventListener('touchend', () => {
-    if (!isSwiping) return;
-    isSwiping = false;
+    if (!isDragging) return;
+    isDragging = false;
+    track.style.transition = 'transform 0.36s cubic-bezier(0.16, 1, 0.3, 1)';
+
     const deltaX = currentX - startX;
-    if (deltaX < -45) {
+    const duration = Date.now() - startTime;
+    const velocity = Math.abs(deltaX) / (duration || 1);
+    const wrapperWidth = wrapper.offsetWidth || window.innerWidth;
+    const threshold = Math.min(60, wrapperWidth * 0.18);
+
+    if (deltaX < -threshold || (deltaX < -25 && velocity > 0.3)) {
       nextSlide();
-    } else if (deltaX > 45) {
+    } else if (deltaX > threshold || (deltaX > 25 && velocity > 0.3)) {
       prevSlide();
+    } else {
+      updateOnboardingView(); // Snap back smoothly
     }
   }, { passive: true });
 }

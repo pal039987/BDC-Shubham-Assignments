@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=2.6" />
+  <link rel="stylesheet" href="style.css?v=2.7" />
   <script>
     (function() {
       // Early detect native Capacitor APK or mobile Android to apply safe-area padding immediately
@@ -28,6 +28,23 @@
   <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
+
+  <!-- ══════════════════════ 0. APP LAUNCH ANIMATED SPLASH SCREEN ══════════════════════ -->
+  <div class="vtrade-splash-screen" id="vtrade-splash-screen">
+    <div class="splash-content">
+      <div class="splash-emblem-wrap">
+        <div class="splash-pulse-glow"></div>
+        <img src="vtrade_master_icon.png" alt="VTrade" class="splash-emblem-img" />
+      </div>
+      <div class="splash-brand-title">
+        <span class="sbt-v">V</span><span class="sbt-trade">Trade</span>
+      </div>
+      <div class="splash-tagline">INSTITUTIONAL PAPER TRADING</div>
+      <div class="splash-loader-wrap">
+        <div class="splash-loader-bar" id="splash-loader-bar"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Root App Shell (120 FPS Hardware-Accelerated) -->
   <div id="app" class="vtrade-app-root">
@@ -314,7 +331,7 @@
           <!-- Official TradingView Real-Time Embed Widget -->
           <iframe id="tradingview-chart-iframe"
             class="tradingview-iframe"
-            src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=COINBASE%3ABTCUSD&interval=60&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&locale=en"
+            src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=60&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&locale=en"
             title="TradingView Real-Time Chart"
             allowfullscreen="true">
           </iframe>
@@ -1205,6 +1222,6 @@
   <div id="toast-container" class="toast-container"></div>
   <div id="toast" class="toast hidden"></div>
 
-  <script src="app.js?v=2.6"></script>
+  <script src="app.js?v=2.7"></script>
 </body>
 </html>
