@@ -80,8 +80,8 @@ console.log('  ✓ onerror event handlers present on Home, Markets, Trade, and M
 // 8. Verify frontend/index.html initial assets
 assert.ok(indexHtml.includes('id="trade-cur-icon" src="icons/btc.png"'), 'Trade header icon must use local icons/btc.png');
 assert.ok(indexHtml.includes('handleCoinIconError(this, \'BTC\''), 'Trade header icon must have handleCoinIconError fallback');
-assert.ok(/app\.js\?v=2\.[45]/.test(indexHtml), 'index.html must reference app.js cache-buster');
-console.log('  ✓ frontend/index.html local Trade icon and v2.5 cache-buster verified');
+assert.ok(/app\.js\?v=2\.[4-9]/.test(indexHtml), 'index.html must reference app.js cache-buster');
+console.log('  ✓ frontend/index.html local Trade icon and cache-buster verified');
 
 // 9. Verify CSS avatar styling
 assert.ok(styleCss.includes('.coin-avatar-img'), '.coin-avatar-img CSS class present');

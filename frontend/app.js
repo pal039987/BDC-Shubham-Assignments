@@ -1093,8 +1093,13 @@ function openAuthModal(defaultTab = 'login') {
 function dismissAuthModal(force = false) {
   const sess = getAuthSession();
   if (!force && (!sess || sess.isGuest || !sess.email)) {
-    showAuthAlert('⚠️ Please Sign In or Create an Account to continue', 'error');
-    showToast('Please Sign In or Create an Account to continue', 'warning');
+    const card = document.querySelector('.auth-modal-card');
+    if (card) {
+      card.classList.remove('shake');
+      void card.offsetWidth;
+      card.classList.add('shake');
+      setTimeout(() => card.classList.remove('shake'), 450);
+    }
     return;
   }
   clearAuthAlert();
@@ -1105,8 +1110,14 @@ function dismissAuthModal(force = false) {
 function handleBackdropClick() {
   const sess = getAuthSession();
   if (!sess || sess.isGuest || !sess.email) {
-    showAuthAlert('⚠️ Please Sign In or Create an Account to continue', 'error');
-    showToast('Please Sign In or Create an Account to continue', 'warning');
+    // Option B: No intrusive toast/alert popup; lightly animate modal card
+    const card = document.querySelector('.auth-modal-card');
+    if (card) {
+      card.classList.remove('shake');
+      void card.offsetWidth;
+      card.classList.add('shake');
+      setTimeout(() => card.classList.remove('shake'), 450);
+    }
     return;
   }
   dismissAuthModal(true);
@@ -1413,6 +1424,8 @@ function handleAccountAuthClick() {
       updateAccountAuthUI();
       renderAccountScreen();
       showToast('Signed out successfully', 'info');
+      localStorage.setItem('vtrade_show_onboarding_on_relaunch', 'true');
+      localStorage.removeItem('vtrade_onboarding_completed');
       clearAuthAlert();
       openAuthModal('login');
       const loginEmail = document.getElementById('login-email');
@@ -3529,9 +3542,19 @@ let currentOnboardingSlide = 0;
 const TOTAL_ONBOARDING_SLIDES = 4;
 
 function initOnboarding() {
-  const completed = localStorage.getItem('vtrade_onboarding_completed');
-  if (!completed) {
+  const sess = getAuthSession();
+  const dbUsers = getRegisteredUsers();
+  const isLoggedIn = sess && sess.email && dbUsers.some(u => u.email.toLowerCase() === sess.email.toLowerCase());
+
+  const showOnRelaunch = localStorage.getItem('vtrade_show_onboarding_on_relaunch') === 'true';
+  const completed = localStorage.getItem('vtrade_onboarding_completed') === '1';
+
+  // Only show when user is logged out AND (either signed out and relaunched, or first launch)
+  if (!isLoggedIn && (showOnRelaunch || !completed)) {
     openOnboarding();
+  } else {
+    const modal = document.getElementById('vtrade-onboarding-modal');
+    if (modal) modal.classList.add('hidden');
   }
   setupOnboardingSwipe();
 }
@@ -3547,10 +3570,13 @@ function openOnboarding() {
 
 function completeOnboarding() {
   localStorage.setItem('vtrade_onboarding_completed', '1');
+  localStorage.removeItem('vtrade_show_onboarding_on_relaunch');
   const modal = document.getElementById('vtrade-onboarding-modal');
   if (modal) {
     modal.classList.add('hidden');
   }
+  // Pop up the Sign In / Sign Up modal immediately
+  openAuthModal('login');
 }
 
 function replayOnboarding() {
@@ -3597,8 +3623,8 @@ function updateOnboardingView() {
 
   // Last slide CTA button morphing
   if (currentOnboardingSlide === TOTAL_ONBOARDING_SLIDES - 1) {
-    if (btnText) btnText.textContent = 'Start Trading Now';
-    if (btnArrow) btnArrow.textContent = '🚀';
+    if (btnText) btnText.textContent = 'Get Started & Sign In';
+    if (btnArrow) btnArrow.textContent = '⚡';
     if (nextBtn) {
       nextBtn.style.background = 'linear-gradient(135deg, #00c087 0%, #059669 100%)';
       nextBtn.style.boxShadow = '0 4px 16px rgba(0, 192, 135, 0.4)';
