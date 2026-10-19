@@ -2,6 +2,7 @@ android/app/build/
 node_modules/
 backend/node_modules/
 *.apk
+!downloads/VTrade.apk
 *.db
 *.db-journal
 *.log
