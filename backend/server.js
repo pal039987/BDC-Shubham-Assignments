@@ -150,10 +150,10 @@ app.get('/vtrade.apk', (req, res) => {
 // Version Check API for in-app OTA update system
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: '2.9.1',
-    latestVersionCode: 12,
+    latestVersion: '2.9.2',
+    latestVersionCode: 13,
     releaseDate: '2026-10-19',
-    changelog: '100% Exact Live Gain/Loss and Price Match with TradingView Session Open (00:00 UTC)',
+    changelog: 'Completely eliminated price flickering, zero REST conflict on Trade screen, smooth 600ms throttle, TVC:GOLD TradingView sync',
     downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
     forceUpdate: false
   });
@@ -569,12 +569,16 @@ async function fetchPrices() {
           }
         });
         try {
-          const goldResp = await fetch('https://api.gold-api.com/price/XAU', { timeout: 2000 }).then(r => r.json()).catch(() => null);
+          const goldResp = await fetch('https://api.gold-api.com/price/XAU', { timeout: 2500 }).then(r => r.json()).catch(() => null);
           if (goldResp && goldResp.price && priceCache['gold']) {
             const gp = parseFloat(parseFloat(goldResp.price).toFixed(2));
             priceCache['gold'].price = gp;
             priceCache['gold'].usdtPrice = gp;
             priceCache['gold'].usdPrice = gp;
+            const goldOpen = dailyOpenCache['gold'] || 4166.10;
+            const goldDiff = gp - goldOpen;
+            priceCache['gold'].change24h = parseFloat(((goldDiff / goldOpen) * 100).toFixed(2));
+            priceCache['gold'].lastVerified = Date.now();
           }
         } catch (gErr) {}
         priceCache.updatedAt = Date.now();
@@ -621,6 +625,12 @@ async function fetchPrices() {
 
     SUPPORTED_COINS.forEach(id => {
       if (data[id]) {
+        // CRITICAL PROTECTION: If we already have fresh Binance price (< 10 mins), NEVER overwrite with CoinGecko!
+        const prev = priceCache[id];
+        if (prev && prev.lastVerified && (Date.now() - prev.lastVerified < 600000)) {
+          return;
+        }
+
         let p = data[id].usdt;
         let conversionUsed = false;
 
@@ -633,7 +643,6 @@ async function fetchPrices() {
         }
 
         if (typeof p === 'number' && p > 0 && !isNaN(p) && isFinite(p)) {
-          const prev = priceCache[id];
           priceCache[id] = {
             price: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
             usdtPrice: parseFloat(p.toFixed(p > 10 ? 2 : 4)),
@@ -663,13 +672,13 @@ async function fetchPrices() {
   }
 }
 
-// Background auto-poller every 1500ms so market prices are constantly live
-setInterval(fetchPrices, 1500);
+// Background auto-poller every 10000ms (10 seconds) - Binance rate-limit safe
+setInterval(fetchPrices, 10000);
 
 app.get('/api/prices', async (req, res) => {
   try {
-    if (Date.now() - priceCache.updatedAt > 2000) {
-      await fetchPrices();
+    if (Date.now() - priceCache.updatedAt > 10000) {
+      fetchPrices().catch(() => {});
     }
     const isStale = (Date.now() - priceCache.updatedAt) > 180000;
     res.json({

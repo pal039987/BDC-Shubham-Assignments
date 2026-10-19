@@ -48,7 +48,7 @@ const COINS = [
     "pair": "XAU/USD",
     "icon": "gold_spot.svg",
     "binanceSym": "PAXGUSDT",
-    "tvSymbol": "OANDA:XAUUSD",
+    "tvSymbol": "TVC:GOLD",
     "category": "futures",
     "maxLev": 100,
     "price": 4166.10,
@@ -1103,8 +1103,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9.1';
-const CURRENT_VERSION_CODE = 12;
+const CURRENT_APP_VERSION = '2.9.2';
+const CURRENT_VERSION_CODE = 13;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -1779,7 +1779,7 @@ function updateNetworkStatus(online) {
     if (overlay) overlay.classList.add('hidden');
     fetchLiveBinanceTickers();
     if (!liveTickerInterval) {
-      liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500);
+      liveTickerInterval = setInterval(fetchLiveBinanceTickers, 10000);
     }
     fetchRealBinanceCandles();
   }
@@ -3462,57 +3462,96 @@ function selectCoinFromPicker(coinId) {
 // ─── 19. LIVE PRICE TICK STREAMING (BINANCE API + WS + PROXY) ───────────
 let liveTickerWs = null;
 
+let lastWsRenderTime = 0;
+let wsRenderTimer = null;
+
 function connectCoinTickerWs(binanceSym) {
   if (typeof WebSocket === 'undefined' || !binanceSym) return;
   if (liveTickerWs) {
     try { liveTickerWs.close(); } catch (e) {}
     liveTickerWs = null;
   }
+  if (wsRenderTimer) {
+    clearTimeout(wsRenderTimer);
+    wsRenderTimer = null;
+  }
   if (binanceSym === 'PAXGUSDT') return; // Gold uses Gold-API
-  try {
-    // Connect to 1d kline stream for 100% exact alignment with TradingView's Session Open (00:00 UTC)
-    const wsUrl = `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@kline_1d`;
-    liveTickerWs = new WebSocket(wsUrl);
-    liveTickerWs.onmessage = (event) => {
-      try {
-        const d = JSON.parse(event.data);
-        if (d && d.s === binanceSym && d.k && selectedCoin && selectedCoin.binanceSym === binanceSym) {
-          const k = d.k;
-          const newPrice = parseFloat(k.c);
-          const openPrice = parseFloat(k.o);
-          if (newPrice > 0 && !isNaN(newPrice)) {
-            selectedCoin.price = newPrice;
-            if (openPrice > 0 && !isNaN(openPrice)) {
-              const diff = newPrice - openPrice;
-              selectedCoin.change = parseFloat(((diff / openPrice) * 100).toFixed(2));
-              selectedCoin.open = openPrice;
+
+  // Connect to unblocked Binance Vision WebSocket with stream.binance.com fallback
+  const endpoints = [
+    `wss://data-stream.binance.vision/ws/${binanceSym.toLowerCase()}@kline_1d`,
+    `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@kline_1d`
+  ];
+
+  let endpointIdx = 0;
+
+  function tryConnect() {
+    if (activeTab !== 'trade' || !selectedCoin || selectedCoin.binanceSym !== binanceSym) return;
+    try {
+      const url = endpoints[endpointIdx % endpoints.length];
+      liveTickerWs = new WebSocket(url);
+
+      liveTickerWs.onmessage = (event) => {
+        try {
+          const d = JSON.parse(event.data);
+          if (d && d.s === binanceSym && d.k && selectedCoin && selectedCoin.binanceSym === binanceSym) {
+            const k = d.k;
+            const newPrice = parseFloat(k.c);
+            const openPrice = parseFloat(k.o);
+            if (newPrice > 0 && !isNaN(newPrice)) {
+              selectedCoin.price = newPrice;
+              if (openPrice > 0 && !isNaN(openPrice)) {
+                const diff = newPrice - openPrice;
+                selectedCoin.change = parseFloat(((diff / openPrice) * 100).toFixed(2));
+                selectedCoin.open = openPrice;
+              }
+              if (k.h) selectedCoin.high = parseFloat(k.h);
+              if (k.l) selectedCoin.low = parseFloat(k.l);
+
+              // Immediate order checking (0ms latency for limits/triggers)
+              checkPendingOrdersTrigger();
+
+              // Smooth 600ms DOM update throttle: eliminates rapid buzzing & matches TradingView cadence
+              const now = Date.now();
+              if (now - lastWsRenderTime >= 600) {
+                lastWsRenderTime = now;
+                if (wsRenderTimer) { clearTimeout(wsRenderTimer); wsRenderTimer = null; }
+                renderLivePriceUpdates();
+              } else if (!wsRenderTimer) {
+                wsRenderTimer = setTimeout(() => {
+                  lastWsRenderTime = Date.now();
+                  wsRenderTimer = null;
+                  renderLivePriceUpdates();
+                }, 600 - (now - lastWsRenderTime));
+              }
             }
-            if (k.h) selectedCoin.high = parseFloat(k.h);
-            if (k.l) selectedCoin.low = parseFloat(k.l);
-            renderLivePriceUpdates();
-            checkPendingOrdersTrigger();
           }
+        } catch (err) {}
+      };
+
+      liveTickerWs.onclose = () => {
+        if (activeTab === 'trade' && selectedCoin && selectedCoin.binanceSym === binanceSym) {
+          endpointIdx++;
+          setTimeout(() => {
+            if (activeTab === 'trade' && (!liveTickerWs || liveTickerWs.readyState !== 1)) {
+              tryConnect();
+            }
+          }, 2000);
         }
-      } catch (err) {}
-    };
-    liveTickerWs.onclose = () => {
-      if (activeTab === 'trade' && selectedCoin && selectedCoin.binanceSym === binanceSym) {
-        setTimeout(() => {
-          if (activeTab === 'trade' && (!liveTickerWs || liveTickerWs.readyState !== 1)) {
-            connectCoinTickerWs(selectedCoin.binanceSym);
-          }
-        }, 2000);
-      }
-    };
-    liveTickerWs.onerror = () => { try { liveTickerWs.close(); } catch (e) {} };
-  } catch (e) {}
+      };
+
+      liveTickerWs.onerror = () => { try { liveTickerWs.close(); } catch (e) {} };
+    } catch (e) {}
+  }
+
+  tryConnect();
 }
 
 let lastRestTickerFetch = 0;
 async function fetchLiveBinanceTickers() {
   const now = Date.now();
-  // While WebSocket is actively streaming on Trade tab, throttle REST polling to every 10s to preserve Binance rate limits
-  if (activeTab === 'trade' && liveTickerWs && liveTickerWs.readyState === 1 && (now - lastRestTickerFetch < 10000)) {
+  // While on trade tab, throttle background REST polling to every 10s to preserve Binance weight
+  if (now - lastRestTickerFetch < 10000) {
     return;
   }
   lastRestTickerFetch = now;
@@ -3560,8 +3599,9 @@ async function fetchLiveBinanceTickers() {
 
         if (tickerMap.size > 0) {
           COINS.forEach(c => {
-            // NEVER overwrite selectedCoin on Trade tab while live WebSocket is active
-            if (activeTab === 'trade' && selectedCoin && c.id === selectedCoin.id && liveTickerWs && liveTickerWs.readyState === 1) {
+            // NEVER overwrite selectedCoin on Trade tab from background REST polling!
+            // Live WebSocket handles selectedCoin exclusively to prevent jump/flicker
+            if (activeTab === 'trade' && selectedCoin && c.id === selectedCoin.id) {
               return;
             }
             const t = tickerMap.get(c.binanceSym) || tickerMap.get(c.id);
@@ -3593,15 +3633,23 @@ async function fetchLiveBinanceTickers() {
     if (goldR && goldR.price) {
       const gold = COINS.find(c => c.id === 'gold');
       if (gold) {
-        gold.price = parseFloat(goldR.price);
+        gold.price = parseFloat(parseFloat(goldR.price).toFixed(2));
+        if (!gold.open) gold.open = 4166.10;
+        const diff = gold.price - gold.open;
+        gold.change = parseFloat(((diff / gold.open) * 100).toFixed(2));
         if (gold.high < gold.price) gold.high = parseFloat((gold.price * 1.003).toFixed(2));
         if (gold.low > gold.price) gold.low = parseFloat((gold.price * 0.997).toFixed(2));
+        if (activeTab === 'trade' && selectedCoin && selectedCoin.id === 'gold') {
+          renderLivePriceUpdates();
+        }
       }
     }
   } catch (gErr) {}
 
   checkPendingOrdersTrigger();
-  renderLivePriceUpdates();
+  if (activeTab !== 'trade') {
+    renderLivePriceUpdates();
+  }
 }
 
 function simulatePriceFluctuations() {
@@ -3889,10 +3937,10 @@ function initVTradeApp() {
   // Initial fetch of candlesticks
   fetchRealBinanceCandles();
 
-  // Start continuous 1.5-second live price ticker
+  // Start continuous 10-second background REST ticker
   fetchLiveBinanceTickers();
   if (!liveTickerInterval) {
-    liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500);
+    liveTickerInterval = setInterval(fetchLiveBinanceTickers, 10000);
   }
 
   // Initial and recurring Real-Time Cloud Wallet Sync (Every 3 seconds auto-sync!)
