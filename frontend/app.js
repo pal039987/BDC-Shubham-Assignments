@@ -3495,11 +3495,28 @@ function connectCoinTickerWs(binanceSym) {
         }
       } catch (err) {}
     };
+    liveTickerWs.onclose = () => {
+      if (activeTab === 'trade' && selectedCoin && selectedCoin.binanceSym === binanceSym) {
+        setTimeout(() => {
+          if (activeTab === 'trade' && (!liveTickerWs || liveTickerWs.readyState !== 1)) {
+            connectCoinTickerWs(selectedCoin.binanceSym);
+          }
+        }, 2000);
+      }
+    };
     liveTickerWs.onerror = () => { try { liveTickerWs.close(); } catch (e) {} };
   } catch (e) {}
 }
 
+let lastRestTickerFetch = 0;
 async function fetchLiveBinanceTickers() {
+  const now = Date.now();
+  // While WebSocket is actively streaming on Trade tab, throttle REST polling to every 10s to preserve Binance rate limits
+  if (activeTab === 'trade' && liveTickerWs && liveTickerWs.readyState === 1 && (now - lastRestTickerFetch < 10000)) {
+    return;
+  }
+  lastRestTickerFetch = now;
+
   const symbols = COINS
     .map(c => c.binanceSym)
     .filter(s => s && s !== 'PAXGUSDT');
@@ -3543,6 +3560,10 @@ async function fetchLiveBinanceTickers() {
 
         if (tickerMap.size > 0) {
           COINS.forEach(c => {
+            // NEVER overwrite selectedCoin on Trade tab while live WebSocket is active
+            if (activeTab === 'trade' && selectedCoin && c.id === selectedCoin.id && liveTickerWs && liveTickerWs.readyState === 1) {
+              return;
+            }
             const t = tickerMap.get(c.binanceSym) || tickerMap.get(c.id);
             if (t) {
               c.price = parseFloat(t.lastPrice);
@@ -3635,6 +3656,7 @@ function checkPendingOrdersTrigger() {
   }
 }
 
+let lastObRenderTime = 0;
 function renderLivePriceUpdates() {
   if (activeTab === 'home') {
     renderHomeBalanceCard();
@@ -3652,7 +3674,11 @@ function renderLivePriceUpdates() {
       liveChangeEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
     }
     renderPositions();
-    renderOrderbook();
+    const now = Date.now();
+    if (now - lastObRenderTime >= 1500) {
+      lastObRenderTime = now;
+      renderOrderbook();
+    }
   } else if (activeTab === 'portfolio') {
     renderPortfolioScreen();
   } else if (activeTab === 'account') {
