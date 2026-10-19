@@ -994,9 +994,12 @@ function applyCloudWallet(cloud) {
   walletState.lastUpdated = cloud.updatedAt || Date.now();
   try { localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(walletState)); } catch (e) {}
 
-  if (typeof renderAllViews === 'function') {
-    renderAllViews();
-  }
+  // Explicitly trigger positions & orders renderers
+  if (typeof renderPositions === 'function') renderPositions();
+  if (typeof renderOrders === 'function') renderOrders();
+  if (typeof renderHomeBalanceCard === 'function') renderHomeBalanceCard();
+  if (typeof renderPortfolioScreen === 'function') renderPortfolioScreen();
+  if (typeof renderAccountScreen === 'function') renderAccountScreen();
 }
 
 async function syncWalletWithCloud(forcePush = false) {
@@ -1021,7 +1024,7 @@ async function syncWalletWithCloud(forcePush = false) {
       return;
     }
 
-    // Check Cloud state first
+    // Fetch latest cloud state
     const ctl = new AbortController();
     const tmr = setTimeout(() => ctl.abort(), 4000);
     const resp = await fetch(getApiEndpoint(`/api/wallet/sync?email=${encodeURIComponent(email)}`), {
@@ -1033,29 +1036,29 @@ async function syncWalletWithCloud(forcePush = false) {
       const cloud = await resp.json();
       const cloudUpdatedAt = cloud.updatedAt || 0;
 
-      // Case 1: If on APK and APK has custom local data different from cloud, phone pushes to cloud
-      if (isApk && hasCustomLocalData && walletState.cashBalance !== cloud.cashBalance) {
+      // Case 1: Initial sync ONLY if cloud is default 10000 with 0 positions and APK has custom local data
+      if (!cloud.exists || (cloud.cashBalance === 10000 && (!cloud.positions || cloud.positions.length === 0) && isApk && hasCustomLocalData && !hasSyncedWithCloudOnce)) {
         await pushWalletToCloud(email);
       }
-      // Case 2: On Web, if cloud has custom balance (e.g. $8,110) and Web is still 10000, ALWAYS apply cloud!
-      else if (!isApk && walletState.cashBalance === 10000 && cloud.exists && cloud.cashBalance !== 10000) {
+      // Case 2: Cloud has newer data than local -> Pull cloud!
+      else if (cloud.exists && cloudUpdatedAt > localUpdatedAt) {
         applyCloudWallet(cloud);
       }
-      // Case 3: Cloud exists and is newer than local
-      else if (cloud.exists && cloudUpdatedAt >= localUpdatedAt) {
+      // Case 3: Cloud has active positions or different balance that local doesn't have -> Pull cloud!
+      else if (cloud.exists && (
+        (cloud.positions && cloud.positions.length > 0 && (!walletState.positions || walletState.positions.length === 0)) ||
+        (cloud.positions && walletState.positions && cloud.positions.length !== walletState.positions.length) ||
+        (cloud.cashBalance !== walletState.cashBalance && localUpdatedAt <= cloudUpdatedAt)
+      )) {
         applyCloudWallet(cloud);
       }
-      // Case 4: Local was updated more recently
+      // Case 4: Local was updated more recently due to a local user trade
       else if (localUpdatedAt > cloudUpdatedAt && hasCustomLocalData) {
         await pushWalletToCloud(email);
       }
-      // Case 5: Any balance mismatch fallback
-      else if (cloud.exists && cloud.cashBalance !== walletState.cashBalance) {
-        if (!isApk) {
-          applyCloudWallet(cloud);
-        } else {
-          await pushWalletToCloud(email);
-        }
+      // Case 5: Any fallback mismatch
+      else if (cloud.exists && cloud.cashBalance !== walletState.cashBalance && !isApk) {
+        applyCloudWallet(cloud);
       }
       hasSyncedWithCloudOnce = true;
     }
