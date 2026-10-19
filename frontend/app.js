@@ -3770,9 +3770,15 @@ function initVTradeApp() {
     liveTickerInterval = setInterval(fetchLiveBinanceTickers, 1500);
   }
 
-  // Initial and recurring Cloud Wallet Sync
+  // Initial and recurring Real-Time Cloud Wallet Sync (Every 3 seconds auto-sync!)
   syncWalletWithCloud();
-  setInterval(syncWalletWithCloud, 10000);
+  setInterval(syncWalletWithCloud, 3000);
+  window.addEventListener('visibilitychange', () => {
+    if (!document.hidden) syncWalletWithCloud();
+  });
+  window.addEventListener('focus', () => {
+    syncWalletWithCloud();
+  });
 
   // Setup touch gestures
   setupOnboardingSwipe();
