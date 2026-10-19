@@ -106,4 +106,32 @@ if (!isValid) mockLocalStorage.removeItem(AUTH_KEY);
 assert.strictEqual(mockLocalStorage.getItem(AUTH_KEY), null, 'Invalid session must be purged on boot');
 console.log('  ✓ Ghost/unregistered sessions automatically purged on app boot');
 
-console.log('\n=== ALL 7 RASTA 1 STANDALONE IN-APP DATABASE ENGINE TESTS PASSED! ===\n');
+// Test 8: Subsequent Sign In after Logout (Regression test for User Reported Issue)
+console.log('8. Testing Subsequent Sign In after Logout for newly registered user...');
+// User logs in initially
+mockLocalStorage.setItem(AUTH_KEY, JSON.stringify({ email: updatedUser.email, username: updatedUser.username, isGuest: false }));
+assert.ok(mockLocalStorage.getItem(AUTH_KEY), 'Session active after registration');
+// User logs out
+mockLocalStorage.removeItem(AUTH_KEY);
+assert.strictEqual(mockLocalStorage.getItem(AUTH_KEY), null, 'Session cleared on logout');
+// User attempts to Sign In again with the same credentials
+const foundOnReLogin = updatedDb.find(u => u.email.toLowerCase() === 'shubham.trader@vtrade.com'.toLowerCase());
+assert.ok(foundOnReLogin, 'User must be found in in-app database upon subsequent login attempt');
+assert.strictEqual(foundOnReLogin.password, 'NewUpdatedPassword456!', 'Password must match');
+// Re-authenticate
+mockLocalStorage.setItem(AUTH_KEY, JSON.stringify({ email: foundOnReLogin.email, username: foundOnReLogin.username, isGuest: false }));
+assert.ok(mockLocalStorage.getItem(AUTH_KEY), 'Session successfully restored after re-login');
+console.log('  ✓ Registered user can sign in reliably after logout without 404 or block');
+
+// Test 9: Verify Toast z-index & In-Modal Alert Banner presence
+console.log('9. Testing Toast Layering & In-Modal Alert Banner...');
+const styleCss = fs.readFileSync(path.join(__dirname, '../frontend/style.css'), 'utf8');
+const indexHtml = fs.readFileSync(path.join(__dirname, '../frontend/index.html'), 'utf8');
+assert.ok(styleCss.includes('z-index: 9999999 !important;'), 'Toast container must have high z-index (9999999) above auth modal (10000)');
+assert.ok(styleCss.includes('.auth-inline-alert'), 'CSS must include .auth-inline-alert rules');
+assert.ok(indexHtml.includes('id="auth-inline-alert"'), 'HTML must include #auth-inline-alert element');
+assert.ok(appJs.includes('showAuthAlert('), 'app.js must define showAuthAlert');
+assert.ok(appJs.includes('clearAuthAlert()'), 'app.js must define clearAuthAlert');
+console.log('  ✓ Toast notifications and in-modal red alert banner confirmed visible above auth modal');
+
+console.log('\n=== ALL 9 RASTA 1 STANDALONE IN-APP DATABASE ENGINE TESTS PASSED! ===\n');

@@ -1057,10 +1057,28 @@ function clearAuthSession() {
   } catch (e) {}
 }
 
+function clearAuthAlert() {
+  const alertEl = document.getElementById('auth-inline-alert');
+  if (alertEl) {
+    alertEl.textContent = '';
+    alertEl.className = 'auth-inline-alert hidden';
+  }
+}
+
+function showAuthAlert(msg, type = 'error') {
+  const alertEl = document.getElementById('auth-inline-alert');
+  if (alertEl) {
+    alertEl.textContent = msg;
+    alertEl.className = `auth-inline-alert ${type}`;
+    alertEl.classList.remove('hidden');
+  }
+}
+
 function openAuthModal(defaultTab = 'login') {
   const modal = document.getElementById('auth-modal-overlay');
   const closeBtn = document.getElementById('auth-modal-close-btn');
   if (!modal) return;
+  clearAuthAlert();
   switchAuthTab(defaultTab);
   modal.classList.remove('hidden');
 
@@ -1075,9 +1093,11 @@ function openAuthModal(defaultTab = 'login') {
 function dismissAuthModal(force = false) {
   const sess = getAuthSession();
   if (!force && (!sess || sess.isGuest || !sess.email)) {
+    showAuthAlert('⚠️ Please Sign In or Create an Account to continue', 'error');
     showToast('Please Sign In or Create an Account to continue', 'warning');
     return;
   }
+  clearAuthAlert();
   const modal = document.getElementById('auth-modal-overlay');
   if (modal) modal.classList.add('hidden');
 }
@@ -1085,6 +1105,7 @@ function dismissAuthModal(force = false) {
 function handleBackdropClick() {
   const sess = getAuthSession();
   if (!sess || sess.isGuest || !sess.email) {
+    showAuthAlert('⚠️ Please Sign In or Create an Account to continue', 'error');
     showToast('Please Sign In or Create an Account to continue', 'warning');
     return;
   }
@@ -1092,6 +1113,7 @@ function handleBackdropClick() {
 }
 
 function switchAuthTab(tab) {
+  clearAuthAlert();
   const loginTab = document.getElementById('auth-tab-login');
   const regTab = document.getElementById('auth-tab-register');
   const loginForm = document.getElementById('auth-login-form');
@@ -1170,6 +1192,7 @@ function handleForgotPassword(event) {
   const user = dbUsers.find(u => u.email.toLowerCase() === cleanEmail);
 
   if (!user) {
+    showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
     showToast('Account is not registered. Please create an account first.', 'error');
     switchAuthTab('register');
     const regEmail = document.getElementById('register-email');
@@ -1180,12 +1203,14 @@ function handleForgotPassword(event) {
   const newPwd = prompt(`Enter new password for ${cleanEmail} (minimum 6 characters):`);
   if (!newPwd) return;
   if (newPwd.length < 6) {
+    showAuthAlert('Password must be at least 6 characters long', 'error');
     showToast('Password must be at least 6 characters long', 'error');
     return;
   }
 
   user.password = newPwd;
   saveRegisteredUser(user);
+  clearAuthAlert();
   showToast('Password reset successfully! Please sign in with your new password.', 'success');
   if (emailInput) emailInput.value = cleanEmail;
   const pwdInput = document.getElementById('login-password');
@@ -1197,6 +1222,7 @@ async function handleAuthLogin(event) {
 
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     if (typeof updateNetworkStatus === 'function') updateNetworkStatus(false);
+    showAuthAlert('Internet connection is required to sign in.', 'error');
     showToast('Internet connection is required to sign in. Please connect to internet.', 'error');
     return;
   }
@@ -1209,32 +1235,25 @@ async function handleAuthLogin(event) {
   const password = pwdInput ? pwdInput.value : '';
 
   if (!email || !password) {
+    showAuthAlert('Please enter both email and password', 'error');
     showToast('Please enter both email and password', 'error');
     return;
   }
 
-  // Standalone In-App Database Engine:
-  // If running in APK native mode, authenticate against In-App Database immediately (zero latency)
-  if (isNativePlatform()) {
-    const dbUsers = getRegisteredUsers();
-    const registered = dbUsers.find(u => u.email.toLowerCase() === email);
+  // 1. In-App Persistent Database First Priority (Instant, reliable, standalone)
+  const dbUsers = getRegisteredUsers();
+  const registered = dbUsers.find(u => u.email.toLowerCase() === email);
 
-    // If user is not in database:
-    if (!registered) {
-      showToast('Account is not registered. Please create an account first.', 'error');
-      switchAuthTab('register');
-      const regEmail = document.getElementById('register-email');
-      if (regEmail) regEmail.value = email;
-      return;
-    }
-
+  if (registered) {
     // If password does not match:
     if (registered.password !== password) {
+      showAuthAlert('🔒 Incorrect password. Please try again.', 'error');
       showToast('Incorrect password. Please try again.', 'error');
       return;
     }
 
-    // Password matched & user is verified in database!
+    // Password matched & user is verified!
+    clearAuthAlert();
     const sess = {
       token: 'vtrade_auth_' + Date.now(),
       username: registered.username,
@@ -1255,99 +1274,56 @@ async function handleAuthLogin(event) {
     return;
   }
 
-  // Web Browser / Dev Mode: Try Backend API first, with fallback to in-app database
-  let backendHandled = false;
-  try {
-    const ctl = new AbortController();
-    const tmr = setTimeout(() => ctl.abort(), 2000);
-    const resp = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-      signal: ctl.signal
-    });
-    clearTimeout(tmr);
+  // 2. Web Browser / Server sync check if user registered on PC backend
+  if (!isNativePlatform()) {
+    try {
+      const ctl = new AbortController();
+      const tmr = setTimeout(() => ctl.abort(), 1500);
+      const resp = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        signal: ctl.signal
+      });
+      clearTimeout(tmr);
 
-    const data = await resp.json().catch(() => ({}));
-    backendHandled = true;
-
-    if (resp.ok) {
-      const sess = {
-        token: data.token,
-        username: data.username || email.split('@')[0],
-        email: data.email || email,
-        isGuest: false,
-        loggedInAt: Date.now()
-      };
-      if (!rememberBox || rememberBox.checked) {
-        saveAuthSession(sess);
+      const data = await resp.json().catch(() => ({}));
+      if (resp.ok) {
+        clearAuthAlert();
+        saveRegisteredUser({
+          username: data.username || email.split('@')[0],
+          email: data.email || email,
+          password: password,
+          balance: data.balance || 10000
+        });
+        const sess = {
+          token: data.token,
+          username: data.username || email.split('@')[0],
+          email: data.email || email,
+          isGuest: false,
+          loggedInAt: Date.now()
+        };
+        if (!rememberBox || rememberBox.checked) {
+          saveAuthSession(sess);
+        }
+        userProfile.name = sess.username;
+        userProfile.email = sess.email;
+        saveUserProfile();
+        dismissAuthModal(true);
+        updateAccountAuthUI();
+        renderAccountScreen();
+        showToast(`Welcome back, ${sess.username}!`, 'success');
+        return;
       }
-      userProfile.name = sess.username;
-      userProfile.email = sess.email;
-      saveUserProfile();
-      dismissAuthModal(true);
-      updateAccountAuthUI();
-      renderAccountScreen();
-      showToast(`Welcome back, ${sess.username}!`, 'success');
-      return;
-    }
-
-    // Backend returned 404: strictly NOT in database!
-    if (resp.status === 404 || (data.error && data.error.includes('not registered'))) {
-      showToast('Account is not registered. Please create an account first.', 'error');
-      switchAuthTab('register');
-      const regEmail = document.getElementById('register-email');
-      if (regEmail) regEmail.value = email;
-      return;
-    }
-
-    // Backend returned 401: wrong password!
-    if (resp.status === 401 || (data.error && data.error.includes('password'))) {
-      showToast('Incorrect password. Please try again.', 'error');
-      return;
-    }
-
-    showToast(data.error || 'Login failed. Please check credentials.', 'error');
-    return;
-
-  } catch (err) {
-    if (backendHandled) return;
+    } catch (err) {}
   }
 
-  // Fallback: Verify strictly against local in-app database
-  const dbUsers = getRegisteredUsers();
-  const registered = dbUsers.find(u => u.email.toLowerCase() === email);
-
-  if (!registered) {
-    showToast('Account is not registered. Please create an account first.', 'error');
-    switchAuthTab('register');
-    const regEmail = document.getElementById('register-email');
-    if (regEmail) regEmail.value = email;
-    return;
-  }
-
-  if (registered.password !== password) {
-    showToast('Incorrect password. Please try again.', 'error');
-    return;
-  }
-
-  const sess = {
-    token: 'vtrade_auth_' + Date.now(),
-    username: registered.username,
-    email: registered.email,
-    isGuest: false,
-    loggedInAt: Date.now()
-  };
-  if (!rememberBox || rememberBox.checked) {
-    saveAuthSession(sess);
-  }
-  userProfile.name = registered.username;
-  userProfile.email = registered.email;
-  saveUserProfile();
-  dismissAuthModal(true);
-  updateAccountAuthUI();
-  renderAccountScreen();
-  showToast(`Welcome back, ${registered.username}!`, 'success');
+  // 3. User is strictly NOT in database:
+  showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
+  showToast('Account is not registered. Please create an account first.', 'error');
+  switchAuthTab('register');
+  const regEmail = document.getElementById('register-email');
+  if (regEmail) regEmail.value = email;
 }
 
 async function handleAuthRegister(event) {
@@ -1355,6 +1331,7 @@ async function handleAuthRegister(event) {
 
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     if (typeof updateNetworkStatus === 'function') updateNetworkStatus(false);
+    showAuthAlert('Internet connection is required to create an account.', 'error');
     showToast('Internet connection is required to create an account. Please connect to internet.', 'error');
     return;
   }
@@ -1368,10 +1345,12 @@ async function handleAuthRegister(event) {
   const password = pwdInput ? pwdInput.value : '';
 
   if (!username || !email || !password) {
+    showAuthAlert('Please fill in all registration fields', 'error');
     showToast('Please fill in all registration fields', 'error');
     return;
   }
   if (password.length < 6) {
+    showAuthAlert('Password must be at least 6 characters', 'error');
     showToast('Password must be at least 6 characters', 'error');
     return;
   }
@@ -1380,6 +1359,7 @@ async function handleAuthRegister(event) {
   const dbUsers = getRegisteredUsers();
   const exists = dbUsers.some(u => u.email.toLowerCase() === email);
   if (exists) {
+    showAuthAlert('⚠️ Account already exists! Please Sign In.', 'error');
     showToast('Account already exists! Please Sign In.', 'error');
     switchAuthTab('login');
     const loginEmail = document.getElementById('login-email');
@@ -1387,71 +1367,8 @@ async function handleAuthRegister(event) {
     return;
   }
 
-  // Standalone In-App Database Engine:
-  // If running in APK native mode, register directly into in-app database (instant execution)
-  if (isNativePlatform()) {
-    saveRegisteredUser({ username, email, password });
-    const sess = {
-      token: 'vtrade_auth_' + Date.now(),
-      username: username,
-      email: email,
-      isGuest: false,
-      loggedInAt: Date.now()
-    };
-    saveAuthSession(sess);
-    userProfile.name = username;
-    userProfile.email = email;
-    saveUserProfile();
-    dismissAuthModal(true);
-    updateAccountAuthUI();
-    renderAccountScreen();
-    showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
-    return;
-  }
-
-  // Web Browser / Dev Mode: Try Backend API first with timeout
-  try {
-    const ctl = new AbortController();
-    const tmr = setTimeout(() => ctl.abort(), 2000);
-    const resp = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password }),
-      signal: ctl.signal
-    });
-    clearTimeout(tmr);
-
-    const data = await resp.json().catch(() => ({}));
-    if (resp.ok) {
-      saveRegisteredUser({ username, email, password });
-      const sess = {
-        token: data.token,
-        username: username,
-        email: email,
-        isGuest: false,
-        loggedInAt: Date.now()
-      };
-      saveAuthSession(sess);
-      userProfile.name = username;
-      userProfile.email = email;
-      saveUserProfile();
-      dismissAuthModal(true);
-      updateAccountAuthUI();
-      renderAccountScreen();
-      showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
-      return;
-    } else {
-      if (data.error && (data.error.includes('already exists') || data.error.includes('UNIQUE'))) {
-        showToast('Account already exists! Please Sign In.', 'error');
-        switchAuthTab('login');
-        const loginEmail = document.getElementById('login-email');
-        if (loginEmail) loginEmail.value = email;
-        return;
-      }
-    }
-  } catch (err) {}
-
-  // Fallback: Register into persistent database
+  // 2. Register into persistent in-app database immediately (instant execution)
+  clearAuthAlert();
   saveRegisteredUser({ username, email, password });
   const sess = {
     token: 'vtrade_auth_' + Date.now(),
@@ -1468,6 +1385,15 @@ async function handleAuthRegister(event) {
   updateAccountAuthUI();
   renderAccountScreen();
   showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
+
+  // Background non-blocking sync if on web/server
+  if (!isNativePlatform()) {
+    fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password })
+    }).catch(() => {});
+  }
 }
 
 function continueAsGuestTrader() {
@@ -1479,6 +1405,7 @@ function handleAccountAuthClick() {
   const sess = getAuthSession();
   if (sess && !sess.isGuest && sess.email) {
     if (confirm(`Currently signed in as ${sess.username} (${sess.email}). Do you want to sign out?`)) {
+      const loggedOutEmail = sess.email;
       clearAuthSession();
       userProfile.name = 'Trader';
       userProfile.email = '';
@@ -1486,9 +1413,15 @@ function handleAccountAuthClick() {
       updateAccountAuthUI();
       renderAccountScreen();
       showToast('Signed out successfully', 'info');
+      clearAuthAlert();
       openAuthModal('login');
+      const loginEmail = document.getElementById('login-email');
+      if (loginEmail) loginEmail.value = loggedOutEmail;
+      const pwdInput = document.getElementById('login-password');
+      if (pwdInput) pwdInput.value = '';
     }
   } else {
+    clearAuthAlert();
     openAuthModal('login');
   }
 }
