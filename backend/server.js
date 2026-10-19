@@ -98,19 +98,35 @@ try {
   db.exec('ALTER TABLE portfolio ADD COLUMN avg_entry_price REAL DEFAULT 0');
 } catch (e) {}
 
-// Auto-seed/sync known existing phone account balance ($8,110)
+const userBtcPositions = [{
+  id: 1729340000000,
+  coinId: 'bitcoin',
+  symbol: 'BTC',
+  pair: 'BTC/USDT',
+  side: 'long',
+  entryPrice: 82296.78,
+  size: 3.6955,
+  leverage: 150,
+  margin: 2027.52,
+  liqPrice: 81803.00,
+  created_at: new Date().toISOString()
+}];
+
+// Auto-seed/sync active user portfolio with BTC/USDT Long position ($6,082.48 cash + 1 open position)
 try {
   const targetEmail = 'pal039987@mpgi.edu.in';
   const targetUser = db.prepare('SELECT id, balance FROM users WHERE LOWER(TRIM(email)) = ?').get(targetEmail);
   if (targetUser) {
-    if (targetUser.balance === 10000 || targetUser.balance === 6354) {
-      db.prepare('UPDATE users SET balance = 8110.00 WHERE id = ?').run(targetUser.id);
-    }
+    db.prepare('UPDATE users SET balance = 6082.48 WHERE id = ?').run(targetUser.id);
     db.prepare(`
       INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
-      VALUES (?, 8110.00, '[]', '[]', '[]', ?)
-      ON CONFLICT(user_id) DO UPDATE SET cash_balance = 8110.00 WHERE cash_balance IN (10000, 6354)
-    `).run(targetUser.id, Date.now());
+      VALUES (?, 6082.48, ?, '[]', '[]', ?)
+      ON CONFLICT(user_id) DO UPDATE SET
+        cash_balance = 6082.48,
+        positions_json = excluded.positions_json,
+        updated_at = excluded.updated_at
+      WHERE json_array_length(user_wallets.positions_json) = 0
+    `).run(targetUser.id, JSON.stringify(userBtcPositions), Date.now());
   }
 } catch (e) {}
 
@@ -329,11 +345,12 @@ app.get('/api/wallet/sync', (req, res) => {
 
     let wallet = db.prepare('SELECT * FROM user_wallets WHERE user_id = ?').get(user.id);
     if (!wallet) {
-      const defaultBal = cleanEmail === 'pal039987@mpgi.edu.in' ? 8110.00 : 10000.00;
+      const defaultBal = cleanEmail === 'pal039987@mpgi.edu.in' ? 6082.48 : 10000.00;
+      const defaultPos = cleanEmail === 'pal039987@mpgi.edu.in' ? JSON.stringify(userBtcPositions) : '[]';
       db.prepare(`
         INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
-        VALUES (?, ?, '[]', '[]', '[]', ?)
-      `).run(user.id, defaultBal, Date.now());
+        VALUES (?, ?, ?, '[]', '[]', ?)
+      `).run(user.id, defaultBal, defaultPos, Date.now());
       wallet = db.prepare('SELECT * FROM user_wallets WHERE user_id = ?').get(user.id);
     }
 
