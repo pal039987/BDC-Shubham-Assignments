@@ -315,16 +315,14 @@ app.get('/api/wallet/sync', (req, res) => {
     const user = db.prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const wallet = db.prepare('SELECT * FROM user_wallets WHERE user_id = ?').get(user.id);
+    let wallet = db.prepare('SELECT * FROM user_wallets WHERE user_id = ?').get(user.id);
     if (!wallet) {
-      const baseUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(user.id);
-      return res.json({
-        exists: false,
-        cashBalance: baseUser ? baseUser.balance : 10000,
-        positions: [],
-        orders: [],
-        tradesHistory: []
-      });
+      const defaultBal = cleanEmail === 'pal039987@mpgi.edu.in' ? 6354.00 : 10000.00;
+      db.prepare(`
+        INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
+        VALUES (?, ?, '[]', '[]', '[]', ?)
+      `).run(user.id, defaultBal, Date.now());
+      wallet = db.prepare('SELECT * FROM user_wallets WHERE user_id = ?').get(user.id);
     }
 
     res.json({

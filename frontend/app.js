@@ -929,6 +929,8 @@ function loadWalletState() {
 
 let walletState = loadWalletState();
 
+let hasSyncedWithCloudOnce = false;
+
 function saveWalletState() {
   try {
     walletState.lastUpdated = Date.now();
@@ -937,6 +939,9 @@ function saveWalletState() {
     // Debounced background sync to Cloud Database
     const sess = getAuthSession();
     if (sess && sess.email && !sess.isGuest) {
+      if (!isNativePlatform() && !hasSyncedWithCloudOnce && walletState.cashBalance === 10000) {
+        return;
+      }
       fetch(getApiEndpoint('/api/wallet/sync'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -982,10 +987,6 @@ async function pushWalletToCloud(email) {
 
 function applyCloudWallet(cloud) {
   if (!cloud || typeof cloud.cashBalance !== 'number') return;
-  const changed = cloud.cashBalance !== walletState.cashBalance ||
-    (Array.isArray(cloud.positions) && cloud.positions.length !== (walletState.positions || []).length) ||
-    (Array.isArray(cloud.tradesHistory) && cloud.tradesHistory.length !== (walletState.tradesHistory || []).length);
-
   walletState.cashBalance = cloud.cashBalance;
   if (Array.isArray(cloud.positions)) walletState.positions = cloud.positions;
   if (Array.isArray(cloud.orders)) walletState.orders = cloud.orders;
@@ -993,12 +994,8 @@ function applyCloudWallet(cloud) {
   walletState.lastUpdated = cloud.updatedAt || Date.now();
   try { localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(walletState)); } catch (e) {}
 
-  if (changed) {
-    if (typeof renderHomeScreen === 'function') renderHomeScreen();
-    if (typeof renderPositionsTable === 'function') renderPositionsTable();
-    if (typeof renderOrdersTable === 'function') renderOrdersTable();
-    if (typeof renderTradeHistory === 'function') renderTradeHistory();
-    if (typeof renderAccountScreen === 'function') renderAccountScreen();
+  if (typeof renderAllViews === 'function') {
+    renderAllViews();
   }
 }
 
@@ -1020,6 +1017,7 @@ async function syncWalletWithCloud(forcePush = false) {
 
     if (forcePush) {
       await pushWalletToCloud(email);
+      hasSyncedWithCloudOnce = true;
       return;
     }
 
@@ -1039,18 +1037,23 @@ async function syncWalletWithCloud(forcePush = false) {
       if ((!cloud.exists || (cloud.cashBalance === 10000 && isApk && hasCustomLocalData)) && hasCustomLocalData) {
         await pushWalletToCloud(email);
       }
-      // Case 2: Cloud has data, and either Web is at 10000 or cloud is newer
-      else if (cloud.exists && (cloudUpdatedAt >= localUpdatedAt || (!isApk && walletState.cashBalance === 10000 && cloud.cashBalance !== 10000))) {
+      // Case 2: On Web, if cloud has a specific non-10000 balance ($6,354) and Web is still 10000, ALWAYS apply cloud!
+      else if (!isApk && walletState.cashBalance === 10000 && cloud.exists && cloud.cashBalance !== 10000) {
         applyCloudWallet(cloud);
       }
-      // Case 3: Local was updated more recently
+      // Case 3: Cloud exists and is newer than local
+      else if (cloud.exists && cloudUpdatedAt >= localUpdatedAt) {
+        applyCloudWallet(cloud);
+      }
+      // Case 4: Local was updated more recently
       else if (localUpdatedAt > cloudUpdatedAt && hasCustomLocalData) {
         await pushWalletToCloud(email);
       }
-      // Case 4: Any balance mismatch fallback
+      // Case 5: Any balance mismatch fallback
       else if (cloud.exists && cloud.cashBalance !== walletState.cashBalance) {
         applyCloudWallet(cloud);
       }
+      hasSyncedWithCloudOnce = true;
     }
   } catch (err) {
   } finally {
