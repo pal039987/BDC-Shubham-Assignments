@@ -1013,16 +1013,13 @@ function initAppTheme() {
 }
 
 // ─── 2.3 LUXURY AUTHENTICATION & IN-APP DATABASE ENGINE (RASTA 1) ─────────
-const AUTH_SESSION_KEY = 'vtrade_auth_session_v2';
-const USER_DB_STORAGE_KEY = 'vtrade_users_master_db_v4';
+const AUTH_SESSION_KEY = 'vtrade_auth_session_v3';
+const USER_DB_STORAGE_KEY = 'vtrade_users_master_db_v5';
 
-// Pre-seeded default demonstration users for initial boot
+// Clean initial database users (only testtrader for automated testing suites)
 const SEED_DATABASE_USERS = [
   { id: 1, username: 'testtrader', email: 'test@example.com', password: 'password123', balance: 10000 },
-  { id: 2, username: 'trader2', email: 'trader2@test.com', password: 'password123', balance: 10000 },
-  { id: 3, username: 'rabi', email: 'pal039987@mpgi.edu.in', password: 'password123', balance: 10000 },
-  { id: 5, username: 'GoogleTrader', email: 'google_trader@vtrade.com', password: 'password123', balance: 10000 },
-  { id: 6, username: 'verify_user_1', email: 'verify1@gmail.com', password: 'correct_pass_123', balance: 10000 }
+  { id: 2, username: 'trader2', email: 'trader2@test.com', password: 'password123', balance: 10000 }
 ];
 
 function isNativePlatform() {
@@ -1128,31 +1125,11 @@ function getRegisteredUsers() {
     }
   } catch (e) {}
 
-  // Migrate any previous users from v3 or older storage
-  let oldUsers = [];
+  const initial = [...SEED_DATABASE_USERS];
   try {
-    const oldRaw = localStorage.getItem('vtrade_users_master_db_v3') || localStorage.getItem('vtrade_registered_users');
-    if (oldRaw) oldUsers = JSON.parse(oldRaw) || [];
+    localStorage.setItem(USER_DB_STORAGE_KEY, JSON.stringify(initial));
   } catch (e) {}
-
-  const merged = [...SEED_DATABASE_USERS];
-  oldUsers.forEach(ou => {
-    if (ou.email && !merged.some(m => m.email.toLowerCase() === ou.email.toLowerCase())) {
-      merged.push({
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        username: ou.username || ou.email.split('@')[0],
-        email: ou.email.toLowerCase(),
-        password: ou.password || 'password123',
-        balance: ou.balance || 10000,
-        createdAt: ou.createdAt || Date.now()
-      });
-    }
-  });
-
-  try {
-    localStorage.setItem(USER_DB_STORAGE_KEY, JSON.stringify(merged));
-  } catch (e) {}
-  return merged;
+  return initial;
 }
 
 function saveRegisteredUser(user) {
@@ -1175,7 +1152,6 @@ function saveRegisteredUser(user) {
       users.push(userRecord);
     }
     localStorage.setItem(USER_DB_STORAGE_KEY, JSON.stringify(users));
-    localStorage.setItem('vtrade_users_master_db_v3', JSON.stringify(users));
     return userRecord;
   } catch (e) {
     console.error('Failed to save registered user:', e);

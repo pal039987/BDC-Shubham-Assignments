@@ -25,24 +25,23 @@ const appJsPath = path.join(__dirname, '../frontend/app.js');
 const appJs = fs.readFileSync(appJsPath, 'utf8');
 
 // Verify Rasta 1 identifiers exist in app.js
-assert.ok(appJs.includes('vtrade_auth_session_v2'), 'AUTH_SESSION_KEY must be vtrade_auth_session_v2');
-assert.ok(appJs.includes('vtrade_users_master_db_v4'), 'USER_DB_STORAGE_KEY must be vtrade_users_master_db_v4');
+assert.ok(appJs.includes('vtrade_auth_session_v3'), 'AUTH_SESSION_KEY must be vtrade_auth_session_v3');
+assert.ok(appJs.includes('vtrade_users_master_db_v5'), 'USER_DB_STORAGE_KEY must be vtrade_users_master_db_v5');
 assert.ok(appJs.includes('isNativePlatform()'), 'isNativePlatform helper must be defined and called');
 assert.ok(appJs.includes('function handleForgotPassword('), 'handleForgotPassword must be defined in app.js');
 console.log('  ✓ Storage keys, native platform detector, and forgot password hooks verified');
 
 // Test 1: In-App Database initialization and Seed Users
 console.log('1. Testing In-App Database Initialization...');
-const USER_DB_KEY = 'vtrade_users_master_db_v4';
+const USER_DB_KEY = 'vtrade_users_master_db_v5';
 const SEED_USERS = [
   { id: 1, username: 'testtrader', email: 'test@example.com', password: 'password123', balance: 10000 },
-  { id: 2, username: 'trader2', email: 'trader2@test.com', password: 'password123', balance: 10000 },
-  { id: 3, username: 'rabi', email: 'pal039987@mpgi.edu.in', password: 'password123', balance: 10000 }
+  { id: 2, username: 'trader2', email: 'trader2@test.com', password: 'password123', balance: 10000 }
 ];
 mockLocalStorage.setItem(USER_DB_KEY, JSON.stringify(SEED_USERS));
 
 const dbUsers = JSON.parse(mockLocalStorage.getItem(USER_DB_KEY));
-assert.strictEqual(dbUsers.length, 3, 'Initial database must have 3 users');
+assert.strictEqual(dbUsers.length, 2, 'Initial database must have 2 users');
 console.log('  ✓ Initial in-app database initialized with default seeded records');
 
 // Test 2: Unregistered User Login Rejection
@@ -52,12 +51,14 @@ const foundUnreg = dbUsers.find(u => u.email.toLowerCase() === unregEmail.toLowe
 assert.strictEqual(foundUnreg, undefined, 'Unregistered user must NOT be found');
 console.log('  ✓ Unregistered email strictly rejected with 404 behavior');
 
-// Test 3: Incorrect Password Rejection
-console.log('3. Testing Incorrect Password for Registered User...');
-const userRecord = dbUsers.find(u => u.email.toLowerCase() === 'pal039987@mpgi.edu.in');
-assert.ok(userRecord, 'Registered user pal039987@mpgi.edu.in must exist');
+// Test 3: Incorrect Password Rejection & Verified Removal of pal039987
+console.log('3. Testing Incorrect Password for Registered User & pal039987 removal...');
+const userRecord = dbUsers.find(u => u.email.toLowerCase() === 'test@example.com');
+assert.ok(userRecord, 'Registered user test@example.com must exist');
 assert.notStrictEqual(userRecord.password, 'wrong_pass_999', 'Password should not match wrong password');
-console.log('  ✓ Wrong password strictly rejected with 401 behavior');
+const palRemoved = dbUsers.find(u => u.email.toLowerCase() === 'pal039987@mpgi.edu.in');
+assert.strictEqual(palRemoved, undefined, 'pal039987@mpgi.edu.in must be removed from seed database so user can register fresh');
+console.log('  ✓ Wrong password strictly rejected with 401 behavior & pal039987 confirmed removed');
 
 // Test 4: New User Registration in In-App Database
 console.log('4. Testing New User Registration in In-App Database...');
@@ -96,7 +97,7 @@ console.log('  ✓ User can reset/update password without getting locked out');
 
 // Test 7: Boot Session Validation (Purge stale sessions)
 console.log('7. Testing Boot-Time Session Validation & Purge...');
-const AUTH_KEY = 'vtrade_auth_session_v2';
+const AUTH_KEY = 'vtrade_auth_session_v3';
 mockLocalStorage.setItem(AUTH_KEY, JSON.stringify({ email: 'ghost_deleted@domain.com', isGuest: false }));
 const staleSess = JSON.parse(mockLocalStorage.getItem(AUTH_KEY));
 const isValid = updatedDb.some(u => u.email.toLowerCase() === staleSess.email.toLowerCase());
