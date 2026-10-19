@@ -1012,11 +1012,11 @@ function initAppTheme() {
   });
 }
 
-// ─── 2.3 LUXURY AUTHENTICATION & SESSION ENGINE ─────────────────────────
-const AUTH_SESSION_KEY = 'vtrade_auth_session_v1';
-const USER_DB_STORAGE_KEY = 'vtrade_users_master_db_v3';
+// ─── 2.3 LUXURY AUTHENTICATION & IN-APP DATABASE ENGINE (RASTA 1) ─────────
+const AUTH_SESSION_KEY = 'vtrade_auth_session_v2';
+const USER_DB_STORAGE_KEY = 'vtrade_users_master_db_v4';
 
-// Pre-seeded database users matching backend SQLite trading.db
+// Pre-seeded default demonstration users for initial boot
 const SEED_DATABASE_USERS = [
   { id: 1, username: 'testtrader', email: 'test@example.com', password: 'password123', balance: 10000 },
   { id: 2, username: 'trader2', email: 'trader2@test.com', password: 'password123', balance: 10000 },
@@ -1024,6 +1024,21 @@ const SEED_DATABASE_USERS = [
   { id: 5, username: 'GoogleTrader', email: 'google_trader@vtrade.com', password: 'password123', balance: 10000 },
   { id: 6, username: 'verify_user_1', email: 'verify1@gmail.com', password: 'correct_pass_123', balance: 10000 }
 ];
+
+function isNativePlatform() {
+  try {
+    if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+      return true;
+    }
+    if (typeof window !== 'undefined' && (window.location.protocol === 'capacitor:' || window.location.protocol === 'file:')) {
+      return true;
+    }
+    if (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent) && !window.location.port) {
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
 
 function getAuthSession() {
   try {
@@ -1113,10 +1128,10 @@ function getRegisteredUsers() {
     }
   } catch (e) {}
 
-  // Migrate any previous users from vtrade_registered_users
+  // Migrate any previous users from v3 or older storage
   let oldUsers = [];
   try {
-    const oldRaw = localStorage.getItem('vtrade_registered_users');
+    const oldRaw = localStorage.getItem('vtrade_users_master_db_v3') || localStorage.getItem('vtrade_registered_users');
     if (oldRaw) oldUsers = JSON.parse(oldRaw) || [];
   } catch (e) {}
 
@@ -1128,7 +1143,8 @@ function getRegisteredUsers() {
         username: ou.username || ou.email.split('@')[0],
         email: ou.email.toLowerCase(),
         password: ou.password || 'password123',
-        balance: 10000
+        balance: ou.balance || 10000,
+        createdAt: ou.createdAt || Date.now()
       });
     }
   });
@@ -1159,11 +1175,45 @@ function saveRegisteredUser(user) {
       users.push(userRecord);
     }
     localStorage.setItem(USER_DB_STORAGE_KEY, JSON.stringify(users));
-    localStorage.setItem('vtrade_registered_users', JSON.stringify(users));
+    localStorage.setItem('vtrade_users_master_db_v3', JSON.stringify(users));
     return userRecord;
   } catch (e) {
     console.error('Failed to save registered user:', e);
   }
+}
+
+function handleForgotPassword(event) {
+  if (event) event.preventDefault();
+  const emailInput = document.getElementById('login-email');
+  const currentVal = emailInput ? emailInput.value.trim().toLowerCase() : '';
+  const emailPrompt = prompt('Enter your registered Email Address to reset password:', currentVal);
+  if (!emailPrompt) return;
+
+  const cleanEmail = emailPrompt.trim().toLowerCase();
+  const dbUsers = getRegisteredUsers();
+  const user = dbUsers.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    showToast('Account is not registered. Please create an account first.', 'error');
+    switchAuthTab('register');
+    const regEmail = document.getElementById('register-email');
+    if (regEmail) regEmail.value = cleanEmail;
+    return;
+  }
+
+  const newPwd = prompt(`Enter new password for ${cleanEmail} (minimum 6 characters):`);
+  if (!newPwd) return;
+  if (newPwd.length < 6) {
+    showToast('Password must be at least 6 characters long', 'error');
+    return;
+  }
+
+  user.password = newPwd;
+  saveRegisteredUser(user);
+  showToast('Password reset successfully! Please sign in with your new password.', 'success');
+  if (emailInput) emailInput.value = cleanEmail;
+  const pwdInput = document.getElementById('login-password');
+  if (pwdInput) pwdInput.value = newPwd;
 }
 
 async function handleAuthLogin(event) {
@@ -1187,7 +1237,49 @@ async function handleAuthLogin(event) {
     return;
   }
 
-  // 1. Try Backend API first with timeout
+  // Standalone In-App Database Engine:
+  // If running in APK native mode, authenticate against In-App Database immediately (zero latency)
+  if (isNativePlatform()) {
+    const dbUsers = getRegisteredUsers();
+    const registered = dbUsers.find(u => u.email.toLowerCase() === email);
+
+    // If user is not in database:
+    if (!registered) {
+      showToast('Account is not registered. Please create an account first.', 'error');
+      switchAuthTab('register');
+      const regEmail = document.getElementById('register-email');
+      if (regEmail) regEmail.value = email;
+      return;
+    }
+
+    // If password does not match:
+    if (registered.password !== password) {
+      showToast('Incorrect password. Please try again.', 'error');
+      return;
+    }
+
+    // Password matched & user is verified in database!
+    const sess = {
+      token: 'vtrade_auth_' + Date.now(),
+      username: registered.username,
+      email: registered.email,
+      isGuest: false,
+      loggedInAt: Date.now()
+    };
+    if (!rememberBox || rememberBox.checked) {
+      saveAuthSession(sess);
+    }
+    userProfile.name = registered.username;
+    userProfile.email = registered.email;
+    saveUserProfile();
+    dismissAuthModal(true);
+    updateAccountAuthUI();
+    renderAccountScreen();
+    showToast(`Welcome back, ${registered.username}!`, 'success');
+    return;
+  }
+
+  // Web Browser / Dev Mode: Try Backend API first, with fallback to in-app database
   let backendHandled = false;
   try {
     const ctl = new AbortController();
@@ -1243,15 +1335,13 @@ async function handleAuthLogin(event) {
     return;
 
   } catch (err) {
-    // If backend already responded with an error, do not fall back
     if (backendHandled) return;
   }
 
-  // 2. Standalone / Mobile offline verification against local database
+  // Fallback: Verify strictly against local in-app database
   const dbUsers = getRegisteredUsers();
   const registered = dbUsers.find(u => u.email.toLowerCase() === email);
 
-  // If user is not in database:
   if (!registered) {
     showToast('Account is not registered. Please create an account first.', 'error');
     switchAuthTab('register');
@@ -1260,13 +1350,11 @@ async function handleAuthLogin(event) {
     return;
   }
 
-  // If password does not match:
   if (registered.password !== password) {
     showToast('Incorrect password. Please try again.', 'error');
     return;
   }
 
-  // Password matched & user is in database!
   const sess = {
     token: 'vtrade_auth_' + Date.now(),
     username: registered.username,
@@ -1312,7 +1400,7 @@ async function handleAuthRegister(event) {
     return;
   }
 
-  // 1. Check if user already exists in local database
+  // 1. Check if user already exists in local in-app database
   const dbUsers = getRegisteredUsers();
   const exists = dbUsers.some(u => u.email.toLowerCase() === email);
   if (exists) {
@@ -1323,7 +1411,29 @@ async function handleAuthRegister(event) {
     return;
   }
 
-  // 2. Try Backend API first with timeout
+  // Standalone In-App Database Engine:
+  // If running in APK native mode, register directly into in-app database (instant execution)
+  if (isNativePlatform()) {
+    saveRegisteredUser({ username, email, password });
+    const sess = {
+      token: 'vtrade_auth_' + Date.now(),
+      username: username,
+      email: email,
+      isGuest: false,
+      loggedInAt: Date.now()
+    };
+    saveAuthSession(sess);
+    userProfile.name = username;
+    userProfile.email = email;
+    saveUserProfile();
+    dismissAuthModal(true);
+    updateAccountAuthUI();
+    renderAccountScreen();
+    showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
+    return;
+  }
+
+  // Web Browser / Dev Mode: Try Backend API first with timeout
   try {
     const ctl = new AbortController();
     const tmr = setTimeout(() => ctl.abort(), 2000);
@@ -1365,7 +1475,7 @@ async function handleAuthRegister(event) {
     }
   } catch (err) {}
 
-  // 3. Fallback / Offline registration in persistent database
+  // Fallback: Register into persistent database
   saveRegisteredUser({ username, email, password });
   const sess = {
     token: 'vtrade_auth_' + Date.now(),

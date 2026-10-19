@@ -841,9 +841,9 @@
         <div class="auth-options-row">
           <label class="auth-remember-label">
             <input type="checkbox" id="login-remember" checked />
-            <span>Remember Me (Auto-Login)</span>
+            <span>Remember Me</span>
           </label>
-          <span class="auth-secure-badge">🛡️ Encrypted</span>
+          <a href="javascript:void(0)" class="auth-forgot-link" onclick="handleForgotPassword(event)" style="color: var(--accent-gold); font-size: 11px; text-decoration: none; font-weight: 600;">Forgot Password?</a>
         </div>
 
         <button type="submit" class="auth-primary-btn" id="login-submit-btn">
@@ -967,6 +967,6 @@
   <div id="toast-container" class="toast-container"></div>
   <div id="toast" class="toast hidden"></div>
 
-  <script src="app.js?v=2.0"></script>
+  <script src="app.js?v=2.1"></script>
 </body>
 </html>
