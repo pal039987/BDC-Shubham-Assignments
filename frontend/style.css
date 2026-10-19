@@ -4066,3 +4066,132 @@ html, body {
   opacity: 0.8;
 }
 
+/* ─── IN-APP OTA UPDATE MODAL ────────────────────────────────────── */
+.update-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.update-modal-overlay.hidden {
+  display: none !important;
+}
+.update-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.update-modal-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 360px;
+  background: #0f1522;
+  border: 1px solid rgba(255, 183, 0, 0.28);
+  border-radius: 20px;
+  padding: 26px 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 183, 0, 0.12);
+  text-align: center;
+  animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.update-badge-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.update-glow-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 183, 0, 0.35) 0%, transparent 70%);
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+.update-icon {
+  font-size: 36px;
+  position: relative;
+  z-index: 2;
+}
+.update-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px 0;
+}
+.update-version-tag {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffb700;
+  background: rgba(255, 183, 0, 0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin: 0 0 16px 0;
+}
+.update-changelog-card {
+  background: #161e30;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+.update-changelog-heading {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #8a96aa;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.update-changelog-text {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.45;
+  margin: 0;
+}
+.update-action-row {
+  display: flex;
+  gap: 10px;
+}
+.update-dismiss-btn {
+  flex: 1;
+  background: #1c2538;
+  color: #8a96aa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.update-dismiss-btn:active {
+  background: #253147;
+}
+.update-confirm-btn {
+  flex: 2;
+  background: linear-gradient(135deg, #ffb700, #ff9500);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 183, 0, 0.35);
+  transition: all 0.2s;
+}
+.update-confirm-btn:active {
+  transform: scale(0.97);
+}
+

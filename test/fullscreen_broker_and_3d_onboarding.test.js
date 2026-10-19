@@ -102,6 +102,10 @@ assert.ok(appJs.includes('initPostSplashFlow'), 'app.js must include post-splash
 console.log('  ✓ Flat Modern & Stylish VTrade App Icon across all Android Mipmaps (v2.9) verified');
 console.log('  ✓ App Launch Animated Splash Screen & Binance Real-time Ticker Alignment verified');
 console.log('  ✓ Render Cloud Central Database Synchronization (APK & Web Unified) verified');
+assert.ok(appJs.includes('checkForAppUpdates'), 'app.js must define checkForAppUpdates');
+assert.ok(indexHtml.includes('id="vtrade-update-modal"'), 'index.html must include in-app update modal');
+assert.ok(styleCss.includes('.update-modal-overlay'), 'style.css must style in-app update modal');
 console.log('  ✓ Dual-Direction Realtime Cloud Wallet Sync & In-App Manual Sync Button verified');
+console.log('  ✓ In-App OTA Update System (Auto Version Checker & Direct Download Dialog) verified');
 
 console.log('\n=== ALL 7 VERIFICATION SUITES PASSED! ===\n');

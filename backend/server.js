@@ -131,6 +131,18 @@ app.get('/vtrade.apk', (req, res) => {
   }
 });
 
+// Version Check API for in-app OTA update system
+app.get('/api/version', (req, res) => {
+  res.json({
+    latestVersion: '2.9',
+    latestVersionCode: 11,
+    releaseDate: '2026-10-19',
+    changelog: 'Real-time Dual Cloud Wallet Sync ($8,110 portfolio) & Live 120 FPS Stream',
+    downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
+    forceUpdate: false
+  });
+});
+
 function authenticateToken(req, res, next) {
   try {
     const authHeader = req.headers['authorization'];

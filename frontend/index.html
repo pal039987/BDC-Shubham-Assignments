@@ -639,6 +639,10 @@
             <span>App Version</span>
             <span class="app-info-val">v2.9 (Cloud Sync & Live Broker)</span>
           </div>
+          <div class="app-info-row" style="cursor: pointer;" onclick="checkForAppUpdates(true)">
+            <span>Check for Updates</span>
+            <span class="app-info-val" id="app-update-status" style="color: #10b981; font-weight: 600;">Check Now ➔</span>
+          </div>
           <div class="app-info-row">
             <span>Trading Platform</span>
             <span class="app-info-val">VTrade Professional Paper Trader</span>
@@ -1226,6 +1230,29 @@
       </button>
 
       <p class="offline-hint">Check your Wi-Fi, 5G/4G Mobile Data, or Airplane mode.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 12. IN-APP OTA UPDATE MODAL ══════════════════════ -->
+  <div class="update-modal-overlay hidden" id="vtrade-update-modal">
+    <div class="update-modal-backdrop" onclick="dismissUpdateModal()"></div>
+    <div class="update-modal-card">
+      <div class="update-badge-wrap">
+        <div class="update-glow-ring"></div>
+        <div class="update-icon">🚀</div>
+      </div>
+      <h3 class="update-title">New Update Available!</h3>
+      <p class="update-version-tag" id="update-new-version">Version v2.9</p>
+
+      <div class="update-changelog-card">
+        <span class="update-changelog-heading">What's New:</span>
+        <p class="update-changelog-text" id="update-changelog-desc">Real-time Dual Cloud Wallet Sync & Live 120 FPS Stream</p>
+      </div>
+
+      <div class="update-action-row">
+        <button type="button" class="update-dismiss-btn" id="update-later-btn" onclick="dismissUpdateModal()">Later</button>
+        <button type="button" class="update-confirm-btn" id="update-download-btn" onclick="startAppUpdateDownload()">Update Now</button>
+      </div>
     </div>
   </div>
 

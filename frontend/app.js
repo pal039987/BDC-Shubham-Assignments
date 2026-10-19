@@ -1098,6 +1098,87 @@ async function triggerManualCloudWalletSync() {
   }
 }
 
+// ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
+const CURRENT_APP_VERSION = '2.9';
+const CURRENT_VERSION_CODE = 11;
+let latestUpdateInfo = null;
+
+async function checkForAppUpdates(isManual = false) {
+  try {
+    const statusEl = document.getElementById('app-update-status');
+    if (isManual && statusEl) {
+      statusEl.textContent = 'Checking...';
+    }
+
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 4500);
+    const resp = await fetch(getApiEndpoint('/api/version'), { signal: ctl.signal });
+    clearTimeout(tmr);
+
+    if (resp.ok) {
+      const data = await resp.json();
+      latestUpdateInfo = data;
+      const isNewer = (data.latestVersionCode && data.latestVersionCode > CURRENT_VERSION_CODE) ||
+                      (data.latestVersion && data.latestVersion !== CURRENT_APP_VERSION);
+
+      if (isNewer) {
+        if (statusEl) {
+          statusEl.textContent = `New v${data.latestVersion} Available!`;
+          statusEl.style.color = '#ffb700';
+        }
+        showUpdateModal(data);
+      } else {
+        if (statusEl) {
+          statusEl.textContent = 'Up to Date ✓';
+          statusEl.style.color = '#10b981';
+        }
+        if (isManual) {
+          showToast(`You are on the latest version (v${CURRENT_APP_VERSION})!`, 'success');
+        }
+      }
+    } else {
+      if (isManual && statusEl) statusEl.textContent = 'Check Failed';
+    }
+  } catch (err) {
+    const statusEl = document.getElementById('app-update-status');
+    if (isManual && statusEl) statusEl.textContent = 'Network Error';
+  }
+}
+
+function showUpdateModal(info) {
+  const modal = document.getElementById('vtrade-update-modal');
+  if (!modal) return;
+  const verEl = document.getElementById('update-new-version');
+  const descEl = document.getElementById('update-changelog-desc');
+  const laterBtn = document.getElementById('update-later-btn');
+
+  if (verEl) verEl.textContent = `Version v${info.latestVersion || '2.9'}`;
+  if (descEl) descEl.textContent = info.changelog || 'Performance improvements and bug fixes.';
+  if (laterBtn && info.forceUpdate) laterBtn.style.display = 'none';
+
+  modal.classList.remove('hidden');
+}
+
+function dismissUpdateModal() {
+  const modal = document.getElementById('vtrade-update-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function startAppUpdateDownload() {
+  const url = (latestUpdateInfo && latestUpdateInfo.downloadUrl) || getApiEndpoint('/vtrade.apk');
+  showToast('Downloading update...', 'info');
+
+  if (typeof window !== 'undefined') {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'VTrade.apk';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+  dismissUpdateModal();
+}
+
 // ─── 2.1 USER PROFILE STATE ──────────────────────────────────────────────
 const USER_PROFILE_KEY = 'vtrade_user_profile_v1';
 
@@ -3782,6 +3863,9 @@ function initVTradeApp() {
 
   // Setup touch gestures
   setupOnboardingSwipe();
+
+  // Background In-App OTA Update Check
+  setTimeout(() => checkForAppUpdates(false), 2500);
 
   // Trigger App Launch Splash Animation -> Then trigger Onboarding or Main screen
   setTimeout(() => {
