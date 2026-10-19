@@ -1036,28 +1036,28 @@ async function syncWalletWithCloud(forcePush = false) {
       const cloud = await resp.json();
       const cloudUpdatedAt = cloud.updatedAt || 0;
 
-      // Case 1: Initial sync ONLY if cloud is default 10000 with 0 positions and APK has custom local data
-      if (!cloud.exists || (cloud.cashBalance === 10000 && (!cloud.positions || cloud.positions.length === 0) && isApk && hasCustomLocalData && !hasSyncedWithCloudOnce)) {
-        await pushWalletToCloud(email);
-      }
-      // Case 2: Cloud has newer data than local -> Pull cloud!
-      else if (cloud.exists && cloudUpdatedAt > localUpdatedAt) {
+      // Case 1: If cloud has active open positions and local has none, ALWAYS PULL CLOUD!
+      if (cloud.exists && cloud.positions && cloud.positions.length > 0 && (!walletState.positions || walletState.positions.length === 0)) {
         applyCloudWallet(cloud);
       }
-      // Case 3: Cloud has active positions or different balance that local doesn't have -> Pull cloud!
-      else if (cloud.exists && (
-        (cloud.positions && cloud.positions.length > 0 && (!walletState.positions || walletState.positions.length === 0)) ||
-        (cloud.positions && walletState.positions && cloud.positions.length !== walletState.positions.length) ||
-        (cloud.cashBalance !== walletState.cashBalance && localUpdatedAt <= cloudUpdatedAt)
-      )) {
+      // Case 2: If cloud has different number of positions
+      else if (cloud.exists && cloud.positions && walletState.positions && cloud.positions.length !== walletState.positions.length) {
+        if (cloudUpdatedAt >= localUpdatedAt || cloud.positions.length > walletState.positions.length) {
+          applyCloudWallet(cloud);
+        } else {
+          await pushWalletToCloud(email);
+        }
+      }
+      // Case 3: Cloud has newer timestamp than local -> Pull cloud!
+      else if (cloud.exists && cloudUpdatedAt > localUpdatedAt) {
         applyCloudWallet(cloud);
       }
       // Case 4: Local was updated more recently due to a local user trade
       else if (localUpdatedAt > cloudUpdatedAt && hasCustomLocalData) {
         await pushWalletToCloud(email);
       }
-      // Case 5: Any fallback mismatch
-      else if (cloud.exists && cloud.cashBalance !== walletState.cashBalance && !isApk) {
+      // Case 5: Any balance or state mismatch fallback -> Pull cloud!
+      else if (cloud.exists && cloud.cashBalance !== walletState.cashBalance) {
         applyCloudWallet(cloud);
       }
       hasSyncedWithCloudOnce = true;
@@ -1084,13 +1084,14 @@ async function triggerManualCloudWalletSync() {
   if (syncStatus) syncStatus.textContent = 'Contacting Render Cloud...';
 
   try {
-    await syncWalletWithCloud(isNativePlatform());
+    await syncWalletWithCloud(false);
     if (syncBtn) {
       syncBtn.textContent = 'Synced ✓';
       syncBtn.style.opacity = '1';
     }
-    if (syncStatus) syncStatus.textContent = `Synced at ${new Date().toLocaleTimeString()} ($${fmtMoney(walletState.cashBalance)})`;
-    showToast(`Cloud Portfolio Synced! Balance: $${fmtMoney(walletState.cashBalance)}`, 'success');
+    const posCount = (walletState.positions && walletState.positions.length) || 0;
+    if (syncStatus) syncStatus.textContent = `Synced at ${new Date().toLocaleTimeString()} ($${fmtMoney(walletState.cashBalance)} • ${posCount} pos)`;
+    showToast(`Cloud Portfolio Synced! Balance: $${fmtMoney(walletState.cashBalance)} (${posCount} Open Position${posCount === 1 ? '' : 's'})`, 'success');
     setTimeout(() => {
       if (syncBtn) syncBtn.textContent = 'Sync Now';
     }, 3000);
