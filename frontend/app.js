@@ -1033,11 +1033,11 @@ async function syncWalletWithCloud(forcePush = false) {
       const cloud = await resp.json();
       const cloudUpdatedAt = cloud.updatedAt || 0;
 
-      // Case 1: Cloud doesn't have custom record, or cloud is default 10000 and APK has real local data ($6,354)
-      if ((!cloud.exists || (cloud.cashBalance === 10000 && isApk && hasCustomLocalData)) && hasCustomLocalData) {
+      // Case 1: If on APK and APK has custom local data different from cloud, phone pushes to cloud
+      if (isApk && hasCustomLocalData && walletState.cashBalance !== cloud.cashBalance) {
         await pushWalletToCloud(email);
       }
-      // Case 2: On Web, if cloud has a specific non-10000 balance ($6,354) and Web is still 10000, ALWAYS apply cloud!
+      // Case 2: On Web, if cloud has custom balance (e.g. $8,110) and Web is still 10000, ALWAYS apply cloud!
       else if (!isApk && walletState.cashBalance === 10000 && cloud.exists && cloud.cashBalance !== 10000) {
         applyCloudWallet(cloud);
       }
@@ -1051,7 +1051,11 @@ async function syncWalletWithCloud(forcePush = false) {
       }
       // Case 5: Any balance mismatch fallback
       else if (cloud.exists && cloud.cashBalance !== walletState.cashBalance) {
-        applyCloudWallet(cloud);
+        if (!isApk) {
+          applyCloudWallet(cloud);
+        } else {
+          await pushWalletToCloud(email);
+        }
       }
       hasSyncedWithCloudOnce = true;
     }
@@ -1082,8 +1086,8 @@ async function triggerManualCloudWalletSync() {
       syncBtn.textContent = 'Synced ✓';
       syncBtn.style.opacity = '1';
     }
-    if (syncStatus) syncStatus.textContent = `Synced at ${new Date().toLocaleTimeString()} ($${fmtPrice(walletState.cashBalance)})`;
-    showToast(`Cloud Portfolio Synced! Balance: $${fmtPrice(walletState.cashBalance)}`, 'success');
+    if (syncStatus) syncStatus.textContent = `Synced at ${new Date().toLocaleTimeString()} ($${fmtMoney(walletState.cashBalance)})`;
+    showToast(`Cloud Portfolio Synced! Balance: $${fmtMoney(walletState.cashBalance)}`, 'success');
     setTimeout(() => {
       if (syncBtn) syncBtn.textContent = 'Sync Now';
     }, 3000);

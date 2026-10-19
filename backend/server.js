@@ -98,18 +98,18 @@ try {
   db.exec('ALTER TABLE portfolio ADD COLUMN avg_entry_price REAL DEFAULT 0');
 } catch (e) {}
 
-// Auto-seed/sync known existing phone account balance ($6,354)
+// Auto-seed/sync known existing phone account balance ($8,110)
 try {
   const targetEmail = 'pal039987@mpgi.edu.in';
   const targetUser = db.prepare('SELECT id, balance FROM users WHERE LOWER(TRIM(email)) = ?').get(targetEmail);
   if (targetUser) {
-    if (targetUser.balance === 10000) {
-      db.prepare('UPDATE users SET balance = 6354.00 WHERE id = ?').run(targetUser.id);
+    if (targetUser.balance === 10000 || targetUser.balance === 6354) {
+      db.prepare('UPDATE users SET balance = 8110.00 WHERE id = ?').run(targetUser.id);
     }
     db.prepare(`
       INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
-      VALUES (?, 6354.00, '[]', '[]', '[]', ?)
-      ON CONFLICT(user_id) DO UPDATE SET cash_balance = 6354.00 WHERE cash_balance = 10000
+      VALUES (?, 8110.00, '[]', '[]', '[]', ?)
+      ON CONFLICT(user_id) DO UPDATE SET cash_balance = 8110.00 WHERE cash_balance IN (10000, 6354)
     `).run(targetUser.id, Date.now());
   }
 } catch (e) {}
@@ -317,7 +317,7 @@ app.get('/api/wallet/sync', (req, res) => {
 
     let wallet = db.prepare('SELECT * FROM user_wallets WHERE user_id = ?').get(user.id);
     if (!wallet) {
-      const defaultBal = cleanEmail === 'pal039987@mpgi.edu.in' ? 6354.00 : 10000.00;
+      const defaultBal = cleanEmail === 'pal039987@mpgi.edu.in' ? 8110.00 : 10000.00;
       db.prepare(`
         INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
         VALUES (?, ?, '[]', '[]', '[]', ?)
