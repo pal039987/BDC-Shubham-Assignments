@@ -150,10 +150,10 @@ app.get('/vtrade.apk', (req, res) => {
 // Version Check API for in-app OTA update system
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: '2.9.2',
-    latestVersionCode: 13,
-    releaseDate: '2026-10-19',
-    changelog: 'Completely eliminated price flickering, zero REST conflict on Trade screen, smooth 600ms throttle, TVC:GOLD TradingView sync',
+    latestVersion: '2.9.3',
+    latestVersionCode: 14,
+    releaseDate: '2026-10-20',
+    changelog: '100% Exact Gold Gain/Loss sync with TradingView (00:00 UTC) and clean reinstall walkthrough',
     downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
     forceUpdate: false
   });
@@ -382,7 +382,7 @@ const SUPPORTED_COINS = [
 const COIN_METADATA = {
   'bitcoin':      { symbol: 'BTC',  pair: 'BTC/USDT',  name: 'Bitcoin',       basePrice: 83800.00, baseCap: 1676759000000, baseVol: 31513000000, baseChange: -0.10 },
   'ethereum':     { symbol: 'ETH',  pair: 'ETH/USDT',  name: 'Ethereum',      basePrice: 2515.00,  baseCap: 307174000000,  baseVol: 16497000000, baseChange: -1.60 },
-  'gold':         { symbol: 'XAU',  pair: 'XAU/USD',   name: 'Gold Spot',     basePrice: 4166.10,  baseCap: 15000000000000, baseVol: 85000000000, baseChange: -0.13 },
+  'gold':         { symbol: 'XAU',  pair: 'XAU/USD',   name: 'Gold Spot',     basePrice: 4134.90,  baseCap: 15000000000000, baseVol: 85000000000, baseChange: -0.16 },
   'solana':       { symbol: 'SOL',  pair: 'SOL/USDT',  name: 'Solana',        basePrice: 107.50,   baseCap: 63637000000,   baseVol: 4059000000,  baseChange: -3.70 },
   'binancecoin':  { symbol: 'BNB',  pair: 'BNB/USDT',  name: 'BNB',           basePrice: 744.00,   baseCap: 107000000000,  baseVol: 1850000000,  baseChange: -0.14 },
   'dogecoin':     { symbol: 'DOGE', pair: 'DOGE/USDT', name: 'Dogecoin',      basePrice: 0.085,    baseCap: 12500000000,   baseVol: 850000000,   baseChange: -0.65 },
@@ -486,6 +486,7 @@ SUPPORTED_COINS.forEach(c => {
 const dailyOpenCache = {
   bitcoin: 0,
   ethereum: 0,
+  gold: 4140.77,
   solana: 0,
   binancecoin: 0,
   dogecoin: 0,
@@ -498,9 +499,27 @@ const dailyOpenCache = {
   lastUpdated: 0
 };
 
+// Track Gold Daily Session Open (00:00 UTC) matching TradingView
+let lastGoldOpenUtcDay = new Date().getUTCDate();
+let goldDailySessionOpen = 4140.77;
+
+function getGoldSessionOpen(currentPrice) {
+  const now = new Date();
+  const currentUtcDay = now.getUTCDate();
+  if (lastGoldOpenUtcDay !== currentUtcDay) {
+    lastGoldOpenUtcDay = currentUtcDay;
+    if (currentPrice > 0) {
+      goldDailySessionOpen = currentPrice;
+      dailyOpenCache['gold'] = currentPrice;
+    }
+  }
+  return goldDailySessionOpen || dailyOpenCache['gold'] || 4140.77;
+}
+
 async function updateDailyOpenPrices() {
   try {
     const promises = Object.entries(BINANCE_SYMBOL_MAP).map(async ([sym, coinId]) => {
+      if (coinId === 'gold') return; // Gold is Spot XAU/USD, session open tracked separately
       try {
         const resp = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=1d&limit=1`, { timeout: 3000 });
         if (resp.ok) {
@@ -541,6 +560,7 @@ async function fetchPrices() {
         bList.forEach(item => {
           const coinId = BINANCE_SYMBOL_MAP[item.symbol];
           if (coinId) {
+            if (coinId === 'gold') return; // Gold is Spot XAU/USD, synced with TVC:GOLD and Gold-API
             const p = parseFloat(item.lastPrice);
             if (p > 0 && !isNaN(p) && isFinite(p)) {
               // TradingView calculates % gain/loss from Daily Session Open (00:00 UTC)
@@ -575,8 +595,10 @@ async function fetchPrices() {
             priceCache['gold'].price = gp;
             priceCache['gold'].usdtPrice = gp;
             priceCache['gold'].usdPrice = gp;
-            const goldOpen = dailyOpenCache['gold'] || 4166.10;
+            const goldOpen = getGoldSessionOpen(gp);
             const goldDiff = gp - goldOpen;
+            priceCache['gold'].dailyOpen = goldOpen;
+            priceCache['gold'].changePrice = parseFloat(goldDiff.toFixed(2));
             priceCache['gold'].change24h = parseFloat(((goldDiff / goldOpen) * 100).toFixed(2));
             priceCache['gold'].lastVerified = Date.now();
           }

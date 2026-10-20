@@ -51,10 +51,11 @@ const COINS = [
     "tvSymbol": "TVC:GOLD",
     "category": "futures",
     "maxLev": 100,
-    "price": 4166.10,
-    "change": -0.13,
-    "high": 4175.0,
-    "low": 4152.0,
+    "price": 4134.90,
+    "open": 4140.77,
+    "change": -0.16,
+    "high": 4150.0,
+    "low": 4125.0,
     "vol": "8.5M"
   },
   {
@@ -1103,8 +1104,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9.2';
-const CURRENT_VERSION_CODE = 13;
+const CURRENT_APP_VERSION = '2.9.3';
+const CURRENT_VERSION_CODE = 14;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -3599,6 +3600,7 @@ async function fetchLiveBinanceTickers() {
 
         if (tickerMap.size > 0) {
           COINS.forEach(c => {
+            if (c.id === 'gold') return; // Gold is Spot XAU/USD, updated with exact TradingView Session Open below
             // NEVER overwrite selectedCoin on Trade tab from background REST polling!
             // Live WebSocket handles selectedCoin exclusively to prevent jump/flicker
             if (activeTab === 'trade' && selectedCoin && c.id === selectedCoin.id) {
@@ -3634,7 +3636,7 @@ async function fetchLiveBinanceTickers() {
       const gold = COINS.find(c => c.id === 'gold');
       if (gold) {
         gold.price = parseFloat(parseFloat(goldR.price).toFixed(2));
-        if (!gold.open) gold.open = 4166.10;
+        if (!gold.open || gold.open === 4166.10) gold.open = 4140.77;
         const diff = gold.price - gold.open;
         gold.change = parseFloat(((diff / gold.open) * 100).toFixed(2));
         if (gold.high < gold.price) gold.high = parseFloat((gold.price * 1.003).toFixed(2));
