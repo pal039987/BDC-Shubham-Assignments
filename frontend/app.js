@@ -1118,8 +1118,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9.6';
-const CURRENT_VERSION_CODE = 17;
+const CURRENT_APP_VERSION = '2.9.7';
+const CURRENT_VERSION_CODE = 18;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -1472,9 +1472,35 @@ async function handleForgotPassword(event) {
 
   const cleanEmail = emailPrompt.trim().toLowerCase();
   const dbUsers = getRegisteredUsers();
-  const user = dbUsers.find(u => u.email.toLowerCase() === cleanEmail);
+  let user = dbUsers.find(u => u.email.toLowerCase() === cleanEmail);
 
+  // If not found in local storage (e.g. fresh reinstall), check cloud server
+  let cloudAccountExists = false;
   if (!user) {
+    try {
+      const ctl = new AbortController();
+      const tmr = setTimeout(() => ctl.abort(), 8000);
+      const resp = await fetch(getApiEndpoint('/api/auth/reset-password'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, checkOnly: true }),
+        signal: ctl.signal
+      });
+      clearTimeout(tmr);
+      if (resp.ok) {
+        cloudAccountExists = true;
+      } else if (resp.status === 404) {
+        showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
+        showToast('Account is not registered. Please create an account first.', 'error');
+        switchAuthTab('register');
+        const regEmail = document.getElementById('register-email');
+        if (regEmail) regEmail.value = cleanEmail;
+        return;
+      }
+    } catch (e) {}
+  }
+
+  if (!user && !cloudAccountExists) {
     showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
     showToast('Account is not registered. Please create an account first.', 'error');
     switchAuthTab('register');
@@ -1495,7 +1521,7 @@ async function handleForgotPassword(event) {
   let cloudUpdated = false;
   try {
     const ctl = new AbortController();
-    const tmr = setTimeout(() => ctl.abort(), 4000);
+    const tmr = setTimeout(() => ctl.abort(), 8000);
     const resp = await fetch(getApiEndpoint('/api/auth/reset-password'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1505,20 +1531,13 @@ async function handleForgotPassword(event) {
     clearTimeout(tmr);
     if (resp.ok) {
       cloudUpdated = true;
-    } else if (resp.status === 404 && !user) {
-      showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
-      showToast('Account is not registered. Please create an account first.', 'error');
-      switchAuthTab('register');
-      const regEmail = document.getElementById('register-email');
-      if (regEmail) regEmail.value = cleanEmail;
-      return;
     }
   } catch (err) {}
 
   if (user) {
     user.password = newPwd;
     saveRegisteredUser(user);
-  } else if (cloudUpdated) {
+  } else {
     saveRegisteredUser({
       username: cleanEmail.split('@')[0],
       email: cleanEmail,
@@ -1547,6 +1566,7 @@ async function handleAuthLogin(event) {
   const emailInput = document.getElementById('login-email');
   const pwdInput = document.getElementById('login-password');
   const rememberBox = document.getElementById('login-remember');
+  const loginBtn = document.querySelector('#auth-login-form button[type="submit"]') || document.getElementById('login-submit-btn');
 
   const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
   const password = pwdInput ? pwdInput.value : '';
@@ -1588,7 +1608,7 @@ async function handleAuthLogin(event) {
     updateAccountAuthUI();
     renderAccountScreen();
     showToast(`Welcome back, ${registered.username}!`, 'success');
-    syncWalletWithCloud();
+    syncWalletWithCloud(false);
 
     // Auto-sync this account to Render cloud database so it works on web too
     fetch(getApiEndpoint('/api/auth/register'), {
@@ -1599,10 +1619,16 @@ async function handleAuthLogin(event) {
     return;
   }
 
-  // 2. Cloud Server Sync Check (Enables accounts registered on Web to log in on APK instantly!)
+  // 2. Cloud Server Sync Check (Enables accounts registered on Web or across reinstalls to log in instantly!)
+  const originalBtnText = loginBtn ? loginBtn.innerHTML : '';
+  if (loginBtn) {
+    loginBtn.innerHTML = '<span>Signing in...</span>';
+    loginBtn.disabled = true;
+  }
+
   try {
     const ctl = new AbortController();
-    const tmr = setTimeout(() => ctl.abort(), 3500);
+    const tmr = setTimeout(() => ctl.abort(), 15000); // 15-second timeout for cloud cold starts
     const resp = await fetch(getApiEndpoint('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1611,8 +1637,8 @@ async function handleAuthLogin(event) {
     });
     clearTimeout(tmr);
 
-    const data = await resp.json().catch(() => ({}));
     if (resp.ok) {
+      const data = await resp.json().catch(() => ({}));
       clearAuthAlert();
       if (typeof data.balance === 'number') {
         walletState.cashBalance = data.balance;
@@ -1646,15 +1672,33 @@ async function handleAuthLogin(event) {
       showAuthAlert('🔒 Incorrect password. Please try again.', 'error');
       showToast('Incorrect password. Please try again.', 'error');
       return;
+    } else if (resp.status === 404) {
+      // ONLY HTTP 404 means user is truly not registered in database
+      showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
+      showToast('Account is not registered. Please create an account first.', 'error');
+      switchAuthTab('register');
+      const regEmail = document.getElementById('register-email');
+      if (regEmail) regEmail.value = email;
+      return;
+    } else {
+      const errData = await resp.json().catch(() => ({}));
+      showAuthAlert(errData.error || 'Login failed. Please try again.', 'error');
+      return;
     }
-  } catch (err) {}
-
-  // 3. User is strictly NOT in database:
-  showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
-  showToast('Account is not registered. Please create an account first.', 'error');
-  switchAuthTab('register');
-  const regEmail = document.getElementById('register-email');
-  if (regEmail) regEmail.value = email;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      showAuthAlert('⚠️ Server connection timed out. Please check your internet connection.', 'error');
+      showToast('Connection timed out. Please try again.', 'error');
+    } else {
+      showAuthAlert('⚠️ Unable to connect to server. Please check your internet connection.', 'error');
+      showToast('Unable to connect to server.', 'error');
+    }
+  } finally {
+    if (loginBtn) {
+      loginBtn.innerHTML = originalBtnText || '<span>Sign In to Trade</span><span class="auth-btn-arrow">→</span>';
+      loginBtn.disabled = false;
+    }
+  }
 }
 
 async function handleAuthRegister(event) {
@@ -1670,6 +1714,7 @@ async function handleAuthRegister(event) {
   const nameInput = document.getElementById('register-name');
   const emailInput = document.getElementById('register-email');
   const pwdInput = document.getElementById('register-password');
+  const regBtn = document.querySelector('#auth-register-form button[type="submit"]') || document.getElementById('register-submit-btn');
 
   const username = nameInput ? nameInput.value.trim() : '';
   const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
@@ -1682,7 +1727,7 @@ async function handleAuthRegister(event) {
   }
   if (password.length < 6) {
     showAuthAlert('Password must be at least 6 characters', 'error');
-    showToast('Password must be at least 6 characters', 'error');
+    showToast('Password must be at least 6 characters long', 'error');
     return;
   }
 
@@ -1698,32 +1743,94 @@ async function handleAuthRegister(event) {
     return;
   }
 
-  // 2. Register into persistent in-app database immediately (instant execution)
-  clearAuthAlert();
-  saveRegisteredUser({ username, email, password });
-  const sess = {
-    token: 'vtrade_auth_' + Date.now(),
-    username: username,
-    email: email,
-    isGuest: false,
-    loggedInAt: Date.now()
-  };
-  saveAuthSession(sess);
-  userProfile.name = username;
-  userProfile.email = email;
-  saveUserProfile();
-  dismissAuthModal(true);
-  updateAccountAuthUI();
-  renderAccountScreen();
-  showToast(`Account created! Welcome to VTrade, ${username}!`, 'success');
-  syncWalletWithCloud();
+  const originalBtnText = regBtn ? regBtn.innerHTML : '';
+  if (regBtn) {
+    regBtn.innerHTML = '<span>Creating Account...</span>';
+    regBtn.disabled = true;
+  }
 
-  // 3. Central Cloud Server Sync (registers account in Render database immediately)
-  fetch(getApiEndpoint('/api/auth/register'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password })
-  }).catch(() => {});
+  try {
+    // 2. Central Cloud Server Sync - MUST await and verify server database persistence!
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 15000);
+    const resp = await fetch(getApiEndpoint('/api/auth/register'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
+      signal: ctl.signal
+    });
+    clearTimeout(tmr);
+
+    if (resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      clearAuthAlert();
+      saveRegisteredUser({
+        username: data.username || username,
+        email: data.email || email,
+        password: password,
+        balance: (typeof data.balance === 'number') ? data.balance : 10000
+      });
+      const sess = {
+        token: data.token || ('vtrade_auth_' + Date.now()),
+        username: data.username || username,
+        email: data.email || email,
+        isGuest: false,
+        loggedInAt: Date.now()
+      };
+      saveAuthSession(sess);
+      userProfile.name = sess.username;
+      userProfile.email = sess.email;
+      saveUserProfile();
+      dismissAuthModal(true);
+      updateAccountAuthUI();
+      renderAccountScreen();
+      showToast(`Account created! Welcome to VTrade, ${sess.username}!`, 'success');
+      syncWalletWithCloud(true);
+      return;
+    } else {
+      const data = await resp.json().catch(() => ({}));
+      if (resp.status === 400 && data.error && data.error.includes('already exists')) {
+        showAuthAlert('⚠️ Account already exists! Please Sign In.', 'error');
+        showToast('Account already exists! Please Sign In.', 'error');
+        switchAuthTab('login');
+        const loginEmail = document.getElementById('login-email');
+        if (loginEmail) loginEmail.value = email;
+        return;
+      }
+      showAuthAlert(data.error || 'Registration failed. Please try again.', 'error');
+      showToast(data.error || 'Registration failed.', 'error');
+      return;
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      showAuthAlert('⚠️ Server connection timed out. Please check your internet connection.', 'error');
+      showToast('Connection timed out. Please try again.', 'error');
+    } else {
+      // Offline / Network fallback: allow local registration so offline standalone works
+      clearAuthAlert();
+      saveRegisteredUser({ username, email, password, balance: 10000 });
+      const sess = {
+        token: 'vtrade_auth_' + Date.now(),
+        username: username,
+        email: email,
+        isGuest: false,
+        loggedInAt: Date.now()
+      };
+      saveAuthSession(sess);
+      userProfile.name = username;
+      userProfile.email = email;
+      saveUserProfile();
+      dismissAuthModal(true);
+      updateAccountAuthUI();
+      renderAccountScreen();
+      showToast(`Account created offline! Welcome to VTrade, ${username}!`, 'success');
+    }
+  } finally {
+    if (regBtn) {
+      regBtn.innerHTML = originalBtnText || '<span>Create Free Trading Account</span><span class="auth-btn-arrow">⚡</span>';
+      regBtn.disabled = false;
+    }
+  }
 }
 
 function continueAsGuestTrader() {

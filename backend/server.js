@@ -98,6 +98,90 @@ try {
   db.exec('ALTER TABLE portfolio ADD COLUMN avg_entry_price REAL DEFAULT 0');
 } catch (e) {}
 
+// ─── Universal Persistent User Registry Backup Engine ──────────────────────────
+const USERS_BACKUP_FILE = path.join(__dirname, 'registered_users_backup.json');
+
+function syncUsersBackup() {
+  try {
+    const allUsers = db.prepare('SELECT id, username, email, password, balance, created_at FROM users').all();
+    const backupData = allUsers.map(u => {
+      const wallet = db.prepare('SELECT cash_balance, positions_json, orders_json, trades_json, updated_at FROM user_wallets WHERE user_id = ?').get(u.id);
+      return {
+        id: u.id,
+        username: u.username,
+        email: u.email,
+        password: u.password,
+        balance: wallet && typeof wallet.cash_balance === 'number' ? wallet.cash_balance : u.balance,
+        created_at: u.created_at,
+        positions_json: wallet ? wallet.positions_json : '[]',
+        orders_json: wallet ? wallet.orders_json : '[]',
+        trades_json: wallet ? wallet.trades_json : '[]',
+        updated_at: wallet ? wallet.updated_at : Date.now()
+      };
+    });
+    fs.writeFileSync(USERS_BACKUP_FILE, JSON.stringify(backupData, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to sync users backup:', err);
+  }
+}
+
+function restoreUsersFromBackup() {
+  try {
+    // 1. Seed standard demo / test accounts if not already in DB
+    const seedHash = bcrypt.hashSync('password123', 10);
+    const defaultSeeds = [
+      { username: 'testtrader', email: 'test@example.com', password: seedHash, balance: 10000 },
+      { username: 'trader2', email: 'trader2@test.com', password: seedHash, balance: 10000 }
+    ];
+    defaultSeeds.forEach(s => {
+      const exists = db.prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?').get(s.email.toLowerCase());
+      if (!exists) {
+        const ins = db.prepare('INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, ?)').run(s.username, s.email, s.password, s.balance);
+        db.prepare('INSERT OR IGNORE INTO user_wallets (user_id, cash_balance, updated_at) VALUES (?, ?, ?)')
+          .run(ins.lastInsertRowid, s.balance, Date.now());
+      }
+    });
+
+    // 2. Restore any persisted registered users from backup ledger
+    if (fs.existsSync(USERS_BACKUP_FILE)) {
+      const content = fs.readFileSync(USERS_BACKUP_FILE, 'utf8');
+      const backupUsers = JSON.parse(content || '[]');
+      if (Array.isArray(backupUsers)) {
+        for (const bu of backupUsers) {
+          if (!bu.email) continue;
+          const cleanEmail = bu.email.trim().toLowerCase();
+          let existingUser = db.prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
+          let userId;
+          if (!existingUser) {
+            const ins = db.prepare('INSERT INTO users (username, email, password, balance, created_at) VALUES (?, ?, ?, ?, ?)')
+              .run(bu.username || cleanEmail.split('@')[0], cleanEmail, bu.password, bu.balance || 10000, bu.created_at || new Date().toISOString());
+            userId = ins.lastInsertRowid;
+          } else {
+            userId = existingUser.id;
+          }
+          db.prepare(`
+            INSERT OR REPLACE INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `).run(
+            userId,
+            typeof bu.balance === 'number' ? bu.balance : 10000,
+            bu.positions_json || '[]',
+            bu.orders_json || '[]',
+            bu.trades_json || '[]',
+            bu.updated_at || Date.now()
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Failed to restore users from backup ledger:', err);
+  }
+}
+
+// Ensure persistent users ledger is restored on startup
+restoreUsersFromBackup();
+syncUsersBackup();
+
 // Clean up any legacy auto-seeded mock position (entryPrice 82296.78) without resetting user balance
 try {
   const targetEmail = 'pal039987@mpgi.edu.in';
@@ -135,10 +219,10 @@ app.get('/vtrade.apk', (req, res) => {
 // Version Check API for in-app OTA update system
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: '2.9.6',
-    latestVersionCode: 17,
+    latestVersion: '2.9.7',
+    latestVersionCode: 18,
     releaseDate: '2026-10-20',
-    changelog: '120 FPS buttery smooth splash & onboarding animations, bulletproof cloud balance preservation across reinstallation',
+    changelog: 'Universal persistent user accounts across reinstalls, guaranteed cloud registration, and robust 15s login',
     downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
     forceUpdate: false
   });
@@ -230,13 +314,18 @@ app.post('/api/auth/register', (req, res) => {
 
     const hash = bcrypt.hashSync(password, 10);
     const result = db.prepare('INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, ?)').run(cleanUsername, cleanEmail, hash, STARTING_BALANCE);
+    const userId = result.lastInsertRowid;
     
-    // Initialize portfolio strictly for the supported pairs
-    db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(result.lastInsertRowid, 'bitcoin');
-    db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(result.lastInsertRowid, 'ethereum');
-    db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(result.lastInsertRowid, 'solana');
+    // Initialize user wallet and portfolio strictly for the supported pairs
+    db.prepare('INSERT OR IGNORE INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(userId, STARTING_BALANCE, '[]', '[]', '[]', Date.now());
+    db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(userId, 'bitcoin');
+    db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(userId, 'ethereum');
+    db.prepare('INSERT OR IGNORE INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, 0, 0)').run(userId, 'solana');
     
-    const token = jwt.sign({ id: result.lastInsertRowid, username: cleanUsername, email: cleanEmail }, JWT_SECRET, { expiresIn: '365d' });
+    syncUsersBackup();
+    
+    const token = jwt.sign({ id: userId, username: cleanUsername, email: cleanEmail }, JWT_SECRET, { expiresIn: '365d' });
     res.json({ token, username: cleanUsername, email: cleanEmail, balance: STARTING_BALANCE });
   } catch (err) {
     if (err.message && err.message.includes('UNIQUE')) {
@@ -269,16 +358,20 @@ app.post('/api/auth/login', (req, res) => {
 
 app.post('/api/auth/reset-password', (req, res) => {
   try {
-    const { email, newPassword } = req.body || {};
-    if (!email || !newPassword) return res.status(400).json({ error: 'Email and new password required' });
-    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    const { email, newPassword, checkOnly } = req.body || {};
+    if (!email) return res.status(400).json({ error: 'Email required' });
     const cleanEmail = email.trim().toLowerCase();
     const user = db.prepare('SELECT * FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
     if (!user) {
       return res.status(404).json({ error: 'Account is not registered. Please create an account first.' });
     }
+    if (checkOnly) {
+      return res.json({ success: true, exists: true });
+    }
+    if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
     const hash = bcrypt.hashSync(newPassword, 10);
     db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, user.id);
+    syncUsersBackup();
     res.json({ success: true, message: 'Password updated successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to reset password: ' + (err.message || 'unknown') });
@@ -313,6 +406,7 @@ app.post('/api/wallet/sync', (req, res) => {
 
     // Also update base balance in users table
     db.prepare('UPDATE users SET balance = ? WHERE id = ?').run(bal, user.id);
+    syncUsersBackup();
 
     res.json({ success: true, cashBalance: bal, updatedAt: ts });
   } catch (err) {
