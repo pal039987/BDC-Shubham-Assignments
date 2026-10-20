@@ -4,12 +4,12 @@
     "username": "testtrader",
     "email": "test@example.com",
     "password": "$2b$10$0zd6sV9C5OV113ultRMpv.mKC1F7e1bU5Oig5zm55.GV2.dcK7Xpi",
-    "balance": 7125.139999999996,
+    "balance": 7125.139999999997,
     "created_at": "2026-10-12 09:17:17",
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 2,
@@ -21,7 +21,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 22,
@@ -33,7 +33,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 23,
@@ -45,7 +45,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 24,
@@ -57,7 +57,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 25,
@@ -69,7 +69,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 26,
@@ -81,7 +81,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 27,
@@ -93,7 +93,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 28,
@@ -105,7 +105,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 29,
@@ -117,7 +117,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 30,
@@ -129,7 +129,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839720
+    "updated_at": 1792479707190
   },
   {
     "id": 31,
@@ -141,7 +141,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 32,
@@ -153,7 +153,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 33,
@@ -165,7 +165,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 34,
@@ -177,7 +177,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 35,
@@ -189,7 +189,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 36,
@@ -201,7 +201,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 37,
@@ -213,7 +213,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 38,
@@ -225,7 +225,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 39,
@@ -237,7 +237,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 40,
@@ -249,7 +249,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 41,
@@ -261,7 +261,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 42,
@@ -273,7 +273,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 43,
@@ -285,7 +285,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 44,
@@ -297,7 +297,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 45,
@@ -309,7 +309,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 46,
@@ -321,7 +321,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 47,
@@ -333,7 +333,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 48,
@@ -345,7 +345,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 49,
@@ -357,7 +357,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 50,
@@ -369,7 +369,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839721
+    "updated_at": 1792479707191
   },
   {
     "id": 51,
@@ -381,7 +381,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839722
+    "updated_at": 1792479707192
   },
   {
     "id": 52,
@@ -393,7 +393,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839722
+    "updated_at": 1792479707192
   },
   {
     "id": 53,
@@ -405,7 +405,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839722
+    "updated_at": 1792479707192
   },
   {
     "id": 54,
@@ -417,7 +417,7 @@
     "positions_json": "[]",
     "orders_json": "[]",
     "trades_json": "[]",
-    "updated_at": 1792478839722
+    "updated_at": 1792479707192
   },
   {
     "id": 55,
@@ -430,5 +430,29 @@
     "orders_json": "[]",
     "trades_json": "[]",
     "updated_at": 1792478839043
+  },
+  {
+    "id": 56,
+    "username": "rabi",
+    "email": "pal039987@mpgi.edu.in",
+    "password": "$2b$10$Ebzd3AgayEhsb09XJL41iOyC5XQ3lxB1myytvP.VUE.EA3M7R0ccq",
+    "balance": 10000,
+    "created_at": "2026-10-20 07:00:48",
+    "positions_json": "[]",
+    "orders_json": "[]",
+    "trades_json": "[]",
+    "updated_at": 1792479648738
+  },
+  {
+    "id": 57,
+    "username": "FreshTrader_1792479706398",
+    "email": "trader_1792479706398@vtrade.org",
+    "password": "$2b$10$RTvxXewhoVIX1sRF861wyuSXibgfxw0UHmbf47bfzYZef0w/XOaKe",
+    "balance": 10000,
+    "created_at": "2026-10-20 07:01:46",
+    "positions_json": "[]",
+    "orders_json": "[]",
+    "trades_json": "[]",
+    "updated_at": 1792479706629
   }
 ]
