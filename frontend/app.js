@@ -1112,8 +1112,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9.4';
-const CURRENT_VERSION_CODE = 15;
+const CURRENT_APP_VERSION = '2.9.5';
+const CURRENT_VERSION_CODE = 16;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -4013,6 +4013,10 @@ function initVTradeApp() {
 
   // Background In-App OTA Update Check
   setTimeout(() => checkForAppUpdates(false), 2500);
+
+  // Pre-activate Onboarding / Auth flow immediately beneath the splash screen
+  // Guarantees zero flash of Home screen when splash fades out!
+  initPostSplashFlow();
 
   // Trigger App Launch Splash Animation -> Then trigger Onboarding or Main screen
   setTimeout(() => {

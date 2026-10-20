@@ -1058,6 +1058,14 @@
 
   <!-- ══════════════════════ 12. 3D ANIMATED ONBOARDING WALKTHROUGH ══════════════════════ -->
   <div class="onboarding-overlay hidden" id="vtrade-onboarding-modal">
+    <script>
+      try {
+        if (localStorage.getItem('vtrade_onboarding_completed') !== '1') {
+          var onbEl = document.getElementById('vtrade-onboarding-modal');
+          if (onbEl) onbEl.classList.remove('hidden');
+        }
+      } catch (e) {}
+    </script>
     <div class="onboarding-container">
       <div class="onboarding-top-bar">
         <div class="onboarding-brand">

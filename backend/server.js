@@ -136,10 +136,10 @@ app.get('/vtrade.apk', (req, res) => {
 // Version Check API for in-app OTA update system
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: '2.9.4',
-    latestVersionCode: 15,
+    latestVersion: '2.9.5',
+    latestVersionCode: 16,
     releaseDate: '2026-10-20',
-    changelog: 'TradingView scanner exact Gold price sync, fluid 450ms real-time Order Book, clean 0-position reinstall',
+    changelog: 'Zero-flash instant Onboarding transition directly from splash, exact TradingView Gold sync',
     downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
     forceUpdate: false
   });
