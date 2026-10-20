@@ -946,7 +946,9 @@ function saveWalletState() {
     // Debounced background sync to Cloud Database
     const sess = getAuthSession();
     if (sess && sess.email && !sess.isGuest) {
-      if (!isNativePlatform() && !hasSyncedWithCloudOnce && walletState.cashBalance === 10000) {
+      // CRITICAL: Never push default/unverified local wallet to cloud database until we've pulled cloud state once!
+      // This protects users from having their cloud account balance overwritten by default $10,000 on fresh install / login
+      if (!hasSyncedWithCloudOnce) {
         return;
       }
       fetch(getApiEndpoint('/api/wallet/sync'), {
@@ -1045,8 +1047,12 @@ async function syncWalletWithCloud(forcePush = false) {
       const cloud = await resp.json();
       const cloudUpdatedAt = cloud.updatedAt || 0;
 
+      // Case 0: First sync after boot/reinstall/login -> ALWAYS pull cloud if it exists!
+      if (!hasSyncedWithCloudOnce && cloud.exists) {
+        applyCloudWallet(cloud);
+      }
       // Case 1: If cloud has active open positions and local has none, ALWAYS PULL CLOUD!
-      if (cloud.exists && cloud.positions && cloud.positions.length > 0 && (!walletState.positions || walletState.positions.length === 0)) {
+      else if (cloud.exists && cloud.positions && cloud.positions.length > 0 && (!walletState.positions || walletState.positions.length === 0)) {
         applyCloudWallet(cloud);
       }
       // Case 2: If cloud has different number of positions
@@ -1112,8 +1118,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9.5';
-const CURRENT_VERSION_CODE = 16;
+const CURRENT_APP_VERSION = '2.9.6';
+const CURRENT_VERSION_CODE = 17;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -1608,11 +1614,14 @@ async function handleAuthLogin(event) {
     const data = await resp.json().catch(() => ({}));
     if (resp.ok) {
       clearAuthAlert();
+      if (typeof data.balance === 'number') {
+        walletState.cashBalance = data.balance;
+      }
       saveRegisteredUser({
         username: data.username || email.split('@')[0],
         email: data.email || email,
         password: password,
-        balance: data.balance || 10000
+        balance: (typeof data.balance === 'number') ? data.balance : 10000
       });
       const sess = {
         token: data.token,
@@ -1631,7 +1640,7 @@ async function handleAuthLogin(event) {
       updateAccountAuthUI();
       renderAccountScreen();
       showToast(`Welcome back, ${sess.username}!`, 'success');
-      syncWalletWithCloud();
+      await syncWalletWithCloud(false);
       return;
     } else if (resp.status === 401) {
       showAuthAlert('🔒 Incorrect password. Please try again.', 'error');
@@ -4157,6 +4166,7 @@ function setupOnboardingSwipe() {
   let startTime = 0;
   let isDragging = false;
   let isHorizontal = null;
+  let rafId = null;
 
   wrapper.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
@@ -4189,13 +4199,18 @@ function setupOnboardingSwipe() {
       effectiveDeltaX = deltaX * 0.35;
     }
 
-    const basePercent = -(currentOnboardingSlide * 25);
-    track.style.transform = `translate3d(calc(${basePercent}% + ${effectiveDeltaX}px), 0, 0)`;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+      const slideWidth = wrapper.offsetWidth || window.innerWidth;
+      const basePx = -(currentOnboardingSlide * slideWidth);
+      track.style.transform = `translate3d(${basePx + effectiveDeltaX}px, 0, 0)`;
+    });
   }, { passive: true });
 
   wrapper.addEventListener('touchend', () => {
     if (!isDragging) return;
     isDragging = false;
+    if (rafId) cancelAnimationFrame(rafId);
     track.style.transition = 'transform 0.36s cubic-bezier(0.16, 1, 0.3, 1)';
 
     const deltaX = currentX - startX;

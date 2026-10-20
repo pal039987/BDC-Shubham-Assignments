@@ -98,7 +98,7 @@ try {
   db.exec('ALTER TABLE portfolio ADD COLUMN avg_entry_price REAL DEFAULT 0');
 } catch (e) {}
 
-// Clean up any legacy auto-seeded mock position (entryPrice 82296.78)
+// Clean up any legacy auto-seeded mock position (entryPrice 82296.78) without resetting user balance
 try {
   const targetEmail = 'pal039987@mpgi.edu.in';
   const targetUser = db.prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?').get(targetEmail);
@@ -108,9 +108,8 @@ try {
       let pos = JSON.parse(w.positions_json || '[]');
       const filtered = pos.filter(p => !(p.id === 1729340000000 || p.entryPrice === 82296.78));
       if (filtered.length !== pos.length) {
-        db.prepare('UPDATE user_wallets SET positions_json = ?, cash_balance = 10000.00, updated_at = ? WHERE user_id = ?')
-          .run(JSON.stringify(filtered), Date.now(), targetUser.id);
-        db.prepare('UPDATE users SET balance = 10000.00 WHERE id = ?').run(targetUser.id);
+        db.prepare('UPDATE user_wallets SET positions_json = ? WHERE user_id = ?')
+          .run(JSON.stringify(filtered), targetUser.id);
       }
     }
   }
@@ -136,10 +135,10 @@ app.get('/vtrade.apk', (req, res) => {
 // Version Check API for in-app OTA update system
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: '2.9.5',
-    latestVersionCode: 16,
+    latestVersion: '2.9.6',
+    latestVersionCode: 17,
     releaseDate: '2026-10-20',
-    changelog: 'Zero-flash instant Onboarding transition directly from splash, exact TradingView Gold sync',
+    changelog: '120 FPS buttery smooth splash & onboarding animations, bulletproof cloud balance preservation across reinstallation',
     downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
     forceUpdate: false
   });

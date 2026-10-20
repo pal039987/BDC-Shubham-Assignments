@@ -48,12 +48,16 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  transition: opacity 0.45s var(--ease-smooth), transform 0.45s var(--ease-smooth);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .vtrade-splash-screen.fade-out {
   opacity: 0;
-  transform: scale(1.03);
+  transform: scale(1.03) translateZ(0);
   pointer-events: none;
 }
 
@@ -62,12 +66,14 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  animation: splashFadeIn 0.5s ease-out forwards;
+  animation: splashFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+  transform: translateZ(0);
 }
 
 @keyframes splashFadeIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.92) translateZ(0); }
+  to { opacity: 1; transform: scale(1) translateZ(0); }
 }
 
 .splash-emblem-wrap {
@@ -78,21 +84,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: translateZ(0);
 }
 
 .splash-pulse-glow {
   position: absolute;
-  width: 130px;
-  height: 130px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, rgba(0, 210, 255, 0.25) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.5) 0%, rgba(0, 210, 255, 0.25) 45%, transparent 72%);
   animation: splashPulse 2s ease-in-out infinite;
-  filter: blur(14px);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  pointer-events: none;
 }
 
 @keyframes splashPulse {
-  0%, 100% { transform: scale(0.95); opacity: 0.4; }
-  50% { transform: scale(1.15); opacity: 0.85; }
+  0%, 100% { transform: scale(0.95) translateZ(0); opacity: 0.45; }
+  50% { transform: scale(1.15) translateZ(0); opacity: 0.9; }
 }
 
 .splash-emblem-img {
@@ -3593,6 +3602,10 @@ html, body {
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
 }
 
 .onboarding-slide {
@@ -3605,14 +3618,15 @@ html, body {
   padding: 8px 24px;
   box-sizing: border-box;
   text-align: center;
-  will-change: transform, opacity;
+  will-change: transform;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 @keyframes gentleHeroFloat {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-7px); }
+  0%, 100% { transform: translateY(0px) translateZ(0); }
+  50% { transform: translateY(-7px) translateZ(0); }
 }
 
 @keyframes pulseRing {
@@ -3629,6 +3643,7 @@ html, body {
   align-items: center;
   justify-content: center;
   position: relative;
+  transform: translateZ(0);
 }
 
 .onboarding-hero-card {
@@ -3644,21 +3659,25 @@ html, body {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .onb-glow-aura {
   position: absolute;
-  width: 160px;
-  height: 160px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
-  filter: blur(40px);
-  opacity: 0.35;
+  opacity: 0.55;
   pointer-events: none;
+  transform: translateZ(0);
 }
-.aura-gold { background: #f59e0b; }
-.aura-cyan { background: #00d2ff; }
-.aura-emerald { background: #00c087; }
-.aura-violet { background: #8b5cf6; }
+.aura-gold { background: radial-gradient(circle, rgba(245, 158, 11, 0.55) 0%, rgba(245, 158, 11, 0.12) 50%, transparent 75%); }
+.aura-cyan { background: radial-gradient(circle, rgba(0, 210, 255, 0.55) 0%, rgba(0, 210, 255, 0.12) 50%, transparent 75%); }
+.aura-emerald { background: radial-gradient(circle, rgba(0, 192, 135, 0.55) 0%, rgba(0, 192, 135, 0.12) 50%, transparent 75%); }
+.aura-violet { background: radial-gradient(circle, rgba(139, 92, 246, 0.55) 0%, rgba(139, 92, 246, 0.12) 50%, transparent 75%); }
 
 .card-glow-gold {
   box-shadow: 0 16px 36px rgba(245, 158, 11, 0.22), inset 0 1px 0 rgba(251, 191, 36, 0.3);
