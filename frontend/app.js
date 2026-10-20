@@ -914,7 +914,13 @@ const WALLET_STORAGE_KEY = 'vtrade_paper_wallet_v3';
 function loadWalletState() {
   try {
     const raw = localStorage.getItem(WALLET_STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const state = JSON.parse(raw);
+      if (state && Array.isArray(state.positions)) {
+        state.positions = state.positions.filter(p => !(p.entryPrice === 82296.78 || p.id === 1729340000000));
+      }
+      return state;
+    }
   } catch (e) {
     console.warn('Failed to load wallet state, initializing fresh:', e);
   }
@@ -989,7 +995,9 @@ async function pushWalletToCloud(email) {
 function applyCloudWallet(cloud) {
   if (!cloud || typeof cloud.cashBalance !== 'number') return;
   walletState.cashBalance = cloud.cashBalance;
-  if (Array.isArray(cloud.positions)) walletState.positions = cloud.positions;
+  if (Array.isArray(cloud.positions)) {
+    walletState.positions = cloud.positions.filter(p => !(p.entryPrice === 82296.78 || p.id === 1729340000000));
+  }
   if (Array.isArray(cloud.orders)) walletState.orders = cloud.orders;
   if (Array.isArray(cloud.tradesHistory)) walletState.tradesHistory = cloud.tradesHistory;
   walletState.lastUpdated = cloud.updatedAt || Date.now();
@@ -1104,8 +1112,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9.3';
-const CURRENT_VERSION_CODE = 14;
+const CURRENT_APP_VERSION = '2.9.4';
+const CURRENT_VERSION_CODE = 15;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -2906,6 +2914,19 @@ function renderCandlestickSvg() {
 }
 
 // ─── 13. ORDERBOOK (DOM) RENDERING ───────────────────────────────────────
+let orderbookEngineTimer = null;
+function startOrderbookLiveEngine() {
+  if (orderbookEngineTimer) clearInterval(orderbookEngineTimer);
+  orderbookEngineTimer = setInterval(() => {
+    if (activeTab === 'trade') {
+      const obPanel = document.getElementById('tpanel-orderbook');
+      if (obPanel && !obPanel.classList.contains('hidden')) {
+        renderOrderbook();
+      }
+    }
+  }, 450); // Fluid 450ms real-time depth stream for all coins (including Gold!)
+}
+
 function renderOrderbook() {
   const bidsWrap = document.getElementById('ob-bids-rows');
   const asksWrap = document.getElementById('ob-asks-rows');
@@ -2952,6 +2973,9 @@ function setTradeSubtab(tab) {
     if (btn) btn.classList.toggle('active', t === tab);
     if (panel) panel.classList.toggle('hidden', t !== tab);
   });
+  if (tab === 'orderbook') {
+    renderOrderbook();
+  }
 }
 
 // ─── 14. SLIDE-UP ORDER BOTTOM SHEET (COINBASE STYLE) ───────────────────
@@ -3466,6 +3490,52 @@ let liveTickerWs = null;
 let lastWsRenderTime = 0;
 let wsRenderTimer = null;
 
+let goldLivePollTimer = null;
+
+async function pollLiveGoldPrice() {
+  try {
+    const goldCtl = new AbortController();
+    const goldTmr = setTimeout(() => goldCtl.abort(), 2000);
+    let tvGold = null;
+    try {
+      const tvResp = await fetch('https://scanner.tradingview.com/symbol?symbol=TVC:GOLD&fields=close,change,change_abs,open,high,low', { signal: goldCtl.signal });
+      if (tvResp && tvResp.ok) tvGold = await tvResp.json();
+    } catch (e) {}
+
+    const gold = COINS.find(c => c.id === 'gold');
+    if (gold) {
+      if (tvGold && typeof tvGold.close === 'number' && tvGold.close > 0) {
+        gold.price = parseFloat(tvGold.close.toFixed(2));
+        if (typeof tvGold.change === 'number') gold.change = parseFloat(tvGold.change.toFixed(2));
+        if (typeof tvGold.open === 'number') gold.open = parseFloat(tvGold.open.toFixed(2));
+        if (typeof tvGold.high === 'number') gold.high = parseFloat(tvGold.high.toFixed(2));
+        if (typeof tvGold.low === 'number') gold.low = parseFloat(tvGold.low.toFixed(2));
+      } else {
+        const goldR = await fetch('https://api.gold-api.com/price/XAU', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
+        if (goldR && goldR.price) {
+          gold.price = parseFloat(parseFloat(goldR.price).toFixed(2));
+          if (!gold.open || gold.open === 4166.10 || gold.open === 4133.65) gold.open = 4140.77;
+          const diff = gold.price - gold.open;
+          gold.change = parseFloat(((diff / gold.open) * 100).toFixed(2));
+        }
+      }
+      if (activeTab === 'trade' && selectedCoin && selectedCoin.id === 'gold') {
+        renderLivePriceUpdates();
+      }
+    }
+    clearTimeout(goldTmr);
+  } catch (gErr) {}
+}
+
+function startGoldLivePolling() {
+  if (goldLivePollTimer) clearInterval(goldLivePollTimer);
+  goldLivePollTimer = setInterval(() => {
+    if (activeTab === 'trade' && selectedCoin && selectedCoin.id === 'gold') {
+      pollLiveGoldPrice();
+    }
+  }, 2000); // Live 2-second TradingView price sync when viewing Gold
+}
+
 function connectCoinTickerWs(binanceSym) {
   if (typeof WebSocket === 'undefined' || !binanceSym) return;
   if (liveTickerWs) {
@@ -3476,7 +3546,10 @@ function connectCoinTickerWs(binanceSym) {
     clearTimeout(wsRenderTimer);
     wsRenderTimer = null;
   }
-  if (binanceSym === 'PAXGUSDT') return; // Gold uses Gold-API
+  if (binanceSym === 'PAXGUSDT') {
+    pollLiveGoldPrice();
+    return; // Gold uses direct TVC:GOLD TradingView scanner feed
+  }
 
   // Connect to unblocked Binance Vision WebSocket with stream.binance.com fallback
   const endpoints = [
@@ -3626,27 +3699,8 @@ async function fetchLiveBinanceTickers() {
     } catch (err) {}
   }
 
-  // Real live Gold Spot (XAU/USD) query from Gold-API
-  try {
-    const goldCtl = new AbortController();
-    const goldTmr = setTimeout(() => goldCtl.abort(), 1800);
-    const goldR = await fetch('https://api.gold-api.com/price/XAU', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
-    clearTimeout(goldTmr);
-    if (goldR && goldR.price) {
-      const gold = COINS.find(c => c.id === 'gold');
-      if (gold) {
-        gold.price = parseFloat(parseFloat(goldR.price).toFixed(2));
-        if (!gold.open || gold.open === 4166.10) gold.open = 4140.77;
-        const diff = gold.price - gold.open;
-        gold.change = parseFloat(((diff / gold.open) * 100).toFixed(2));
-        if (gold.high < gold.price) gold.high = parseFloat((gold.price * 1.003).toFixed(2));
-        if (gold.low > gold.price) gold.low = parseFloat((gold.price * 0.997).toFixed(2));
-        if (activeTab === 'trade' && selectedCoin && selectedCoin.id === 'gold') {
-          renderLivePriceUpdates();
-        }
-      }
-    }
-  } catch (gErr) {}
+  // Real live Gold Spot (TVC:GOLD TradingView sync + Gold-API fallback)
+  await pollLiveGoldPrice();
 
   checkPendingOrdersTrigger();
   if (activeTab !== 'trade') {
@@ -3724,11 +3778,6 @@ function renderLivePriceUpdates() {
       liveChangeEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
     }
     renderPositions();
-    const now = Date.now();
-    if (now - lastObRenderTime >= 1500) {
-      lastObRenderTime = now;
-      renderOrderbook();
-    }
   } else if (activeTab === 'portfolio') {
     renderPortfolioScreen();
   } else if (activeTab === 'account') {
@@ -3944,6 +3993,10 @@ function initVTradeApp() {
   if (!liveTickerInterval) {
     liveTickerInterval = setInterval(fetchLiveBinanceTickers, 10000);
   }
+
+  // Start fluid real-time Order Book Engine & Live Gold Sync
+  startOrderbookLiveEngine();
+  startGoldLivePolling();
 
   // Initial and recurring Real-Time Cloud Wallet Sync (Every 3 seconds auto-sync!)
   syncWalletWithCloud();

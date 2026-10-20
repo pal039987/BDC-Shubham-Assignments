@@ -98,35 +98,21 @@ try {
   db.exec('ALTER TABLE portfolio ADD COLUMN avg_entry_price REAL DEFAULT 0');
 } catch (e) {}
 
-const userBtcPositions = [{
-  id: 1729340000000,
-  coinId: 'bitcoin',
-  symbol: 'BTC',
-  pair: 'BTC/USDT',
-  side: 'long',
-  entryPrice: 82296.78,
-  size: 3.6955,
-  leverage: 150,
-  margin: 2027.52,
-  liqPrice: 81803.00,
-  created_at: new Date().toISOString()
-}];
-
-// Auto-seed/sync active user portfolio with BTC/USDT Long position ($6,082.48 cash + 1 open position)
+// Clean up any legacy auto-seeded mock position (entryPrice 82296.78)
 try {
   const targetEmail = 'pal039987@mpgi.edu.in';
-  const targetUser = db.prepare('SELECT id, balance FROM users WHERE LOWER(TRIM(email)) = ?').get(targetEmail);
+  const targetUser = db.prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?').get(targetEmail);
   if (targetUser) {
-    db.prepare('UPDATE users SET balance = 6082.48 WHERE id = ?').run(targetUser.id);
-    db.prepare(`
-      INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
-      VALUES (?, 6082.48, ?, '[]', '[]', ?)
-      ON CONFLICT(user_id) DO UPDATE SET
-        cash_balance = 6082.48,
-        positions_json = excluded.positions_json,
-        updated_at = excluded.updated_at
-      WHERE json_array_length(user_wallets.positions_json) = 0
-    `).run(targetUser.id, JSON.stringify(userBtcPositions), Date.now());
+    const w = db.prepare('SELECT positions_json FROM user_wallets WHERE user_id = ?').get(targetUser.id);
+    if (w && w.positions_json) {
+      let pos = JSON.parse(w.positions_json || '[]');
+      const filtered = pos.filter(p => !(p.id === 1729340000000 || p.entryPrice === 82296.78));
+      if (filtered.length !== pos.length) {
+        db.prepare('UPDATE user_wallets SET positions_json = ?, cash_balance = 10000.00, updated_at = ? WHERE user_id = ?')
+          .run(JSON.stringify(filtered), Date.now(), targetUser.id);
+        db.prepare('UPDATE users SET balance = 10000.00 WHERE id = ?').run(targetUser.id);
+      }
+    }
   }
 } catch (e) {}
 
@@ -150,10 +136,10 @@ app.get('/vtrade.apk', (req, res) => {
 // Version Check API for in-app OTA update system
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: '2.9.3',
-    latestVersionCode: 14,
+    latestVersion: '2.9.4',
+    latestVersionCode: 15,
     releaseDate: '2026-10-20',
-    changelog: '100% Exact Gold Gain/Loss sync with TradingView (00:00 UTC) and clean reinstall walkthrough',
+    changelog: 'TradingView scanner exact Gold price sync, fluid 450ms real-time Order Book, clean 0-position reinstall',
     downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
     forceUpdate: false
   });
@@ -345,8 +331,8 @@ app.get('/api/wallet/sync', (req, res) => {
 
     let wallet = db.prepare('SELECT * FROM user_wallets WHERE user_id = ?').get(user.id);
     if (!wallet) {
-      const defaultBal = cleanEmail === 'pal039987@mpgi.edu.in' ? 6082.48 : 10000.00;
-      const defaultPos = cleanEmail === 'pal039987@mpgi.edu.in' ? JSON.stringify(userBtcPositions) : '[]';
+      const defaultBal = 10000.00;
+      const defaultPos = '[]';
       db.prepare(`
         INSERT INTO user_wallets (user_id, cash_balance, positions_json, orders_json, trades_json, updated_at)
         VALUES (?, ?, ?, '[]', '[]', ?)
@@ -589,18 +575,45 @@ async function fetchPrices() {
           }
         });
         try {
-          const goldResp = await fetch('https://api.gold-api.com/price/XAU', { timeout: 2500 }).then(r => r.json()).catch(() => null);
-          if (goldResp && goldResp.price && priceCache['gold']) {
-            const gp = parseFloat(parseFloat(goldResp.price).toFixed(2));
+          let goldData = null;
+          try {
+            const tvResp = await fetch('https://scanner.tradingview.com/symbol?symbol=TVC:GOLD&fields=close,change,change_abs,open,high,low', {
+              headers: { 'Accept': 'application/json' },
+              timeout: 2500
+            });
+            if (tvResp && tvResp.ok) {
+              goldData = await tvResp.json();
+            }
+          } catch (tvErr) {}
+
+          if (goldData && typeof goldData.close === 'number' && goldData.close > 0 && priceCache['gold']) {
+            const gp = parseFloat(goldData.close.toFixed(2));
+            const chg = typeof goldData.change === 'number' ? parseFloat(goldData.change.toFixed(2)) : -0.16;
+            const diff = typeof goldData.change_abs === 'number' ? parseFloat(goldData.change_abs.toFixed(2)) : (gp * (chg / 100));
+            const gOpen = goldData.open ? parseFloat(goldData.open.toFixed(2)) : getGoldSessionOpen(gp);
             priceCache['gold'].price = gp;
             priceCache['gold'].usdtPrice = gp;
             priceCache['gold'].usdPrice = gp;
-            const goldOpen = getGoldSessionOpen(gp);
-            const goldDiff = gp - goldOpen;
-            priceCache['gold'].dailyOpen = goldOpen;
-            priceCache['gold'].changePrice = parseFloat(goldDiff.toFixed(2));
-            priceCache['gold'].change24h = parseFloat(((goldDiff / goldOpen) * 100).toFixed(2));
+            priceCache['gold'].dailyOpen = gOpen;
+            priceCache['gold'].changePrice = diff;
+            priceCache['gold'].change24h = chg;
+            if (goldData.high) priceCache['gold'].high24h = parseFloat(goldData.high.toFixed(2));
+            if (goldData.low) priceCache['gold'].low24h = parseFloat(goldData.low.toFixed(2));
             priceCache['gold'].lastVerified = Date.now();
+          } else {
+            const goldResp = await fetch('https://api.gold-api.com/price/XAU', { timeout: 2500 }).then(r => r.json()).catch(() => null);
+            if (goldResp && goldResp.price && priceCache['gold']) {
+              const gp = parseFloat(parseFloat(goldResp.price).toFixed(2));
+              priceCache['gold'].price = gp;
+              priceCache['gold'].usdtPrice = gp;
+              priceCache['gold'].usdPrice = gp;
+              const goldOpen = getGoldSessionOpen(gp);
+              const goldDiff = gp - goldOpen;
+              priceCache['gold'].dailyOpen = goldOpen;
+              priceCache['gold'].changePrice = parseFloat(goldDiff.toFixed(2));
+              priceCache['gold'].change24h = parseFloat(((goldDiff / goldOpen) * 100).toFixed(2));
+              priceCache['gold'].lastVerified = Date.now();
+            }
           }
         } catch (gErr) {}
         priceCache.updatedAt = Date.now();
