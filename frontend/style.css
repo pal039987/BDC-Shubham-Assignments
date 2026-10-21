@@ -6431,5 +6431,791 @@ html.is-native-apk .vtrade-app-root {
   color: #475569;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   🦈 SHARK EXCHANGE AESTHETIC DESIGN SYSTEM (SCREENSHOTS 1, 2, 3)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── 1. SHARK TOP HEADER ─── */
+.shark-top-header {
+  background: rgba(8, 11, 17, 0.88) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.12) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 32px !important;
+  height: 70px !important;
+}
+
+.shark-brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shark-brand-title {
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.5px !important;
+  color: #ffffff !important;
+  text-transform: uppercase !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.brand-sub-exchange {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 2.2px;
+  color: #00e5ff;
+  text-transform: uppercase;
+}
+
+.shark-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shark-header-nav .dnav-link {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shark-header-nav .dnav-link:hover,
+.shark-header-nav .dnav-link.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dnav-arrow {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.shark-actions-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Iconic Shark Exchange Cyan "TRADE NOW" Button */
+.shark-trade-now-btn {
+  background: linear-gradient(135deg, #00d2ff 0%, #00b4d8 100%) !important;
+  color: #040810 !important;
+  font-weight: 800 !important;
+  font-size: 13.5px !important;
+  letter-spacing: 0.6px !important;
+  padding: 9px 18px 9px 22px !important;
+  border-radius: 999px !important;
+  border: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  box-shadow: 0 0 24px rgba(0, 210, 255, 0.45) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.shark-trade-now-btn:hover {
+  transform: translateY(-1px) scale(1.02) !important;
+  box-shadow: 0 0 32px rgba(0, 210, 255, 0.7) !important;
+}
+
+.stn-arrow-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(4, 8, 16, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── 2. SHARK HERO SECTION (SCREENSHOT 1) ─── */
+.shark-hero-section {
+  position: relative;
+  overflow: hidden;
+  padding: 60px 32px 80px;
+  background: radial-gradient(circle at 75% 40%, rgba(0, 210, 255, 0.12) 0%, transparent 60%),
+              radial-gradient(circle at 20% 20%, rgba(0, 119, 182, 0.08) 0%, transparent 50%),
+              #06080d;
+}
+
+/* Perspective 3D Grid Floor (Screenshot 1 Floor) */
+.shark-grid-floor {
+  position: absolute;
+  bottom: -40px;
+  left: -20%;
+  right: -20%;
+  height: 380px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 229, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 229, 255, 0.12) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform: perspective(600px) rotateX(68deg);
+  transform-origin: bottom center;
+  mask-image: linear-gradient(to top, rgba(0,0,0,1) 15%, transparent 95%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 15%, transparent 95%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.shark-hero-container {
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+}
+
+.shark-hero-left {
+  flex: 1.1;
+  max-width: 680px;
+}
+
+.shark-fiu-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #00e5ff;
+  letter-spacing: 0.3px;
+  margin-bottom: 24px;
+}
+
+.sft-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+.shark-hero-headline {
+  font-size: clamp(40px, 5.2vw, 68px);
+  font-weight: 800;
+  line-height: 1.12;
+  color: #ffffff;
+  letter-spacing: -1.8px;
+  margin: 0 0 20px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.shark-hero-tagline {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #94a3b8;
+  margin: 0 0 34px 0;
+  max-width: 540px;
+}
+
+.shark-hero-actions-row {
+  margin-bottom: 28px;
+}
+
+.shark-get-started-btn {
+  background: linear-gradient(135deg, #00d2ff 0%, #0099cc 100%);
+  color: #040810;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 34px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 6px 28px rgba(0, 210, 255, 0.45);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shark-get-started-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 36px rgba(0, 210, 255, 0.7);
+}
+
+.shark-social-icons-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.shark-soc-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.shark-soc-btn:hover {
+  color: #00e5ff;
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 3D Visual Graphic on Right (Screenshot 1) */
+.shark-hero-right {
+  flex: 0.95;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.shark-hero-3d-wrapper {
+  position: relative;
+  max-width: 560px;
+  width: 100%;
+}
+
+.shark-hero-3d-img {
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  display: block;
+  filter: drop-shadow(0 20px 50px rgba(0, 210, 255, 0.25));
+  animation: floatHero3D 5s infinite ease-in-out;
+}
+
+@keyframes floatHero3D {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ─── 3. SHARK AUDITED PERFORMANCE SECTION (SCREENSHOT 2) ─── */
+.shark-audit-section {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 70px 32px 50px;
+  text-align: center;
+}
+
+.shark-sec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #00e5ff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.shark-audit-title {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1px;
+  margin: 0 0 14px 0;
+}
+
+.shark-audit-sub {
+  font-size: 16px;
+  color: #94a3b8;
+  max-width: 640px;
+  margin: 0 auto 46px;
+  line-height: 1.6;
+}
+
+.shark-audit-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  text-align: left;
+}
+
+.shark-audit-card {
+  background: #0a0e17;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 36px 40px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.shark-audit-card:hover {
+  border-color: rgba(0, 229, 255, 0.35);
+  transform: translateY(-3px);
+}
+
+.sac-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #00e5ff;
+  text-transform: uppercase;
+}
+
+.sac-stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 16px 0 8px;
+}
+
+.sac-stat-num {
+  font-size: 64px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+
+.sac-stat-num.cyan-glow {
+  color: #00e5ff;
+  text-shadow: 0 0 24px rgba(0, 229, 255, 0.45);
+}
+
+.sac-stat-pct,
+.sac-stat-unit {
+  font-size: 32px;
+  font-weight: 800;
+  color: #00e5ff;
+}
+
+.sac-sub {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 24px;
+}
+
+.sac-prog-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.sac-prog-fill {
+  width: 97.8%;
+  height: 100%;
+  background: linear-gradient(90deg, #00b4d8, #00e5ff);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.7);
+  border-radius: 999px;
+}
+
+.sac-dots-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 30px;
+  font-size: 12.5px;
+  color: #94a3b8;
+}
+
+.sac-dot-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.sdot-cyan { background: #00e5ff; box-shadow: 0 0 6px #00e5ff; }
+.sdot-white { background: #ffffff; }
+.sdot-amber { background: #ff9900; }
+
+.sac-foot {
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sac-foot-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sac-action-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #00e5ff;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.sac-action-link:hover {
+  text-decoration: underline;
+}
+
+.sac-sub-link {
+  font-size: 13.5px;
+  color: #8b92a4;
+  text-decoration: none;
+}
+
+.sac-sub-link:hover {
+  color: #ffffff;
+}
+
+/* 30D Challenge Bar Chart (Screenshot 2) */
+.sac-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 90px;
+  margin-bottom: 24px;
+  padding-top: 10px;
+}
+
+.sbc-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.sbc-bar {
+  width: 100%;
+  background: rgba(0, 229, 255, 0.22);
+  border-radius: 4px;
+  transition: height 0.5s ease;
+}
+
+.sbc-bar.active-glow {
+  background: linear-gradient(180deg, #00e5ff 0%, #0077b6 100%);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.85);
+}
+
+.sbc-lbl {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 6px;
+}
+
+/* ─── 4. SHARK FEE STRUCTURE & LEVERAGE CARD (SCREENSHOT 3) ─── */
+.shark-fee-section {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 30px 32px 60px;
+}
+
+.shark-fee-pill-card {
+  background: #0a0e17;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 36px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  text-align: center;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+
+.sfc-col {
+  flex: 1;
+}
+
+.sfc-val {
+  font-size: clamp(32px, 3.8vw, 48px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1px;
+  margin-bottom: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+.sfc-cyan {
+  color: #00e5ff;
+  text-shadow: 0 0 18px rgba(0, 229, 255, 0.5);
+}
+
+.sfc-lbl {
+  font-size: 14px;
+  color: #8b92a4;
+  font-weight: 500;
+}
+
+.sfc-divider {
+  width: 1px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ─── 5. SHARK "ANYTIME. ANYWHERE" APP DOWNLOAD SECTION (SCREENSHOT 3 BOTTOM) ─── */
+.shark-download-section {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 60px 32px 80px;
+}
+
+.sds-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.sds-tag {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #00e5ff;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.sds-title {
+  font-size: clamp(32px, 3.8vw, 48px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1px;
+  margin: 0 0 12px 0;
+}
+
+.sds-sub {
+  font-size: 16px;
+  color: #94a3b8;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.sds-grid {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  align-items: center;
+  gap: 50px;
+  background: #0a0e17;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 50px 60px;
+}
+
+.sds-phone-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.sds-phone-img {
+  max-width: 360px;
+  width: 100%;
+  border-radius: 24px;
+  filter: drop-shadow(0 20px 40px rgba(0, 210, 255, 0.2));
+  animation: floatHero3D 6s infinite ease-in-out;
+}
+
+.sds-features-box {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.sds-feat-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.sds-feat-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 229, 255, 0.15);
+  color: #00e5ff;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sds-feat-text strong {
+  display: block;
+  font-size: 16px;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.sds-feat-text span {
+  font-size: 13.5px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.sds-download-box {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.sds-download-btn {
+  background: linear-gradient(135deg, #00d2ff 0%, #0099cc 100%);
+  color: #040810;
+  padding: 14px 26px;
+  border-radius: 14px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 6px 24px rgba(0, 210, 255, 0.45);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sds-download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 210, 255, 0.7);
+}
+
+.sds-btn-sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+}
+
+.sds-btn-main {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+.sds-qr-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 10px 16px;
+}
+
+.sds-qr-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  background: #fff;
+  padding: 3px;
+}
+
+.sds-qr-text {
+  font-size: 12px;
+  color: #8b92a4;
+  max-width: 90px;
+  line-height: 1.35;
+}
+
+/* ─── DESKTOP VS MOBILE VISIBILITY RULES ─── */
+@media (min-width: 1024px) {
+  /* Hide splash screen immediately on desktop browser */
+  .vtrade-splash-screen {
+    display: none !important;
+  }
+  
+  /* Ensure full desktop canvas */
+  .vtrade-app-root {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .home-scroll-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .shark-top-header {
+    padding: 0 16px !important;
+  }
+
+  .shark-header-nav {
+    display: none !important;
+  }
+
+  .shark-hero-container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .shark-hero-headline {
+    font-size: 34px;
+  }
+
+  .shark-hero-tagline {
+    margin: 0 auto 28px;
+  }
+
+  .shark-social-icons-row {
+    justify-content: center;
+  }
+
+  .shark-audit-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shark-fee-pill-card {
+    flex-direction: column;
+    gap: 24px;
+    padding: 28px 20px;
+  }
+
+  .sfc-divider {
+    width: 80%;
+    height: 1px;
+  }
+
+  .sds-grid {
+    grid-template-columns: 1fr;
+    padding: 30px 20px;
+    gap: 32px;
+  }
+
+  .sds-download-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 
 

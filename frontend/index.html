@@ -49,31 +49,49 @@
   <!-- Root App Shell (120 FPS Hardware-Accelerated) -->
   <div id="app" class="vtrade-app-root">
 
-    <!-- ══════════════════════ 1. TOP HEADER BAR ══════════════════════ -->
-    <header class="app-top-header" id="app-top-header">
-      <div class="header-brand-wrap" onclick="switchBottomTab('home')" style="cursor: pointer;">
-        <div class="header-logo-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ff9900" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+    <!-- ══════════════════════ 1. TOP HEADER BAR (SHARK EXCHANGE STYLE) ══════════════════════ -->
+    <header class="app-top-header shark-top-header" id="app-top-header">
+      <div class="header-brand-wrap shark-brand-wrap" onclick="switchBottomTab('home')" style="cursor: pointer;">
+        <div class="header-logo-icon shark-logo-fin">
+          <svg viewBox="0 0 28 28" width="24" height="24" fill="none">
+            <path d="M14 2L2 14L14 26L18 20L10 14L18 8L14 2Z" fill="url(#cyanFinGrad)"></path>
+            <path d="M14 2L26 14L14 26L10 20L18 14L10 8L14 2Z" fill="#00d2ff"></path>
+            <defs>
+              <linearGradient id="cyanFinGrad" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00e5ff"/>
+                <stop offset="1" stop-color="#0077b6"/>
+              </linearGradient>
+            </defs>
           </svg>
         </div>
         <div class="header-brand-text">
-          <span class="brand-name">VTrade</span>
-          <span class="brand-pro-tag">PRO</span>
+          <span class="brand-name shark-brand-title">VTRADE</span>
+          <span class="brand-sub-exchange">EXCHANGE</span>
         </div>
       </div>
 
-      <!-- Desktop Floating Header Navigation Links (Aceternity / Skiper Style) -->
-      <nav class="desktop-header-nav" id="desktop-header-nav">
+      <!-- Desktop Header Navigation Links (Matching Shark Exchange Screenshot 1) -->
+      <nav class="desktop-header-nav shark-header-nav" id="desktop-header-nav">
         <button class="dnav-link active" id="dnav-home" onclick="switchBottomTab('home')">
-          <span class="dnav-dot"></span>
           <span>Home</span>
         </button>
-        <button class="dnav-link" id="dnav-trade" onclick="switchBottomTab('trade')">
-          <span>Trade Desk</span>
-        </button>
         <button class="dnav-link" id="dnav-markets" onclick="switchBottomTab('markets')">
-          <span>Markets</span>
+          <span>Markets ▾</span>
+        </button>
+        <button class="dnav-link" id="dnav-trade" onclick="switchBottomTab('trade')">
+          <span>Futures ▾</span>
+        </button>
+        <button class="dnav-link" id="dnav-options" onclick="switchBottomTab('trade')">
+          <span>Options ▾</span>
+        </button>
+        <button class="dnav-link" id="dnav-refer" onclick="showToast('Refer & Earn Program: Earn 30% virtual rebate commission!', 'info')">
+          <span>Refer &amp; Earn</span>
+        </button>
+        <button class="dnav-link" id="dnav-fees" onclick="scrollToSharkSection('shark-fee-section')">
+          <span>Fee Structure</span>
+        </button>
+        <button class="dnav-link" id="dnav-blog" onclick="showToast('VTrade Academy & Blog: Learn High-Leverage Futures Trading', 'info')">
+          <span>Blog</span>
         </button>
         <button class="dnav-link" id="dnav-portfolio" onclick="switchBottomTab('portfolio')">
           <span>Portfolio</span>
@@ -83,12 +101,12 @@
         </button>
       </nav>
 
-      <div class="header-actions-wrap">
-        <!-- 120 FPS Binance Live Stream Status Badge -->
-        <div class="desktop-live-stream-badge" title="Binance Real-Time Vision & WebSocket Feed Active">
-          <span class="dls-pulse"></span>
-          <span class="dls-text">120 FPS Realtime</span>
-        </div>
+      <div class="header-actions-wrap shark-actions-wrap">
+        <!-- Currency Toggle Switcher: USD ($) ⇄ INR (₹) -->
+        <button class="currency-toggle-btn" id="currency-toggle-btn" onclick="toggleCurrency()" title="Toggle Currency USD / INR">
+          <span class="curr-icon" id="curr-toggle-icon">$</span>
+          <span class="curr-label" id="curr-toggle-label">USD</span>
+        </button>
 
         <!-- Desktop Quick Demo Wallet Pill -->
         <div class="desktop-wallet-badge" id="desktop-wallet-badge" onclick="switchBottomTab('portfolio')" title="View Demo Portfolio Balance">
@@ -96,11 +114,11 @@
           <span class="dwb-val" id="desk-wallet-val">$10,000.00</span>
         </div>
 
-        <!-- Currency Toggle Switcher: USD ($) ⇄ INR (₹) -->
-        <button class="currency-toggle-btn" id="currency-toggle-btn" onclick="toggleCurrency()" title="Toggle Currency USD / INR">
-          <span class="curr-icon" id="curr-toggle-icon">$</span>
-          <span class="curr-label" id="curr-toggle-label">USD</span>
-        </button>
+        <!-- 120 FPS Binance Live Stream Status Badge -->
+        <div class="desktop-live-stream-badge" title="Binance Real-Time Vision & WebSocket Feed Active">
+          <span class="dls-pulse"></span>
+          <span class="dls-text">120 FPS</span>
+        </div>
 
         <!-- Desktop Get Android App CTA Button -->
         <button class="desktop-get-apk-btn" id="desktop-get-apk-btn" onclick="openApkDownloadModal()" title="Download VTrade Android App (v3.0.0 APK)">
@@ -109,7 +127,18 @@
             <polyline points="7 10 12 15 17 10"></polyline>
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
-          <span>Get Android App</span>
+          <span>Get App</span>
+        </button>
+
+        <!-- Iconic Shark Exchange Bright Cyan TRADE NOW Button (Screenshot 1) -->
+        <button class="shark-trade-now-btn" id="shark-trade-now-btn" onclick="switchBottomTab('trade')" title="Launch Full Pro Trading Terminal">
+          <span>TRADE NOW</span>
+          <span class="stn-arrow-circle">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </span>
         </button>
       </div>
     </header>
@@ -125,53 +154,183 @@
     <section class="app-screen-view active" id="screen-home">
       <div class="home-scroll-container">
 
-        <!-- ─── 2.1 HERO SECTION (ACETERNITY / ANIMMASTER STYLE) ─── -->
-        <section class="web-hero-section">
-          <div class="web-hero-glow"></div>
-          <div class="web-hero-content">
-            <div class="web-hero-badge">
-              <span class="badge-pulse"></span>
-              <span>NEXT-GEN CRYPTO PERPETUALS • UP TO 150X LEVERAGE</span>
+        <!-- ─── 2.1 SHARK EXCHANGE HERO SECTION (SCREENSHOT 1) ─── -->
+        <section class="shark-hero-section" id="shark-hero-section">
+          <div class="shark-grid-floor"></div>
+          <div class="shark-hero-container">
+            <div class="shark-hero-left">
+              <div class="shark-fiu-tag">
+                <span class="sft-dot"></span>
+                <span>FIU-IND Registered VASP — REID: VA00045558 • 100% Risk-Free Virtual Simulator</span>
+              </div>
+              <h1 class="shark-hero-headline">
+                India’s lowest-<br>cost crypto<br>exchange
+              </h1>
+              <p class="shark-hero-tagline">
+                Start trading in 5 mins • Experience institutional 120 FPS order execution with $10,000 risk-free demo balance.
+              </p>
+              <div class="shark-hero-actions-row">
+                <button class="shark-get-started-btn" onclick="switchBottomTab('trade')">
+                  <span>Let’s Get Started</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                </button>
+              </div>
+              <div class="shark-social-icons-row">
+                <a href="https://youtube.com" target="_blank" rel="noopener" class="shark-soc-btn" aria-label="YouTube">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener" class="shark-soc-btn" aria-label="Instagram">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                </a>
+                <a href="https://telegram.org" target="_blank" rel="noopener" class="shark-soc-btn" aria-label="Telegram">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                </a>
+              </div>
             </div>
-            <h1 class="web-hero-title">
-              Trade Crypto Futures With <span class="gradient-text">Institutional Precision</span> & Zero Slippage
-            </h1>
-            <p class="web-hero-subtitle">
-              Professional-grade paper trading powered by live 120 FPS Binance Vision WebSocket streaming, advanced TradingView charting, and $10,000 risk-free virtual capital.
-            </p>
-            <div class="web-hero-actions">
-              <button class="hero-primary-btn" onclick="switchBottomTab('trade')">
-                <span>Launch Trade Terminal</span>
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-              </button>
-              <button class="hero-secondary-btn" onclick="switchBottomTab('markets')">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
-                <span>Explore All 56 Markets</span>
-              </button>
-              <button class="hero-secondary-btn" onclick="openApkDownloadModal()">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-                <span>Get Mobile App</span>
-              </button>
+
+            <!-- Right 3D Visual Graphic (1:1 with Screenshot 1) -->
+            <div class="shark-hero-right">
+              <div class="shark-hero-3d-wrapper">
+                <img src="images/shark_hero_3d.jpg" alt="Shark Exchange 3D Crypto Graphic" class="shark-hero-3d-img" />
+                <div class="shark-3d-glow"></div>
+              </div>
             </div>
-            <div class="web-hero-stats-row">
-              <div class="wh-stat-item">
-                <span class="wh-stat-val">$54.8B+</span>
-                <span class="wh-stat-lbl">24h Market Volume</span>
+          </div>
+        </section>
+
+        <!-- ─── 2.2 SHARK AUDITED PERFORMANCE SECTION (SCREENSHOT 2) ─── -->
+        <section class="shark-audit-section" id="shark-audit-section">
+          <div class="shark-sec-badge">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#00e5ff" stroke-width="2.4"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>INDEPENDENTLY AUDITED</span>
+          </div>
+          <h2 class="shark-audit-title">Don't take our word for it.</h2>
+          <p class="shark-audit-sub">An independent Chartered Accountant firm examined our payouts and trader rebates. Here's what they found — on the record.</p>
+
+          <div class="shark-audit-cards-grid">
+            <!-- Card 1: Withdrawals -->
+            <div class="shark-audit-card">
+              <span class="sac-label">WITHDRAWALS</span>
+              <div class="sac-stat-row">
+                <span class="sac-stat-num">97.8</span>
+                <span class="sac-stat-pct">%</span>
               </div>
-              <div class="wh-stat-divider"></div>
-              <div class="wh-stat-item">
-                <span class="wh-stat-val">56 Pairs</span>
-                <span class="wh-stat-lbl">Perpetual Contracts</span>
+              <div class="sac-sub">of withdrawals processed within 24 hours</div>
+              <div class="sac-prog-bar">
+                <div class="sac-prog-fill"></div>
               </div>
-              <div class="wh-stat-divider"></div>
-              <div class="wh-stat-item">
-                <span class="wh-stat-val">Up to 150x</span>
-                <span class="wh-stat-lbl">Dynamic Leverage</span>
+              <div class="sac-dots-row">
+                <span class="sac-dot-item"><span class="sdot sdot-cyan"></span>97.1% instant</span>
+                <span class="sac-dot-item"><span class="sdot sdot-white"></span>0.7% &lt;24h</span>
+                <span class="sac-dot-item"><span class="sdot sdot-amber"></span>2.2% beyond</span>
               </div>
-              <div class="wh-stat-divider"></div>
-              <div class="wh-stat-item">
-                <span class="wh-stat-val">&lt; 12ms</span>
-                <span class="wh-stat-lbl">Matching Latency</span>
+              <div class="sac-foot">
+                <a href="#audit" onclick="showToast('Audited Uptime: 99.98% • Matching Latency &lt;12ms', 'success')" class="sac-action-link">View withdrawal report →</a>
+              </div>
+            </div>
+
+            <!-- Card 2: 30D Challenge Rebates -->
+            <div class="shark-audit-card">
+              <span class="sac-label">30D CHALLENGE REBATES</span>
+              <div class="sac-stat-row">
+                <span class="sac-stat-num cyan-glow">₹24.5</span>
+                <span class="sac-stat-unit">Cr</span>
+              </div>
+              <div class="sac-sub">in fee rebates paid back to profitable traders</div>
+              <div class="sac-bar-chart">
+                <div class="sbc-col"><div class="sbc-bar" style="height: 16%;"></div><span class="sbc-lbl">Jan</span></div>
+                <div class="sbc-col"><div class="sbc-bar" style="height: 22%;"></div><span class="sbc-lbl">Feb</span></div>
+                <div class="sbc-col"><div class="sbc-bar" style="height: 30%;"></div><span class="sbc-lbl">Mar</span></div>
+                <div class="sbc-col"><div class="sbc-bar" style="height: 42%;"></div><span class="sbc-lbl">Apr</span></div>
+                <div class="sbc-col"><div class="sbc-bar" style="height: 54%;"></div><span class="sbc-lbl">May</span></div>
+                <div class="sbc-col"><div class="sbc-bar" style="height: 66%;"></div><span class="sbc-lbl">Jun</span></div>
+                <div class="sbc-col"><div class="sbc-bar" style="height: 76%;"></div><span class="sbc-lbl">Jul</span></div>
+                <div class="sbc-col"><div class="sbc-bar" style="height: 88%;"></div><span class="sbc-lbl">Aug</span></div>
+                <div class="sbc-col"><div class="sbc-bar active-glow" style="height: 100%;"></div><span class="sbc-lbl">Sep</span></div>
+              </div>
+              <div class="sac-foot sac-foot-split">
+                <a href="#rebate" onclick="showToast('Over ₹24.5 Cr virtual challenge rebates distributed to top performers!', 'info')" class="sac-action-link">View rebate report →</a>
+                <a href="#program" onclick="showToast('30-Day Trading Challenge: Top 10 traders earn leaderboard prizes', 'info')" class="sac-sub-link">About the program</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── 2.3 SHARK FEE STRUCTURE & LEVERAGE CARD (SCREENSHOT 3) ─── -->
+        <section class="shark-fee-section" id="shark-fee-section">
+          <div class="shark-fee-pill-card">
+            <div class="sfc-col">
+              <span class="sfc-val">0.016%</span>
+              <span class="sfc-lbl">Maker Fee</span>
+            </div>
+            <div class="sfc-divider"></div>
+            <div class="sfc-col">
+              <span class="sfc-val">Upto <span class="sfc-cyan">150x</span></span>
+              <span class="sfc-lbl">Leverage</span>
+            </div>
+            <div class="sfc-divider"></div>
+            <div class="sfc-col">
+              <span class="sfc-val">0.040%</span>
+              <span class="sfc-lbl">Taker Fee</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── 2.4 SHARK "ANYTIME. ANYWHERE" APP DOWNLOAD SECTION (SCREENSHOT 3 BOTTOM) ─── -->
+        <section class="shark-download-section" id="shark-download-section">
+          <div class="sds-header">
+            <span class="sds-tag">ANYTIME. ANYWHERE</span>
+            <h2 class="sds-title">Download The VTrade Mobile App</h2>
+            <p class="sds-sub">Trade 56+ crypto perpetuals with institutional latency, 120 FPS charts, and instant order execution on Android.</p>
+          </div>
+          <div class="sds-grid">
+            <div class="sds-phone-col">
+              <div class="sds-phone-wrapper">
+                <img src="images/shark_phone_mockup.jpg" alt="VTrade Mobile App 3D Mockup" class="sds-phone-img" />
+                <div class="sds-phone-glow"></div>
+              </div>
+            </div>
+            <div class="sds-details-col">
+              <div class="sds-features-box">
+                <div class="sds-feat-row">
+                  <div class="sds-feat-check">✓</div>
+                  <div class="sds-feat-text">
+                    <strong>120 FPS High Refresh Rate</strong>
+                    <span>Tactile touch gestures, smooth charts, and responsive drawing tools.</span>
+                  </div>
+                </div>
+                <div class="sds-feat-row">
+                  <div class="sds-feat-check">✓</div>
+                  <div class="sds-feat-text">
+                    <strong>Bi-Directional Cloud Sync</strong>
+                    <span>Unified account login & balance across website and Android app.</span>
+                  </div>
+                </div>
+                <div class="sds-feat-row">
+                  <div class="sds-feat-check">✓</div>
+                  <div class="sds-feat-text">
+                    <strong>100% Offline Asset Cache</strong>
+                    <span>Zero broken icons with local SVG fallbacks and fast cold-start boot.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sds-download-box">
+                <a href="/vtrade.apk" download="VTrade.apk" class="sds-download-btn">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <div class="sds-btn-text">
+                    <span class="sds-btn-sub">Direct APK Download</span>
+                    <span class="sds-btn-main">Download Android APK (v3.0.0)</span>
+                  </div>
+                </a>
+
+                <div class="sds-qr-box">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://vtrade-crypto.onrender.com/vtrade.apk" alt="Download QR Code" class="sds-qr-img" onerror="this.style.display='none'" />
+                  <span class="sds-qr-text">Scan with Phone to Install</span>
+                </div>
               </div>
             </div>
           </div>

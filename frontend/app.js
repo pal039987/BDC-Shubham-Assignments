@@ -4929,6 +4929,18 @@ function renderLandingMarketsTable() {
   }).join('');
 }
 
+function scrollToSharkSection(id) {
+  if (activeTab !== 'home') {
+    switchBottomTab('home');
+  }
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 100);
+}
+
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(initVTradeApp, 100);
