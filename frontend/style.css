@@ -5539,3 +5539,102 @@ html, body {
   text-align: center;
 }
 
+/* ════════ DESKTOP PRO RESPONSIVE POLISH FOR ALL WEBSITE SCREENS ════════ */
+@media (min-width: 1024px) {
+  .home-scroll-container,
+  .markets-scroll-container,
+  .portfolio-scroll-container,
+  .account-scroll-container {
+    max-width: 1360px !important;
+    margin: 0 auto !important;
+    padding: 24px 24px 40px !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+  }
+
+  /* Home Dashboard / Bento on Desktop */
+  .home-balance-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 18px !important;
+    padding: 26px 30px !important;
+    margin-bottom: 22px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(16px) !important;
+  }
+
+  .home-market-intel-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .intel-card {
+    background: #0d121c !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    padding: 18px !important;
+    transition: transform 0.2s, border-color 0.2s !important;
+  }
+
+  .intel-card:hover {
+    transform: translateY(-2px) !important;
+    border-color: rgba(255, 153, 0, 0.4) !important;
+  }
+
+  .home-market-highlights {
+    background: #0a0e17 !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 16px !important;
+    padding: 20px 24px !important;
+  }
+
+  /* Markets Explorer on Desktop */
+  .markets-screen-header {
+    background: transparent !important;
+    padding: 10px 0 18px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    margin-bottom: 16px !important;
+  }
+
+  .markets-search-bar {
+    max-width: 480px !important;
+  }
+
+  .markets-category-tabs {
+    gap: 8px !important;
+    margin-top: 12px !important;
+  }
+
+  /* Portfolio Dashboard on Desktop */
+  .portfolio-summary-card {
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.05), rgba(139, 92, 246, 0.03)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 18px !important;
+    padding: 28px !important;
+    margin-bottom: 24px !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .portfolio-positions-section,
+  .portfolio-history-section {
+    background: #0a0e17 !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Settings / Account on Desktop */
+  .account-profile-card,
+  .account-section-card {
+    background: #0a0e17 !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 16px !important;
+    margin-bottom: 18px !important;
+    padding: 22px !important;
+  }
+}
+
+
