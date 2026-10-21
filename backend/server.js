@@ -219,10 +219,10 @@ app.get('/vtrade.apk', (req, res) => {
 // Version Check API for in-app OTA update system
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: '2.9.7',
-    latestVersionCode: 18,
+    latestVersion: '2.9.8',
+    latestVersionCode: 19,
     releaseDate: '2026-10-20',
-    changelog: 'Universal persistent user accounts across reinstalls, guaranteed cloud registration, and robust 15s login',
+    changelog: 'Fullscreen TradingView chart drawing tools enabled, smooth drag/pan without freeze, and password update for user account',
     downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
     forceUpdate: false
   });

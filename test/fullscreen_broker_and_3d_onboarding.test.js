@@ -87,8 +87,8 @@ densities.forEach(d => {
   assert.ok(fs.statSync(path.join(dir, 'ic_launcher.png')).size > 1000, `Icon in ${d} must be non-empty`);
 });
 
-assert.ok(gradle.includes('versionCode 11') || gradle.includes('versionCode 12') || gradle.includes('versionCode 13') || gradle.includes('versionCode 14') || gradle.includes('versionCode 15') || gradle.includes('versionCode 16') || gradle.includes('versionCode 17') || gradle.includes('versionCode 18'), 'build.gradle must be bumped to valid versionCode');
-assert.ok(gradle.includes('versionName "2.9"') || gradle.includes('versionName "2.9.1"') || gradle.includes('versionName "2.9.2"') || gradle.includes('versionName "2.9.3"') || gradle.includes('versionName "2.9.4"') || gradle.includes('versionName "2.9.5"') || gradle.includes('versionName "2.9.6"') || gradle.includes('versionName "2.9.7"'), 'build.gradle must be bumped to valid versionName');
+assert.ok(gradle.includes('versionCode 11') || gradle.includes('versionCode 12') || gradle.includes('versionCode 13') || gradle.includes('versionCode 14') || gradle.includes('versionCode 15') || gradle.includes('versionCode 16') || gradle.includes('versionCode 17') || gradle.includes('versionCode 18') || gradle.includes('versionCode 19'), 'build.gradle must be bumped to valid versionCode');
+assert.ok(gradle.includes('versionName "2.9"') || gradle.includes('versionName "2.9.1"') || gradle.includes('versionName "2.9.2"') || gradle.includes('versionName "2.9.3"') || gradle.includes('versionName "2.9.4"') || gradle.includes('versionName "2.9.5"') || gradle.includes('versionName "2.9.6"') || gradle.includes('versionName "2.9.7"') || gradle.includes('versionName "2.9.8"'), 'build.gradle must be bumped to valid versionName');
 assert.ok(appJs.includes('CLOUD_API_BASE = \'https://vtrade-crypto.onrender.com\''), 'app.js must define CLOUD_API_BASE to sync APK with cloud database');
 assert.ok(appJs.includes('syncWalletWithCloud'), 'app.js must define syncWalletWithCloud');
 assert.ok(appJs.includes('triggerManualCloudWalletSync'), 'app.js must define triggerManualCloudWalletSync');
@@ -105,7 +105,14 @@ console.log('  ✓ Render Cloud Central Database Synchronization (APK & Web Unif
 assert.ok(appJs.includes('checkForAppUpdates'), 'app.js must define checkForAppUpdates');
 assert.ok(indexHtml.includes('id="vtrade-update-modal"'), 'index.html must include in-app update modal');
 assert.ok(styleCss.includes('.update-modal-overlay'), 'style.css must style in-app update modal');
+
+// 8. Verify Fullscreen TradingView Chart Drawing Tools & Touch Drag Isolation
+assert.ok(styleCss.includes('.tv-fullscreen-modal') && styleCss.includes('touch-action: none !important'), 'tv-fullscreen-modal must have touch-action none');
+assert.ok(styleCss.includes('.tv-fullscreen-iframe') && styleCss.includes('touch-action: none !important'), 'tv-fullscreen-iframe must have touch-action none');
+assert.ok(indexHtml.includes('allow="clipboard-write; pointer-lock"'), 'tv-fullscreen-iframe must allow pointer-lock for drawing tools');
+assert.ok(appJs.includes('hide_side_toolbar=0'), 'TradingView fullscreen URL must have hide_side_toolbar=0 to enable drawing tools');
+console.log('  ✓ Fullscreen TradingView Drawing Tools (hide_side_toolbar=0) & Anti-Freeze Touch Isolation verified');
 console.log('  ✓ Dual-Direction Realtime Cloud Wallet Sync & In-App Manual Sync Button verified');
 console.log('  ✓ In-App OTA Update System (Auto Version Checker & Direct Download Dialog) verified');
 
-console.log('\n=== ALL 7 VERIFICATION SUITES PASSED! ===\n');
+console.log('\n=== ALL 8 VERIFICATION SUITES PASSED! ===\n');
