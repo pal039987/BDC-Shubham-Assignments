@@ -43,8 +43,8 @@ public class MainActivity extends BridgeActivity {
                 settings.setSupportZoom(false);
                 settings.setBuiltInZoomControls(false);
                 settings.setDisplayZoomControls(false);
-                settings.setUseWideViewPort(true);
-                settings.setLoadWithOverviewMode(true);
+                settings.setUseWideViewPort(false);
+                settings.setLoadWithOverviewMode(false);
                 settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
                 // Inject exact status bar safe-area height directly into document

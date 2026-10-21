@@ -1118,8 +1118,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9.9';
-const CURRENT_VERSION_CODE = 20;
+const CURRENT_APP_VERSION = '3.0.0';
+const CURRENT_VERSION_CODE = 21;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -2808,20 +2808,11 @@ function openFullscreenChart() {
   switchFsTab('price');
   renderFsTabContent();
 
-  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
   if (forceReload || !iframe.src || iframe.src !== url) {
     iframe.src = url;
   }
   modal.classList.remove('hidden');
-
-  // Prevent parent gesture collisions and synthetic touchcancel on Android WebView
-  const chartPanel = document.getElementById('tv-fs-panel-chart');
-  if (chartPanel && !chartPanel.dataset.touchBound) {
-    chartPanel.dataset.touchBound = '1';
-    chartPanel.addEventListener('touchmove', (e) => {
-      if (e.cancelable) e.stopPropagation();
-    }, { passive: true });
-  }
 }
 
 function closeFullscreenChart() {

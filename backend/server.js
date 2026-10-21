@@ -219,10 +219,10 @@ app.get('/vtrade.apk', (req, res) => {
 // Version Check API for in-app OTA update system
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: '2.9.9',
-    latestVersionCode: 20,
+    latestVersion: '3.0.0',
+    latestVersionCode: 21,
     releaseDate: '2026-10-21',
-    changelog: 'TradingView Chart Settings (custom candle colors, bg, grid, style), realistic financial price font (Inter/Roboto), and enhanced drawing handle touch gestures',
+    changelog: 'Native TradingView Hexagonal Settings button on toolbar, 1:1 mobile pixel coordinate precision for smooth drawing handles & risk:reward resizing',
     downloadUrl: 'https://vtrade-crypto.onrender.com/vtrade.apk',
     forceUpdate: false
   });
