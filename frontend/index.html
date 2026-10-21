@@ -94,6 +94,10 @@
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <span>Settings</span>
         </button>
+        <button class="dnav-link" id="dnav-auth" onclick="switchBottomTab('auth')">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+          <span id="dnav-auth-text">Sign In</span>
+        </button>
       </nav>
 
       <div class="header-actions-wrap">
@@ -108,6 +112,12 @@
         <button class="currency-toggle-btn" id="currency-toggle-btn" onclick="toggleCurrency()" title="Toggle Currency USD / INR">
           <span class="curr-icon" id="curr-toggle-icon">$</span>
           <span class="curr-label" id="curr-toggle-label">USD</span>
+        </button>
+
+        <!-- User Account / Sign In Pill -->
+        <button class="header-user-btn" id="header-user-btn" onclick="switchBottomTab('auth')" title="User Profile / Sign In">
+          <span class="hub-avatar" id="hub-avatar">👤</span>
+          <span class="hub-name" id="hub-name">Sign In</span>
         </button>
 
         <!-- Direct Trade Desk Button on Desktop -->
@@ -791,6 +801,183 @@
           </div>
         </div>
 
+      </div>
+    </section>
+
+    <!-- ══════════════════════ 6. SCREEN: DEDICATED LOGIN & REGISTRATION WORKSTATION ══════════════════════ -->
+    <section class="app-screen-view" id="screen-auth">
+      <div class="auth-page-container">
+        <div class="auth-page-card">
+          <!-- Left Column: Platform Showcase -->
+          <div class="auth-page-showcase">
+            <div class="aps-brand">
+              <div class="aps-logo">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#ff9900" stroke-width="2.4">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </div>
+              <span class="aps-title">VTrade PRO</span>
+            </div>
+            <h1 class="aps-heading">Institutional Grade Crypto Trading</h1>
+            <p class="aps-desc">Real-time Binance order matching, official TradingView technical charts, and up to 150x leverage with $10,000 risk-free paper trading cash.</p>
+
+            <div class="aps-features">
+              <div class="aps-feat-item">
+                <span class="aps-feat-icon">⚡</span>
+                <div>
+                  <span class="aps-feat-t">Live Binance Vision Streams</span>
+                  <span class="aps-feat-s">Direct unthrottled live prices & 11 candlestick timeframes</span>
+                </div>
+              </div>
+              <div class="aps-feat-item">
+                <span class="aps-feat-icon">🔒</span>
+                <div>
+                  <span class="aps-feat-t">Strict Secure Authentication</span>
+                  <span class="aps-feat-s">SQLite & Central Cloud database synchronization</span>
+                </div>
+              </div>
+              <div class="aps-feat-item">
+                <span class="aps-feat-icon">💼</span>
+                <div>
+                  <span class="aps-feat-t">Dual-Direction Wallet Sync</span>
+                  <span class="aps-feat-s">Your balance & positions persist across web & mobile APK</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active User Status Box (Shown when logged in) -->
+            <div class="aps-active-user-box hidden" id="aps-active-user-box">
+              <div class="aps-aub-avatar" id="aps-aub-avatar">👤</div>
+              <div class="aps-aub-info">
+                <span class="aps-aub-label">Currently Signed In:</span>
+                <span class="aps-aub-name" id="aps-aub-name">Ravi</span>
+                <span class="aps-aub-email" id="aps-aub-email">pal039987@mpgi.edu.in</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Interactive Login / Register Form -->
+          <div class="auth-page-form-wrap">
+            <div class="apf-header">
+              <div class="apf-tabs">
+                <button class="apf-tab-btn active" id="apf-tab-login" onclick="switchDesktopAuthTab('login')">Sign In</button>
+                <button class="apf-tab-btn" id="apf-tab-register" onclick="switchDesktopAuthTab('register')">Create Account</button>
+              </div>
+            </div>
+
+            <!-- Error / Status Alert Banner -->
+            <div class="apf-alert hidden" id="apf-inline-alert"></div>
+
+            <!-- When user is already logged in, show options -->
+            <div class="apf-logged-in-view hidden" id="apf-logged-in-view">
+              <div class="apf-welcome-card">
+                <div class="apf-wc-top">
+                  <span class="apf-wc-status">● Active Session</span>
+                  <span class="apf-wc-badge">Verified Trader</span>
+                </div>
+                <h3 class="apf-wc-name" id="apf-wc-name">Welcome, Ravi!</h3>
+                <p class="apf-wc-sub" id="apf-wc-email">pal039987@mpgi.edu.in</p>
+                <div class="apf-wc-balance-row">
+                  <span class="apf-wc-bk">Wallet Balance:</span>
+                  <span class="apf-wc-bv" id="apf-wc-balance">$10,000.00</span>
+                </div>
+              </div>
+
+              <div class="apf-logged-actions">
+                <button class="apf-action-primary" onclick="switchBottomTab('trade')">
+                  <span>Go to Trade Desk</span>
+                  <span>→</span>
+                </button>
+                <button class="apf-action-secondary" onclick="openSwitchAccountMode()">
+                  <span>Switch Account / Sign In with Another Email</span>
+                </button>
+                <button class="apf-action-danger" onclick="logoutDesktopUser()">
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Form 1: Sign In -->
+            <form class="apf-form" id="apf-login-form" onsubmit="handleDesktopPageLogin(event)">
+              <div class="apf-field">
+                <label class="apf-label">Email Address</label>
+                <div class="apf-input-box">
+                  <span class="apf-icon">✉️</span>
+                  <input type="email" id="apf-login-email" class="apf-input" placeholder="pal039987@mpgi.edu.in" required autocomplete="email" />
+                </div>
+              </div>
+
+              <div class="apf-field">
+                <div class="apf-label-row">
+                  <label class="apf-label">Password</label>
+                  <a href="javascript:void(0)" class="apf-forgot-link" onclick="handleDesktopPageForgotPassword()">Forgot Password?</a>
+                </div>
+                <div class="apf-input-box">
+                  <span class="apf-icon">🔒</span>
+                  <input type="password" id="apf-login-password" class="apf-input" placeholder="Enter password (e.g. sp6373)" required autocomplete="current-password" />
+                  <button type="button" class="apf-eye-btn" onclick="toggleDesktopPasswordVisibility('apf-login-password')">👁️</button>
+                </div>
+              </div>
+
+              <div class="apf-options">
+                <label class="apf-checkbox-label">
+                  <input type="checkbox" id="apf-login-remember" checked />
+                  <span>Remember my session on this computer</span>
+                </label>
+              </div>
+
+              <button type="submit" class="apf-submit-btn" id="apf-login-submit">
+                <span>Sign In to VTrade PRO</span>
+                <span class="apf-arrow">→</span>
+              </button>
+
+              <!-- Quick 1-Click Demo Fill for Convenience -->
+              <div class="apf-quick-fill">
+                <button type="button" class="apf-qfill-btn" onclick="quickFillAccount('pal039987@mpgi.edu.in', 'sp6373')">
+                  ⚡ Autofill: pal039987@mpgi.edu.in (sp6373)
+                </button>
+              </div>
+            </form>
+
+            <!-- Form 2: Register -->
+            <form class="apf-form hidden" id="apf-register-form" onsubmit="handleDesktopPageRegister(event)">
+              <div class="apf-field">
+                <label class="apf-label">Full Name / Trader Handle</label>
+                <div class="apf-input-box">
+                  <span class="apf-icon">👤</span>
+                  <input type="text" id="apf-register-name" class="apf-input" placeholder="Ravi" maxlength="30" required autocomplete="name" />
+                </div>
+              </div>
+
+              <div class="apf-field">
+                <label class="apf-label">Email Address</label>
+                <div class="apf-input-box">
+                  <span class="apf-icon">✉️</span>
+                  <input type="email" id="apf-register-email" class="apf-input" placeholder="yourname@gmail.com" maxlength="60" required autocomplete="email" />
+                </div>
+              </div>
+
+              <div class="apf-field">
+                <label class="apf-label">Create Password</label>
+                <div class="apf-input-box">
+                  <span class="apf-icon">🔒</span>
+                  <input type="password" id="apf-register-password" class="apf-input" placeholder="Minimum 6 characters" minlength="6" required autocomplete="new-password" />
+                  <button type="button" class="apf-eye-btn" onclick="toggleDesktopPasswordVisibility('apf-register-password')">👁️</button>
+                </div>
+              </div>
+
+              <div class="apf-faucet-box">
+                <span class="apf-sparkle">✨</span>
+                <span>Includes <strong>$10,000 Demo Trading Cash</strong> with zero financial risk!</span>
+              </div>
+
+              <button type="submit" class="apf-submit-btn" id="apf-register-submit">
+                <span>Create Free VTrade Account</span>
+                <span class="apf-arrow">→</span>
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </section>
 

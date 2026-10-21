@@ -4821,8 +4821,17 @@ html, body {
     color: #ef4444;
   }
 
-  /* 4. Screens Universal Desktop Viewport */
+  /* 4. Screens Universal Desktop Viewport - CRITICAL FIX: Only active screen displays, taking 100% full screen */
   html:not(.is-native-apk) .app-screen-view {
+    display: none !important;
+    height: calc(100vh - 102px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  html:not(.is-native-apk) .app-screen-view.active {
+    display: flex !important;
+    flex-direction: column;
     height: calc(100vh - 102px);
     overflow-y: auto;
     overflow-x: hidden;
@@ -4947,8 +4956,12 @@ html, body {
 
   /* ─── SCREEN 3: PROFESSIONAL TRADE DESK (WIDESCREEN 2-COLUMN) ─── */
   html:not(.is-native-apk) #screen-trade {
+    display: none !important;
+  }
+
+  html:not(.is-native-apk) #screen-trade.active {
     display: flex !important;
-    flex-direction: row;
+    flex-direction: row !important;
     height: calc(100vh - 102px);
     overflow: hidden;
   }
@@ -5318,5 +5331,467 @@ html, body {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
     padding: 28px;
+  }
+
+  /* Header User Pill */
+  html:not(.is-native-apk) .header-user-btn {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 6px 14px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  html:not(.is-native-apk) .header-user-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(245, 166, 35, 0.4);
+  }
+
+  /* ─── SCREEN 6: DEDICATED AUTHENTICATION & LOGIN WORKSTATION ─── */
+  html:not(.is-native-apk) #screen-auth.active {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+
+  .auth-page-container {
+    width: 100%;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+
+  .auth-page-card {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    background: linear-gradient(135deg, rgba(16, 22, 34, 0.88), rgba(11, 15, 23, 0.96));
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  }
+
+  .auth-page-showcase {
+    padding: 44px;
+    background: radial-gradient(circle at top left, rgba(245, 166, 35, 0.08), transparent 70%), rgba(255, 255, 255, 0.02);
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .aps-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .aps-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .aps-heading {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .aps-desc {
+    font-size: 14px;
+    color: #8b92a4;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .aps-features {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 10px;
+  }
+
+  .aps-feat-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .aps-feat-icon {
+    font-size: 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 6px;
+    line-height: 1;
+  }
+
+  .aps-feat-t {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .aps-feat-s {
+    display: block;
+    font-size: 12px;
+    color: #8b92a4;
+    margin-top: 2px;
+  }
+
+  .aps-active-user-box {
+    margin-top: auto;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .aps-aub-avatar {
+    font-size: 24px;
+  }
+
+  .aps-aub-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .aps-aub-label {
+    font-size: 11px;
+    color: #10b981;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .aps-aub-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .aps-aub-email {
+    font-size: 12px;
+    color: #8b92a4;
+  }
+
+  /* Right Side Auth Form Wrap */
+  .auth-page-form-wrap {
+    padding: 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .apf-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .apf-tab-btn {
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #8b92a4;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .apf-tab-btn.active {
+    background: rgba(245, 166, 35, 0.16);
+    color: #f5a623;
+    border: 1px solid rgba(245, 166, 35, 0.3);
+  }
+
+  .apf-alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+
+  .apf-alert.error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+  }
+
+  .apf-alert.info {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    color: #93c5fd;
+  }
+
+  .apf-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .apf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .apf-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .apf-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8b92a4;
+  }
+
+  .apf-forgot-link {
+    font-size: 11px;
+    color: #f5a623;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .apf-input-box {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 10px;
+    padding: 4px 14px;
+    gap: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .apf-input-box:focus-within {
+    border-color: #f5a623;
+    box-shadow: 0 0 10px rgba(245, 166, 35, 0.2);
+  }
+
+  .apf-icon {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  .apf-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 0;
+    outline: none;
+  }
+
+  .apf-eye-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.7;
+    padding: 0;
+  }
+
+  .apf-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #8b92a4;
+    cursor: pointer;
+  }
+
+  .apf-faucet-box {
+    background: rgba(245, 166, 35, 0.08);
+    border: 1px dashed rgba(245, 166, 35, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #d1d5db;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .apf-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #f5a623, #ff7a00);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(245, 166, 35, 0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 6px;
+  }
+
+  .apf-submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(245, 166, 35, 0.45);
+  }
+
+  .apf-quick-fill {
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  .apf-qfill-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #8b92a4;
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .apf-qfill-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-color: rgba(245, 166, 35, 0.3);
+  }
+
+  /* Logged In Card in Auth Screen */
+  .apf-welcome-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .apf-wc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .apf-wc-status {
+    font-size: 11px;
+    color: #10b981;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .apf-wc-badge {
+    font-size: 10px;
+    color: #f5a623;
+    background: rgba(245, 166, 35, 0.12);
+    border: 1px solid rgba(245, 166, 35, 0.25);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .apf-wc-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+  }
+
+  .apf-wc-sub {
+    font-size: 13px;
+    color: #8b92a4;
+    margin: 0;
+  }
+
+  .apf-wc-balance-row {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 6px;
+  }
+
+  .apf-wc-bk {
+    font-size: 12px;
+    color: #8b92a4;
+  }
+
+  .apf-wc-bv {
+    font-size: 15px;
+    font-weight: 800;
+    color: #10b981;
+    font-family: var(--font-price, monospace);
+  }
+
+  .apf-logged-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .apf-action-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+  }
+
+  .apf-action-secondary {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    color: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .apf-action-danger {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #f87171;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
   }
 }

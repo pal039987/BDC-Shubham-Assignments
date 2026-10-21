@@ -2094,7 +2094,7 @@ function clearTradeHistory() {
 function switchBottomTab(tab) {
   activeTab = tab || 'home';
 
-  const tabs = ['home', 'markets', 'trade', 'portfolio', 'account'];
+  const tabs = ['home', 'markets', 'trade', 'portfolio', 'account', 'auth'];
   tabs.forEach(t => {
     const btn = document.getElementById(`vnav-${t}`);
     const dbtn = document.getElementById(`dnav-${t}`);
@@ -2109,6 +2109,7 @@ function switchBottomTab(tab) {
   else if (activeTab === 'trade') renderTradeScreen();
   else if (activeTab === 'portfolio') renderPortfolioScreen();
   else if (activeTab === 'account') renderAccountScreen();
+  else if (activeTab === 'auth') renderDesktopAuthPage();
 
   syncDesktopHeaderState();
 }
@@ -4560,7 +4561,7 @@ let desktopLeverage = 20;
 let desktopSizeCoins = 0.05;
 
 function syncDesktopHeaderState() {
-  const tabs = ['home', 'markets', 'trade', 'portfolio', 'account'];
+  const tabs = ['home', 'markets', 'trade', 'portfolio', 'account', 'auth'];
   tabs.forEach(t => {
     const dbtn = document.getElementById(`dnav-${t}`);
     if (dbtn) dbtn.classList.toggle('active', t === activeTab);
@@ -4568,6 +4569,345 @@ function syncDesktopHeaderState() {
   const cashValEl = document.getElementById('header-cash-val');
   if (cashValEl && typeof walletState !== 'undefined') {
     cashValEl.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
+  }
+
+  // Update Auth nav item & Header user pill
+  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
+  const dnavAuthText = document.getElementById('dnav-auth-text');
+  const hubName = document.getElementById('hub-name');
+  const hubAvatar = document.getElementById('hub-avatar');
+
+  if (sess && !sess.isGuest && sess.email) {
+    const displayName = (userProfile && userProfile.name) || sess.username || 'Account';
+    if (dnavAuthText) dnavAuthText.textContent = displayName;
+    if (hubName) hubName.textContent = displayName;
+    if (hubAvatar) hubAvatar.textContent = '🟢';
+  } else {
+    if (dnavAuthText) dnavAuthText.textContent = 'Sign In';
+    if (hubName) hubName.textContent = 'Sign In';
+    if (hubAvatar) hubAvatar.textContent = '👤';
+  }
+}
+
+// ─── DESKTOP AUTH WORKSTATION LOGIC ────────────────────────────────────
+function renderDesktopAuthPage() {
+  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
+  const loggedInView = document.getElementById('apf-logged-in-view');
+  const loginForm = document.getElementById('apf-login-form');
+  const registerForm = document.getElementById('apf-register-form');
+  const activeUserBox = document.getElementById('aps-active-user-box');
+  const tabsWrap = document.querySelector('.apf-tabs');
+
+  if (sess && !sess.isGuest && sess.email) {
+    if (loggedInView) loggedInView.classList.remove('hidden');
+    if (loginForm) loginForm.classList.add('hidden');
+    if (registerForm) registerForm.classList.add('hidden');
+    if (activeUserBox) activeUserBox.classList.remove('hidden');
+    if (tabsWrap) tabsWrap.classList.add('hidden');
+
+    const nameEl = document.getElementById('apf-wc-name');
+    const emailEl = document.getElementById('apf-wc-email');
+    const balEl = document.getElementById('apf-wc-balance');
+    const aubName = document.getElementById('aps-aub-name');
+    const aubEmail = document.getElementById('aps-aub-email');
+
+    const name = (userProfile && userProfile.name) || sess.username || 'Trader';
+    if (nameEl) nameEl.textContent = `Welcome, ${name}!`;
+    if (emailEl) emailEl.textContent = sess.email;
+    if (balEl) balEl.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
+    if (aubName) aubName.textContent = name;
+    if (aubEmail) aubEmail.textContent = sess.email;
+  } else {
+    if (loggedInView) loggedInView.classList.add('hidden');
+    if (activeUserBox) activeUserBox.classList.add('hidden');
+    if (tabsWrap) tabsWrap.classList.remove('hidden');
+    switchDesktopAuthTab('login');
+  }
+}
+
+function switchDesktopAuthTab(tab) {
+  clearDesktopAuthAlert();
+  const lTab = document.getElementById('apf-tab-login');
+  const rTab = document.getElementById('apf-tab-register');
+  const lForm = document.getElementById('apf-login-form');
+  const rForm = document.getElementById('apf-register-form');
+
+  if (tab === 'login') {
+    if (lTab) lTab.classList.add('active');
+    if (rTab) rTab.classList.remove('active');
+    if (lForm) lForm.classList.remove('hidden');
+    if (rForm) rForm.classList.add('hidden');
+  } else {
+    if (lTab) lTab.classList.remove('active');
+    if (rTab) rTab.classList.add('active');
+    if (lForm) lForm.classList.add('hidden');
+    if (rForm) rForm.classList.remove('hidden');
+  }
+}
+
+function quickFillAccount(email, password) {
+  const emailInput = document.getElementById('apf-login-email');
+  const pwdInput = document.getElementById('apf-login-password');
+  if (emailInput) emailInput.value = email;
+  if (pwdInput) pwdInput.value = password;
+  showDesktopAuthAlert('Account details filled! Click "Sign In to VTrade PRO" below.', 'info');
+}
+
+function openSwitchAccountMode() {
+  const loggedInView = document.getElementById('apf-logged-in-view');
+  const tabsWrap = document.querySelector('.apf-tabs');
+  if (loggedInView) loggedInView.classList.add('hidden');
+  if (tabsWrap) tabsWrap.classList.remove('hidden');
+  switchDesktopAuthTab('login');
+  const emailInput = document.getElementById('apf-login-email');
+  if (emailInput) {
+    emailInput.value = '';
+    emailInput.focus();
+  }
+}
+
+function logoutDesktopUser() {
+  logoutAuthUser();
+  renderDesktopAuthPage();
+  syncDesktopHeaderState();
+  showToast('Signed out successfully.', 'info');
+}
+
+function showDesktopAuthAlert(msg, type = 'error') {
+  const alertEl = document.getElementById('apf-inline-alert');
+  if (!alertEl) return;
+  alertEl.textContent = msg;
+  alertEl.className = `apf-alert ${type}`;
+  alertEl.classList.remove('hidden');
+}
+
+function clearDesktopAuthAlert() {
+  const alertEl = document.getElementById('apf-inline-alert');
+  if (alertEl) {
+    alertEl.textContent = '';
+    alertEl.classList.add('hidden');
+  }
+}
+
+function toggleDesktopPasswordVisibility(id) {
+  const input = document.getElementById(id);
+  if (input) {
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+}
+
+function handleDesktopPageForgotPassword() {
+  const emailInput = document.getElementById('apf-login-email');
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+  openAuthModal('login');
+  handleForgotPassword();
+  if (email) {
+    const mInput = document.getElementById('login-email');
+    if (mInput) mInput.value = email;
+  }
+}
+
+async function handleDesktopPageLogin(event) {
+  if (event) event.preventDefault();
+
+  const emailInput = document.getElementById('apf-login-email');
+  const pwdInput = document.getElementById('apf-login-password');
+  const rememberBox = document.getElementById('apf-login-remember');
+  const submitBtn = document.getElementById('apf-login-submit');
+
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+  const password = pwdInput ? pwdInput.value : '';
+
+  if (!email || !password) {
+    showDesktopAuthAlert('Please enter both email and password', 'error');
+    return;
+  }
+
+  // 1. In-App Persistent Database Priority
+  const dbUsers = getRegisteredUsers();
+  const registered = dbUsers.find(u => u.email.toLowerCase() === email);
+
+  if (registered && registered.password === password) {
+    clearDesktopAuthAlert();
+    const sess = {
+      token: 'vtrade_auth_' + Date.now(),
+      username: registered.username,
+      email: registered.email,
+      isGuest: false,
+      loggedInAt: Date.now()
+    };
+    if (!rememberBox || rememberBox.checked) {
+      saveAuthSession(sess);
+    }
+    userProfile.name = registered.username;
+    userProfile.email = registered.email;
+    saveUserProfile();
+    updateAccountAuthUI();
+    renderAccountScreen();
+    syncDesktopHeaderState();
+    showToast(`Welcome back, ${registered.username}!`, 'success');
+    syncWalletWithCloud(false);
+    switchBottomTab('trade');
+    return;
+  }
+
+  // 2. Cloud Server Sync Check
+  if (submitBtn) {
+    submitBtn.innerHTML = '<span>Signing in to Cloud Database...</span>';
+    submitBtn.disabled = true;
+  }
+
+  try {
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 15000);
+    const resp = await fetch(getApiEndpoint('/api/auth/login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      signal: ctl.signal
+    });
+    clearTimeout(tmr);
+
+    if (resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      clearDesktopAuthAlert();
+      if (typeof data.balance === 'number') {
+        walletState.cashBalance = data.balance;
+      }
+      saveRegisteredUser({
+        username: data.username || email.split('@')[0],
+        email: email,
+        password: password
+      });
+      const sess = {
+        token: data.token || ('vtrade_cloud_' + Date.now()),
+        username: data.username || email.split('@')[0],
+        email: email,
+        isGuest: false,
+        loggedInAt: Date.now()
+      };
+      if (!rememberBox || rememberBox.checked) {
+        saveAuthSession(sess);
+      }
+      userProfile.name = data.username || email.split('@')[0];
+      userProfile.email = email;
+      saveUserProfile();
+      updateAccountAuthUI();
+      renderAccountScreen();
+      syncDesktopHeaderState();
+      showToast(`Welcome back, ${userProfile.name}!`, 'success');
+      syncWalletWithCloud(false);
+      switchBottomTab('trade');
+    } else if (resp.status === 404) {
+      showDesktopAuthAlert('Account does not exist! Please click "Create Account" tab above to register.', 'error');
+    } else if (resp.status === 401) {
+      showDesktopAuthAlert('Incorrect password! Please check your password and try again.', 'error');
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      showDesktopAuthAlert(err.message || 'Login failed. Please check your credentials.', 'error');
+    }
+  } catch (err) {
+    if (registered) {
+      if (registered.password !== password) {
+        showDesktopAuthAlert('Incorrect password! Please check your password and try again.', 'error');
+      }
+    } else {
+      showDesktopAuthAlert('Account does not exist or server is syncing. Please check your connection.', 'error');
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.innerHTML = '<span>Sign In to VTrade PRO</span><span class="apf-arrow">→</span>';
+      submitBtn.disabled = false;
+    }
+  }
+}
+
+async function handleDesktopPageRegister(event) {
+  if (event) event.preventDefault();
+
+  const nameInput = document.getElementById('apf-register-name');
+  const emailInput = document.getElementById('apf-register-email');
+  const pwdInput = document.getElementById('apf-register-password');
+  const submitBtn = document.getElementById('apf-register-submit');
+
+  const username = nameInput ? nameInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+  const password = pwdInput ? pwdInput.value : '';
+
+  if (!username || !email || !password) {
+    showDesktopAuthAlert('Please fill in all registration fields', 'error');
+    return;
+  }
+  if (password.length < 6) {
+    showDesktopAuthAlert('Password must be at least 6 characters long', 'error');
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.innerHTML = '<span>Creating Account...</span>';
+    submitBtn.disabled = true;
+  }
+
+  try {
+    const ctl = new AbortController();
+    const tmr = setTimeout(() => ctl.abort(), 15000);
+    const resp = await fetch(getApiEndpoint('/api/auth/register'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
+      signal: ctl.signal
+    });
+    clearTimeout(tmr);
+
+    if (resp.ok) {
+      saveRegisteredUser({ username, email, password });
+      const sess = {
+        token: 'vtrade_reg_' + Date.now(),
+        username,
+        email,
+        isGuest: false,
+        loggedInAt: Date.now()
+      };
+      saveAuthSession(sess);
+      userProfile.name = username;
+      userProfile.email = email;
+      walletState.cashBalance = 10000;
+      saveUserProfile();
+      saveWalletState();
+      updateAccountAuthUI();
+      renderAccountScreen();
+      syncDesktopHeaderState();
+      showToast(`Account created successfully! Welcome, ${username}!`, 'success');
+      switchBottomTab('trade');
+    } else if (resp.status === 409) {
+      showDesktopAuthAlert('An account with this email already exists! Please click "Sign In" above.', 'error');
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      showDesktopAuthAlert(err.message || 'Registration failed. Please try again.', 'error');
+    }
+  } catch (err) {
+    // Save locally
+    saveRegisteredUser({ username, email, password });
+    const sess = {
+      token: 'vtrade_reg_' + Date.now(),
+      username,
+      email,
+      isGuest: false,
+      loggedInAt: Date.now()
+    };
+    saveAuthSession(sess);
+    userProfile.name = username;
+    userProfile.email = email;
+    saveUserProfile();
+    updateAccountAuthUI();
+    syncDesktopHeaderState();
+    showToast(`Account created! Welcome, ${username}!`, 'success');
+    switchBottomTab('trade');
+  } finally {
+    if (submitBtn) {
+      submitBtn.innerHTML = '<span>Create Free VTrade Account</span><span class="apf-arrow">→</span>';
+      submitBtn.disabled = false;
+    }
   }
 }
 
