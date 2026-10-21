@@ -967,6 +967,7 @@ function saveWalletState() {
   } catch (e) {
     console.error('Failed to save wallet state:', e);
   }
+  syncDesktopHeaderState();
 }
 
 let isSyncingWallet = false;
@@ -2096,8 +2097,10 @@ function switchBottomTab(tab) {
   const tabs = ['home', 'markets', 'trade', 'portfolio', 'account'];
   tabs.forEach(t => {
     const btn = document.getElementById(`vnav-${t}`);
+    const dbtn = document.getElementById(`dnav-${t}`);
     const screen = document.getElementById(`screen-${t}`);
     if (btn) btn.classList.toggle('active', t === activeTab);
+    if (dbtn) dbtn.classList.toggle('active', t === activeTab);
     if (screen) screen.classList.toggle('active', t === activeTab);
   });
 
@@ -2106,6 +2109,8 @@ function switchBottomTab(tab) {
   else if (activeTab === 'trade') renderTradeScreen();
   else if (activeTab === 'portfolio') renderPortfolioScreen();
   else if (activeTab === 'account') renderAccountScreen();
+
+  syncDesktopHeaderState();
 }
 
 // ─── 8. NET EQUITY & PnL CALCULATIONS ────────────────────────────────────
@@ -3075,6 +3080,7 @@ function renderTradeScreen() {
   renderPositions();
   renderOrders();
   connectCoinTickerWs(selectedCoin.binanceSym);
+  updateDesktopOrderCalculations();
 }
 
 // ─── 12. EXACT 11 TIMEFRAMES CANDLESTICK ENGINE ──────────────────────────
@@ -4017,6 +4023,11 @@ async function fetchLiveBinanceTickers() {
   // Real live Gold Spot (TVC:GOLD TradingView sync + Gold-API fallback)
   await pollLiveGoldPrice();
 
+  updateDesktopMarqueePrices();
+  if (activeTab === 'trade') {
+    updateDesktopOrderCalculations();
+  }
+
   checkPendingOrdersTrigger();
   if (activeTab !== 'trade') {
     renderLivePriceUpdates();
@@ -4311,6 +4322,11 @@ function initVTradeApp() {
     liveTickerInterval = setInterval(fetchLiveBinanceTickers, 10000);
   }
 
+  // Start desktop dynamic components
+  initDesktopMarquee();
+  syncDesktopHeaderState();
+  updateDesktopOrderCalculations();
+
   // Start fluid real-time Order Book Engine & Live Gold Sync
   startOrderbookLiveEngine();
   startGoldLivePolling();
@@ -4535,6 +4551,187 @@ function setupOnboardingSwipe() {
       updateOnboardingView(); // Snap back smoothly
     }
   }, { passive: true });
+}
+
+// ─── DESKTOP ENHANCED TRADING WORKSTATION LOGIC (ORIGINAL STYLISH UI) ────
+let desktopOrderSide = 'long';
+let desktopOrderType = 'market';
+let desktopLeverage = 20;
+let desktopSizeCoins = 0.05;
+
+function syncDesktopHeaderState() {
+  const tabs = ['home', 'markets', 'trade', 'portfolio', 'account'];
+  tabs.forEach(t => {
+    const dbtn = document.getElementById(`dnav-${t}`);
+    if (dbtn) dbtn.classList.toggle('active', t === activeTab);
+  });
+  const cashValEl = document.getElementById('header-cash-val');
+  if (cashValEl && typeof walletState !== 'undefined') {
+    cashValEl.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
+  }
+}
+
+function initDesktopMarquee() {
+  const track = document.getElementById('desktop-marquee-track');
+  if (!track || typeof COINS === 'undefined') return;
+
+  const showcaseCoins = COINS.slice(0, 10);
+  const itemsHtml = showcaseCoins.map(coin => {
+    const isUp = coin.change24h >= 0;
+    const changeClass = isUp ? 'up' : 'down';
+    const changeSign = isUp ? '+' : '';
+    return `
+      <div class="marquee-coin-item" onclick="selectCoinAndTrade('${coin.id}')">
+        <img src="${coin.icon}" alt="${coin.symbol}" class="marquee-coin-icon" onerror="handleCoinIconError(this, '${coin.symbol}', '${coin.category}')" />
+        <span class="m-sym">${coin.symbol}</span>
+        <span class="m-price" id="marq-price-${coin.id}">$${fmtPrice(coin.price)}</span>
+        <span class="m-chg ${changeClass}" id="marq-chg-${coin.id}">${changeSign}${coin.change24h ? coin.change24h.toFixed(2) : '0.00'}%</span>
+      </div>
+    `;
+  }).join('');
+
+  track.innerHTML = itemsHtml + itemsHtml;
+}
+
+function updateDesktopMarqueePrices() {
+  if (typeof COINS === 'undefined') return;
+  COINS.slice(0, 10).forEach(coin => {
+    const priceEls = document.querySelectorAll(`[id="marq-price-${coin.id}"]`);
+    const chgEls = document.querySelectorAll(`[id="marq-chg-${coin.id}"]`);
+    const isUp = coin.change24h >= 0;
+    const changeSign = isUp ? '+' : '';
+
+    priceEls.forEach(el => {
+      el.textContent = `${getCurrencySymbol()}${fmtPrice(coin.price)}`;
+    });
+    chgEls.forEach(el => {
+      el.className = `m-chg ${isUp ? 'up' : 'down'}`;
+      el.textContent = `${changeSign}${coin.change24h ? coin.change24h.toFixed(2) : '0.00'}%`;
+    });
+  });
+}
+
+function selectCoinAndTrade(coinId) {
+  const found = COINS.find(c => c.id === coinId || c.symbol.toLowerCase() === coinId.toLowerCase());
+  if (found) {
+    selectedCoin = found;
+  }
+  switchBottomTab('trade');
+  updateDesktopOrderCalculations();
+}
+
+function setDesktopOrderSide(side) {
+  desktopOrderSide = side;
+  const buyBtn = document.getElementById('dtod-btn-buy');
+  const sellBtn = document.getElementById('dtod-btn-sell');
+  const submitBtn = document.getElementById('dtod-submit-btn');
+
+  if (buyBtn) buyBtn.className = `dtod-side-btn ${side === 'long' ? 'active-buy' : ''}`;
+  if (sellBtn) sellBtn.className = `dtod-side-btn ${side === 'short' ? 'active-sell' : ''}`;
+  if (submitBtn) {
+    submitBtn.className = `dtod-submit-btn ${side === 'long' ? 'buy' : 'sell'}`;
+    submitBtn.textContent = side === 'long' ? 'Place Buy / Long Order' : 'Place Sell / Short Order';
+  }
+  updateDesktopOrderCalculations();
+}
+
+function setDesktopOrderType(type) {
+  desktopOrderType = type;
+  const mBtn = document.getElementById('dtod-type-market');
+  const lBtn = document.getElementById('dtod-type-limit');
+  const limitGroup = document.getElementById('dtod-limit-group');
+
+  if (mBtn) mBtn.classList.toggle('active', type === 'market');
+  if (lBtn) lBtn.classList.toggle('active', type === 'limit');
+  if (limitGroup) limitGroup.classList.toggle('hidden', type !== 'limit');
+  updateDesktopOrderCalculations();
+}
+
+function handleDesktopLeverageInput(val) {
+  desktopLeverage = Math.min(parseInt(val) || 20, selectedCoin.maxLev || 150);
+  const levVal = document.getElementById('dtod-lev-val');
+  if (levVal) levVal.textContent = `${desktopLeverage}x`;
+
+  const chips = document.querySelectorAll('.dtod-lchip');
+  chips.forEach(c => {
+    c.classList.toggle('active', c.textContent.trim() === `${desktopLeverage}x`);
+  });
+  updateDesktopOrderCalculations();
+}
+
+function setDesktopLeverage(val) {
+  const slider = document.getElementById('dtod-lev-slider');
+  if (slider) slider.value = val;
+  handleDesktopLeverageInput(val);
+}
+
+function handleDesktopSizeInput(val) {
+  desktopSizeCoins = parseFloat(val) || 0;
+  updateDesktopOrderCalculations();
+}
+
+function setDesktopOrderPct(pct) {
+  const price = selectedCoin.price || 1;
+  const maxNotional = (walletState.cashBalance || 10000) * desktopLeverage;
+  const maxCoins = maxNotional / price;
+  desktopSizeCoins = parseFloat(((maxCoins * pct) / 100).toFixed(4));
+
+  const sizeInput = document.getElementById('dtod-order-size');
+  if (sizeInput) sizeInput.value = desktopSizeCoins;
+
+  const chips = document.querySelectorAll('.dtod-pchip');
+  chips.forEach(c => {
+    c.classList.toggle('active', c.textContent.trim() === `${pct}%`);
+  });
+  updateDesktopOrderCalculations();
+}
+
+function updateDesktopOrderCalculations() {
+  if (!selectedCoin) return;
+  const unitEl = document.getElementById('dtod-coin-unit');
+  if (unitEl) unitEl.textContent = selectedCoin.symbol;
+
+  const price = desktopOrderType === 'limit'
+    ? (parseFloat(document.getElementById('dtod-limit-price')?.value) || selectedCoin.price)
+    : selectedCoin.price;
+
+  const notionalUsd = desktopSizeCoins * price;
+  const reqMarginUsd = notionalUsd / desktopLeverage;
+
+  const liqFactor = (1 / desktopLeverage) * 0.9;
+  const liqPrice = desktopOrderSide === 'long'
+    ? price * (1 - liqFactor)
+    : price * (1 + liqFactor);
+
+  const marginEl = document.getElementById('dtod-m-margin');
+  const notionalEl = document.getElementById('dtod-m-notional');
+  const liqEl = document.getElementById('dtod-m-liq');
+  const maxEl = document.getElementById('dtod-max-size');
+
+  if (marginEl) marginEl.textContent = `${getCurrencySymbol()}${fmtMoney(reqMarginUsd)}`;
+  if (notionalEl) notionalEl.textContent = `${getCurrencySymbol()}${fmtMoney(notionalUsd)}`;
+  if (liqEl) liqEl.textContent = `${getCurrencySymbol()}${fmtPrice(Math.max(0, liqPrice))}`;
+  if (maxEl) {
+    const maxCoins = ((walletState.cashBalance || 10000) * desktopLeverage) / price;
+    maxEl.textContent = `Max: ${maxCoins.toFixed(3)} ${selectedCoin.symbol}`;
+  }
+}
+
+function executeDesktopOrder() {
+  // Sync to sheet state and execute!
+  sheetSide = desktopOrderSide;
+  sheetOrderType = desktopOrderType;
+  sheetLeverage = desktopLeverage;
+  sheetSizeCoins = desktopSizeCoins;
+
+  if (desktopOrderType === 'limit') {
+    const limitInput = document.getElementById('sheet-limit-price');
+    const dtodLimit = document.getElementById('dtod-limit-price');
+    if (limitInput && dtodLimit) limitInput.value = dtodLimit.value;
+  }
+
+  executeOrderFromSheet();
+  syncDesktopHeaderState();
 }
 
 if (typeof window !== 'undefined') {

@@ -58,8 +58,9 @@
   <div id="app" class="vtrade-app-root">
 
     <!-- ══════════════════════ 1. TOP HEADER BAR ══════════════════════ -->
+    <!-- ══════════════════════ 1. TOP HEADER BAR (FLOATING DOCK ON DESKTOP) ══════════════════════ -->
     <header class="app-top-header" id="app-top-header">
-      <div class="header-brand-wrap">
+      <div class="header-brand-wrap" onclick="switchBottomTab('home')" style="cursor: pointer;">
         <div class="header-logo-icon">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ff9900" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -67,17 +68,62 @@
         </div>
         <div class="header-brand-text">
           <span class="brand-name">VTrade</span>
+          <span class="brand-sub-badge">PRO</span>
         </div>
       </div>
 
+      <!-- Desktop Floating Header Nav (Aceternity Style Floating Dock) -->
+      <nav class="desktop-header-nav" id="desktop-header-nav">
+        <button class="dnav-link active" id="dnav-home" onclick="switchBottomTab('home')">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          <span>Home</span>
+        </button>
+        <button class="dnav-link" id="dnav-markets" onclick="switchBottomTab('markets')">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="7 14 10 10 14 13 17 8"></polyline></svg>
+          <span>Markets</span>
+        </button>
+        <button class="dnav-link" id="dnav-trade" onclick="switchBottomTab('trade')">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 10l-4-4-4 4"></path><path d="M8 14l4 4 4-4"></path></svg>
+          <span>Trade Desk</span>
+        </button>
+        <button class="dnav-link" id="dnav-portfolio" onclick="switchBottomTab('portfolio')">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M16 12h4"></path></svg>
+          <span>Portfolio</span>
+        </button>
+        <button class="dnav-link" id="dnav-account" onclick="switchBottomTab('account')">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+
       <div class="header-actions-wrap">
+        <!-- Live Cash Badge (Aceternity Tactile Chip) -->
+        <div class="header-cash-badge" id="header-cash-badge" onclick="switchBottomTab('portfolio')" title="Paper Wallet Equity">
+          <span class="hcb-dot"></span>
+          <span class="hcb-label">Cash:</span>
+          <span class="hcb-val" id="header-cash-val">$10,000.00</span>
+        </div>
+
         <!-- Currency Toggle Switcher: USD ($) ⇄ INR (₹) -->
         <button class="currency-toggle-btn" id="currency-toggle-btn" onclick="toggleCurrency()" title="Toggle Currency USD / INR">
           <span class="curr-icon" id="curr-toggle-icon">$</span>
           <span class="curr-label" id="curr-toggle-label">USD</span>
         </button>
+
+        <!-- Direct Trade Desk Button on Desktop -->
+        <button class="header-trade-cta-btn" id="header-trade-cta-btn" onclick="switchBottomTab('trade')">
+          <span>Trade Now</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
     </header>
+
+    <!-- ══════════════════════ INFINITE LIVE CRYPTO MARQUEE (ACETERNITY STYLE) ══════════════════════ -->
+    <div class="desktop-marquee-wrap" id="desktop-marquee-wrap">
+      <div class="desktop-marquee-track" id="desktop-marquee-track">
+        <!-- Live populated by initDesktopMarquee() -->
+      </div>
+    </div>
 
     <!-- ══════════════════════ 2. SCREEN: HOME DASHBOARD ══════════════════════ -->
     <section class="app-screen-view active" id="screen-home">
@@ -403,6 +449,92 @@
           <span class="dock-btn-sub" id="dock-sell-sub">Up to 150x</span>
         </button>
       </div>
+
+      <!-- Desktop Side Order Terminal Dock (Skiper UI Style) -->
+      <aside class="desktop-trade-order-dock" id="desktop-trade-order-dock">
+        <div class="dtod-header">
+          <span class="dtod-title">Order Execution</span>
+          <span class="dtod-badge">Zero Commission</span>
+        </div>
+
+        <!-- Buy / Long vs Sell / Short Segment Switcher -->
+        <div class="dtod-side-switcher">
+          <button class="dtod-side-btn active-buy" id="dtod-btn-buy" onclick="setDesktopOrderSide('long')">Buy / Long</button>
+          <button class="dtod-side-btn" id="dtod-btn-sell" onclick="setDesktopOrderSide('short')">Sell / Short</button>
+        </div>
+
+        <!-- Order Type Switcher: Market vs Limit -->
+        <div class="dtod-type-switcher">
+          <button class="dtod-type-btn active" id="dtod-type-market" onclick="setDesktopOrderType('market')">Market</button>
+          <button class="dtod-type-btn" id="dtod-type-limit" onclick="setDesktopOrderType('limit')">Limit</button>
+        </div>
+
+        <!-- Limit Price Input (Shown only if Limit selected) -->
+        <div class="dtod-input-group hidden" id="dtod-limit-group">
+          <label class="dtod-label">Order Price (USDT)</label>
+          <input type="number" step="any" class="dtod-input" id="dtod-limit-price" placeholder="Trigger Price" oninput="updateDesktopOrderCalculations()" />
+        </div>
+
+        <!-- Leverage Selector (1x - 150x) with Quick Chips -->
+        <div class="dtod-leverage-wrap">
+          <div class="dtod-lev-header">
+            <span class="dtod-label">Leverage</span>
+            <span class="dtod-lev-val" id="dtod-lev-val">20x</span>
+          </div>
+          <input type="range" min="1" max="150" value="20" class="dtod-lev-slider" id="dtod-lev-slider" oninput="handleDesktopLeverageInput(this.value)" />
+          <div class="dtod-lev-chips">
+            <button class="dtod-lchip" onclick="setDesktopLeverage(5)">5x</button>
+            <button class="dtod-lchip" onclick="setDesktopLeverage(10)">10x</button>
+            <button class="dtod-lchip active" onclick="setDesktopLeverage(20)">20x</button>
+            <button class="dtod-lchip" onclick="setDesktopLeverage(50)">50x</button>
+            <button class="dtod-lchip" onclick="setDesktopLeverage(100)">100x</button>
+            <button class="dtod-lchip" onclick="setDesktopLeverage(150)">150x</button>
+          </div>
+        </div>
+
+        <!-- Order Size Input + Quick % Chips -->
+        <div class="dtod-input-group">
+          <div class="dtod-label-row">
+            <label class="dtod-label">Order Size</label>
+            <span class="dtod-max-label" id="dtod-max-size">Max: 0.12 BTC</span>
+          </div>
+          <div class="dtod-input-box">
+            <input type="number" step="any" class="dtod-input" id="dtod-order-size" value="0.05" oninput="handleDesktopSizeInput(this.value)" />
+            <span class="dtod-unit" id="dtod-coin-unit">BTC</span>
+          </div>
+          <div class="dtod-pct-chips">
+            <button class="dtod-pchip" onclick="setDesktopOrderPct(25)">25%</button>
+            <button class="dtod-pchip" onclick="setDesktopOrderPct(50)">50%</button>
+            <button class="dtod-pchip" onclick="setDesktopOrderPct(75)">75%</button>
+            <button class="dtod-pchip" onclick="setDesktopOrderPct(100)">100%</button>
+          </div>
+        </div>
+
+        <!-- Live Metrics Breakdown Card (Skiper UI Style) -->
+        <div class="dtod-metrics-card">
+          <div class="dtod-m-row">
+            <span class="dtod-mk">Required Margin:</span>
+            <span class="dtod-mv" id="dtod-m-margin">$205.40</span>
+          </div>
+          <div class="dtod-m-row">
+            <span class="dtod-mk">Notional Value:</span>
+            <span class="dtod-mv" id="dtod-m-notional">$4,108.00</span>
+          </div>
+          <div class="dtod-m-row">
+            <span class="dtod-mk">Est. Liquidation:</span>
+            <span class="dtod-mv dtod-liq" id="dtod-m-liq">$78,120.00</span>
+          </div>
+          <div class="dtod-m-row">
+            <span class="dtod-mk">Trading Fee:</span>
+            <span class="dtod-mv" style="color: #10b981;">$0.00 (Free)</span>
+          </div>
+        </div>
+
+        <!-- Primary Action Button with Tactile Feedback -->
+        <button class="dtod-submit-btn buy" id="dtod-submit-btn" onclick="executeDesktopOrder()">
+          Place Buy / Long Order
+        </button>
+      </aside>
     </section>
 
     <!-- ══════════════════════ 5. SCREEN: PORTFOLIO & ASSETS ══════════════════════ -->
