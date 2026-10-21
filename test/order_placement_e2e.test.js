@@ -10,7 +10,7 @@
 
 const assert = require('assert');
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = process.env.TEST_API_URL || ('http://localhost:' + (process.env.TEST_PORT || process.env.PORT || 3005) + '/api');
 
 async function runE2ETests() {
   console.log('\n=== RUNNING VTRADE ORDER PLACEMENT E2E TESTS ===\n');

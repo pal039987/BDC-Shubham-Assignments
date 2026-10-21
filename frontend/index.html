@@ -51,7 +51,7 @@
 
     <!-- ══════════════════════ 1. TOP HEADER BAR ══════════════════════ -->
     <header class="app-top-header" id="app-top-header">
-      <div class="header-brand-wrap">
+      <div class="header-brand-wrap" onclick="switchBottomTab('home')" style="cursor: pointer;">
         <div class="header-logo-icon">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ff9900" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
@@ -59,17 +59,67 @@
         </div>
         <div class="header-brand-text">
           <span class="brand-name">VTrade</span>
+          <span class="brand-pro-tag">PRO</span>
         </div>
       </div>
 
+      <!-- Desktop Floating Header Navigation Links (Aceternity / Skiper Style) -->
+      <nav class="desktop-header-nav" id="desktop-header-nav">
+        <button class="dnav-link active" id="dnav-trade" onclick="switchBottomTab('trade')">
+          <span class="dnav-dot"></span>
+          <span>Trade Desk</span>
+        </button>
+        <button class="dnav-link" id="dnav-markets" onclick="switchBottomTab('markets')">
+          <span>Markets</span>
+        </button>
+        <button class="dnav-link" id="dnav-portfolio" onclick="switchBottomTab('portfolio')">
+          <span>Portfolio</span>
+        </button>
+        <button class="dnav-link" id="dnav-home" onclick="switchBottomTab('home')">
+          <span>Market Intel</span>
+        </button>
+        <button class="dnav-link" id="dnav-account" onclick="switchBottomTab('account')">
+          <span>Settings</span>
+        </button>
+      </nav>
+
       <div class="header-actions-wrap">
+        <!-- 120 FPS Binance Live Stream Status Badge -->
+        <div class="desktop-live-stream-badge" title="Binance Real-Time Vision & WebSocket Feed Active">
+          <span class="dls-pulse"></span>
+          <span class="dls-text">120 FPS Realtime</span>
+        </div>
+
+        <!-- Desktop Quick Demo Wallet Pill -->
+        <div class="desktop-wallet-badge" id="desktop-wallet-badge" onclick="switchBottomTab('portfolio')" title="View Demo Portfolio Balance">
+          <span class="dwb-label">Cash:</span>
+          <span class="dwb-val" id="desk-wallet-val">$10,000.00</span>
+        </div>
+
         <!-- Currency Toggle Switcher: USD ($) ⇄ INR (₹) -->
         <button class="currency-toggle-btn" id="currency-toggle-btn" onclick="toggleCurrency()" title="Toggle Currency USD / INR">
           <span class="curr-icon" id="curr-toggle-icon">$</span>
           <span class="curr-label" id="curr-toggle-label">USD</span>
         </button>
+
+        <!-- Desktop Get Android App CTA Button -->
+        <button class="desktop-get-apk-btn" id="desktop-get-apk-btn" onclick="openApkDownloadModal()" title="Download VTrade Android App (v3.0.0 APK)">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Get Android App</span>
+        </button>
       </div>
     </header>
+
+    <!-- ════════ ACETERNITY INFINITE LIVE CRYPTO MARQUEE ════════ -->
+    <div class="vtrade-infinite-marquee" id="vtrade-infinite-marquee">
+      <div class="marquee-track" id="marquee-track">
+        <!-- Dynamically populated with live coins from COINS array: BTC, ETH, SOL, BNB, XRP, DOGE, ADA, AVAX, etc. -->
+      </div>
+    </div>
 
     <!-- ══════════════════════ 2. SCREEN: HOME DASHBOARD ══════════════════════ -->
     <section class="app-screen-view active" id="screen-home">
@@ -278,113 +328,237 @@
     <!-- ══════════════════════ 4. SCREEN: TRADE DESK & CHARTS ══════════════════════ -->
     <section class="app-screen-view" id="screen-trade">
       <div class="trade-scroll-container">
-        <!-- Asset Header Bar -->
-        <div class="trade-top-asset-bar">
-          <div class="trade-asset-picker-btn" id="trade-coin-selector-btn" onclick="openCoinPickerModal()">
-            <img class="trade-asset-icon" id="trade-cur-icon" src="icons/btc.png" alt="Coin" onerror="handleCoinIconError(this, 'BTC', 'futures')" />
-            <div class="trade-asset-names">
-              <div class="trade-asset-sym-row">
-                <span id="trade-cur-sym">BTC/USDT</span>
-                <span class="trade-arrow-icon">▾</span>
+        <!-- Pro Desktop Multi-Column Workstation Wrapper -->
+        <div class="trade-workstation-grid">
+
+          <!-- Left Sidebar: Desktop Live Market Watchlist (Aceternity / Skiper Style) -->
+          <aside class="desk-col-markets" id="desk-markets-sidebar">
+            <div class="dms-header">
+              <span class="dms-title">Market Watch</span>
+              <span class="dms-count">56 Pairs</span>
+            </div>
+            <div class="dms-search-wrap">
+              <input type="text" id="desk-mkt-search" class="dms-search-input" placeholder="Search (BTC, ETH, SOL...)" oninput="filterDesktopMarkets(this.value)" autocomplete="off" />
+            </div>
+            <div class="dms-cat-strip">
+              <button class="dms-cat active" id="dmscat-all" onclick="filterDesktopCategory('all')">All</button>
+              <button class="dms-cat" id="dmscat-futures" onclick="filterDesktopCategory('futures')">150x</button>
+              <button class="dms-cat" id="dmscat-l1" onclick="filterDesktopCategory('l1')">L1</button>
+              <button class="dms-cat" id="dmscat-ai" onclick="filterDesktopCategory('ai')">AI</button>
+              <button class="dms-cat" id="dmscat-meme" onclick="filterDesktopCategory('meme')">Meme</button>
+            </div>
+            <div class="dms-coins-list" id="desk-coins-list">
+              <!-- Dynamically populated with real-time prices by renderDesktopMarketsList() -->
+            </div>
+          </aside>
+
+          <!-- Center Workspace: Asset Header + Timeframe Strip + TradingView Chart + Bottom Ledger -->
+          <main class="desk-col-chart">
+            <!-- Asset Header Bar -->
+            <div class="trade-top-asset-bar">
+              <div class="trade-asset-picker-btn" id="trade-coin-selector-btn" onclick="openCoinPickerModal()">
+                <img class="trade-asset-icon" id="trade-cur-icon" src="icons/btc.png" alt="Coin" onerror="handleCoinIconError(this, 'BTC', 'futures')" />
+                <div class="trade-asset-names">
+                  <div class="trade-asset-sym-row">
+                    <span id="trade-cur-sym">BTC/USDT</span>
+                    <span class="trade-arrow-icon">▾</span>
+                  </div>
+                  <span class="trade-asset-fullname" id="trade-cur-fullname">Bitcoin Perpetual</span>
+                </div>
               </div>
-              <span class="trade-asset-fullname" id="trade-cur-fullname">Bitcoin Perpetual</span>
+
+              <div class="trade-asset-price-wrap">
+                <span class="trade-live-price" id="trade-header-price">$82,180.50</span>
+                <span class="trade-live-change up" id="trade-header-change">+2.45%</span>
+              </div>
             </div>
-          </div>
 
-          <div class="trade-asset-price-wrap">
-            <span class="trade-live-price" id="trade-header-price">$82,180.50</span>
-            <span class="trade-live-change up" id="trade-header-change">+2.45%</span>
-          </div>
-        </div>
-
-        <!-- Candlestick Timeframe Selector Strip with Fullscreen Icon (Screenshot 2 Icon) -->
-        <!-- Exact 11 timeframes requested: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 1d, 1w, 1M -->
-        <div class="candlestick-timeframe-strip" id="candlestick-timeframe-strip">
-          <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
-          <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
-          <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
-          <button class="ctf-btn" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
-          <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
-          <button class="ctf-btn active" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
-          <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
-          <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
-          <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
-          <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
-          <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
-          <!-- Fullscreen Chart Button using exact icon from Screenshot 2 (No text) -->
-          <button class="ctf-fullscreen-icon-btn" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Open Fullscreen Chart" aria-label="Fullscreen Chart">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 9V6a2 2 0 0 1 2-2h3"></path>
-              <path d="M20 9V6a2 2 0 0 0-2-2h-3"></path>
-              <path d="M4 15v3a2 2 0 0 0 2 2h3"></path>
-              <path d="M20 15v3a2 2 0 0 1-2 2h-3"></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Interactive TradingView Real-Time Chart Widget Container -->
-        <div class="candlestick-chart-box tradingview-chart-box" id="trade-candlestick-container">
-          <div class="chart-loading-indicator hidden" id="chart-loading-indicator">
-            <div class="chart-spinner"></div>
-            <span>Loading TradingView Chart...</span>
-          </div>
-          <!-- Official TradingView Real-Time Embed Widget -->
-          <iframe id="tradingview-chart-iframe"
-            class="tradingview-iframe"
-            src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=60&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&locale=en"
-            title="TradingView Real-Time Chart"
-            allowfullscreen="true"
-            allow="clipboard-write; pointer-lock"
-            scrolling="no">
-          </iframe>
-          <!-- Fallback SVG for offline headless tests -->
-          <svg class="candlestick-svg" id="candlestick-svg" viewBox="0 0 400 240" preserveAspectRatio="none" style="display:none;">
-          </svg>
-        </div>
-
-        <!-- Trade Subtabs: Orderbook (DOM) vs Open Positions vs Pending Orders -->
-        <div class="trade-subtabs-nav">
-          <button class="tsub-btn active" id="tsub-orderbook" onclick="setTradeSubtab('orderbook')">Order Book</button>
-          <button class="tsub-btn" id="tsub-positions" onclick="setTradeSubtab('positions')">
-            <span>Positions</span>
-            <span class="tsub-count-badge" id="tsub-pos-count">0</span>
-          </button>
-          <button class="tsub-btn" id="tsub-orders" onclick="setTradeSubtab('orders')">
-            <span>Orders</span>
-            <span class="tsub-count-badge" id="tsub-ord-count">0</span>
-          </button>
-        </div>
-
-        <!-- Panel 1: Orderbook (DOM) -->
-        <div class="trade-panel-view" id="tpanel-orderbook">
-          <div class="orderbook-duo-table">
-            <div class="ob-col ob-bids-col">
-              <div class="ob-col-head"><span class="ob-head-k">Bid Size</span><span class="ob-head-k">Bid Price</span></div>
-              <div class="ob-rows-wrap" id="ob-bids-rows"></div>
+            <!-- Candlestick Timeframe Selector Strip with Fullscreen Icon (Screenshot 2 Icon) -->
+            <!-- Exact 11 timeframes requested: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 1d, 1w, 1M -->
+            <div class="candlestick-timeframe-strip" id="candlestick-timeframe-strip">
+              <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
+              <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
+              <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
+              <button class="ctf-btn" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
+              <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
+              <button class="ctf-btn active" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
+              <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
+              <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
+              <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
+              <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
+              <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
+              <!-- Fullscreen Chart Button using exact icon from Screenshot 2 (No text) -->
+              <button class="ctf-fullscreen-icon-btn" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Open Fullscreen Chart" aria-label="Fullscreen Chart">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 9V6a2 2 0 0 1 2-2h3"></path>
+                  <path d="M20 9V6a2 2 0 0 0-2-2h-3"></path>
+                  <path d="M4 15v3a2 2 0 0 0 2 2h3"></path>
+                  <path d="M20 15v3a2 2 0 0 1-2 2h-3"></path>
+                </svg>
+              </button>
             </div>
-            <div class="ob-col ob-asks-col">
-              <div class="ob-col-head"><span class="ob-head-k">Ask Price</span><span class="ob-head-k">Ask Size</span></div>
-              <div class="ob-rows-wrap" id="ob-asks-rows"></div>
+
+            <!-- Interactive TradingView Real-Time Chart Widget Container -->
+            <div class="candlestick-chart-box tradingview-chart-box" id="trade-candlestick-container">
+              <div class="chart-loading-indicator hidden" id="chart-loading-indicator">
+                <div class="chart-spinner"></div>
+                <span>Loading TradingView Chart...</span>
+              </div>
+              <!-- Official TradingView Real-Time Embed Widget -->
+              <iframe id="tradingview-chart-iframe"
+                class="tradingview-iframe"
+                src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=60&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&locale=en"
+                title="TradingView Real-Time Chart"
+                allowfullscreen="true"
+                allow="clipboard-write; pointer-lock"
+                scrolling="no">
+              </iframe>
+              <!-- Fallback SVG for offline headless tests -->
+              <svg class="candlestick-svg" id="candlestick-svg" viewBox="0 0 400 240" preserveAspectRatio="none" style="display:none;">
+              </svg>
             </div>
-          </div>
-        </div>
 
-        <!-- Panel 2: Open Positions -->
-        <div class="trade-panel-view hidden" id="tpanel-positions">
-          <div class="positions-list-container" id="trade-positions-container">
-            <!-- Dynamically populated by renderPositions() -->
-          </div>
-        </div>
+            <!-- Trade Subtabs: Orderbook (DOM) vs Open Positions vs Pending Orders -->
+            <div class="trade-subtabs-nav">
+              <button class="tsub-btn active" id="tsub-orderbook" onclick="setTradeSubtab('orderbook')">Order Book</button>
+              <button class="tsub-btn" id="tsub-positions" onclick="setTradeSubtab('positions')">
+                <span>Positions</span>
+                <span class="tsub-count-badge" id="tsub-pos-count">0</span>
+              </button>
+              <button class="tsub-btn" id="tsub-orders" onclick="setTradeSubtab('orders')">
+                <span>Orders</span>
+                <span class="tsub-count-badge" id="tsub-ord-count">0</span>
+              </button>
+            </div>
 
-        <!-- Panel 3: Pending Orders -->
-        <div class="trade-panel-view hidden" id="tpanel-orders">
-          <div class="orders-list-container" id="trade-orders-container">
-            <!-- Dynamically populated by renderOrders() -->
-          </div>
-        </div>
-      </div>
+            <!-- Panel 1: Orderbook (DOM) -->
+            <div class="trade-panel-view" id="tpanel-orderbook">
+              <div class="orderbook-duo-table">
+                <div class="ob-col ob-bids-col">
+                  <div class="ob-col-head"><span class="ob-head-k">Bid Size</span><span class="ob-head-k">Bid Price</span></div>
+                  <div class="ob-rows-wrap" id="ob-bids-rows"></div>
+                </div>
+                <div class="ob-col ob-asks-col">
+                  <div class="ob-col-head"><span class="ob-head-k">Ask Price</span><span class="ob-head-k">Ask Size</span></div>
+                  <div class="ob-rows-wrap" id="ob-asks-rows"></div>
+                </div>
+              </div>
+            </div>
 
-      <!-- Floating Coinbase-Style Action Dock -->
+            <!-- Panel 2: Open Positions -->
+            <div class="trade-panel-view hidden" id="tpanel-positions">
+              <div class="positions-list-container" id="trade-positions-container">
+                <!-- Dynamically populated by renderPositions() -->
+              </div>
+            </div>
+
+            <!-- Panel 3: Pending Orders -->
+            <div class="trade-panel-view hidden" id="tpanel-orders">
+              <div class="orders-list-container" id="trade-orders-container">
+                <!-- Dynamically populated by renderOrders() -->
+              </div>
+            </div>
+          </main>
+
+          <!-- Right Sidebar: Pro Embedded Order Placement Terminal Dock (Aceternity Glowing Card) -->
+          <aside class="desk-col-terminal" id="desk-terminal-sidebar">
+            <div class="desktop-order-card" id="desk-order-dock">
+              <div class="doc-side-tabs">
+                <button class="doc-side-btn buy active" id="doc-btn-buy" onclick="setDesktopOrderSide('long')">
+                  <span>Buy / Long</span>
+                  <span class="doc-side-sub" id="doc-buy-lev-sub">Up to 150x</span>
+                </button>
+                <button class="doc-side-btn sell" id="doc-btn-sell" onclick="setDesktopOrderSide('short')">
+                  <span>Sell / Short</span>
+                  <span class="doc-side-sub" id="doc-sell-lev-sub">Up to 150x</span>
+                </button>
+              </div>
+
+              <div class="doc-type-tabs">
+                <button class="doc-type-btn active" id="doc-type-market" onclick="setDesktopOrderType('market')">Market</button>
+                <button class="doc-type-btn" id="doc-type-limit" onclick="setDesktopOrderType('limit')">Limit</button>
+              </div>
+
+              <!-- Limit Price Input (Shown only when Limit selected) -->
+              <div class="doc-limit-wrap hidden" id="doc-limit-wrap">
+                <div class="doc-label-row">
+                  <span class="doc-label">Limit Order Price</span>
+                  <span class="doc-sub">Mark: <span id="doc-mark-price">$82,180.50</span></span>
+                </div>
+                <div class="doc-input-box">
+                  <input type="number" id="doc-limit-price" step="0.5" value="82180.50" oninput="updateDesktopOrderCalculations()" />
+                  <span class="doc-unit">USDT</span>
+                </div>
+              </div>
+
+              <!-- Leverage Multiplier Slider -->
+              <div class="doc-control-group">
+                <div class="doc-label-row">
+                  <span class="doc-label">Leverage Multiplier</span>
+                  <span class="doc-badge" id="doc-lev-badge">20x</span>
+                </div>
+                <input type="range" min="1" max="150" value="20" id="doc-leverage-slider" class="doc-slider" oninput="handleDesktopLeverageInput(this.value)" />
+                <div class="doc-preset-chips">
+                  <button class="doc-chip" onclick="setDesktopLeverage(5)">5x</button>
+                  <button class="doc-chip" onclick="setDesktopLeverage(10)">10x</button>
+                  <button class="doc-chip active" id="doc-chip-20" onclick="setDesktopLeverage(20)">20x</button>
+                  <button class="doc-chip" onclick="setDesktopLeverage(50)">50x</button>
+                  <button class="doc-chip" onclick="setDesktopLeverage(100)">100x</button>
+                  <button class="doc-chip" onclick="setDesktopLeverage(150)">150x</button>
+                </div>
+              </div>
+
+              <!-- Order Size Input & Percentage Buttons -->
+              <div class="doc-control-group">
+                <div class="doc-label-row">
+                  <span class="doc-label">Position Size</span>
+                  <span class="doc-sub">Avail: <strong id="doc-avail-cash">$10,000.00</strong></span>
+                </div>
+                <div class="doc-input-box">
+                  <input type="number" id="doc-size-input" step="0.001" value="0.05" oninput="handleDesktopSizeInput(this.value)" />
+                  <span class="doc-unit" id="doc-size-unit">BTC</span>
+                </div>
+                <div class="doc-pct-chips">
+                  <button class="doc-pct-btn" onclick="setDesktopOrderPct(0.10)">10%</button>
+                  <button class="doc-pct-btn" onclick="setDesktopOrderPct(0.25)">25%</button>
+                  <button class="doc-pct-btn active" id="doc-pct-50" onclick="setDesktopOrderPct(0.50)">50%</button>
+                  <button class="doc-pct-btn" onclick="setDesktopOrderPct(0.75)">75%</button>
+                  <button class="doc-pct-btn" onclick="setDesktopOrderPct(1.00)">100%</button>
+                </div>
+              </div>
+
+              <!-- Live Institutional Risk & Margin Calculations -->
+              <div class="doc-calc-grid">
+                <div class="doc-calc-row">
+                  <span class="dcr-k">Order Value</span>
+                  <span class="dcr-v" id="doc-calc-notional">$4,109.02</span>
+                </div>
+                <div class="doc-calc-row">
+                  <span class="dcr-k">Margin Required</span>
+                  <span class="dcr-v highlight" id="doc-calc-margin">$205.45</span>
+                </div>
+                <div class="doc-calc-row">
+                  <span class="dcr-k">Est. Liq. Price</span>
+                  <span class="dcr-v liq" id="doc-calc-liq">$78,482.38</span>
+                </div>
+                <div class="doc-calc-row">
+                  <span class="dcr-k">Taker Fee (0.05%)</span>
+                  <span class="dcr-v" id="doc-calc-fee">$2.05</span>
+                </div>
+              </div>
+
+              <!-- Primary 1-Click Order Execution Button (Aceternity Shimmer Effect) -->
+              <button class="doc-execute-btn buy" id="doc-execute-btn" onclick="executeDesktopOrder()">
+                <span class="deb-pulse"></span>
+                <span id="doc-exec-text">Place Buy / Long Order (20x)</span>
+              </button>
+            </div>
+          </aside>
+
+        </div><!-- End .trade-workstation-grid -->
+      </div><!-- End .trade-scroll-container -->
+
+      <!-- Floating Coinbase-Style Action Dock (For Mobile) -->
       <div class="trade-floating-dock">
         <button class="dock-action-btn dock-buy" id="trade-btn-long" onclick="openOrderSheet('long')">
           <span class="dock-btn-main">Buy / Long</span>
@@ -1394,6 +1568,59 @@
       </div>
     </div>
   </div>
+
+  <!-- ══════════════════════ 13. GET ANDROID APP MODAL & QR CODE (SKIPER / ACETERNITY) ══════════════════════ -->
+  <div class="apk-download-modal-overlay hidden" id="apk-download-modal" onclick="if(event.target===this) closeApkDownloadModal()">
+    <div class="apk-modal-card">
+      <button class="apk-modal-close" onclick="closeApkDownloadModal()" aria-label="Close modal">✕</button>
+      
+      <div class="apk-modal-header">
+        <div class="apk-badge-row">
+          <span class="apk-version-pill">v3.0.0 LATEST</span>
+          <span class="apk-verified-pill">🛡️ 100% Virus-Free & Safe</span>
+        </div>
+        <h2 class="apk-modal-title">Get VTrade for Android</h2>
+        <p class="apk-modal-subtitle">Trade Bitcoin, Ethereum & 50+ cryptocurrencies with institutional 120 FPS speed, paper margin, and zero lag.</p>
+      </div>
+      
+      <div class="apk-modal-body">
+        <div class="apk-qr-container">
+          <img class="apk-qr-img" id="apk-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fvtrade-crypto.onrender.com%2Fvtrade.apk" alt="Scan to Download APK" onerror="this.src='icons/btc.png'" />
+          <span class="apk-qr-caption">Scan with Phone Camera to Install</span>
+        </div>
+        
+        <div class="apk-info-list">
+          <div class="apk-info-item">
+            <span class="aii-label">Package ID</span>
+            <span class="aii-val">com.cryptotrader.pro</span>
+          </div>
+          <div class="apk-info-item">
+            <span class="aii-label">Package Size</span>
+            <span class="aii-val">5.7 MB (Lightweight)</span>
+          </div>
+          <div class="apk-info-item">
+            <span class="aii-label">Requirements</span>
+            <span class="aii-val">Android 7.0 and up</span>
+          </div>
+          <div class="apk-info-item">
+            <span class="aii-label">Architecture</span>
+            <span class="aii-val">arm64-v8a, armeabi-v7a</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="apk-modal-actions">
+        <a class="apk-direct-download-btn" href="https://vtrade-crypto.onrender.com/vtrade.apk" download="VTrade.apk" target="_blank">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Download VTrade APK (5.7 MB)</span>
+        </a>
+        <span class="apk-modal-note">Direct APK download • No Google Play account required</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aceternity / Animmaster Ambient Spotlight Glow Cursor Element -->
+  <div class="vtrade-ambient-spotlight" id="vtrade-ambient-spotlight"></div>
 
   <!-- Toast Notification Layer -->
   <div id="toast-container" class="toast-container"></div>

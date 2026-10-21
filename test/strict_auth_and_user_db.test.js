@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = process.env.TEST_API_URL || ('http://localhost:' + (process.env.TEST_PORT || process.env.PORT || 3005) + '/api');
 
 async function runStrictAuthTests() {
   console.log('\n=== RUNNING STRICT DATABASE AUTHENTICATION & AUTHORIZATION TESTS ===\n');

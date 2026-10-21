@@ -9,7 +9,7 @@
 
 const assert = require('assert');
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = process.env.TEST_API_URL || ('http://localhost:' + (process.env.TEST_PORT || process.env.PORT || 3005) + '/api');
 
 async function runTests() {
   console.log('\n=== RUNNING CHART ORDER POSITIONING & 1-CLICK TRADE TESTS ===\n');

@@ -967,6 +967,7 @@ function saveWalletState() {
   } catch (e) {
     console.error('Failed to save wallet state:', e);
   }
+  syncDesktopHeaderState();
 }
 
 let isSyncingWallet = false;
@@ -2096,8 +2097,10 @@ function switchBottomTab(tab) {
   const tabs = ['home', 'markets', 'trade', 'portfolio', 'account'];
   tabs.forEach(t => {
     const btn = document.getElementById(`vnav-${t}`);
+    const dbtn = document.getElementById(`dnav-${t}`);
     const screen = document.getElementById(`screen-${t}`);
     if (btn) btn.classList.toggle('active', t === activeTab);
+    if (dbtn) dbtn.classList.toggle('active', t === activeTab);
     if (screen) screen.classList.toggle('active', t === activeTab);
   });
 
@@ -2106,6 +2109,8 @@ function switchBottomTab(tab) {
   else if (activeTab === 'trade') renderTradeScreen();
   else if (activeTab === 'portfolio') renderPortfolioScreen();
   else if (activeTab === 'account') renderAccountScreen();
+
+  syncDesktopHeaderState();
 }
 
 // ─── 8. NET EQUITY & PnL CALCULATIONS ────────────────────────────────────
@@ -3075,6 +3080,8 @@ function renderTradeScreen() {
   renderPositions();
   renderOrders();
   connectCoinTickerWs(selectedCoin.binanceSym);
+  renderDesktopMarketsList();
+  updateDesktopOrderCalculations();
 }
 
 // ─── 12. EXACT 11 TIMEFRAMES CANDLESTICK ENGINE ──────────────────────────
@@ -4017,6 +4024,12 @@ async function fetchLiveBinanceTickers() {
   // Real live Gold Spot (TVC:GOLD TradingView sync + Gold-API fallback)
   await pollLiveGoldPrice();
 
+  updateDesktopMarqueePrices();
+  if (activeTab === 'trade') {
+    renderDesktopMarketsList();
+    updateDesktopOrderCalculations();
+  }
+
   checkPendingOrdersTrigger();
   if (activeTab !== 'trade') {
     renderLivePriceUpdates();
@@ -4297,8 +4310,15 @@ function initVTradeApp() {
   // Render TradingView Chart for active coin
   renderTradingViewChart();
 
-  // Render initial screen
-  switchBottomTab('home');
+  // Render initial screen: Desktop opens straight into Pro Trade Desk, Mobile opens into Home
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+  switchBottomTab(isDesktop ? 'trade' : 'home');
+
+  initDesktopMarquee();
+  renderDesktopMarketsList();
+  updateDesktopOrderCalculations();
+  initAmbientSpotlight();
+  syncDesktopHeaderState();
 
   // Initial fetch of candlesticks
   fetchRealBinanceCandles();
@@ -4533,6 +4553,282 @@ function setupOnboardingSwipe() {
       updateOnboardingView(); // Snap back smoothly
     }
   }, { passive: true });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// 14. ACETERNITY / SKIPER / ANIMMASTER PRO TRADING WORKSTATION CONTROLLER
+// ══════════════════════════════════════════════════════════════════════════
+
+let desktopOrderSide = 'long';
+let desktopOrderType = 'market';
+let desktopLeverage = 20;
+let desktopSizeCoins = 0.05;
+let desktopCategoryFilter = 'all';
+
+function syncDesktopHeaderState() {
+  const deskValEl = document.getElementById('desk-wallet-val');
+  if (deskValEl) {
+    deskValEl.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance)}`;
+  }
+}
+
+// Aceternity Infinite Live Crypto Marquee
+function initDesktopMarquee() {
+  const track = document.getElementById('marquee-track');
+  if (!track) return;
+
+  const showcaseCoins = COINS.slice(0, 16);
+  // Duplicate array to create a seamless infinite loop
+  const loopList = [...showcaseCoins, ...showcaseCoins];
+
+  track.innerHTML = loopList.map(coin => {
+    const isUp = coin.change >= 0;
+    return `
+      <div class="marquee-chip" data-sym="${coin.symbol}" onclick="selectCoinAndTrade('${coin.id}')" title="Trade ${coin.pair}">
+        <img class="mc-icon" src="${coin.icon}" alt="${coin.symbol}" onerror="handleCoinIconError(this, '${coin.symbol}', '${coin.category}')" />
+        <span class="mc-sym">${coin.symbol}</span>
+        <span class="mc-price" id="mq-price-${coin.symbol}">${getCurrencySymbol()}${fmtPrice(coin.price)}</span>
+        <span class="mc-chg ${isUp ? 'up' : 'down'}" id="mq-chg-${coin.symbol}">${isUp ? '+' : ''}${coin.change.toFixed(2)}%</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateDesktopMarqueePrices() {
+  COINS.slice(0, 16).forEach(coin => {
+    const priceEls = document.querySelectorAll(`[id="mq-price-${coin.symbol}"]`);
+    const chgEls = document.querySelectorAll(`[id="mq-chg-${coin.symbol}"]`);
+    const isUp = coin.change >= 0;
+
+    priceEls.forEach(el => {
+      el.textContent = `${getCurrencySymbol()}${fmtPrice(coin.price)}`;
+    });
+    chgEls.forEach(el => {
+      el.className = `mc-chg ${isUp ? 'up' : 'down'}`;
+      el.textContent = `${isUp ? '+' : ''}${coin.change.toFixed(2)}%`;
+    });
+  });
+}
+
+// Desktop Sidebar Market Watchlist
+function renderDesktopMarketsList() {
+  const container = document.getElementById('desk-coins-list');
+  if (!container) return;
+
+  let list = COINS;
+  if (desktopCategoryFilter !== 'all') {
+    list = list.filter(c => c.category === desktopCategoryFilter);
+  }
+
+  const searchInput = document.getElementById('desk-mkt-search');
+  const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  if (q) {
+    list = list.filter(c => c.symbol.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+  }
+
+  container.innerHTML = list.map(c => {
+    const isUp = c.change >= 0;
+    const isActive = selectedCoin && selectedCoin.id === c.id;
+    return `
+      <div class="dms-coin-row ${isActive ? 'active' : ''}" data-coin-id="${c.id}" onclick="selectCoinAndTrade('${c.id}')">
+        <div class="dms-coin-left">
+          <img class="dms-coin-icon" src="${c.icon}" alt="${c.symbol}" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category}')" />
+          <div>
+            <div class="dms-coin-sym">${c.symbol}</div>
+            <div class="dms-coin-name">${c.name}</div>
+          </div>
+        </div>
+        <div class="dms-coin-right">
+          <div class="dms-coin-price">${getCurrencySymbol()}${fmtPrice(c.price)}</div>
+          <div class="dms-coin-chg ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${c.change.toFixed(2)}%</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterDesktopMarkets(query) {
+  renderDesktopMarketsList();
+}
+
+function filterDesktopCategory(cat) {
+  desktopCategoryFilter = cat;
+  const cats = ['all', 'futures', 'l1', 'ai', 'meme'];
+  cats.forEach(c => {
+    const el = document.getElementById(`dmscat-${c}`);
+    if (el) el.classList.toggle('active', c === cat);
+  });
+  renderDesktopMarketsList();
+}
+
+// Desktop Order Terminal Logic
+function setDesktopOrderSide(side) {
+  desktopOrderSide = side;
+  const buyBtn = document.getElementById('doc-btn-buy');
+  const sellBtn = document.getElementById('doc-btn-sell');
+  const execBtn = document.getElementById('doc-execute-btn');
+
+  if (buyBtn) buyBtn.classList.toggle('active', side === 'long');
+  if (sellBtn) sellBtn.classList.toggle('active', side === 'short');
+
+  if (execBtn) {
+    execBtn.className = `doc-execute-btn ${side === 'long' ? 'buy' : 'sell'}`;
+  }
+  updateDesktopOrderCalculations();
+}
+
+function setDesktopOrderType(type) {
+  desktopOrderType = type;
+  const mktBtn = document.getElementById('doc-type-market');
+  const limBtn = document.getElementById('doc-type-limit');
+  const limitWrap = document.getElementById('doc-limit-wrap');
+
+  if (mktBtn) mktBtn.classList.toggle('active', type === 'market');
+  if (limBtn) limBtn.classList.toggle('active', type === 'limit');
+  if (limitWrap) limitWrap.classList.toggle('hidden', type !== 'limit');
+
+  updateDesktopOrderCalculations();
+}
+
+function handleDesktopLeverageInput(val) {
+  desktopLeverage = parseInt(val, 10) || 20;
+  const badge = document.getElementById('doc-lev-badge');
+  if (badge) badge.textContent = `${desktopLeverage}x`;
+
+  const chips = [5, 10, 20, 50, 100, 150];
+  chips.forEach(c => {
+    const el = document.getElementById(`doc-chip-${c}`);
+    if (el) el.classList.toggle('active', c === desktopLeverage);
+  });
+
+  updateDesktopOrderCalculations();
+}
+
+function setDesktopLeverage(val) {
+  const slider = document.getElementById('doc-leverage-slider');
+  if (slider) slider.value = val;
+  handleDesktopLeverageInput(val);
+}
+
+function handleDesktopSizeInput(val) {
+  desktopSizeCoins = parseFloat(val) || 0.001;
+  updateDesktopOrderCalculations();
+}
+
+function setDesktopOrderPct(pct) {
+  const price = selectedCoin.price || 1;
+  const availCash = walletState.cashBalance;
+  const targetMargin = availCash * pct;
+  const targetNotional = targetMargin * desktopLeverage;
+  const targetCoins = targetNotional / price;
+
+  desktopSizeCoins = Math.max(0.001, parseFloat(targetCoins.toFixed(4)));
+  const sizeInput = document.getElementById('doc-size-input');
+  if (sizeInput) sizeInput.value = desktopSizeCoins;
+
+  const pctChips = [0.10, 0.25, 0.50, 0.75, 1.00];
+  pctChips.forEach(p => {
+    const el = document.getElementById(`doc-pct-${Math.round(p * 100)}`);
+    if (el) el.classList.toggle('active', Math.abs(p - pct) < 0.01);
+  });
+
+  updateDesktopOrderCalculations();
+}
+
+function updateDesktopOrderCalculations() {
+  if (!selectedCoin) return;
+  const price = desktopOrderType === 'limit'
+    ? (parseFloat(document.getElementById('doc-limit-price')?.value) || selectedCoin.price)
+    : selectedCoin.price;
+
+  const notional = desktopSizeCoins * price;
+  const margin = notional / desktopLeverage;
+  const liqFactor = (1 / desktopLeverage) * 0.9;
+  const liqPrice = desktopOrderSide === 'long'
+    ? price * (1 - liqFactor)
+    : price * (1 + liqFactor);
+  const fee = notional * 0.0005;
+
+  const notionalEl = document.getElementById('doc-calc-notional');
+  const marginEl = document.getElementById('doc-calc-margin');
+  const liqEl = document.getElementById('doc-calc-liq');
+  const feeEl = document.getElementById('doc-calc-fee');
+  const markEl = document.getElementById('doc-mark-price');
+  const availEl = document.getElementById('doc-avail-cash');
+  const unitEl = document.getElementById('doc-size-unit');
+  const execText = document.getElementById('doc-exec-text');
+
+  if (notionalEl) notionalEl.textContent = `${getCurrencySymbol()}${fmtMoney(notional)}`;
+  if (marginEl) marginEl.textContent = `${getCurrencySymbol()}${fmtMoney(margin)}`;
+  if (liqEl) liqEl.textContent = `${getCurrencySymbol()}${fmtPrice(Math.max(0, liqPrice))}`;
+  if (feeEl) feeEl.textContent = `${getCurrencySymbol()}${fmtMoney(fee)}`;
+  if (markEl) markEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+  if (availEl) availEl.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance)}`;
+  if (unitEl) unitEl.textContent = selectedCoin.symbol;
+
+  if (execText) {
+    const action = desktopOrderSide === 'long' ? 'Buy / Long' : 'Sell / Short';
+    execText.textContent = `Place ${action} ${selectedCoin.symbol} (${desktopLeverage}x)`;
+  }
+}
+
+function executeDesktopOrder() {
+  // Sync desktop form values into existing validated executeOrderFromSheet engine
+  sheetSide = desktopOrderSide;
+  sheetLeverage = desktopLeverage;
+  sheetSizeCoins = desktopSizeCoins;
+  sheetOrderType = desktopOrderType;
+
+  const limitInput = document.getElementById('sheet-limit-price');
+  const deskLimitInput = document.getElementById('doc-limit-price');
+  if (limitInput && deskLimitInput) {
+    limitInput.value = deskLimitInput.value;
+  }
+
+  // Execute using the unified paper trading engine
+  executeOrderFromSheet();
+
+  // Re-sync UI after execution
+  updateDesktopOrderCalculations();
+  syncDesktopHeaderState();
+  renderPositions();
+  renderOrders();
+}
+
+// Ambient Spotlight Glow Cursor Effect (Aceternity / Animmaster)
+function initAmbientSpotlight() {
+  const spot = document.getElementById('vtrade-ambient-spotlight');
+  if (!spot) return;
+
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+  let spotX = mouseX;
+  let spotY = mouseY;
+  let rafId = null;
+
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (!rafId) {
+      rafId = requestAnimationFrame(() => {
+        spotX += (mouseX - spotX) * 0.15;
+        spotY += (mouseY - spotY) * 0.15;
+        spot.style.transform = `translate3d(${spotX}px, ${spotY}px, 0) translate(-50%, -50%)`;
+        rafId = null;
+      });
+    }
+  }, { passive: true });
+}
+
+// Get Android App Modal
+function openApkDownloadModal() {
+  const modal = document.getElementById('apk-download-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeApkDownloadModal() {
+  const modal = document.getElementById('apk-download-modal');
+  if (modal) modal.classList.add('hidden');
 }
 
 if (typeof window !== 'undefined') {
