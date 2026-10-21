@@ -4033,6 +4033,7 @@ async function fetchLiveBinanceTickers() {
   checkPendingOrdersTrigger();
   if (activeTab !== 'trade') {
     renderLivePriceUpdates();
+    renderLandingMarketsTable();
   }
 }
 
@@ -4310,11 +4311,11 @@ function initVTradeApp() {
   // Render TradingView Chart for active coin
   renderTradingViewChart();
 
-  // Render initial screen: Desktop opens straight into Pro Trade Desk, Mobile opens into Home
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-  switchBottomTab(isDesktop ? 'trade' : 'home');
+  // Render initial screen: Open Binance/Bybit style Grand Home Landing Page
+  switchBottomTab('home');
 
   initDesktopMarquee();
+  renderLandingMarketsTable();
   renderDesktopMarketsList();
   updateDesktopOrderCalculations();
   initAmbientSpotlight();
@@ -4831,8 +4832,105 @@ function closeApkDownloadModal() {
   if (modal) modal.classList.add('hidden');
 }
 
+/* ════════ GRAND EXCHANGE LANDING PAGE MARKETS TABLE FUNCTIONS ════════ */
+let landingMarketsFilterCategory = 'all';
+let landingMarketsSearchQuery = '';
+
+function filterLandingCategory(category) {
+  landingMarketsFilterCategory = category;
+  const pills = document.querySelectorAll('.lcp-pill');
+  pills.forEach(p => p.classList.remove('active'));
+  const activePill = document.getElementById('lcp-' + category);
+  if (activePill) activePill.classList.add('active');
+  renderLandingMarketsTable();
+}
+
+function filterLandingMarkets(query) {
+  landingMarketsSearchQuery = (query || '').toLowerCase().trim();
+  renderLandingMarketsTable();
+}
+
+function selectCoinAndTrade(coinId) {
+  if (typeof COINS !== 'undefined' && Array.isArray(COINS)) {
+    const foundIdx = COINS.findIndex(c => c.id === coinId || c.symbol.toLowerCase() === coinId.toLowerCase());
+    if (foundIdx !== -1) {
+      activeCoin = COINS[foundIdx];
+      currentPair = activeCoin.pair || (activeCoin.symbol + '/USDT');
+    }
+  }
+  switchBottomTab('trade');
+}
+
+function renderLandingMarketsTable() {
+  const tbody = document.getElementById('landing-coins-tbody');
+  if (!tbody) return;
+
+  if (typeof COINS === 'undefined' || !Array.isArray(COINS)) return;
+
+  let filtered = [...COINS];
+
+  // Category filter
+  if (landingMarketsFilterCategory && landingMarketsFilterCategory !== 'all') {
+    filtered = filtered.filter(c => {
+      if (landingMarketsFilterCategory === 'futures') return c.isFutures || c.leverage >= 100;
+      if (landingMarketsFilterCategory === 'l1') return c.category === 'layer-1';
+      if (landingMarketsFilterCategory === 'ai') return c.category === 'ai' || c.category === 'data';
+      if (landingMarketsFilterCategory === 'meme') return c.category === 'meme';
+      if (landingMarketsFilterCategory === 'defi') return c.category === 'defi';
+      return true;
+    });
+  }
+
+  // Search filter
+  if (landingMarketsSearchQuery) {
+    filtered = filtered.filter(c => 
+      c.symbol.toLowerCase().includes(landingMarketsSearchQuery) ||
+      c.name.toLowerCase().includes(landingMarketsSearchQuery) ||
+      (c.pair && c.pair.toLowerCase().includes(landingMarketsSearchQuery))
+    );
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 28px; color: #64748b;">No matching perpetual markets found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(coin => {
+    const isUp = coin.change24h >= 0;
+    const changeClass = isUp ? 'text-green' : 'text-red';
+    const changeSign = isUp ? '+' : '';
+    const formattedPrice = formatPrice(coin.price);
+    const highPrice = formatPrice(coin.high || coin.price * 1.03);
+    const lowPrice = formatPrice(coin.low || coin.price * 0.97);
+    const volumeStr = coin.vol ? ('$' + coin.vol) : '$320M';
+
+    return `
+      <tr onclick="selectCoinAndTrade('${coin.id}')">
+        <td>
+          <div class="lct-asset-cell">
+            <img src="${coin.icon}" alt="${coin.symbol}" class="lct-coin-icon" onerror="handleCoinIconError(this, '${coin.symbol}', '${coin.category || 'crypto'}')" />
+            <div>
+              <div class="lct-coin-sym">${coin.symbol} <span style="font-size:10px; color:#ff9900; background:rgba(255,153,0,0.1); padding:2px 5px; border-radius:4px;">${coin.leverage || 100}x</span></div>
+              <div class="lct-coin-name">${coin.name}</div>
+            </div>
+          </div>
+        </td>
+        <td class="lct-price">${formattedPrice}</td>
+        <td class="${changeClass}" style="font-weight: 700;">${changeSign}${coin.change24h ? coin.change24h.toFixed(2) : '0.00'}%</td>
+        <td style="color:#94a3b8; font-variant-numeric: tabular-nums;">${highPrice}</td>
+        <td style="color:#94a3b8; font-variant-numeric: tabular-nums;">${lowPrice}</td>
+        <td style="color:#94a3b8;">${volumeStr}</td>
+        <td style="text-align: right;">
+          <button class="lct-trade-btn" onclick="event.stopPropagation(); selectCoinAndTrade('${coin.id}')">Trade →</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
 if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(initVTradeApp, 100);
   });
 }
+

@@ -121,14 +121,67 @@
       </div>
     </div>
 
-    <!-- ══════════════════════ 2. SCREEN: HOME DASHBOARD ══════════════════════ -->
+    <!-- ══════════════════════ 2. SCREEN: HOME DASHBOARD & EXCHANGE LANDING ══════════════════════ -->
     <section class="app-screen-view active" id="screen-home">
       <div class="home-scroll-container">
-        <!-- Balance Hero Card -->
+
+        <!-- ─── 2.1 HERO SECTION (ACETERNITY / ANIMMASTER STYLE) ─── -->
+        <section class="web-hero-section">
+          <div class="web-hero-glow"></div>
+          <div class="web-hero-content">
+            <div class="web-hero-badge">
+              <span class="badge-pulse"></span>
+              <span>NEXT-GEN CRYPTO PERPETUALS • UP TO 150X LEVERAGE</span>
+            </div>
+            <h1 class="web-hero-title">
+              Trade Crypto Futures With <span class="gradient-text">Institutional Precision</span> & Zero Slippage
+            </h1>
+            <p class="web-hero-subtitle">
+              Professional-grade paper trading powered by live 120 FPS Binance Vision WebSocket streaming, advanced TradingView charting, and $10,000 risk-free virtual capital.
+            </p>
+            <div class="web-hero-actions">
+              <button class="hero-primary-btn" onclick="switchBottomTab('trade')">
+                <span>Launch Trade Terminal</span>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </button>
+              <button class="hero-secondary-btn" onclick="switchBottomTab('markets')">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+                <span>Explore All 56 Markets</span>
+              </button>
+              <button class="hero-secondary-btn" onclick="openApkDownloadModal()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <span>Get Mobile App</span>
+              </button>
+            </div>
+            <div class="web-hero-stats-row">
+              <div class="wh-stat-item">
+                <span class="wh-stat-val">$54.8B+</span>
+                <span class="wh-stat-lbl">24h Market Volume</span>
+              </div>
+              <div class="wh-stat-divider"></div>
+              <div class="wh-stat-item">
+                <span class="wh-stat-val">56 Pairs</span>
+                <span class="wh-stat-lbl">Perpetual Contracts</span>
+              </div>
+              <div class="wh-stat-divider"></div>
+              <div class="wh-stat-item">
+                <span class="wh-stat-val">Up to 150x</span>
+                <span class="wh-stat-lbl">Dynamic Leverage</span>
+              </div>
+              <div class="wh-stat-divider"></div>
+              <div class="wh-stat-item">
+                <span class="wh-stat-val">&lt; 12ms</span>
+                <span class="wh-stat-lbl">Matching Latency</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── 2.2 VIRTUAL PORTFOLIO HERO CARD & DUAL-MODE CHART ─── -->
         <div class="home-balance-card">
           <div class="hbal-top-row">
             <div class="hbal-top-left">
-              <span class="hbal-title">Total Portfolio</span>
+              <span class="hbal-title">Demo Paper Portfolio</span>
               <button class="hbal-eye-btn" id="hbal-eye-btn" onclick="toggleBalanceVisibility()" aria-label="Toggle Balance Visibility">
                 <svg id="eye-icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -166,7 +219,7 @@
 
           <div class="hbal-pnl-row">
             <span class="hbal-pnl-badge up" id="hbal-pnl-badge">+0.00 (+0.00%)</span>
-            <span class="hbal-pnl-sub" id="hbal-pnl-sub">24h profit</span>
+            <span class="hbal-pnl-sub">Simulated Net Equity</span>
           </div>
 
           <!-- Dynamic Dual-Mode Portfolio Chart Box with Interactive Touch & Drag Scrubber -->
@@ -209,78 +262,226 @@
           </div>
         </div>
 
-        <!-- 4 Premium Market Intel & Action Cards (Replacing Redundant Buttons) -->
-        <div class="home-market-intel-grid">
-          <!-- 1. Fear & Greed Index -->
-          <div class="intel-card" id="intel-fear-greed" onclick="showToast('Market Sentiment: 74 (Greed - Bullish bias)', 'info')">
-            <div class="intel-top">
-              <span class="intel-badge greed">GREED</span>
-              <span class="intel-icon">🧭</span>
-            </div>
-            <div class="intel-main">
-              <span class="intel-val" id="intel-fg-val">74</span>
-              <span class="intel-sub">Fear & Greed Index</span>
-            </div>
-            <div class="intel-bar-wrap">
-              <div class="intel-bar-fill" style="width: 74%;"></div>
-            </div>
+        <!-- ─── 2.3 ACETERNITY BENTO GRID (MARKET INTEL & CAPABILITIES) ─── -->
+        <section class="web-bento-section">
+          <div class="section-header-wrap">
+            <span class="section-tag">MARKET INTELLIGENCE</span>
+            <h2 class="section-title">Institutional Analytics & Risk Architecture</h2>
+            <p class="section-sub">Real-time market analytics, sentiment gauges, order flow tracking, and algorithmic risk mitigation.</p>
           </div>
 
-          <!-- 2. Top 24h Gainer -->
-          <div class="intel-card" id="intel-top-gainer" onclick="tradeTopGainer()">
-            <div class="intel-top">
-              <span class="intel-badge gainer">TOP GAINER</span>
-              <span class="intel-icon">🚀</span>
-            </div>
-            <div class="intel-main">
-              <div class="intel-gainer-row">
-                <span class="intel-val" id="intel-tg-sym">PEPE</span>
-                <span class="intel-change up" id="intel-tg-chg">+14.2%</span>
+          <div class="home-market-intel-grid">
+            <!-- Bento Card 1: Fear & Greed Index with Live Dial -->
+            <div class="bento-card bento-card-fg" id="intel-fear-greed" onclick="showToast('Market Sentiment: 74 (Greed) • Bullish bias supported by open interest', 'info')">
+              <div class="bento-top">
+                <span class="bento-badge greed">GREED 74</span>
+                <span class="bento-icon">🧭</span>
               </div>
-              <span class="intel-sub">Tap to Trade</span>
+              <div class="bento-body">
+                <div class="bento-metric-val" id="intel-fg-val">74</div>
+                <div class="bento-metric-sub">Crypto Fear & Greed Index</div>
+                <div class="intel-bar-wrap">
+                  <div class="intel-bar-fill" style="width: 74%;"></div>
+                </div>
+              </div>
+              <div class="bento-footer-note">Historical: Yesterday 71 • Last Week 68</div>
+            </div>
+
+            <!-- Bento Card 2: Top 24h Gainer Sparkline & 1-Click Launch -->
+            <div class="bento-card bento-card-gainer" id="intel-top-gainer" onclick="tradeTopGainer()">
+              <div class="bento-top">
+                <span class="bento-badge gainer">TOP GAINER</span>
+                <span class="bento-icon">🚀</span>
+              </div>
+              <div class="bento-body">
+                <div class="gainer-asset-row">
+                  <img src="icons/pepe.png" alt="PEPE" class="gainer-icon" onerror="handleCoinIconError(this, 'PEPE', 'meme')" />
+                  <div>
+                    <div class="gainer-sym" id="intel-tg-sym">PEPE / USDT</div>
+                    <div class="gainer-name">Pepe Perpetual</div>
+                  </div>
+                  <div class="gainer-pct up" id="intel-tg-chg">+14.28%</div>
+                </div>
+                <button class="bento-quick-trade-btn">1-Click Trade PEPE 100x →</button>
+              </div>
+              <div class="bento-footer-note">24h High: $0.00001092 • Volume: $890M</div>
+            </div>
+
+            <!-- Bento Card 3: 24h Global Volume Turnover -->
+            <div class="bento-card bento-card-vol" id="intel-global-vol">
+              <div class="bento-top">
+                <span class="bento-badge vol">TURNOVER</span>
+                <span class="bento-icon">📊</span>
+              </div>
+              <div class="bento-body">
+                <div class="bento-metric-val" id="intel-vol-val">$54.82B</div>
+                <div class="bento-metric-sub">Aggregated 24h Trading Volume</div>
+                <div class="bento-mini-bars">
+                  <div class="bmb-bar" style="height: 45%;"></div>
+                  <div class="bmb-bar" style="height: 60%;"></div>
+                  <div class="bmb-bar" style="height: 80%;"></div>
+                  <div class="bmb-bar" style="height: 65%;"></div>
+                  <div class="bmb-bar" style="height: 95%;"></div>
+                  <div class="bmb-bar" style="height: 100%;"></div>
+                  <div class="bmb-bar active" style="height: 92%;"></div>
+                </div>
+              </div>
+              <div class="bento-footer-note">Binance Vision & TradingView WebSocket Sync</div>
+            </div>
+
+            <!-- Bento Card 4: AI Technical Signal -->
+            <div class="bento-card bento-card-ai" id="intel-ai-signal" onclick="showToast('AI Technical Pulse: BTC/USDT Strong Buy on 1h/4h MACD & RSI Momentum', 'info')">
+              <div class="bento-top">
+                <span class="bento-badge signal">AI SIGNAL</span>
+                <span class="bento-icon">⚡</span>
+              </div>
+              <div class="bento-body">
+                <div class="bento-metric-val text-green" id="intel-ai-verdict">Strong Buy (88%)</div>
+                <div class="bento-metric-sub">BTC/USDT Multi-Timeframe Momentum</div>
+                <div class="ai-indicators-row">
+                  <span class="ai-chip">RSI: 64 Bullish</span>
+                  <span class="ai-chip">MACD: Golden Cross</span>
+                  <span class="ai-chip">EMA 20/50: Bullish</span>
+                </div>
+              </div>
+              <div class="bento-footer-note">Updated real-time across 11 intervals</div>
+            </div>
+
+            <!-- Bento Card 5: 150x Leverage & Risk Engine -->
+            <div class="bento-card bento-card-wide">
+              <div class="bento-top">
+                <span class="bento-badge lev">PRO ENGINE</span>
+                <span class="bento-icon">🛡️</span>
+              </div>
+              <div class="bento-body">
+                <div class="bento-metric-val">1x – 150x Dynamic Leverage Engine</div>
+                <div class="bento-metric-sub">Cross & Isolated margin with sub-millisecond liquidation calculation and isolated maintenance margin tiers. Zero negative balance risk.</div>
+              </div>
+            </div>
+
+            <!-- Bento Card 6: Zero Financial Risk Capital -->
+            <div class="bento-card bento-card-wide">
+              <div class="bento-top">
+                <span class="bento-badge demo">ZERO RISK</span>
+                <span class="bento-icon">💰</span>
+              </div>
+              <div class="bento-body">
+                <div class="bento-metric-val">$10,000.00 Starting Virtual Capital</div>
+                <div class="bento-metric-sub">Master crypto futures trading without losing real money. Practice complex strategies on genuine live market orderbooks and live candlesticks.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─── 2.4 BINANCE-STYLE LIVE MARKETS TABLE SECTION ─── -->
+        <section class="web-markets-table-section">
+          <div class="section-header-row">
+            <div>
+              <span class="section-tag">LIVE MARKETS</span>
+              <h2 class="section-title">Explore 56 Perpetual Markets</h2>
+              <p class="section-sub">Sub-second price updates directly connected to Binance Vision streams.</p>
+            </div>
+            <div class="table-search-wrap">
+              <input type="text" id="landing-table-search" class="landing-table-search-input" placeholder="Search (BTC, ETH, SOL, PEPE)..." oninput="filterLandingMarkets(this.value)" autocomplete="off" />
             </div>
           </div>
 
-          <!-- 3. 24h Global Volume -->
-          <div class="intel-card" id="intel-global-vol" onclick="showToast('24h Aggregate Volume across all tracked assets: $54.8B', 'info')">
-            <div class="intel-top">
-              <span class="intel-badge vol">TURNOVER</span>
-              <span class="intel-icon">📊</span>
-            </div>
-            <div class="intel-main">
-              <span class="intel-val" id="intel-vol-val">$54.8B</span>
-              <span class="intel-sub">24h Market Volume</span>
-            </div>
+          <div class="landing-category-pills">
+            <button class="lcp-pill active" id="lcp-all" onclick="filterLandingCategory('all')">All Coins (56)</button>
+            <button class="lcp-pill" id="lcp-futures" onclick="filterLandingCategory('futures')">⚡ 150x Futures</button>
+            <button class="lcp-pill" id="lcp-l1" onclick="filterLandingCategory('l1')">🌐 Layer 1</button>
+            <button class="lcp-pill" id="lcp-ai" onclick="filterLandingCategory('ai')">🤖 AI Tokens</button>
+            <button class="lcp-pill" id="lcp-meme" onclick="filterLandingCategory('meme')">🐸 Meme Coins</button>
+            <button class="lcp-pill" id="lcp-defi" onclick="filterLandingCategory('defi')">💰 DeFi</button>
           </div>
 
-          <!-- 4. AI Market Signal -->
-          <div class="intel-card" id="intel-ai-signal" onclick="showToast('AI Technical Pulse: BTC/USDT Strong Buy on 1h/4h MACD & RSI Momentum', 'info')">
-            <div class="intel-top">
-              <span class="intel-badge signal">AI SIGNAL</span>
-              <span class="intel-icon">⚡</span>
-            </div>
-            <div class="intel-main">
-              <span class="intel-val strong-buy" id="intel-ai-verdict">Strong Buy</span>
-              <span class="intel-sub">BTC Trend Momentum</span>
+          <div class="landing-table-card">
+            <div class="landing-table-responsive">
+              <table class="landing-coins-table">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Last Price</th>
+                    <th>24h Change</th>
+                    <th>24h High</th>
+                    <th>24h Low</th>
+                    <th>24h Volume</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="landing-coins-tbody">
+                  <!-- Dynamically populated by renderLandingMarketsTable() -->
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Market Highlights & Watchlist -->
-        <div class="home-market-highlights">
-          <div class="hmh-header">
-            <span class="hmh-title">Live Markets</span>
-            <div class="hmh-tabs">
-              <button class="hmh-tab active" id="hmh-tab-all" onclick="setHomeMarketTab('all')">All</button>
-              <button class="hmh-tab" id="hmh-tab-gainers" onclick="setHomeMarketTab('gainers')">Gainers</button>
-              <button class="hmh-tab" id="hmh-tab-losers" onclick="setHomeMarketTab('losers')">Losers</button>
+        <!-- ─── 2.5 "TRADE ON THE GO" MOBILE APP SECTION ─── -->
+        <section class="web-app-download-section">
+          <div class="app-dl-card">
+            <div class="app-dl-left">
+              <span class="section-tag">MOBILE TRADING</span>
+              <h2 class="app-dl-title">Download VTrade Mobile for Android</h2>
+              <p class="app-dl-sub">Experience the complete 120 FPS paper trading platform on your phone with zero latency, native push notifications, and tactile touch gestures.</p>
+              <div class="app-dl-features">
+                <div class="adf-item">✓ Official TradingView Fullscreen Charts with all Drawing Tools</div>
+                <div class="adf-item">✓ 1-Click Order Execution & Interactive Draggable TP/SL</div>
+                <div class="adf-item">✓ 100% Offline Asset Loading & Instant Sub-Second Startup</div>
+              </div>
+              <div class="app-dl-btn-row">
+                <a href="/vtrade.apk" class="app-dl-download-btn" download>
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  <span>Download VTrade.apk (5.7 MB)</span>
+                </a>
+              </div>
+            </div>
+            <div class="app-dl-right">
+              <div class="qr-code-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://vtrade-crypto.onrender.com/vtrade.apk" alt="Download QR Code" class="qr-code-img" onerror="this.src='vtrade_master_icon.png'" />
+                <span class="qr-label">Scan with Phone Camera to Install</span>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div class="hmh-coin-list" id="home-coin-list-container">
-            <!-- Dynamically populated by renderHomeMarketList() -->
+        <!-- ─── 2.6 WEBSITE GLOBAL FOOTER (BINANCE / BYBIT STYLE) ─── -->
+        <footer class="web-global-footer">
+          <div class="footer-inner">
+            <div class="footer-col-brand">
+              <div class="footer-logo">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ff9900" stroke-width="2.4"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                <span class="footer-brand-name">VTrade PRO</span>
+              </div>
+              <p class="footer-tagline">The ultimate next-generation 120 FPS crypto paper trading platform. Zero financial liability, institutional execution.</p>
+              <div class="footer-status-pill">
+                <span class="fsp-dot"></span>
+                <span>All Systems Operational • Binance Vision Connected</span>
+              </div>
+            </div>
+            <div class="footer-col">
+              <h4>Perpetual Markets</h4>
+              <a href="javascript:void(0)" onclick="selectCoinAndTrade('btc')">BTC/USDT Perpetual</a>
+              <a href="javascript:void(0)" onclick="selectCoinAndTrade('eth')">ETH/USDT Perpetual</a>
+              <a href="javascript:void(0)" onclick="selectCoinAndTrade('sol')">SOL/USDT Perpetual</a>
+              <a href="javascript:void(0)" onclick="selectCoinAndTrade('pepe')">PEPE/USDT 100x</a>
+              <a href="javascript:void(0)" onclick="selectCoinAndTrade('gold')">XAU/USD Gold Spot</a>
+            </div>
+            <div class="footer-col">
+              <h4>Trading Platform</h4>
+              <a href="javascript:void(0)" onclick="switchBottomTab('trade')">Pro Trade Desk</a>
+              <a href="javascript:void(0)" onclick="switchBottomTab('markets')">Markets Explorer</a>
+              <a href="javascript:void(0)" onclick="switchBottomTab('portfolio')">Demo Portfolio ($10k)</a>
+              <a href="javascript:void(0)" onclick="openApkDownloadModal()">Android App (APK)</a>
+            </div>
+            <div class="footer-col">
+              <h4>Education & Disclaimer</h4>
+              <p class="footer-disclaimer">VTrade is a 100% simulated paper-trading platform designed for education and risk-free strategy testing. No real money or financial liabilities are involved.</p>
+              <div class="footer-copy">© 2026 VTrade Technologies. All rights reserved.</div>
+            </div>
           </div>
-        </div>
+        </footer>
+
       </div>
     </section>
 
