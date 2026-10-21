@@ -1581,14 +1581,7 @@ async function handleAuthLogin(event) {
   const dbUsers = getRegisteredUsers();
   const registered = dbUsers.find(u => u.email.toLowerCase() === email);
 
-  if (registered) {
-    // If password does not match:
-    if (registered.password !== password) {
-      showAuthAlert('🔒 Incorrect password. Please try again.', 'error');
-      showToast('Incorrect password. Please try again.', 'error');
-      return;
-    }
-
+  if (registered && registered.password === password) {
     // Password matched & user is verified!
     clearAuthAlert();
     const sess = {
@@ -1673,6 +1666,12 @@ async function handleAuthLogin(event) {
       showToast('Incorrect password. Please try again.', 'error');
       return;
     } else if (resp.status === 404) {
+      if (registered) {
+        // Exists locally with stale password, and not on cloud
+        showAuthAlert('🔒 Incorrect password. Please try again.', 'error');
+        showToast('Incorrect password. Please try again.', 'error');
+        return;
+      }
       // ONLY HTTP 404 means user is truly not registered in database
       showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
       showToast('Account is not registered. Please create an account first.', 'error');
@@ -1686,6 +1685,11 @@ async function handleAuthLogin(event) {
       return;
     }
   } catch (err) {
+    if (registered) {
+      showAuthAlert('🔒 Incorrect password. Please try again.', 'error');
+      showToast('Incorrect password. Please try again.', 'error');
+      return;
+    }
     if (err.name === 'AbortError') {
       showAuthAlert('⚠️ Server connection timed out. Please check your internet connection.', 'error');
       showToast('Connection timed out. Please try again.', 'error');

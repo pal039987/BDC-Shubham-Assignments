@@ -3316,6 +3316,13 @@ html, body {
   flex-direction: column;
 }
 
+#tv-fs-panel-info,
+#tv-fs-panel-orderbook,
+#tv-fs-panel-trades {
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 #tv-fs-panel-chart {
   width: 100%;
   height: 100%;
@@ -3350,6 +3357,8 @@ html, body {
   background: #080b11;
   height: 100%;
   overflow-y: auto;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tv-fs-info-card {
@@ -3434,6 +3443,8 @@ html, body {
 .tv-fs-trades-list {
   flex: 1;
   overflow-y: auto;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
   padding: 8px 14px;
   display: flex;
   flex-direction: column;
