@@ -2141,6 +2141,7 @@ function renderHomeScreen() {
   renderPortfolioCurve();
   renderHomeMarketIntel();
   renderHomeMarketList();
+  renderLandingMarketsTable();
   initPortfolioScrubberListeners();
 }
 
