@@ -44,7 +44,7 @@
   inset: 0;
   z-index: 999999;
   background: #080b11;
-  display: flex;
+  display: none; /* Instant load on web browsers - zero splash blocking! */
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -55,10 +55,16 @@
   transform: translateZ(0);
 }
 
+/* Display splash animation only inside native Android APK wrapper */
+html.is-native-apk .vtrade-splash-screen {
+  display: flex !important;
+}
+
 .vtrade-splash-screen.fade-out {
-  opacity: 0;
+  opacity: 0 !important;
   transform: scale(1.03) translateZ(0);
-  pointer-events: none;
+  pointer-events: none !important;
+  display: none !important;
 }
 
 .splash-content {

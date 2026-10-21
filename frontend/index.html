@@ -16,11 +16,20 @@
   <link rel="stylesheet" href="style.css?v=2.9" />
   <script>
     (function() {
-      // Early detect native Capacitor APK or mobile Android to apply safe-area padding immediately
       var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-      var isAndroid = /Android/i.test(navigator.userAgent);
-      if (isCapacitor || isAndroid) {
+      if (isCapacitor) {
         document.documentElement.classList.add('is-native-apk', 'is-mobile-app');
+      } else {
+        // On web browser: immediately hide splash screen so website is always 100% visible
+        var hideSplash = function() {
+          var sp = document.getElementById('vtrade-splash-screen');
+          if (sp) sp.style.display = 'none';
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', hideSplash);
+        } else {
+          hideSplash();
+        }
       }
     })();
   </script>

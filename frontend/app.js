@@ -4266,12 +4266,14 @@ let liveTickerInterval = null;
 function initVTradeApp() {
   console.log('🚀 Initializing VTrade 120 FPS Paper Trading App...');
 
-  // Ensure native mobile safe areas are properly applied
+  // Ensure native mobile safe areas are properly applied & web splash is removed
   try {
     const isCap = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-    const isAnd = /Android/i.test(navigator.userAgent);
-    if (isCap || isAnd) {
+    if (isCap) {
       document.documentElement.classList.add('is-native-apk', 'is-mobile-app');
+    } else {
+      const splashEl = document.getElementById('vtrade-splash-screen');
+      if (splashEl) splashEl.style.display = 'none';
     }
   } catch (e) {}
 
@@ -4942,8 +4944,13 @@ function scrollToSharkSection(id) {
 }
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initVTradeApp, 100);
-  });
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(initVTradeApp, 50);
+    });
+  } else {
+    // DOM already loaded / interactive - start immediately!
+    setTimeout(initVTradeApp, 20);
+  }
 }
 
