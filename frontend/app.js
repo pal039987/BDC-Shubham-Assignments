@@ -1118,8 +1118,8 @@ async function triggerManualCloudWalletSync() {
 }
 
 // ─── 2.05 IN-APP OTA UPDATE ENGINE ─────────────────────────────────────────
-const CURRENT_APP_VERSION = '2.9.8';
-const CURRENT_VERSION_CODE = 19;
+const CURRENT_APP_VERSION = '2.9.9';
+const CURRENT_VERSION_CODE = 20;
 let latestUpdateInfo = null;
 
 async function checkForAppUpdates(isManual = false) {
@@ -2688,9 +2688,72 @@ function sortMarketList(field) {
 
 // ─── 11. TRADE SCREEN & CANDLESTICK CHART ENGINE ─────────────────────────
 
+const DEFAULT_CHART_SETTINGS = {
+  upColor: '#00c087',
+  downColor: '#f04f5e',
+  bgColor: '#080b11',
+  grid: 'hidden',
+  chartStyle: '1',
+  timezone: 'Etc/UTC'
+};
+
+let currentChartSettings = { ...DEFAULT_CHART_SETTINGS };
+
+function loadChartSettings() {
+  try {
+    const raw = localStorage.getItem('vtrade_tv_chart_settings');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        currentChartSettings = { ...DEFAULT_CHART_SETTINGS, ...parsed };
+      }
+    }
+  } catch (e) {}
+}
+
+function saveChartSettings() {
+  try {
+    localStorage.setItem('vtrade_tv_chart_settings', JSON.stringify(currentChartSettings));
+  } catch (e) {}
+}
+
+function getTradingViewOverrides() {
+  loadChartSettings();
+  const up = currentChartSettings.upColor || '#00c087';
+  const down = currentChartSettings.downColor || '#f04f5e';
+  const bg = currentChartSettings.bgColor || '#080b11';
+  let gridColor = 'rgba(0, 0, 0, 0)';
+  if (currentChartSettings.grid === 'subtle') gridColor = 'rgba(255, 255, 255, 0.04)';
+  if (currentChartSettings.grid === 'visible') gridColor = 'rgba(255, 255, 255, 0.09)';
+
+  return {
+    "paneProperties.background": bg,
+    "paneProperties.vertGridProperties.color": gridColor,
+    "paneProperties.horzGridProperties.color": gridColor,
+    "mainSeriesProperties.candleStyle.upColor": up,
+    "mainSeriesProperties.candleStyle.downColor": down,
+    "mainSeriesProperties.candleStyle.borderUpColor": up,
+    "mainSeriesProperties.candleStyle.borderDownColor": down,
+    "mainSeriesProperties.candleStyle.wickUpColor": up,
+    "mainSeriesProperties.candleStyle.wickDownColor": down,
+    "mainSeriesProperties.hollowCandleStyle.upColor": up,
+    "mainSeriesProperties.hollowCandleStyle.downColor": down,
+    "mainSeriesProperties.hollowCandleStyle.borderUpColor": up,
+    "mainSeriesProperties.hollowCandleStyle.borderDownColor": down,
+    "mainSeriesProperties.haStyle.upColor": up,
+    "mainSeriesProperties.haStyle.downColor": down,
+    "mainSeriesProperties.haStyle.borderUpColor": up,
+    "mainSeriesProperties.haStyle.borderDownColor": down
+  };
+}
+
 function renderTradingViewChart() {
+  const forceReload = arguments[0] === true;
   const iframe = document.getElementById('tradingview-chart-iframe');
   if (!iframe) return;
+
+  loadChartSettings();
+  const overrides = getTradingViewOverrides();
 
   const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
   const tvIntervalMap = {
@@ -2699,9 +2762,9 @@ function renderTradingViewChart() {
   };
   const intervalCode = tvIntervalMap[chartInterval] || '60';
 
-  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&locale=en`;
+  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=1&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&locale=en&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
 
-  if (!iframe.src || !iframe.src.includes(`symbol=${encodeURIComponent(tvSymbol)}`) || !iframe.src.includes(`interval=${intervalCode}`)) {
+  if (forceReload || !iframe.src || !iframe.src.includes(`symbol=${encodeURIComponent(tvSymbol)}`) || !iframe.src.includes(`interval=${intervalCode}`)) {
     iframe.src = newSrc;
   }
 }
@@ -2709,6 +2772,7 @@ function renderTradingViewChart() {
 let currentFsTab = 'price';
 
 function openFullscreenChart() {
+  const forceReload = arguments[0] === true;
   const modal = document.getElementById('tv-fullscreen-modal');
   const iframe = document.getElementById('tv-fullscreen-iframe');
   const pairEl = document.getElementById('tv-fs-pair');
@@ -2717,6 +2781,9 @@ function openFullscreenChart() {
   const buySub = document.getElementById('tv-fs-buy-sub');
   const sellSub = document.getElementById('tv-fs-sell-sub');
   if (!modal || !iframe) return;
+
+  loadChartSettings();
+  const overrides = getTradingViewOverrides();
 
   const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
   const tvIntervalMap = {
@@ -2741,8 +2808,8 @@ function openFullscreenChart() {
   switchFsTab('price');
   renderFsTabContent();
 
-  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en`;
-  if (!iframe.src || iframe.src !== url) {
+  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  if (forceReload || !iframe.src || iframe.src !== url) {
     iframe.src = url;
   }
   modal.classList.remove('hidden');
@@ -2843,7 +2910,133 @@ function toggleFavoriteCurrentCoin() {
 }
 
 function toggleFsSettings() {
-  showToast('Chart Indicators & Drawing Tools active');
+  openFsSettings();
+}
+
+function openFsSettings() {
+  loadChartSettings();
+  syncChartSettingsUI();
+  const modal = document.getElementById('tv-chart-settings-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeFsSettings() {
+  const modal = document.getElementById('tv-chart-settings-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function syncChartSettingsUI() {
+  const upInput = document.getElementById('cs-input-up');
+  const downInput = document.getElementById('cs-input-down');
+  const upHex = document.getElementById('cs-hex-up');
+  const downHex = document.getElementById('cs-hex-down');
+  const tzSelect = document.getElementById('cs-timezone-select');
+
+  if (upInput) upInput.value = currentChartSettings.upColor;
+  if (downInput) downInput.value = currentChartSettings.downColor;
+  if (upHex) upHex.textContent = currentChartSettings.upColor;
+  if (downHex) downHex.textContent = currentChartSettings.downColor;
+  if (tzSelect) tzSelect.value = currentChartSettings.timezone || 'Etc/UTC';
+
+  // Sync grid buttons
+  ['hidden', 'subtle', 'visible'].forEach(g => {
+    const btn = document.getElementById(`cs-grid-${g}`);
+    if (btn) btn.classList.toggle('active', currentChartSettings.grid === g);
+  });
+
+  // Sync style buttons
+  ['1', '9', '8', '2'].forEach(s => {
+    const btn = document.getElementById(`cs-style-${s}`);
+    if (btn) btn.classList.toggle('active', currentChartSettings.chartStyle === s);
+  });
+
+  // Sync background pills
+  const bgMap = {
+    '#080b11': 'cs-bg-obsidian',
+    '#000000': 'cs-bg-pure',
+    '#0c101a': 'cs-bg-navy',
+    '#151c2c': 'cs-bg-slate'
+  };
+  Object.entries(bgMap).forEach(([color, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', currentChartSettings.bgColor.toLowerCase() === color.toLowerCase());
+  });
+}
+
+function applyColorPreset(up, down, btn) {
+  currentChartSettings.upColor = up;
+  currentChartSettings.downColor = down;
+  const upInput = document.getElementById('cs-input-up');
+  const downInput = document.getElementById('cs-input-down');
+  const upHex = document.getElementById('cs-hex-up');
+  const downHex = document.getElementById('cs-hex-down');
+  if (upInput) upInput.value = up;
+  if (downInput) downInput.value = down;
+  if (upHex) upHex.textContent = up;
+  if (downHex) downHex.textContent = down;
+
+  document.querySelectorAll('.cs-preset-pill').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function onCustomColorChange() {
+  const upInput = document.getElementById('cs-input-up');
+  const downInput = document.getElementById('cs-input-down');
+  const upHex = document.getElementById('cs-hex-up');
+  const downHex = document.getElementById('cs-hex-down');
+  if (upInput) {
+    currentChartSettings.upColor = upInput.value;
+    if (upHex) upHex.textContent = upInput.value;
+  }
+  if (downInput) {
+    currentChartSettings.downColor = downInput.value;
+    if (downHex) downHex.textContent = downInput.value;
+  }
+  document.querySelectorAll('.cs-preset-pill').forEach(p => p.classList.remove('active'));
+}
+
+function applyBgPreset(bg, btn) {
+  currentChartSettings.bgColor = bg;
+  document.querySelectorAll('.cs-bg-pill').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function setChartGrid(grid) {
+  currentChartSettings.grid = grid;
+  ['hidden', 'subtle', 'visible'].forEach(g => {
+    const btn = document.getElementById(`cs-grid-${g}`);
+    if (btn) btn.classList.toggle('active', g === grid);
+  });
+}
+
+function setChartStyle(style) {
+  currentChartSettings.chartStyle = style;
+  ['1', '9', '8', '2'].forEach(s => {
+    const btn = document.getElementById(`cs-style-${s}`);
+    if (btn) btn.classList.toggle('active', s === style);
+  });
+}
+
+function onTimezoneChange(tz) {
+  currentChartSettings.timezone = tz;
+}
+
+function resetChartSettingsToDefault() {
+  currentChartSettings = { ...DEFAULT_CHART_SETTINGS };
+  saveChartSettings();
+  syncChartSettingsUI();
+  showToast('Chart settings reset to default');
+}
+
+function saveAndApplyChartSettings() {
+  saveChartSettings();
+  closeFsSettings();
+  const fsModal = document.getElementById('tv-fullscreen-modal');
+  if (fsModal && !fsModal.classList.contains('hidden')) {
+    openFullscreenChart(true);
+  }
+  renderTradingViewChart(true);
+  showToast('Chart colors & settings applied!', 'success');
 }
 
 function selectCoinAndTrade(coinId) {

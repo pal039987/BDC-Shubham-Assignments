@@ -478,5 +478,17 @@
     "orders_json": "[]",
     "trades_json": "[]",
     "updated_at": 1792546756307
+  },
+  {
+    "id": 60,
+    "username": "FreshTrader_1792558631850",
+    "email": "trader_1792558631850@vtrade.org",
+    "password": "$2b$10$3es2c3kcIecjC2aA0c/cl.zBPi7leX7Wh7zTV.XDM8s9F7BiXg/iO",
+    "balance": 10000,
+    "created_at": "2026-10-21 04:57:11",
+    "positions_json": "[]",
+    "orders_json": "[]",
+    "trades_json": "[]",
+    "updated_at": 1792558632054
   }
 ]

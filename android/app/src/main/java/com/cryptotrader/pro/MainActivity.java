@@ -33,11 +33,14 @@ public class MainActivity extends BridgeActivity {
 
             WebView webView = getBridge().getWebView();
             if (webView != null) {
+                webView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+                webView.setVerticalScrollBarEnabled(false);
+                webView.setHorizontalScrollBarEnabled(false);
                 WebSettings settings = webView.getSettings();
                 settings.setJavaScriptEnabled(true);
                 settings.setDomStorageEnabled(true);
                 settings.setDatabaseEnabled(true);
-                settings.setSupportZoom(true);
+                settings.setSupportZoom(false);
                 settings.setBuiltInZoomControls(false);
                 settings.setDisplayZoomControls(false);
                 settings.setUseWideViewPort(true);

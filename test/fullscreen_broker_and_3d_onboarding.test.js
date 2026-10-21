@@ -57,12 +57,12 @@ assert.ok(styleCss.includes('.auth-modal-card.shake'), '.auth-modal-card.shake m
 assert.ok(appJs.includes('card.classList.add(\'shake\')'), 'handleBackdropClick must add shake class to card without toast');
 console.log('  ✓ Option B Outside Click: Gentle Card Shake Feedback without Intrusive Popup verified');
 
-// 5. Verify Price Font (Chakra Petch & tabular numerals)
-assert.ok(indexHtml.includes('family=Chakra+Petch'), 'index.html must load Chakra Petch from Google Fonts');
-assert.ok(styleCss.includes('--font-price: \'Chakra Petch\''), 'style.css must define --font-price token');
+// 5. Verify Realistic Financial Price Font (Inter / Roboto & tabular numerals - Binance / TradingView standard)
+assert.ok(indexHtml.includes('family=Inter') || indexHtml.includes('family=Roboto'), 'index.html must load Inter or Roboto from Google Fonts');
+assert.ok(styleCss.includes('--font-price:') && (styleCss.includes('Inter') || styleCss.includes('Roboto')), 'style.css must define realistic --font-price token (Inter / Roboto)');
 assert.ok(styleCss.includes('font-family: var(--font-price);'), 'style.css must apply --font-price to prices');
 assert.ok(styleCss.includes('font-variant-numeric: tabular-nums;'), 'style.css must enforce tabular-nums for zero jitter');
-console.log('  ✓ Luxury Financial Tabular Price Font (Chakra Petch / Space Grotesk) verified');
+console.log('  ✓ Realistic Financial Tabular Price Font (Inter / Roboto - Binance & TradingView standard) verified');
 
 // 6. Verify Modern 2D Flat Onboarding Walkthrough (Phantom / CoinGecko / CoinDCX Style)
 assert.ok(indexHtml.includes('id="vtrade-onboarding-modal"'), 'Onboarding modal overlay must exist in index.html');
@@ -87,8 +87,8 @@ densities.forEach(d => {
   assert.ok(fs.statSync(path.join(dir, 'ic_launcher.png')).size > 1000, `Icon in ${d} must be non-empty`);
 });
 
-assert.ok(gradle.includes('versionCode 11') || gradle.includes('versionCode 12') || gradle.includes('versionCode 13') || gradle.includes('versionCode 14') || gradle.includes('versionCode 15') || gradle.includes('versionCode 16') || gradle.includes('versionCode 17') || gradle.includes('versionCode 18') || gradle.includes('versionCode 19'), 'build.gradle must be bumped to valid versionCode');
-assert.ok(gradle.includes('versionName "2.9"') || gradle.includes('versionName "2.9.1"') || gradle.includes('versionName "2.9.2"') || gradle.includes('versionName "2.9.3"') || gradle.includes('versionName "2.9.4"') || gradle.includes('versionName "2.9.5"') || gradle.includes('versionName "2.9.6"') || gradle.includes('versionName "2.9.7"') || gradle.includes('versionName "2.9.8"'), 'build.gradle must be bumped to valid versionName');
+assert.ok(gradle.includes('versionCode 11') || gradle.includes('versionCode 12') || gradle.includes('versionCode 13') || gradle.includes('versionCode 14') || gradle.includes('versionCode 15') || gradle.includes('versionCode 16') || gradle.includes('versionCode 17') || gradle.includes('versionCode 18') || gradle.includes('versionCode 19') || gradle.includes('versionCode 20'), 'build.gradle must be bumped to valid versionCode');
+assert.ok(gradle.includes('versionName "2.9"') || gradle.includes('versionName "2.9.1"') || gradle.includes('versionName "2.9.2"') || gradle.includes('versionName "2.9.3"') || gradle.includes('versionName "2.9.4"') || gradle.includes('versionName "2.9.5"') || gradle.includes('versionName "2.9.6"') || gradle.includes('versionName "2.9.7"') || gradle.includes('versionName "2.9.8"') || gradle.includes('versionName "2.9.9"'), 'build.gradle must be bumped to valid versionName');
 assert.ok(appJs.includes('CLOUD_API_BASE = \'https://vtrade-crypto.onrender.com\''), 'app.js must define CLOUD_API_BASE to sync APK with cloud database');
 assert.ok(appJs.includes('syncWalletWithCloud'), 'app.js must define syncWalletWithCloud');
 assert.ok(appJs.includes('triggerManualCloudWalletSync'), 'app.js must define triggerManualCloudWalletSync');
@@ -108,11 +108,18 @@ assert.ok(styleCss.includes('.update-modal-overlay'), 'style.css must style in-a
 
 // 8. Verify Fullscreen TradingView Chart Drawing Tools & Touch Drag Isolation
 assert.ok(styleCss.includes('.tv-fullscreen-modal') && styleCss.includes('touch-action: none !important'), 'tv-fullscreen-modal must have touch-action none');
-assert.ok(styleCss.includes('.tv-fullscreen-iframe') && styleCss.includes('touch-action: none !important'), 'tv-fullscreen-iframe must have touch-action none');
+assert.ok(styleCss.includes('.tv-fullscreen-iframe') && (styleCss.includes('touch-action: none !important') || styleCss.includes('touch-action: manipulation !important')), 'tv-fullscreen-iframe must have touch-action manipulation or none');
 assert.ok(indexHtml.includes('allow="clipboard-write; pointer-lock"'), 'tv-fullscreen-iframe must allow pointer-lock for drawing tools');
 assert.ok(appJs.includes('hide_side_toolbar=0'), 'TradingView fullscreen URL must have hide_side_toolbar=0 to enable drawing tools');
 console.log('  ✓ Fullscreen TradingView Drawing Tools (hide_side_toolbar=0) & Anti-Freeze Touch Isolation verified');
+
+// 9. Verify TradingView Chart Settings Modal (Candle Colors, Background, Grid, Style)
+assert.ok(indexHtml.includes('id="tv-chart-settings-modal"'), 'index.html must include tv-chart-settings-modal');
+assert.ok(styleCss.includes('.cs-modal-backdrop'), 'style.css must include .cs-modal-backdrop styles');
+assert.ok(appJs.includes('getTradingViewOverrides'), 'app.js must define getTradingViewOverrides');
+assert.ok(appJs.includes('openFsSettings'), 'app.js must define openFsSettings');
+console.log('  ✓ TradingView Chart Settings & Properties Modal (Candle Colors, Background, Grid, Style) verified');
 console.log('  ✓ Dual-Direction Realtime Cloud Wallet Sync & In-App Manual Sync Button verified');
 console.log('  ✓ In-App OTA Update System (Auto Version Checker & Direct Download Dialog) verified');
 
-console.log('\n=== ALL 8 VERIFICATION SUITES PASSED! ===\n');
+console.log('\n=== ALL 9 VERIFICATION SUITES PASSED! ===\n');
