@@ -481,6 +481,10 @@
             <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
             <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
             <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
+            <button class="ctf-btn ctf-toggle-ob" id="ctf-toggle-ob" onclick="toggleTradeDeskOrderBook()" title="Customize Workspace: Toggle Order Book">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+              <span id="ctf-ob-text">Order Book: ON</span>
+            </button>
             <button class="ctf-btn ctf-fs" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Fullscreen Chart">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
             </button>
@@ -488,7 +492,7 @@
         </div>
 
         <!-- Professional 3-Column Workspace: Chart (Left) + Order Book (Center) + Order Terminal (Right) -->
-        <div class="trade-workspace-grid">
+        <div class="trade-workspace-grid" id="trade-workspace-grid">
 
           <!-- Column 1: Responsive Chart Panel -->
           <div class="trade-chart-box" id="trade-candlestick-container">
@@ -500,10 +504,11 @@
           </div>
 
           <!-- Column 2: Dedicated Order Book & Recent Trades Panel -->
-          <div class="trade-depth-panel">
+          <div class="trade-depth-panel" id="trade-depth-panel">
             <div class="tdp-tabs">
               <button class="tdp-tab active" id="tdp-tab-book" onclick="switchTradeDepthTab('book')">Order Book (Depth)</button>
               <button class="tdp-tab" id="tdp-tab-trades" onclick="switchTradeDepthTab('trades')">Recent Market Trades</button>
+              <button class="tdp-remove-btn" id="tdp-remove-btn" onclick="toggleTradeDeskOrderBook(false)" title="Hide / Remove Order Book (Expand Chart)">✕</button>
             </div>
             <div class="tdp-content" id="tdp-content-book">
               <div class="orderbook-compact-grid" id="orderbook-compact-grid">
@@ -618,6 +623,7 @@
             </button>
             <button class="tblc-tab" id="tblc-tab-history" onclick="switchLedgerTab('history')">
               <span>Trade History</span>
+              <span class="tblc-badge" id="ledger-hist-count">0</span>
             </button>
           </div>
 
@@ -1066,17 +1072,53 @@
   <!-- ══════════════════════ 11. FULLSCREEN BROKER TRADINGVIEW MODAL ══════════════════════ -->
   <div class="tv-fullscreen-modal hidden" id="tv-fullscreen-modal">
     <div class="tv-fs-header">
-      <button class="tv-fs-back-btn" onclick="closeFullscreenChart()" aria-label="Close Fullscreen">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-      </button>
-      <div class="tv-fs-coin-meta">
-        <img id="tv-fs-coin-icon" src="icons/btc.png" alt="Coin" class="tv-fs-icon" />
-        <span id="tv-fs-pair" class="tv-fs-pair-text">BTC/USDT</span>
-        <span id="tv-fs-change" class="tv-fs-change-pill up">+0.00%</span>
+      <div class="tv-fs-header-left">
+        <button class="tv-fs-back-btn" onclick="closeFullscreenChart()" aria-label="Close Fullscreen" title="Exit Fullscreen">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="tv-fs-coin-meta" onclick="openMarketSelectorModal()" style="cursor: pointer;" title="Change Trading Instrument">
+          <img id="tv-fs-coin-icon" src="icons/btc.png" alt="Coin" class="tv-fs-coin-avatar" onerror="handleCoinIconError(this, 'BTC', 'futures')" />
+          <div class="tv-fs-pair-block">
+            <div class="tv-fs-pair-row">
+              <span id="tv-fs-pair" class="tv-fs-pair">BTC/USDT</span>
+              <span class="tv-fs-cat-badge" id="tv-fs-cat">Futures</span>
+            </div>
+            <span class="tv-fs-coin-name" id="tv-fs-name">Bitcoin</span>
+          </div>
+        </div>
       </div>
-      <div class="tv-fs-actions">
+
+      <!-- Real-Time Financial Stats Bar Utilizing Header Space -->
+      <div class="tv-fs-stats-bar">
+        <div class="tv-fs-stat-item highlight">
+          <span class="tv-fs-stat-lbl">Mark Price</span>
+          <div class="tv-fs-price-wrap">
+            <span class="tv-fs-price-val" id="tv-fs-price">$81,807.31</span>
+            <span id="tv-fs-change" class="tv-fs-change-pill up">+0.00%</span>
+          </div>
+        </div>
+        <div class="tv-fs-stat-item">
+          <span class="tv-fs-stat-lbl">24h High</span>
+          <span class="tv-fs-stat-val" id="tv-fs-high">$82,033.84</span>
+        </div>
+        <div class="tv-fs-stat-item">
+          <span class="tv-fs-stat-lbl">24h Low</span>
+          <span class="tv-fs-stat-val" id="tv-fs-low">$81,118.42</span>
+        </div>
+        <div class="tv-fs-stat-item">
+          <span class="tv-fs-stat-lbl">24h Volume</span>
+          <span class="tv-fs-stat-val" id="tv-fs-vol">304.6M USDT</span>
+        </div>
+        <div class="tv-fs-stat-item">
+          <span class="tv-fs-stat-lbl">Max Leverage</span>
+          <span class="tv-fs-stat-val gold" id="tv-fs-lev">150x</span>
+        </div>
+      </div>
+
+      <div class="tv-fs-header-right">
         <button class="tv-fs-action-btn" id="tv-fs-star-btn" onclick="toggleFavoriteCurrentCoin()" title="Favorite">★</button>
         <button class="tv-fs-action-btn" id="tv-fs-settings-btn" onclick="openFsSettings()" title="Chart Settings">⚙</button>
+        <button class="tv-fs-action-btn close-action" onclick="closeFullscreenChart()" title="Exit Fullscreen">✕</button>
       </div>
     </div>
 

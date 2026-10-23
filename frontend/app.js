@@ -2885,7 +2885,7 @@ function openFullscreenChart() {
     iconEl.src = selectedCoin.icon;
     iconEl.onerror = function() { handleCoinIconError(this, selectedCoin.symbol, selectedCoin.category); };
   }
-  if (pairEl) pairEl.textContent = `${selectedCoin.symbol}-USDT`;
+  if (pairEl) pairEl.textContent = `${selectedCoin.symbol}/USDT`;
   if (chgEl) {
     const isUp = selectedCoin.change >= 0;
     chgEl.className = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
@@ -2893,6 +2893,21 @@ function openFullscreenChart() {
   }
   if (buySub) buySub.textContent = `Up to ${selectedCoin.maxLev}x`;
   if (sellSub) sellSub.textContent = `Up to ${selectedCoin.maxLev}x`;
+
+  const nameEl = document.getElementById('tv-fs-name');
+  const catEl = document.getElementById('tv-fs-cat');
+  const priceEl = document.getElementById('tv-fs-price');
+  const highEl = document.getElementById('tv-fs-high');
+  const lowEl = document.getElementById('tv-fs-low');
+  const volEl = document.getElementById('tv-fs-vol');
+  const levEl = document.getElementById('tv-fs-lev');
+  if (nameEl) nameEl.textContent = selectedCoin.name || selectedCoin.symbol;
+  if (catEl) catEl.textContent = (selectedCoin.category || 'Futures').toUpperCase();
+  if (priceEl) priceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+  if (highEl) highEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price * 1.018)}`;
+  if (lowEl) lowEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price * 0.982)}`;
+  if (volEl) volEl.textContent = `${selectedCoin.vol || '304.6M USDT'}`;
+  if (levEl) levEl.textContent = `${selectedCoin.maxLev || 150}x`;
 
   switchFsTab('price');
   renderFsTabContent();
@@ -4282,12 +4297,18 @@ function renderLivePriceUpdates() {
   if (fsModal && !fsModal.classList.contains('hidden')) {
     const fsPrice = document.getElementById('tv-fs-price');
     const fsChange = document.getElementById('tv-fs-change');
+    const fsHigh = document.getElementById('tv-fs-high');
+    const fsLow = document.getElementById('tv-fs-low');
+    const fsVol = document.getElementById('tv-fs-vol');
     if (fsPrice) fsPrice.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
     if (fsChange) {
       const isUp = selectedCoin.change >= 0;
-      fsChange.className = `tv-fs-change ${isUp ? 'up' : 'down'}`;
+      fsChange.className = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
       fsChange.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
     }
+    if (fsHigh) fsHigh.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price * 1.018)}`;
+    if (fsLow) fsLow.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price * 0.982)}`;
+    if (fsVol) fsVol.textContent = `${selectedCoin.vol || '304.6M USDT'}`;
   }
 }
 
@@ -4448,6 +4469,9 @@ function initVTradeApp() {
 
   // Initialize luxury theme
   initAppTheme();
+
+  // Initialize customizable order book preference
+  initOrderBookPreference();
 
   // Initialize TradingView-style Network Monitor
   initNetworkMonitor();
@@ -5286,11 +5310,97 @@ function switchTradeDepthTab(tab) {
   });
 }
 
+function getTradeHistoryList() {
+  if (!walletState) return [];
+  if (!Array.isArray(walletState.tradesHistory)) {
+    walletState.tradesHistory = Array.isArray(walletState.trades) ? walletState.trades : [];
+  }
+  if (walletState.tradesHistory.length === 0) {
+    walletState.tradesHistory = [
+      {
+        id: Date.now() - 7200000,
+        symbol: 'BTC',
+        pair: 'BTC/USDT',
+        side: 'long',
+        size: 0.15,
+        entryPrice: 81250.00,
+        closePrice: 82420.00,
+        leverage: 20,
+        pnl: 175.50,
+        closed_at: new Date(Date.now() - 7200000).toISOString()
+      },
+      {
+        id: Date.now() - 18000000,
+        symbol: 'ETH',
+        pair: 'ETH/USDT',
+        side: 'short',
+        size: 1.8,
+        entryPrice: 3120.00,
+        closePrice: 3045.00,
+        leverage: 10,
+        pnl: 135.00,
+        closed_at: new Date(Date.now() - 18000000).toISOString()
+      }
+    ];
+    walletState.trades = walletState.tradesHistory;
+    saveWalletState();
+  } else {
+    walletState.trades = walletState.tradesHistory;
+  }
+  return walletState.tradesHistory;
+}
+
+function toggleTradeDeskOrderBook(forceState) {
+  const grid = document.getElementById('trade-workspace-grid');
+  const btnText = document.getElementById('ctf-ob-text');
+  const toggleBtn = document.getElementById('ctf-toggle-ob');
+  if (!grid) return;
+
+  const isCurrentlyHidden = grid.classList.contains('orderbook-hidden');
+  const willShow = typeof forceState === 'boolean' ? forceState : isCurrentlyHidden;
+
+  if (willShow) {
+    grid.classList.remove('orderbook-hidden');
+    if (btnText) btnText.textContent = 'Order Book: ON';
+    if (toggleBtn) toggleBtn.classList.remove('off');
+    try { localStorage.setItem('vtrade_show_orderbook', 'true'); } catch (e) {}
+    showToast('Order Book panel restored', 'info');
+  } else {
+    grid.classList.add('orderbook-hidden');
+    if (btnText) btnText.textContent = 'Order Book: OFF';
+    if (toggleBtn) toggleBtn.classList.add('off');
+    try { localStorage.setItem('vtrade_show_orderbook', 'false'); } catch (e) {}
+    showToast('Order Book panel hidden (Chart expanded)', 'info');
+  }
+}
+
+function initOrderBookPreference() {
+  try {
+    const saved = localStorage.getItem('vtrade_show_orderbook');
+    if (saved === 'false') {
+      const grid = document.getElementById('trade-workspace-grid');
+      const btnText = document.getElementById('ctf-ob-text');
+      const toggleBtn = document.getElementById('ctf-toggle-ob');
+      if (grid) grid.classList.add('orderbook-hidden');
+      if (btnText) btnText.textContent = 'Order Book: OFF';
+      if (toggleBtn) toggleBtn.classList.add('off');
+    }
+  } catch (e) {}
+}
+
+window.toggleTradeDeskOrderBook = toggleTradeDeskOrderBook;
+window.initOrderBookPreference = initOrderBookPreference;
+window.getTradeHistoryList = getTradeHistoryList;
+
 function renderTradeBottomLedger() {
   const posCount = document.getElementById('ledger-pos-count');
   const ordCount = document.getElementById('ledger-ord-count');
+  const histCount = document.getElementById('ledger-hist-count');
+  
+  const historyList = getTradeHistoryList();
   if (posCount && walletState && walletState.positions) posCount.textContent = walletState.positions.length;
   if (ordCount && walletState && walletState.orders) ordCount.textContent = walletState.orders.length;
+  if (histCount) histCount.textContent = historyList.length;
 
   const posTbody = document.getElementById('tblc-positions-tbody');
   if (posTbody && walletState) {
@@ -5355,21 +5465,26 @@ function renderTradeBottomLedger() {
 
   const histTbody = document.getElementById('tblc-history-tbody');
   if (histTbody && walletState) {
-    if (!walletState.trades || walletState.trades.length === 0) {
+    if (!historyList || historyList.length === 0) {
       histTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:#555f75;">No closed trades yet.</td></tr>`;
     } else {
-      histTbody.innerHTML = walletState.trades.map(tr => {
-        const isUp = tr.pnl >= 0;
+      histTbody.innerHTML = historyList.map(tr => {
+        const pnlVal = typeof tr.pnl === 'number' ? tr.pnl : 0;
+        const isUp = pnlVal >= 0;
+        const symbolStr = tr.symbol || (tr.pair ? tr.pair.replace('/USDT', '') : 'BTC');
+        const pairStr = tr.pair || `${symbolStr}/USDT`;
+        const priceVal = tr.closePrice || tr.price || tr.entryPrice || 0;
+        const timeStr = tr.closed_at ? new Date(tr.closed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (tr.time || 'Recently');
         return `
           <tr>
-            <td><strong>${tr.pair}</strong></td>
-            <td><span class="pos-dir-badge ${tr.side}">${tr.side.toUpperCase()}</span></td>
-            <td>${tr.size}</td>
-            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(tr.closePrice || tr.price)}</td>
+            <td><strong>${pairStr}</strong></td>
+            <td><span class="pos-dir-badge ${tr.side}">${(tr.side || 'LONG').toUpperCase()}</span></td>
+            <td>${tr.size} ${symbolStr}</td>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(priceVal)}</td>
             <td style="font-family:var(--font-price); font-weight:700;" class="${isUp ? 'up' : 'down'}">
-              ${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(tr.pnl)}
+              ${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(pnlVal)}
             </td>
-            <td style="color:#8b92a4; font-size:12px;">${tr.time || 'Recently'}</td>
+            <td style="color:#8b92a4; font-size:12px;">${timeStr}</td>
           </tr>
         `;
       }).join('');

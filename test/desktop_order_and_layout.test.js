@@ -116,4 +116,61 @@ assert.strictEqual(positionsAfterShort.length, 2, 'Two positions must exist afte
 assert.strictEqual(positionsAfterShort[0].side, 'short', 'Second position side must be short');
 console.log('  ✓ Fullscreen broker dock buttons and slide-up order execution verified successfully');
 
-console.log('\n=== ALL DESKTOP TRADE DESK LAYOUT & ORDER PLACEMENT TESTS PASSED! ===\n');
+// 6. Verify Slide-Up Order Sheet Luxury Dark Mode Styling (Screenshot 1 Fix)
+console.log('6. Testing Order Sheet Dark-Mode Styling & Tokens (Screenshot 1)...');
+assert.ok(styleCss.includes('.order-sheet-container') && styleCss.includes('background: #0f1420;'), 'Order sheet must have dark institutional background #0f1420');
+assert.ok(styleCss.includes('.sheet-type-switcher') && styleCss.includes('.sot-btn'), 'Order sheet order type switcher styles must be defined');
+assert.ok(styleCss.includes('.sheet-lchip') && styleCss.includes('.sheet-pchip'), 'Leverage chips and percentage chips must be styled');
+assert.ok(styleCss.includes('.sheet-input-box') && styleCss.includes('.sheet-input'), 'Order input box with dark background and clear typography must exist');
+assert.ok(styleCss.includes('.sheet-metrics-card') && styleCss.includes('.sm-row'), 'Calculated financial metrics card must be styled with luxury cards');
+console.log('  ✓ Order Sheet dark-mode styling, chips, input box, and metrics card verified');
+
+// 7. Verify Fullscreen Header Space Utilization with Market Stats (Screenshot 2 Fix)
+console.log('7. Testing Fullscreen Header Space Utilization (Screenshot 2)...');
+assert.ok(indexHtml.includes('class="tv-fs-stats-bar"'), 'Header must contain real-time financial stats bar');
+assert.ok(indexHtml.includes('id="tv-fs-price"') && indexHtml.includes('id="tv-fs-change"'), 'Mark price and 24h change pill must exist in header');
+assert.ok(indexHtml.includes('id="tv-fs-high"') && indexHtml.includes('id="tv-fs-low"'), '24h High and 24h Low must exist in header');
+assert.ok(indexHtml.includes('id="tv-fs-vol"') && indexHtml.includes('id="tv-fs-lev"'), '24h Volume and Max Leverage must exist in header');
+assert.ok(styleCss.includes('.tv-fs-stats-bar') && styleCss.includes('.tv-fs-stat-item'), 'Stats bar CSS must be defined');
+assert.ok(appJs.includes('document.getElementById(\'tv-fs-price\')') && appJs.includes('document.getElementById(\'tv-fs-high\')'), 'openFullscreenChart must populate header stats');
+console.log('  ✓ Fullscreen header stats bar, live mark price, high/low, volume, and leverage verified');
+
+// 8. Verify Bottom Ledger Trade History Rendering & Badge Count (Screenshot 3 Fix A)
+console.log('8. Testing Trade Bottom Ledger History Rendering (Screenshot 3 Fix A)...');
+assert.ok(indexHtml.includes('id="ledger-hist-count"'), 'History badge counter id ledger-hist-count must exist in bottom ledger tab');
+assert.ok(indexHtml.includes('id="tblc-history-tbody"'), 'tblc-history-tbody must exist');
+assert.ok(appJs.includes('function getTradeHistoryList()'), 'getTradeHistoryList must be defined');
+assert.ok(appJs.includes('histCount.textContent = historyList.length;'), 'Trade History badge count must reflect history items');
+
+vm.runInContext(`
+  // Verify trade history list returns entries
+  const hist = getTradeHistoryList();
+  renderTradeBottomLedger();
+`, ctx);
+const histFromContext = vm.runInContext('getTradeHistoryList()', ctx);
+assert.ok(Array.isArray(histFromContext) && histFromContext.length >= 2, 'Trade history list must contain demo trades');
+assert.ok(histFromContext[0].symbol && histFromContext[0].pnl, 'Trade history items must contain symbol and pnl');
+console.log(`  ✓ Trade history list verified with ${histFromContext.length} historical trades rendered`);
+
+// 9. Verify Customizable Order Book (Screenshot 3 Fix B)
+console.log('9. Testing Customizable Order Book Panel (Screenshot 3 Fix B)...');
+assert.ok(indexHtml.includes('id="ctf-toggle-ob"') && indexHtml.includes('toggleTradeDeskOrderBook()'), 'Timeframe toolbar must have order book toggle button');
+assert.ok(indexHtml.includes('id="tdp-remove-btn"') && indexHtml.includes('toggleTradeDeskOrderBook(false)'), 'Order book tab header must have remove/hide button');
+assert.ok(styleCss.includes('.trade-workspace-grid.orderbook-hidden'), 'CSS must define .orderbook-hidden with 1fr 340px grid template');
+assert.ok(styleCss.includes('.tdp-remove-btn'), 'CSS must style .tdp-remove-btn');
+assert.ok(appJs.includes('function toggleTradeDeskOrderBook('), 'toggleTradeDeskOrderBook function must be defined in app.js');
+assert.ok(appJs.includes('function initOrderBookPreference()'), 'initOrderBookPreference must check localStorage');
+
+vm.runInContext(`
+  toggleTradeDeskOrderBook(false); // Hide
+`, ctx);
+assert.strictEqual(mockStorage['vtrade_show_orderbook'], 'false', 'Order book preference must persist in localStorage as false when hidden');
+
+vm.runInContext(`
+  toggleTradeDeskOrderBook(true); // Restore
+`, ctx);
+assert.strictEqual(mockStorage['vtrade_show_orderbook'], 'true', 'Order book preference must persist in localStorage as true when restored');
+console.log('  ✓ Customizable Order Book hide/restore toggle, CSS grid collapse, and localStorage persistence verified');
+
+console.log('\n=== ALL DESKTOP TRADE DESK LAYOUT, ORDER PLACEMENT & FIX VERIFICATIONS PASSED! ===\n');
+
