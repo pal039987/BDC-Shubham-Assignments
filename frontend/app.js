@@ -2156,6 +2156,10 @@ function switchBottomTab(tab) {
   else if (activeTab === 'account') renderAccountScreen();
   else if (activeTab === 'auth') renderDesktopAuthPage();
 
+  if (activeTab !== 'home' && typeof cleanUpGsapScrollAnimations === 'function') {
+    cleanUpGsapScrollAnimations();
+  }
+
   syncDesktopHeaderState();
   updateNavIndicator();
   if (typeof initScrollRevealEngine === 'function') initScrollRevealEngine();
@@ -2200,9 +2204,281 @@ function initHeroTextAnimation() {
   }
 }
 
+// ══════════════════════ GSAP & SCROLLTRIGGER ANIMATION ENGINE ══════════════════════
+let activeGsapTriggers = [];
+
+function cleanUpGsapScrollAnimations() {
+  if (typeof window === 'undefined') return;
+  if (window.ScrollTrigger) {
+    try {
+      window.ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    } catch (err) {}
+  }
+  activeGsapTriggers = [];
+}
+
+function getActiveGsapScroller() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+  const homeScreen = document.getElementById('screen-home');
+  if (!homeScreen) return window;
+  if (window.innerWidth >= 1024) {
+    return homeScreen;
+  }
+  const homeScroll = homeScreen.querySelector('.home-scroll-container');
+  if (homeScroll && window.getComputedStyle(homeScroll).overflowY === 'auto') {
+    return homeScroll;
+  }
+  return window;
+}
+
+function initHeroGsapTimeline() {
+  if (typeof window === 'undefined' || !window.gsap) return;
+  const heroSec = document.querySelector('.landing-hero-section');
+  if (!heroSec || heroSec.dataset.gsapHeroDone) return;
+  heroSec.dataset.gsapHeroDone = 'true';
+
+  const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (isReduced) {
+    const words = heroSec.querySelectorAll('.hero-word-wrap');
+    words.forEach(w => w.classList.add('revealed'));
+    return;
+  }
+
+  const tl = window.gsap.timeline({ defaults: { ease: 'power3.out' } });
+  const badge = heroSec.querySelector('.lhs-badge');
+  const words = heroSec.querySelectorAll('.hero-word-wrap');
+  const subtext = heroSec.querySelector('.lhs-subtext');
+  const ctas = heroSec.querySelectorAll('.lhs-cta-row > *');
+  const metrics = heroSec.querySelectorAll('.lhs-m-item');
+
+  if (badge) tl.fromTo(badge, { opacity: 0, y: -16, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.55 });
+  if (words.length > 0) {
+    words.forEach(w => w.classList.add('revealed'));
+    tl.fromTo(words, { opacity: 0, y: 22, filter: 'blur(6px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.65, stagger: 0.05 }, '-=0.25');
+  }
+  if (subtext) tl.fromTo(subtext, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.55 }, '-=0.35');
+  if (ctas.length > 0) tl.fromTo(ctas, { opacity: 0, y: 16, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.07, ease: 'back.out(1.3)' }, '-=0.3');
+  if (metrics.length > 0) tl.fromTo(metrics, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.06 }, '-=0.25');
+}
+
+function animateSpotlightBentoCards() {
+  if (typeof window === 'undefined' || !window.gsap) return;
+  const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bentoGrid = document.getElementById('home-spotlight-bento');
+  if (!bentoGrid) return;
+  const cards = bentoGrid.querySelectorAll('.bento-card');
+  if (cards.length === 0) return;
+
+  if (isReduced) {
+    cards.forEach(c => { c.style.opacity = '1'; c.style.transform = 'none'; });
+    return;
+  }
+
+  window.gsap.fromTo(cards,
+    { opacity: 0, y: 28, scale: 0.96 },
+    { opacity: 1, y: 0, scale: 1, duration: 0.55, stagger: 0.08, ease: 'power2.out', clearProps: 'transform' }
+  );
+}
+
+function initGsapScrollTriggerAnimations() {
+  if (typeof window === 'undefined' || !window.gsap || !window.ScrollTrigger) return;
+  const gsap = window.gsap;
+  const ScrollTrigger = window.ScrollTrigger;
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Clean up previous triggers to prevent duplicate animations during re-renders
+  cleanUpGsapScrollAnimations();
+
+  const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const scroller = getActiveGsapScroller();
+
+  if (isReduced) {
+    document.querySelectorAll('.reveal-on-scroll, .home-market-intel-grid, .intel-card, .bento-card, .feature-card').forEach(el => {
+      el.classList.add('is-revealed');
+      if (el.style) {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+        el.style.clipPath = 'none';
+      }
+    });
+    return;
+  }
+
+  // 1. Scroll-Triggered Text Reveals (Staggered word & line animation for section titles)
+  const titles = document.querySelectorAll('.home-bento-section .section-title, .home-features-section .section-title, .apk-showcase-title');
+  titles.forEach(title => {
+    if (!title.dataset.gsapSplit) {
+      title.dataset.gsapSplit = 'true';
+      const words = title.innerText.trim().split(/\s+/);
+      title.innerHTML = words.map(w => `<span class="gsap-word-wrap"><span class="gsap-word-inner">${w}&nbsp;</span></span>`).join('');
+    }
+    const innerWords = title.querySelectorAll('.gsap-word-inner');
+    if (innerWords.length > 0) {
+      const trig = ScrollTrigger.create({
+        trigger: title,
+        scroller: scroller,
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          gsap.fromTo(innerWords,
+            { yPercent: 100, opacity: 0 },
+            { yPercent: 0, opacity: 1, duration: 0.65, stagger: 0.04, ease: 'power3.out' }
+          );
+        }
+      });
+      activeGsapTriggers.push(trig);
+    }
+  });
+
+  // 2. Section Entrance Animations (opacity, y-position, and carefully selected clip-path reveals)
+  const entranceSections = document.querySelectorAll('.home-bento-section, .home-features-section, .vtrade-footer');
+  entranceSections.forEach(sec => {
+    sec.classList.add('is-revealed');
+    const trig = ScrollTrigger.create({
+      trigger: sec,
+      scroller: scroller,
+      start: 'top 88%',
+      once: true,
+      onEnter: () => {
+        gsap.fromTo(sec,
+          { opacity: 0, y: 38, clipPath: 'inset(3% 0% 3% 0% round 24px)' },
+          { opacity: 1, y: 0, clipPath: 'inset(0% 0% 0% 0% round 24px)', duration: 0.85, ease: 'power2.out', clearProps: 'clipPath' }
+        );
+      }
+    });
+    activeGsapTriggers.push(trig);
+  });
+
+  // 3. Staggered Card Reveals (Market intel cards & platform feature cards)
+  const intelGrid = document.querySelector('.home-market-intel-grid');
+  if (intelGrid) {
+    intelGrid.classList.add('is-revealed');
+    const intelCards = intelGrid.querySelectorAll('.intel-card');
+    const trig = ScrollTrigger.create({
+      trigger: intelGrid,
+      scroller: scroller,
+      start: 'top 86%',
+      once: true,
+      onEnter: () => {
+        gsap.fromTo(intelCards,
+          { opacity: 0, y: 32, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.65, stagger: 0.1, ease: 'back.out(1.2)' }
+        );
+      }
+    });
+    activeGsapTriggers.push(trig);
+  }
+
+  const featuresGrid = document.querySelector('.features-bento-grid');
+  if (featuresGrid) {
+    const featCards = featuresGrid.querySelectorAll('.feature-card');
+    const trig = ScrollTrigger.create({
+      trigger: featuresGrid,
+      scroller: scroller,
+      start: 'top 86%',
+      once: true,
+      onEnter: () => {
+        gsap.fromTo(featCards,
+          { opacity: 0, y: 30, scale: 0.96 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.7, stagger: 0.12, ease: 'power2.out' }
+        );
+      }
+    });
+    activeGsapTriggers.push(trig);
+  }
+
+  // 4. Selective Pinned Section (Desktop only - 3D smartphones interactive separation on scroll)
+  const isDesktop = window.innerWidth >= 1024;
+  const showcaseSec = document.getElementById('home-apk-showcase-section');
+  const phoneBack = document.getElementById('apk-phone-back');
+  const phoneFront = document.getElementById('apk-phone-front');
+
+  if (isDesktop && showcaseSec && phoneBack && phoneFront) {
+    const pinTrigger = ScrollTrigger.create({
+      trigger: showcaseSec,
+      scroller: scroller,
+      start: 'top top+=90',
+      end: '+=240',
+      pin: true,
+      pinSpacing: true,
+      scrub: 0.6,
+      onUpdate: (self) => {
+        const p = self.progress;
+        gsap.to(phoneBack, {
+          x: -p * 22,
+          z: p * 35,
+          rotationY: -18 + p * 8,
+          rotationX: 10 - p * 4,
+          overwrite: 'auto',
+          duration: 0.1
+        });
+        gsap.to(phoneFront, {
+          x: p * 22,
+          z: p * 55,
+          rotationY: -12 + p * 6,
+          rotationX: 8 - p * 4,
+          overwrite: 'auto',
+          duration: 0.1
+        });
+      }
+    });
+    activeGsapTriggers.push(pinTrigger);
+  }
+
+  // 5. Scroll-Linked Parallax Effects (Ambient Aurora & Beam Rays)
+  const heroAurora = document.querySelector('.hero-ambient-aurora');
+  const heroBeam = document.querySelector('.hero-beam-ray');
+  const heroSection = document.querySelector('.landing-hero-section');
+
+  if (heroSection && (heroAurora || heroBeam)) {
+    const parallaxTrigger = ScrollTrigger.create({
+      trigger: heroSection,
+      scroller: scroller,
+      start: 'top top',
+      end: 'bottom top',
+      scrub: 1,
+      onUpdate: (self) => {
+        const p = self.progress;
+        if (heroAurora) gsap.set(heroAurora, { y: p * 50, scale: 1 + p * 0.12 });
+        if (heroBeam) gsap.set(heroBeam, { y: p * 70, opacity: 0.9 - p * 0.4 });
+      }
+    });
+    activeGsapTriggers.push(parallaxTrigger);
+  }
+
+  // 6. Timeline-Based Sequence (Coordinated entrance of headings, copy, QR code, badges, stats)
+  if (showcaseSec) {
+    showcaseSec.classList.add('is-revealed');
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: showcaseSec,
+        scroller: scroller,
+        start: 'top 82%',
+        once: true
+      }
+    });
+
+    const eyebrow = showcaseSec.querySelector('.apk-eyebrow-pill');
+    const title = showcaseSec.querySelector('.apk-showcase-title');
+    const desc = showcaseSec.querySelector('.apk-showcase-desc');
+    const badges = showcaseSec.querySelectorAll('.apk-qr-card, .apk-badge-btn');
+    const stats = showcaseSec.querySelectorAll('.apk-stat-col');
+    const mockup = showcaseSec.querySelector('.apk-mockup-stage');
+
+    if (eyebrow) tl.fromTo(eyebrow, { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: 'power2.out' });
+    if (title) tl.fromTo(title, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out' }, '-=0.25');
+    if (desc) tl.fromTo(desc, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, '-=0.3');
+    if (badges.length > 0) tl.fromTo(badges, { scale: 0.94, opacity: 0, y: 14 }, { scale: 1, opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: 'back.out(1.3)' }, '-=0.2');
+    if (stats.length > 0) tl.fromTo(stats, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, stagger: 0.07, ease: 'power2.out' }, '-=0.25');
+    if (mockup) tl.fromTo(mockup, { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.75, ease: 'power3.out' }, '-=0.5');
+
+    if (tl.scrollTrigger) activeGsapTriggers.push(tl.scrollTrigger);
+  }
+}
+
 function initScrollRevealEngine() {
   const elements = document.querySelectorAll('.reveal-on-scroll:not(.is-revealed), .home-market-intel-grid:not(.is-revealed)');
-  if (elements.length === 0) return;
 
   const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (isReduced) {
@@ -2210,6 +2486,13 @@ function initScrollRevealEngine() {
     return;
   }
 
+  // If GSAP and ScrollTrigger are loaded, execute the rich GSAP ScrollTrigger engine
+  if (typeof window !== 'undefined' && window.gsap && window.ScrollTrigger) {
+    initGsapScrollTriggerAnimations();
+    return;
+  }
+
+  // Graceful fallback to IntersectionObserver if GSAP is not yet loaded or in lightweight headless environments
   if (typeof IntersectionObserver !== 'undefined') {
     const observer = new IntersectionObserver((entries, obs) => {
       entries.forEach(entry => {
@@ -2266,6 +2549,11 @@ window.updateNavIndicator = updateNavIndicator;
 window.initHeroTextAnimation = initHeroTextAnimation;
 window.initScrollRevealEngine = initScrollRevealEngine;
 window.initSpotlightAndTiltCards = initSpotlightAndTiltCards;
+window.initGsapScrollTriggerAnimations = initGsapScrollTriggerAnimations;
+window.cleanUpGsapScrollAnimations = cleanUpGsapScrollAnimations;
+window.getActiveGsapScroller = getActiveGsapScroller;
+window.initHeroGsapTimeline = initHeroGsapTimeline;
+window.animateSpotlightBentoCards = animateSpotlightBentoCards;
 
 // ─── 8. NET EQUITY & PnL CALCULATIONS ────────────────────────────────────
 function calculateUnrealizedPnL() {
@@ -2333,6 +2621,8 @@ function renderHomeSpotlightBento() {
     `;
   }).join('');
   if (typeof initSpotlightAndTiltCards === 'function') initSpotlightAndTiltCards();
+  if (typeof animateSpotlightBentoCards === 'function') animateSpotlightBentoCards();
+  if (typeof window !== 'undefined' && window.ScrollTrigger) window.ScrollTrigger.refresh();
 }
 
 function renderHomeBalanceCard() {
@@ -4687,8 +4977,9 @@ function initVTradeApp() {
   // Render initial screen
   switchBottomTab('home');
 
-  // Initialize Aceternity & Skiper-UI Animation Suite
+  // Initialize Aceternity, Skiper-UI & GSAP Animation Suite
   initHeroTextAnimation();
+  if (typeof initHeroGsapTimeline === 'function') initHeroGsapTimeline();
   initScrollRevealEngine();
   initSpotlightAndTiltCards();
   updateNavIndicator();

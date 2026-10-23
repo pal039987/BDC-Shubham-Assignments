@@ -5340,6 +5340,7 @@ html:not(.is-native-apk) .tv-fs-header {
     display: flex;
     flex-direction: column;
     gap: 28px;
+    overflow: visible;
   }
 
   html:not(.is-native-apk) #screen-home .home-balance-card {
@@ -9036,4 +9037,28 @@ html:not(.is-native-apk) .tv-fs-header {
   .apk-stat-val {
     font-size: 18px;
   }
+}
+
+/* ══════════════════════ 15. GSAP & SCROLLTRIGGER ENHANCEMENTS ══════════════════════ */
+.gsap-word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.gsap-word-inner {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* Guard against horizontal layout shifts during scroll-based pin & parallax */
+.home-scroll-container,
+.app-screen-view {
+  overflow-x: hidden !important;
+}
+
+/* Seamless reset for GSAP pin spacers */
+.pin-spacer {
+  background: transparent !important;
+  border: none !important;
 }
