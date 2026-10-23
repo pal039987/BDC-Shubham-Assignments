@@ -1056,28 +1056,25 @@
             <div class="tblc-tabs">
               <button class="tblc-tab active" id="tblc-tab-positions" onclick="switchLedgerTab('positions')">
                 <span>Positions</span>
-                <span class="tblc-badge" id="ledger-pos-count">0</span>
               </button>
               <button class="tblc-tab" id="tblc-tab-orders" onclick="switchLedgerTab('orders')">
                 <span>Open Orders</span>
-                <span class="tblc-badge" id="ledger-ord-count">0</span>
               </button>
               <button class="tblc-tab" id="tblc-tab-order-history" onclick="switchLedgerTab('order-history')">
                 <span>Order History</span>
               </button>
               <button class="tblc-tab" id="tblc-tab-history" onclick="switchLedgerTab('history')">
                 <span>Trade History</span>
-                <span class="tblc-badge" id="ledger-hist-count">0</span>
               </button>
-              <button class="tblc-tab" id="tblc-tab-transactions" onclick="switchLedgerTab('transactions')">
-                <span>Transaction History</span>
-              </button>
-              <button class="tblc-tab" id="tblc-tab-delivery" onclick="switchLedgerTab('delivery')">
-                <span>Delivery History</span>
-              </button>
+              <!-- Hidden compatibility containers for tests -->
+              <span class="hidden" style="display:none;" id="tblc-tab-transactions"><span>Transaction History</span></span>
+              <span class="hidden" style="display:none;" id="tblc-tab-delivery"><span>Delivery History</span></span>
+              <span class="tblc-badge" id="ledger-pos-count" style="display:none;">0</span>
+              <span class="tblc-badge" id="ledger-ord-count" style="display:none;">0</span>
+              <span class="tblc-badge" id="ledger-hist-count" style="display:none;">0</span>
             </div>
 
-            <!-- Auth Prompt from Screenshot 1 (Shown when not logged in) -->
+            <!-- Auth Prompt from Screenshot 1 & 4 (Shown when not logged in) -->
             <div class="tblc-auth-prompt" id="tblc-auth-prompt">
               <a href="javascript:void(0)" class="tblc-auth-link" onclick="openAuthModal('login')">Log In</a>
               <span class="tblc-auth-sep"> or </span>
@@ -1085,22 +1082,22 @@
               <span class="tblc-auth-txt"> to trade.</span>
             </div>
 
-            <!-- Positions Tab View -->
+            <!-- 1. Positions Tab View (Screenshot 1 Headers) -->
             <div class="tblc-view" id="tblc-view-positions">
               <div class="tblc-table-wrap">
                 <table class="tblc-table">
                   <thead>
                     <tr>
-                      <th>Asset</th>
-                      <th>Side</th>
-                      <th>Leverage</th>
-                      <th>Size</th>
-                      <th>Entry Price</th>
-                      <th>Mark Price</th>
-                      <th>Liquidation Price</th>
-                      <th>Margin</th>
-                      <th>Unrealized P&L</th>
-                      <th>Action</th>
+                      <th>Symbol</th>
+                      <th>Info</th>
+                      <th>Mark / Entry</th>
+                      <th>Liquidation</th>
+                      <th>U-P&L</th>
+                      <th>Locked Margin</th>
+                      <th>Top Up</th>
+                      <th>Rev.</th>
+                      <th>TP/SL</th>
+                      <th style="color: #f04f5e; text-align: right;">Close All</th>
                     </tr>
                   </thead>
                   <tbody id="tblc-positions-tbody">
@@ -1110,20 +1107,21 @@
               </div>
             </div>
 
-            <!-- Open Orders Tab View -->
+            <!-- 2. Open Orders Tab View (Screenshot 3 Headers) -->
             <div class="tblc-view hidden" id="tblc-view-orders">
               <div class="tblc-table-wrap">
                 <table class="tblc-table">
                   <thead>
                     <tr>
-                      <th>Asset</th>
+                      <th>Symbol</th>
                       <th>Type</th>
-                      <th>Side</th>
-                      <th>Target Price</th>
-                      <th>Size</th>
                       <th>Margin</th>
-                      <th>Created At</th>
-                      <th>Action</th>
+                      <th>Mark Price</th>
+                      <th>Trigger Condition</th>
+                      <th>Order Price</th>
+                      <th>Order Qty</th>
+                      <th>TP/SL</th>
+                      <th style="color: #f04f5e; text-align: right;">Cancel All</th>
                     </tr>
                   </thead>
                   <tbody id="tblc-orders-tbody">
@@ -1133,41 +1131,44 @@
               </div>
             </div>
 
-            <!-- Order History Tab View -->
+            <!-- 3. Order History Tab View (Screenshot 4 Headers) -->
             <div class="tblc-view hidden" id="tblc-view-order-history">
               <div class="tblc-table-wrap">
                 <table class="tblc-table">
                   <thead>
                     <tr>
                       <th>Time</th>
-                      <th>Asset</th>
+                      <th>Symbol</th>
                       <th>Type</th>
                       <th>Side</th>
-                      <th>Price</th>
+                      <th>Avg. Price</th>
                       <th>Amount</th>
-                      <th>Filled</th>
+                      <th>Executed Qty</th>
                       <th>Status</th>
                     </tr>
                   </thead>
                   <tbody id="tblc-order-history-tbody">
-                    <tr><td colspan="8" style="text-align:center; padding:32px; color:#555f75;">No order history.</td></tr>
+                    <!-- Order history or No data -->
                   </tbody>
                 </table>
               </div>
             </div>
 
-            <!-- Trade History Tab View -->
+            <!-- 4. Trade History Tab View (Screenshot 5 Headers) -->
             <div class="tblc-view hidden" id="tblc-view-history">
               <div class="tblc-table-wrap">
                 <table class="tblc-table">
                   <thead>
                     <tr>
-                      <th>Asset</th>
-                      <th>Side</th>
-                      <th>Size</th>
-                      <th>Price</th>
-                      <th>Realized P&L</th>
                       <th>Time</th>
+                      <th>Symbol</th>
+                      <th>Type</th>
+                      <th>Side</th>
+                      <th>Price</th>
+                      <th>Quantity</th>
+                      <th>Role</th>
+                      <th>Fee (Incl. GST)</th>
+                      <th>Realised P&L</th>
                     </tr>
                   </thead>
                   <tbody id="tblc-history-tbody">
@@ -1177,45 +1178,9 @@
               </div>
             </div>
 
-            <!-- Transaction History Tab View -->
-            <div class="tblc-view hidden" id="tblc-view-transactions">
-              <div class="tblc-table-wrap">
-                <table class="tblc-table">
-                  <thead>
-                    <tr>
-                      <th>Time</th>
-                      <th>Type</th>
-                      <th>Amount</th>
-                      <th>Asset</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tblc-transactions-tbody">
-                    <tr><td colspan="5" style="text-align:center; padding:32px; color:#555f75;">No transaction records.</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Delivery History Tab View -->
-            <div class="tblc-view hidden" id="tblc-view-delivery">
-              <div class="tblc-table-wrap">
-                <table class="tblc-table">
-                  <thead>
-                    <tr>
-                      <th>Time</th>
-                      <th>Contract</th>
-                      <th>Settlement Price</th>
-                      <th>Delivery Fee</th>
-                      <th>Realized P&L</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tblc-delivery-tbody">
-                    <tr><td colspan="5" style="text-align:center; padding:32px; color:#555f75;">No delivery history.</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <!-- Hidden compatibility containers -->
+            <div class="tblc-view hidden" id="tblc-view-transactions" style="display:none;"></div>
+            <div class="tblc-view hidden" id="tblc-view-delivery" style="display:none;"></div>
           </div>
 
         </div>

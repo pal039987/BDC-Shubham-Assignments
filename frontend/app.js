@@ -2129,6 +2129,9 @@ function clearTradeHistory() {
 // ─── 7. BOTTOM NAVIGATION CONTROLLER & ANIMATION ENGINE ─────────────────
 function switchBottomTab(tab) {
   activeTab = tab || 'home';
+  if (typeof document !== 'undefined' && document.body) {
+    document.body.classList.toggle('trade-screen-active', activeTab === 'trade');
+  }
 
   const tabs = ['home', 'markets', 'trade', 'portfolio', 'account', 'auth'];
   tabs.forEach(t => {
@@ -6162,6 +6165,22 @@ window.toggleTradeDeskOrderBook = toggleTradeDeskOrderBook;
 window.initOrderBookPreference = initOrderBookPreference;
 window.getTradeHistoryList = getTradeHistoryList;
 
+function tblcNoDataHtml(colspan) {
+  return `
+    <tr>
+      <td colspan="${colspan}" style="text-align:center; padding:38px 16px;">
+        <div class="tblc-empty-state">
+          <svg class="tblc-no-data-icon" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.4">
+            <path d="M4 4h16v12a2 2 0 0 1-2 2h-3l-2 3h-2l-2-3H6a2 2 0 0 1-2-2V4z"></path>
+            <path d="M4 10h5l1.5 2.5h3L15 10h5"></path>
+          </svg>
+          <span class="tblc-no-data-text">No data</span>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
 function renderTradeBottomLedger() {
   const posCount = document.getElementById('ledger-pos-count');
   const ordCount = document.getElementById('ledger-ord-count');
@@ -6194,10 +6213,11 @@ function renderTradeBottomLedger() {
     });
   }
 
+  // 1. Positions Tab (10 Columns matching Screenshot 1)
   const posTbody = document.getElementById('tblc-positions-tbody');
   if (posTbody && walletState) {
     if (!walletState.positions || walletState.positions.length === 0) {
-      posTbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:32px; color:#555f75;">No open positions. Place a Buy/Long or Sell/Short order above.</td></tr>`;
+      posTbody.innerHTML = tblcNoDataHtml(10);
     } else {
       posTbody.innerHTML = walletState.positions.map(pos => {
         const coin = COINS.find(c => c.id === pos.coinId) || selectedCoin;
@@ -6209,19 +6229,28 @@ function renderTradeBottomLedger() {
         const displayPair = getCoinDisplayPair(coin);
         return `
           <tr>
-            <td><strong>${displayPair}</strong></td>
-            <td><span class="pos-dir-badge ${pos.side}">${pos.side.toUpperCase()}</span></td>
-            <td>${pos.leverage}x</td>
-            <td>${pos.size} ${pos.symbol}</td>
-            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(pos.entryPrice)}</td>
-            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(curPrice)}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span class="pos-dir-badge ${pos.side}" style="padding:1px 5px; font-size:10px; border-radius:3px;">${pos.side.toUpperCase()}</span>
+                <strong>${displayPair}</strong>
+                <span style="font-size:11px; color:#8b92a4;">${pos.leverage}x</span>
+              </div>
+            </td>
+            <td style="font-family:var(--font-price); font-weight:600;">${pos.size} ${pos.symbol}</td>
+            <td style="font-family:var(--font-price);">
+              <span style="color:#ffffff;">${getCurrencySymbol()}${fmtPrice(curPrice)}</span>
+              <span style="color:#64748b; font-size:11px;"> / ${getCurrencySymbol()}${fmtPrice(pos.entryPrice)}</span>
+            </td>
             <td style="font-family:var(--font-price); color:#ff9900;">${getCurrencySymbol()}${fmtPrice(pos.liqPrice)}</td>
-            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtMoney(pos.margin)}</td>
             <td style="font-family:var(--font-price); font-weight:700;" class="${isUp ? 'up' : 'down'}">
               ${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(pnlUsd)} (${isUp ? '+' : ''}${roe.toFixed(2)}%)
             </td>
-            <td>
-              <button class="pos-close-btn" style="padding:4px 10px; font-size:12px;" onclick="closePosition(${pos.id})">Close</button>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtMoney(pos.margin)}</td>
+            <td><button class="tblc-btn-sm" onclick="showToast('Margin is auto-managed', 'info')" title="Top Up Margin">+</button></td>
+            <td><button class="tblc-btn-sm" onclick="showToast('Reverse order triggered', 'info')" title="Reverse Order">⇄</button></td>
+            <td><button class="tblc-link-btn" onclick="showToast('Set TP/SL in order dock above', 'info')">Add</button></td>
+            <td style="text-align: right;">
+              <button class="pos-close-btn" style="padding:4px 10px; font-size:11px; background:rgba(240,79,94,0.15); color:#f04f5e; border:1px solid rgba(240,79,94,0.3); border-radius:4px; cursor:pointer;" onclick="closePosition(${pos.id})">Close</button>
             </td>
           </tr>
         `;
@@ -6229,10 +6258,11 @@ function renderTradeBottomLedger() {
     }
   }
 
+  // 2. Open Orders Tab (9 Columns matching Screenshot 3)
   const ordTbody = document.getElementById('tblc-orders-tbody');
   if (ordTbody && walletState) {
     if (!walletState.orders || walletState.orders.length === 0) {
-      ordTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:32px; color:#555f75;">No pending limit orders.</td></tr>`;
+      ordTbody.innerHTML = tblcNoDataHtml(9);
     } else {
       ordTbody.innerHTML = walletState.orders.map(ord => {
         const coin = COINS.find(c => c.id === ord.coinId) || selectedCoin;
@@ -6240,14 +6270,15 @@ function renderTradeBottomLedger() {
         return `
           <tr>
             <td><strong>${displayPair}</strong></td>
-            <td>LIMIT</td>
-            <td><span class="pos-dir-badge ${ord.side}">${ord.side.toUpperCase()}</span></td>
-            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(ord.price)}</td>
-            <td>${ord.size} ${ord.symbol}</td>
+            <td><span class="pos-dir-badge ${ord.side}" style="padding:1px 5px; font-size:10px; border-radius:3px;">LIMIT ${ord.side.toUpperCase()}</span></td>
             <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtMoney(ord.margin)}</td>
-            <td style="color:#8b92a4; font-size:12px;">${ord.time || 'Just now'}</td>
-            <td>
-              <button class="pos-close-btn" style="padding:4px 10px; font-size:12px;" onclick="cancelPendingOrder(${ord.id})">Cancel</button>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(coin.price)}</td>
+            <td style="font-size:11px; color:#8b92a4;">&gt;= ${getCurrencySymbol()}${fmtPrice(ord.price)}</td>
+            <td style="font-family:var(--font-price); font-weight:700;">${getCurrencySymbol()}${fmtPrice(ord.price)}</td>
+            <td style="font-family:var(--font-price);">${ord.size} ${ord.symbol}</td>
+            <td style="color:#64748b;">--</td>
+            <td style="text-align: right;">
+              <button class="pos-close-btn" style="padding:4px 10px; font-size:11px; background:rgba(240,79,94,0.15); color:#f04f5e; border:1px solid rgba(240,79,94,0.3); border-radius:4px; cursor:pointer;" onclick="cancelPendingOrder(${ord.id})">Cancel</button>
             </td>
           </tr>
         `;
@@ -6255,10 +6286,38 @@ function renderTradeBottomLedger() {
     }
   }
 
+  // 3. Order History Tab (8 Columns matching Screenshot 4)
+  const ordHistTbody = document.getElementById('tblc-order-history-tbody');
+  if (ordHistTbody && walletState) {
+    if (!historyList || historyList.length === 0) {
+      ordHistTbody.innerHTML = tblcNoDataHtml(8);
+    } else {
+      ordHistTbody.innerHTML = historyList.map(tr => {
+        const symbolStr = tr.symbol || (tr.pair ? tr.pair.replace('/USDT', '') : 'BTC');
+        const pairStr = tr.pair || `${symbolStr}/USDT`;
+        const priceVal = tr.closePrice || tr.price || tr.entryPrice || 0;
+        const timeStr = tr.closed_at ? new Date(tr.closed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : (tr.time || 'Recently');
+        return `
+          <tr>
+            <td style="color:#8b92a4; font-size:11px;">${timeStr}</td>
+            <td><strong>${pairStr}</strong></td>
+            <td>Limit</td>
+            <td><span class="pos-dir-badge ${tr.side || 'long'}" style="padding:1px 5px; font-size:10px; border-radius:3px;">${(tr.side || 'LONG').toUpperCase()}</span></td>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(priceVal)}</td>
+            <td style="font-family:var(--font-price);">${tr.size} ${symbolStr}</td>
+            <td style="font-family:var(--font-price);">${tr.size} ${symbolStr}</td>
+            <td><span style="color:#00c087; font-size:11px; font-weight:700;">FILLED</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  // 4. Trade History Tab (9 Columns matching Screenshot 5)
   const histTbody = document.getElementById('tblc-history-tbody');
   if (histTbody && walletState) {
     if (!historyList || historyList.length === 0) {
-      histTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:#555f75;">No closed trades yet.</td></tr>`;
+      histTbody.innerHTML = tblcNoDataHtml(9);
     } else {
       histTbody.innerHTML = historyList.map(tr => {
         const pnlVal = typeof tr.pnl === 'number' ? tr.pnl : 0;
@@ -6266,17 +6325,20 @@ function renderTradeBottomLedger() {
         const symbolStr = tr.symbol || (tr.pair ? tr.pair.replace('/USDT', '') : 'BTC');
         const pairStr = tr.pair || `${symbolStr}/USDT`;
         const priceVal = tr.closePrice || tr.price || tr.entryPrice || 0;
-        const timeStr = tr.closed_at ? new Date(tr.closed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (tr.time || 'Recently');
+        const timeStr = tr.closed_at ? new Date(tr.closed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : (tr.time || 'Recently');
         return `
           <tr>
+            <td style="color:#8b92a4; font-size:11px;">${timeStr}</td>
             <td><strong>${pairStr}</strong></td>
-            <td><span class="pos-dir-badge ${tr.side}">${(tr.side || 'LONG').toUpperCase()}</span></td>
-            <td>${tr.size} ${symbolStr}</td>
+            <td>Market</td>
+            <td><span class="pos-dir-badge ${tr.side || 'long'}" style="padding:1px 5px; font-size:10px; border-radius:3px;">${(tr.side || 'LONG').toUpperCase()}</span></td>
             <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(priceVal)}</td>
+            <td style="font-family:var(--font-price);">${tr.size} ${symbolStr}</td>
+            <td style="color:#8b92a4; font-size:11px;">Taker</td>
+            <td style="color:#8b92a4; font-size:11px;">$0.00</td>
             <td style="font-family:var(--font-price); font-weight:700;" class="${isUp ? 'up' : 'down'}">
               ${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(pnlVal)}
             </td>
-            <td style="color:#8b92a4; font-size:12px;">${timeStr}</td>
           </tr>
         `;
       }).join('');

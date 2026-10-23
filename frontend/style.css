@@ -5446,13 +5446,21 @@ html:not(.is-native-apk) .tv-fs-header {
     display: none !important;
   }
 
+  html:not(.is-native-apk) body.trade-screen-active .desktop-marquee-wrap {
+    display: none !important;
+  }
+  html:not(.is-native-apk) body.trade-screen-active .app-top-header {
+    height: 50px !important;
+    min-height: 50px !important;
+    padding: 0 16px !important;
+  }
+  html:not(.is-native-apk) body.trade-screen-active #screen-trade.active,
   html:not(.is-native-apk) #screen-trade.active {
     display: flex !important;
     flex-direction: column !important;
-    height: calc(100vh - 102px) !important;
-    max-height: calc(100vh - 102px) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    height: calc(100vh - 50px) !important;
+    max-height: calc(100vh - 50px) !important;
+    overflow: hidden !important;
   }
 
   html:not(.is-native-apk) #screen-trade.active::-webkit-scrollbar {
@@ -8321,6 +8329,128 @@ html:not(.is-native-apk) .tv-fs-header {
 
 .tblc-table tr:hover td {
   background: rgba(255, 255, 255, 0.02);
+}
+
+.tblc-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  width: 100%;
+}
+
+.tblc-no-data-icon {
+  width: 44px;
+  height: 44px;
+  opacity: 0.35;
+}
+
+.tblc-no-data-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.tblc-btn-sm {
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #8b92a4;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tblc-btn-sm:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.tblc-link-btn {
+  background: transparent;
+  border: none;
+  color: #00f2fe;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+.tblc-link-btn:hover {
+  text-decoration: underline;
+}
+
+.tblc-perpetual-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #8b92a4;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 2px;
+}
+
+/* ─── SHARK EXCHANGE ZERO-SCROLL 100VH LAYOUT ON TRADE DESK ─── */
+body.trade-screen-active .trade-fullwidth-container {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+}
+
+body.trade-screen-active .trade-workspace-grid {
+  height: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  padding: 6px 12px 8px 12px !important;
+  overflow: hidden !important;
+  grid-template-rows: minmax(320px, 1.35fr) minmax(210px, 1fr) !important;
+}
+
+body.trade-screen-active .trade-chart-box {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+body.trade-screen-active .trade-bottom-ledger-card {
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding-bottom: 0 !important;
+}
+
+body.trade-screen-active .tblc-view {
+  flex: 1 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.trade-screen-active .tblc-table-wrap {
+  height: calc(100% - 2px) !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+}
+
+body.trade-screen-active .desktop-trade-order-dock {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+body.trade-screen-active .trade-depth-panel {
+  height: 100% !important;
+  min-height: 0 !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════
