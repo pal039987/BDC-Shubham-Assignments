@@ -53,4 +53,24 @@ assert.ok(!appJs.includes('reset your virtual account'), 'reset your virtual acc
 assert.ok(!appJs.includes('Demo Account successfully reset'), 'Demo Account successfully reset toast updated');
 console.log('  ✓ Zero occurrences of "demo" or "virtual" in user toasts and confirmations in app.js');
 
+// 4. Auth Modal Visual Layout & Handlers
+console.log('4. Testing Auth Modal visual design & working handlers...');
+assert.ok(appJs.includes('function closeAuthModal()'), 'closeAuthModal function defined in app.js');
+assert.ok(appJs.includes('function handleForgotPasswordClick()'), 'handleForgotPasswordClick function defined in app.js');
+assert.ok(appJs.includes('function quickFillAuthModal('), 'quickFillAuthModal function defined in app.js');
+assert.ok(appJs.includes('window.closeAuthModal = closeAuthModal'), 'closeAuthModal exported to window');
+assert.ok(appJs.includes('window.handleForgotPasswordClick = handleForgotPasswordClick'), 'handleForgotPasswordClick exported to window');
+assert.ok(appJs.includes('window.quickFillAuthModal = quickFillAuthModal'), 'quickFillAuthModal exported to window');
+assert.ok(indexHtml.includes('id="auth-modal-close-btn"'), 'Close button has id="auth-modal-close-btn"');
+assert.ok(indexHtml.includes('class="auth-modal-close-btn auth-close-btn"'), 'Close button has both classes');
+assert.ok(styleCss.includes('.auth-modal-close-btn,') || styleCss.includes('.auth-close-btn'), 'Close button styled in CSS');
+assert.ok(styleCss.includes('top: 18px;'), 'Close button positioned top 18px');
+assert.ok(styleCss.includes('right: 18px;'), 'Close button positioned right 18px');
+assert.ok(indexHtml.includes('class="auth-input-wrap"'), 'Input fields wrapped in auth-input-wrap');
+assert.ok(indexHtml.includes('class="auth-quick-accounts"'), 'Quick accounts chips present');
+assert.ok(indexHtml.includes('quickFillAuthModal('), 'Quick fill triggers configured');
+assert.ok(styleCss.includes('.auth-modal-overlay {') && styleCss.includes('backdrop-filter: blur('), 'Auth overlay has glass backdrop filter');
+console.log('  ✓ Auth modal close button, input wrappers, glass backdrop, and quick fill verified');
+
 console.log('\n=== ALL SIGNOUT, MARQUEE SPEED & WORD CLEANUP TESTS PASSED! ===\n');
+

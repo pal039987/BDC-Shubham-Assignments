@@ -1362,12 +1362,11 @@ function openAuthModal(defaultTab = 'login') {
   switchAuthTab(defaultTab);
   modal.classList.remove('hidden');
 
-  const sess = getAuthSession();
-  if (!sess || sess.isGuest || !sess.email) {
-    if (closeBtn) closeBtn.classList.add('hidden');
-  } else {
-    if (closeBtn) closeBtn.classList.remove('hidden');
-  }
+  if (closeBtn) closeBtn.classList.remove('hidden');
+}
+
+function closeAuthModal() {
+  dismissAuthModal(true);
 }
 
 function dismissAuthModal(force = false) {
@@ -1423,10 +1422,24 @@ function switchAuthTab(tab) {
   }
 }
 
-function togglePasswordVisibility(inputId) {
-  const input = document.getElementById(inputId);
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId) || document.getElementById('auth-' + inputId) || document.getElementById(inputId.replace('auth-', ''));
   if (!input) return;
-  input.type = input.type === 'password' ? 'text' : 'password';
+  const isPwd = input.type === 'password';
+  input.type = isPwd ? 'text' : 'password';
+  const targetBtn = btn || (input.parentElement ? input.parentElement.querySelector('.auth-pwd-toggle, .auth-eye-btn') : null);
+  if (targetBtn) {
+    targetBtn.textContent = isPwd ? '🙈' : '👁';
+  }
+}
+
+function quickFillAuthModal(email, password) {
+  const emailInput = document.getElementById('auth-login-email') || document.getElementById('login-email');
+  const pwdInput = document.getElementById('auth-login-password') || document.getElementById('login-password');
+  if (emailInput) emailInput.value = email;
+  if (pwdInput) pwdInput.value = password;
+  clearAuthAlert();
+  showToast(`Loaded account for ${email}. Click "Sign In to Terminal"!`, 'info');
 }
 
 function getRegisteredUsers() {
@@ -1473,7 +1486,7 @@ function saveRegisteredUser(user) {
 
 async function handleForgotPassword(event) {
   if (event) event.preventDefault();
-  const emailInput = document.getElementById('login-email');
+  const emailInput = document.getElementById('auth-login-email') || document.getElementById('login-email');
   const currentVal = emailInput ? emailInput.value.trim().toLowerCase() : '';
   const emailPrompt = prompt('Enter your registered Email Address to reset password:', currentVal);
   if (!emailPrompt) return;
@@ -1501,7 +1514,7 @@ async function handleForgotPassword(event) {
         showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
         showToast('Account is not registered. Please create an account first.', 'error');
         switchAuthTab('register');
-        const regEmail = document.getElementById('register-email');
+        const regEmail = document.getElementById('auth-register-email') || document.getElementById('register-email');
         if (regEmail) regEmail.value = cleanEmail;
         return;
       }
@@ -1512,7 +1525,7 @@ async function handleForgotPassword(event) {
     showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
     showToast('Account is not registered. Please create an account first.', 'error');
     switchAuthTab('register');
-    const regEmail = document.getElementById('register-email');
+    const regEmail = document.getElementById('auth-register-email') || document.getElementById('register-email');
     if (regEmail) regEmail.value = cleanEmail;
     return;
   }
@@ -1557,8 +1570,12 @@ async function handleForgotPassword(event) {
   clearAuthAlert();
   showToast('Password reset successfully! Please sign in with your new password.', 'success');
   if (emailInput) emailInput.value = cleanEmail;
-  const pwdInput = document.getElementById('login-password');
+  const pwdInput = document.getElementById('auth-login-password') || document.getElementById('login-password');
   if (pwdInput) pwdInput.value = newPwd;
+}
+
+function handleForgotPasswordClick() {
+  handleForgotPassword();
 }
 
 async function handleAuthLogin(event) {
@@ -1571,10 +1588,10 @@ async function handleAuthLogin(event) {
     return;
   }
 
-  const emailInput = document.getElementById('login-email');
-  const pwdInput = document.getElementById('login-password');
-  const rememberBox = document.getElementById('login-remember');
-  const loginBtn = document.querySelector('#auth-login-form button[type="submit"]') || document.getElementById('login-submit-btn');
+  const emailInput = document.getElementById('auth-login-email') || document.getElementById('login-email');
+  const pwdInput = document.getElementById('auth-login-password') || document.getElementById('login-password');
+  const rememberBox = document.getElementById('auth-login-remember') || document.getElementById('login-remember');
+  const loginBtn = document.getElementById('auth-login-submit') || document.querySelector('#auth-login-form button[type="submit"]') || document.getElementById('login-submit-btn');
 
   const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
   const password = pwdInput ? pwdInput.value : '';
@@ -1608,6 +1625,9 @@ async function handleAuthLogin(event) {
     dismissAuthModal(true);
     updateAccountAuthUI();
     renderAccountScreen();
+    if (typeof syncDesktopHeaderState === 'function') syncDesktopHeaderState();
+    if (typeof renderDesktopAuthPage === 'function') renderDesktopAuthPage();
+    if (typeof renderAllViews === 'function') renderAllViews();
     showToast(`Welcome back, ${registered.username}!`, 'success');
     syncWalletWithCloud(false);
 
@@ -1666,6 +1686,9 @@ async function handleAuthLogin(event) {
       dismissAuthModal(true);
       updateAccountAuthUI();
       renderAccountScreen();
+      if (typeof syncDesktopHeaderState === 'function') syncDesktopHeaderState();
+      if (typeof renderDesktopAuthPage === 'function') renderDesktopAuthPage();
+      if (typeof renderAllViews === 'function') renderAllViews();
       showToast(`Welcome back, ${sess.username}!`, 'success');
       await syncWalletWithCloud(false);
       return;
@@ -1684,7 +1707,7 @@ async function handleAuthLogin(event) {
       showAuthAlert('⚠️ Account is not registered. Please create an account first.', 'error');
       showToast('Account is not registered. Please create an account first.', 'error');
       switchAuthTab('register');
-      const regEmail = document.getElementById('register-email');
+      const regEmail = document.getElementById('auth-register-email') || document.getElementById('register-email');
       if (regEmail) regEmail.value = email;
       return;
     } else {
@@ -1723,10 +1746,10 @@ async function handleAuthRegister(event) {
     return;
   }
 
-  const nameInput = document.getElementById('register-name');
-  const emailInput = document.getElementById('register-email');
-  const pwdInput = document.getElementById('register-password');
-  const regBtn = document.querySelector('#auth-register-form button[type="submit"]') || document.getElementById('register-submit-btn');
+  const nameInput = document.getElementById('auth-register-username') || document.getElementById('register-name');
+  const emailInput = document.getElementById('auth-register-email') || document.getElementById('register-email');
+  const pwdInput = document.getElementById('auth-register-password') || document.getElementById('register-password');
+  const regBtn = document.getElementById('auth-register-submit') || document.querySelector('#auth-register-form button[type="submit"]') || document.getElementById('register-submit-btn');
 
   const username = nameInput ? nameInput.value.trim() : '';
   const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
@@ -1750,7 +1773,7 @@ async function handleAuthRegister(event) {
     showAuthAlert('⚠️ Account already exists! Please Sign In.', 'error');
     showToast('Account already exists! Please Sign In.', 'error');
     switchAuthTab('login');
-    const loginEmail = document.getElementById('login-email');
+    const loginEmail = document.getElementById('auth-login-email') || document.getElementById('login-email');
     if (loginEmail) loginEmail.value = email;
     return;
   }
@@ -1796,6 +1819,9 @@ async function handleAuthRegister(event) {
       dismissAuthModal(true);
       updateAccountAuthUI();
       renderAccountScreen();
+      if (typeof syncDesktopHeaderState === 'function') syncDesktopHeaderState();
+      if (typeof renderDesktopAuthPage === 'function') renderDesktopAuthPage();
+      if (typeof renderAllViews === 'function') renderAllViews();
       showToast(`Account created! Welcome to VTrade, ${sess.username}!`, 'success');
       syncWalletWithCloud(true);
       return;
@@ -1805,7 +1831,7 @@ async function handleAuthRegister(event) {
         showAuthAlert('⚠️ Account already exists! Please Sign In.', 'error');
         showToast('Account already exists! Please Sign In.', 'error');
         switchAuthTab('login');
-        const loginEmail = document.getElementById('login-email');
+        const loginEmail = document.getElementById('auth-login-email') || document.getElementById('login-email');
         if (loginEmail) loginEmail.value = email;
         return;
       }
@@ -1835,6 +1861,9 @@ async function handleAuthRegister(event) {
       dismissAuthModal(true);
       updateAccountAuthUI();
       renderAccountScreen();
+      if (typeof syncDesktopHeaderState === 'function') syncDesktopHeaderState();
+      if (typeof renderDesktopAuthPage === 'function') renderDesktopAuthPage();
+      if (typeof renderAllViews === 'function') renderAllViews();
       showToast(`Account created offline! Welcome to VTrade, ${username}!`, 'success');
     }
   } finally {
@@ -5762,6 +5791,10 @@ if (typeof window !== 'undefined') {
   window.handleAuthLogout = handleAuthLogout;
   window.logoutAuthUser = logoutAuthUser;
   window.logoutDesktopUser = logoutDesktopUser;
+  window.closeAuthModal = closeAuthModal;
+  window.handleForgotPasswordClick = handleForgotPasswordClick;
+  window.quickFillAuthModal = quickFillAuthModal;
+  window.togglePasswordVisibility = togglePasswordVisibility;
 
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', () => {

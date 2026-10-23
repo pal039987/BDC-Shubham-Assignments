@@ -921,21 +921,22 @@
 
   <!-- ══════════════════════ 9. LUXURY SIGN IN / SIGN UP MODAL (AUTH WALL) ══════════════════════ -->
   <div class="auth-modal-overlay hidden" id="auth-modal-overlay" onclick="handleBackdropClick(event)">
-    <div class="auth-modal-card" id="auth-modal-card">
-      <button class="auth-close-btn" onclick="closeAuthModal()" aria-label="Close Auth Modal">✕</button>
+    <div class="auth-modal-backdrop"></div>
+    <div class="auth-modal-card" id="auth-modal-card" onclick="event.stopPropagation()">
+      <button class="auth-modal-close-btn auth-close-btn" id="auth-modal-close-btn" onclick="closeAuthModal()" aria-label="Close Auth Modal" title="Close Modal">✕</button>
       
       <!-- Brand & Tabs -->
-      <div class="auth-brand-wrap">
-        <div class="auth-brand-icon">
+      <div class="auth-brand-wrap auth-brand-header">
+        <div class="auth-brand-icon auth-logo-badge">
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#ff9900" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
         </div>
         <h2 class="auth-brand-title">VTrade PRO</h2>
-        <p class="auth-brand-subtitle">Access your persistent paper trading account</p>
+        <p class="auth-brand-subtitle auth-brand-tagline">Access your persistent paper trading account</p>
       </div>
 
-      <div class="auth-tab-row">
-        <button class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login')">Sign In</button>
-        <button class="auth-tab-btn" id="auth-tab-register" onclick="switchAuthTab('register')">Create Account</button>
+      <div class="auth-tab-row auth-tabs-strip">
+        <button type="button" class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login')">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="auth-tab-register" onclick="switchAuthTab('register')">Create Account</button>
       </div>
 
       <!-- In-Modal Alert Banner -->
@@ -945,19 +946,30 @@
       <!-- Sign In Form -->
       <form class="auth-form" id="auth-login-form" onsubmit="handleAuthLogin(event)">
         <div class="auth-input-group">
-          <label class="auth-label">Email Address</label>
-          <input type="email" class="auth-input" id="auth-login-email" placeholder="name@example.com" required autocomplete="email" />
+          <label class="auth-label" for="auth-login-email">Email Address</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉️</span>
+            <input type="email" class="auth-input" id="auth-login-email" name="login-email" placeholder="name@example.com" required autocomplete="email" />
+          </div>
         </div>
         <div class="auth-input-group">
           <div class="auth-label-row">
-            <label class="auth-label">Password</label>
+            <label class="auth-label" for="auth-login-password">Password</label>
             <a href="javascript:void(0)" class="auth-forgot-link" onclick="handleForgotPasswordClick()">Forgot?</a>
           </div>
-          <div class="auth-password-wrap">
-            <input type="password" class="auth-input" id="auth-login-password" placeholder="Enter password" required autocomplete="current-password" />
-            <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('auth-login-password', this)">👁</button>
+          <div class="auth-input-wrap auth-password-wrap">
+            <span class="auth-input-icon">🔑</span>
+            <input type="password" class="auth-input" id="auth-login-password" name="login-password" placeholder="Enter password" required autocomplete="current-password" />
+            <button type="button" class="auth-eye-btn auth-pwd-toggle" onclick="togglePasswordVisibility('auth-login-password', this)" title="Toggle password visibility">👁</button>
           </div>
         </div>
+
+        <div class="auth-quick-accounts">
+          <span class="aqa-lbl">Demo Accounts:</span>
+          <button type="button" class="aqa-chip" onclick="quickFillAuthModal('test@example.com', 'password123')">testtrader</button>
+          <button type="button" class="aqa-chip" onclick="quickFillAuthModal('trader2@test.com', 'password123')">trader2</button>
+        </div>
+
         <button type="submit" class="auth-primary-btn" id="auth-login-submit">
           Sign In to Terminal
         </button>
@@ -966,18 +978,25 @@
       <!-- Create Account Form -->
       <form class="auth-form hidden" id="auth-register-form" onsubmit="handleAuthRegister(event)">
         <div class="auth-input-group">
-          <label class="auth-label">Username</label>
-          <input type="text" class="auth-input" id="auth-register-username" placeholder="Choose username" required autocomplete="username" />
+          <label class="auth-label" for="auth-register-username">Username</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">👤</span>
+            <input type="text" class="auth-input" id="auth-register-username" name="register-name" placeholder="Choose username" required autocomplete="username" />
+          </div>
         </div>
         <div class="auth-input-group">
-          <label class="auth-label">Email Address</label>
-          <input type="email" class="auth-input" id="auth-register-email" placeholder="name@example.com" required autocomplete="email" />
+          <label class="auth-label" for="auth-register-email">Email Address</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉️</span>
+            <input type="email" class="auth-input" id="auth-register-email" name="register-email" placeholder="name@example.com" required autocomplete="email" />
+          </div>
         </div>
         <div class="auth-input-group">
-          <label class="auth-label">Password (min 6 chars)</label>
-          <div class="auth-password-wrap">
-            <input type="password" class="auth-input" id="auth-register-password" placeholder="Create strong password" required minlength="6" autocomplete="new-password" />
-            <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('auth-register-password', this)">👁</button>
+          <label class="auth-label" for="auth-register-password">Password (min 6 chars)</label>
+          <div class="auth-input-wrap auth-password-wrap">
+            <span class="auth-input-icon">🔑</span>
+            <input type="password" class="auth-input" id="auth-register-password" name="register-password" placeholder="Create strong password" required minlength="6" autocomplete="new-password" />
+            <button type="button" class="auth-eye-btn auth-pwd-toggle" onclick="togglePasswordVisibility('auth-register-password', this)" title="Toggle password visibility">👁</button>
           </div>
         </div>
         <button type="submit" class="auth-primary-btn" id="auth-register-submit">

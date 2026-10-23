@@ -2756,6 +2756,9 @@ html.is-native-apk .vtrade-app-root {
   align-items: center;
   justify-content: center;
   padding: 16px;
+  background: rgba(3, 6, 12, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .auth-modal-backdrop {
@@ -2771,14 +2774,14 @@ html.is-native-apk .vtrade-app-root {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   background: linear-gradient(180deg, #121927 0%, #0a0e17 100%);
-  border: 1.5px solid var(--border-active);
+  border: 1.5px solid rgba(255, 153, 0, 0.35);
   border-radius: 24px;
-  padding: 24px 22px;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.9), 0 0 25px rgba(255, 153, 0, 0.1);
+  padding: 28px 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95), 0 0 30px rgba(255, 153, 0, 0.12);
   animation: modalSlideUp 0.28s var(--ease-smooth);
-  max-height: 90vh;
+  max-height: 92vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -2799,28 +2802,41 @@ html.is-native-apk .vtrade-app-root {
   border-color: rgba(255, 153, 0, 0.45);
 }
 
-.auth-modal-close-btn {
+.auth-modal-close-btn,
+.auth-close-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 32px;
-  height: 32px;
+  top: 18px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-light);
-  color: var(--text-muted);
-  font-size: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #94a3b8;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  z-index: 10;
 }
 
-.auth-modal-close-btn:active {
-  transform: scale(0.9);
+.auth-modal-close-btn:hover,
+.auth-close-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: rgba(255, 153, 0, 0.5);
+  transform: scale(1.06);
 }
 
+.auth-modal-close-btn:active,
+.auth-close-btn:active {
+  transform: scale(0.92);
+}
+
+.auth-brand-wrap,
 .auth-brand-header {
   display: flex;
   flex-direction: column;
@@ -2829,58 +2845,68 @@ html.is-native-apk .vtrade-app-root {
   margin-bottom: 20px;
 }
 
+.auth-brand-icon,
 .auth-logo-badge {
-  width: 52px;
-  height: 52px;
+  width: 50px;
+  height: 50px;
   border-radius: 16px;
-  background: var(--gold-bg);
-  border: 1px solid var(--border-active);
+  background: rgba(255, 153, 0, 0.12);
+  border: 1px solid rgba(255, 153, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
-  box-shadow: 0 0 20px rgba(255, 153, 0, 0.2);
+  margin-bottom: 12px;
+  box-shadow: 0 0 24px rgba(255, 153, 0, 0.2);
 }
 
 .auth-brand-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
   letter-spacing: -0.5px;
   color: #ffffff;
 }
 
+.auth-brand-subtitle,
 .auth-brand-tagline {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  margin-top: 3px;
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin-top: 4px;
 }
 
+.auth-tab-row,
 .auth-tabs-strip {
   display: flex;
-  background: var(--bg-card-subtle);
+  background: rgba(255, 255, 255, 0.05);
   padding: 4px;
   border-radius: 12px;
-  margin-bottom: 18px;
-  border: 1px solid var(--border-light);
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 4px;
 }
 
 .auth-tab-btn {
   flex: 1;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: #94a3b8;
+  font-size: 13.5px;
   font-weight: 700;
-  padding: 9px 0;
+  padding: 10px 0;
   border-radius: 9px;
   cursor: pointer;
   transition: all 0.2s var(--ease-smooth);
+  text-align: center;
+}
+
+.auth-tab-btn:hover {
+  color: #ffffff;
 }
 
 .auth-tab-btn.active {
-  background: var(--bg-card-highlight);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  background: rgba(255, 153, 0, 0.16);
+  color: #ff9900;
+  border: 1px solid rgba(255, 153, 0, 0.35);
+  box-shadow: 0 2px 10px rgba(255, 153, 0, 0.15);
 }
 
 .auth-form {
@@ -2892,37 +2918,62 @@ html.is-native-apk .vtrade-app-root {
 .auth-input-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+}
+
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .auth-label {
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+.auth-forgot-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff9900;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.auth-forgot-link:hover {
+  text-decoration: underline;
+  color: #ffaa22;
+}
+
+.auth-password-wrap,
 .auth-input-wrap {
   display: flex;
   align-items: center;
-  background: var(--bg-card-subtle);
-  border: 1.5px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  padding: 0 12px;
-  height: 46px;
-  transition: border-color 0.2s ease;
+  padding: 0 14px;
+  height: 48px;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+.auth-password-wrap:focus-within,
 .auth-input-wrap:focus-within {
-  border-color: var(--gold);
-  box-shadow: 0 0 10px rgba(255, 153, 0, 0.2);
+  border-color: #ff9900;
+  background: rgba(255, 153, 0, 0.04);
+  box-shadow: 0 0 14px rgba(255, 153, 0, 0.22);
 }
 
 .auth-input-icon {
   font-size: 14px;
-  margin-right: 8px;
-  opacity: 0.8;
+  margin-right: 10px;
+  opacity: 0.75;
+  user-select: none;
 }
 
 .auth-input {
@@ -2933,19 +2984,66 @@ html.is-native-apk .vtrade-app-root {
   color: #ffffff;
   font-size: 14px;
   font-family: inherit;
+  width: 100%;
 }
 
 .auth-input::placeholder {
-  color: rgba(255, 255, 255, 0.25);
+  color: #64748b;
 }
 
+.auth-eye-btn,
 .auth-pwd-toggle {
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: #94a3b8;
   cursor: pointer;
   font-size: 16px;
-  padding: 4px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.auth-eye-btn:hover,
+.auth-pwd-toggle:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-quick-accounts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -2px 0 6px 0;
+  flex-wrap: wrap;
+}
+
+.aqa-lbl {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.aqa-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.aqa-chip:hover {
+  background: rgba(255, 153, 0, 0.15);
+  border-color: rgba(255, 153, 0, 0.4);
+  color: #ff9900;
 }
 
 .auth-options-row {
