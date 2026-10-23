@@ -6005,7 +6005,8 @@ function executeDesktopOrder() {
 }
 
 function switchLedgerTab(tab) {
-  ['positions', 'orders', 'history'].forEach(t => {
+  const allTabs = ['positions', 'orders', 'order-history', 'history', 'transactions', 'delivery'];
+  allTabs.forEach(t => {
     const tabBtn = document.getElementById(`tblc-tab-${t}`);
     const view = document.getElementById(`tblc-view-${t}`);
     if (tabBtn) tabBtn.classList.toggle('active', t === tab);
@@ -6114,6 +6115,28 @@ function renderTradeBottomLedger() {
   if (posCount && walletState && walletState.positions) posCount.textContent = walletState.positions.length;
   if (ordCount && walletState && walletState.orders) ordCount.textContent = walletState.orders.length;
   if (histCount) histCount.textContent = historyList.length;
+
+  const sess = getAuthSession();
+  const isAuthed = !!(sess && sess.email && !sess.isGuest);
+  const authPrompt = document.getElementById('tblc-auth-prompt');
+
+  if (authPrompt) {
+    authPrompt.classList.toggle('hidden', isAuthed);
+  }
+
+  if (typeof document.querySelectorAll === 'function') {
+    const views = document.querySelectorAll('.tblc-view');
+    if (!isAuthed) {
+      views.forEach(v => v.classList.add('hidden'));
+      return;
+    }
+
+    const activeTabBtn = typeof document.querySelector === 'function' ? document.querySelector('.tblc-tab.active') : null;
+    const activeTabKey = activeTabBtn ? activeTabBtn.id.replace('tblc-tab-', '') : 'positions';
+    views.forEach(v => {
+      v.classList.toggle('hidden', v.id !== `tblc-view-${activeTabKey}`);
+    });
+  }
 
   const posTbody = document.getElementById('tblc-positions-tbody');
   if (posTbody && walletState) {

@@ -7805,10 +7805,11 @@ html:not(.is-native-apk) .tv-fs-header {
   padding: 5px 8px;
 }
 
-/* 3-Column Institutional Workspace: Left Chart + Center Order Book + Right Order Dock */
+/* 3-Column Institutional Workspace: Left Chart & Positions + Center Order Book + Right Order Dock */
 .trade-workspace-grid {
   display: grid;
   grid-template-columns: 1fr 270px 330px;
+  grid-template-rows: auto auto;
   gap: 0;
   height: auto;
   min-height: 550px;
@@ -7831,12 +7832,44 @@ html:not(.is-native-apk) .tv-fs-header {
   }
 }
 
+.trade-chart-box {
+  grid-column: 1;
+  grid-row: 1;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.trade-depth-panel {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.desktop-trade-order-dock {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
 .trade-workspace-grid.orderbook-hidden {
   grid-template-columns: 1fr 340px !important;
 }
 
+.trade-workspace-grid.orderbook-hidden .trade-chart-box {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.trade-workspace-grid.orderbook-hidden .trade-bottom-ledger-card {
+  grid-column: 1;
+  grid-row: 2;
+}
+
 .trade-workspace-grid.orderbook-hidden .trade-depth-panel {
   display: none !important;
+}
+
+.trade-workspace-grid.orderbook-hidden .desktop-trade-order-dock {
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 
 .ctf-toggle-ob {
@@ -7944,55 +7977,101 @@ html:not(.is-native-apk) .tv-fs-header {
   border-radius: 4px;
 }
 
-/* Trade Bottom Ledger Card - Full Width 100% Span, Solid Clean Background, Zero Overlap */
+/* Trade Bottom Ledger Card - Strictly Equal to Chart Width */
 .trade-bottom-ledger-card {
+  grid-column: 1;
+  grid-row: 2;
   width: 100%;
   background: #0c1018;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
-  clear: both;
-  margin-top: 0;
   position: relative;
   z-index: 5;
-  padding-bottom: 40px;
+  padding-bottom: 24px;
 }
 
 .tblc-tabs {
   display: flex;
-  background: rgba(255, 255, 255, 0.02);
+  background: #080b11;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 0 16px;
-  gap: 8px;
+  padding: 0 12px;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tblc-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tblc-tab {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: 6px;
+  padding: 10px 14px;
   font-size: 13px;
-  font-weight: 700;
-  color: #8b92a4;
+  font-weight: 600;
+  color: #94a3b8;
   cursor: pointer;
   border: none;
   background: transparent;
   border-bottom: 2px solid transparent;
   transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tblc-tab:hover {
+  color: #ffffff;
 }
 
 .tblc-tab.active {
-  color: #ffffff;
-  border-bottom: 2px solid #ff9900;
-  background: rgba(255, 153, 0, 0.05);
+  color: #00f2fe !important;
+  border-bottom: 2px solid #00f2fe !important;
+  background: transparent !important;
 }
 
 .tblc-badge {
   font-size: 10px;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+
+.tblc-tab.active .tblc-badge {
+  background: rgba(0, 242, 254, 0.15);
+  color: #00f2fe;
+}
+
+/* Centered Auth Text Section from Screenshot 1 */
+.tblc-auth-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.tblc-auth-link {
+  color: #00f2fe !important;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.tblc-auth-link:hover {
+  color: #38bdf8 !important;
+  text-decoration: underline;
+}
+
+.tblc-auth-sep,
+.tblc-auth-txt {
   color: #ffffff;
 }
 
