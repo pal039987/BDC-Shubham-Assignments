@@ -826,5 +826,53 @@
     "orders_json": "[]",
     "trades_json": "[]",
     "updated_at": 1792734306866
+  },
+  {
+    "id": 89,
+    "username": "FreshTrader_1792735692593",
+    "email": "trader_1792735692593@vtrade.org",
+    "password": "$2b$10$iuUCP7rhBxK/nKfJAKbrD..4P9MGtLSU1mu2TMZK5cSzTRt43xMQ6",
+    "balance": 10000,
+    "created_at": "2026-10-23 06:08:12",
+    "positions_json": "[]",
+    "orders_json": "[]",
+    "trades_json": "[]",
+    "updated_at": 1792735692826
+  },
+  {
+    "id": 90,
+    "username": "FreshTrader_1792736154046",
+    "email": "trader_1792736154046@vtrade.org",
+    "password": "$2b$10$XRVaXmmVUqltJrRdC.H4g.JIOO0j7w3FgAOpIG01GHdohoHsmU0LW",
+    "balance": 10000,
+    "created_at": "2026-10-23 06:15:54",
+    "positions_json": "[]",
+    "orders_json": "[]",
+    "trades_json": "[]",
+    "updated_at": 1792736154256
+  },
+  {
+    "id": 91,
+    "username": "FreshTrader_1792737261880",
+    "email": "trader_1792737261880@vtrade.org",
+    "password": "$2b$10$FLhGqmaWK7UHt3l1lfUu5uJ3HfIQuJ4vcecdGclUeC5lHst7Nq8ea",
+    "balance": 10000,
+    "created_at": "2026-10-23 06:34:21",
+    "positions_json": "[]",
+    "orders_json": "[]",
+    "trades_json": "[]",
+    "updated_at": 1792737262095
+  },
+  {
+    "id": 92,
+    "username": "FreshTrader_1792737290770",
+    "email": "trader_1792737290770@vtrade.org",
+    "password": "$2b$10$LxigzkNT5ZUAM.BGyKMjMuKFowAq323Vi//n8jQfXd6L.0gECSKU6",
+    "balance": 10000,
+    "created_at": "2026-10-23 06:34:50",
+    "positions_json": "[]",
+    "orders_json": "[]",
+    "trades_json": "[]",
+    "updated_at": 1792737290978
   }
 ]

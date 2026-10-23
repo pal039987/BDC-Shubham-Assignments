@@ -1017,6 +1017,8 @@ function applyCloudWallet(cloud) {
   if (typeof renderHomeBalanceCard === 'function') renderHomeBalanceCard();
   if (typeof renderPortfolioScreen === 'function') renderPortfolioScreen();
   if (typeof renderAccountScreen === 'function') renderAccountScreen();
+  if (typeof renderTradeBottomLedger === 'function') renderTradeBottomLedger();
+  if (typeof syncDesktopHeaderState === 'function') syncDesktopHeaderState();
 }
 
 async function syncWalletWithCloud(forcePush = false) {
@@ -3355,8 +3357,9 @@ function startOrderbookLiveEngine() {
       if (obPanel && !obPanel.classList.contains('hidden')) {
         renderOrderbook();
       }
+      renderTradeDeskOrderBookAndTrades();
     }
-  }, 450); // Fluid 450ms real-time depth stream for all coins (including Gold!)
+  }, 1000); // 1-second real-time depth stream for all coins (including Gold!)
 }
 
 function renderOrderbook() {
@@ -3551,13 +3554,20 @@ function executeOrderFromSheet() {
   }
 
   const sess = getAuthSession();
-  const dbUsers = getRegisteredUsers();
-  const isValidDbUser = sess && sess.email && dbUsers.some(u => u.email.toLowerCase() === sess.email.toLowerCase());
-  if (!sess || sess.isGuest || !isValidDbUser) {
+  const isAuthedSession = !!(sess && sess.email && !sess.isGuest);
+
+  if (!isAuthedSession) {
     showToast('Authentication required. Please sign in with a registered account to trade.', 'error');
     openAuthModal('login');
     return;
   }
+
+  // Ensure current authenticated user is registered locally
+  saveRegisteredUser({
+    username: sess.username || sess.email.split('@')[0],
+    email: sess.email,
+    balance: walletState.cashBalance || 10000
+  });
 
   const price = sheetOrderType === 'limit' 
     ? (parseFloat(document.getElementById('sheet-limit-price')?.value) || selectedCoin.price)
@@ -3585,8 +3595,11 @@ function executeOrderFromSheet() {
       margin: reqMarginUsd,
       created_at: new Date().toISOString()
     });
+    walletState.lastUpdated = Date.now();
     saveWalletState();
     closeOrderSheet();
+    syncWalletWithCloud(true);
+    renderTradeBottomLedger();
     showToast(`Pending Limit Order placed: ${sheetSizeCoins} ${selectedCoin.symbol} @ ${getCurrencySymbol()}${fmtPrice(price)}`, 'info');
   } else {
     // Market order executes immediately
@@ -3611,8 +3624,11 @@ function executeOrderFromSheet() {
       created_at: new Date().toISOString()
     });
 
+    walletState.lastUpdated = Date.now();
     saveWalletState();
     closeOrderSheet();
+    syncWalletWithCloud(true);
+    renderTradeBottomLedger();
     showToast(`✅ ${sheetSide === 'long' ? 'Long' : 'Short'} order filled: ${sheetSizeCoins} ${selectedCoin.symbol} @ ${getCurrencySymbol()}${fmtPrice(price)}!`, 'success');
   }
 
@@ -3649,7 +3665,10 @@ function closePosition(posId) {
 
   // Remove open position
   walletState.positions.splice(idx, 1);
+  walletState.lastUpdated = Date.now();
   saveWalletState();
+  syncWalletWithCloud(true);
+  renderTradeBottomLedger();
 
   const isProfit = pnlUsd >= 0;
   showToast(`Position Closed! Realized PnL: ${isProfit ? '+' : ''}${getCurrencySymbol()}${fmtMoney(pnlUsd)}`, isProfit ? 'success' : 'error');
@@ -3661,7 +3680,10 @@ function cancelPendingOrder(orderId) {
   const idx = walletState.orders.findIndex(o => o.id === orderId);
   if (idx === -1) return;
   walletState.orders.splice(idx, 1);
+  walletState.lastUpdated = Date.now();
   saveWalletState();
+  syncWalletWithCloud(true);
+  renderTradeBottomLedger();
   showToast('Pending Limit Order canceled', 'info');
   renderOrders();
 }
@@ -4398,6 +4420,13 @@ function initVTradeApp() {
 
   // Check auth session & strictly validate against database users
   const sess = getAuthSession();
+  if (sess && sess.email && !sess.isGuest && sess.token) {
+    saveRegisteredUser({
+      username: sess.username || sess.email.split('@')[0],
+      email: sess.email,
+      balance: (typeof walletState !== 'undefined' && walletState.cashBalance) || 10000
+    });
+  }
   const dbUsers = getRegisteredUsers();
   const isValidDbUser = sess && sess.email && dbUsers.some(u => u.email.toLowerCase() === sess.email.toLowerCase());
 
@@ -4479,6 +4508,13 @@ function initVTradeApp() {
 
 function initPostSplashFlow() {
   const sess = getAuthSession();
+  if (sess && sess.email && !sess.isGuest && sess.token) {
+    saveRegisteredUser({
+      username: sess.username || sess.email.split('@')[0],
+      email: sess.email,
+      balance: (typeof walletState !== 'undefined' && walletState.cashBalance) || 10000
+    });
+  }
   const dbUsers = getRegisteredUsers();
   const isValidDbUser = sess && sess.email && dbUsers.some(u => u.email.toLowerCase() === sess.email.toLowerCase());
 
@@ -5171,6 +5207,14 @@ function updateDesktopOrderCalculations() {
 }
 
 function executeDesktopOrder() {
+  const sizeInput = document.getElementById('dtod-order-size');
+  if (sizeInput) {
+    const parsed = parseFloat(sizeInput.value);
+    if (!isNaN(parsed) && parsed > 0) {
+      desktopSizeCoins = parsed;
+    }
+  }
+
   // Sync to sheet state and execute!
   sheetSide = desktopOrderSide;
   sheetOrderType = desktopOrderType;
@@ -5185,6 +5229,8 @@ function executeDesktopOrder() {
 
   executeOrderFromSheet();
   syncDesktopHeaderState();
+  renderTradeBottomLedger();
+  syncWalletWithCloud(true);
 }
 
 function switchLedgerTab(tab) {
@@ -5305,40 +5351,47 @@ function renderTradeDeskOrderBookAndTrades() {
   const price = selectedCoin.price;
   if (obContainer) {
     const asks = [
-      { p: price * 1.0025, s: (Math.random() * 2 + 0.1).toFixed(3) },
-      { p: price * 1.0018, s: (Math.random() * 3 + 0.2).toFixed(3) },
-      { p: price * 1.0010, s: (Math.random() * 1.5 + 0.1).toFixed(3) },
-      { p: price * 1.0004, s: (Math.random() * 0.8 + 0.05).toFixed(3) }
-    ].reverse();
+      { p: price * 1.0032, s: (Math.random() * 2.8 + 0.1).toFixed(3), w: 85 },
+      { p: price * 1.0025, s: (Math.random() * 2.2 + 0.1).toFixed(3), w: 72 },
+      { p: price * 1.0019, s: (Math.random() * 3.4 + 0.2).toFixed(3), w: 90 },
+      { p: price * 1.0013, s: (Math.random() * 1.5 + 0.1).toFixed(3), w: 45 },
+      { p: price * 1.0008, s: (Math.random() * 0.9 + 0.05).toFixed(3), w: 30 },
+      { p: price * 1.0003, s: (Math.random() * 0.4 + 0.02).toFixed(3), w: 18 }
+    ];
 
     const bids = [
-      { p: price * 0.9996, s: (Math.random() * 1.2 + 0.1).toFixed(3) },
-      { p: price * 0.9990, s: (Math.random() * 2.5 + 0.2).toFixed(3) },
-      { p: price * 0.9982, s: (Math.random() * 1.8 + 0.1).toFixed(3) },
-      { p: price * 0.9975, s: (Math.random() * 3.2 + 0.5).toFixed(3) }
+      { p: price * 0.9997, s: (Math.random() * 0.5 + 0.05).toFixed(3), w: 22 },
+      { p: price * 0.9992, s: (Math.random() * 1.2 + 0.1).toFixed(3), w: 38 },
+      { p: price * 0.9986, s: (Math.random() * 2.5 + 0.2).toFixed(3), w: 68 },
+      { p: price * 0.9980, s: (Math.random() * 1.8 + 0.1).toFixed(3), w: 55 },
+      { p: price * 0.9973, s: (Math.random() * 3.2 + 0.4).toFixed(3), w: 88 },
+      { p: price * 0.9965, s: (Math.random() * 4.1 + 0.6).toFixed(3), w: 95 }
     ];
 
     obContainer.innerHTML = `
-      <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:4px; font-weight:700;">
+      <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
         <span>Price (${selectedCoin.symbol})</span>
         <span>Size</span>
       </div>
-      <div style="display:flex; flex-direction:column; gap:2px;">
+      <div style="display:flex; flex-direction:column; gap:3px;">
         ${asks.map(a => `
-          <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); color:#f04f5e;">
-            <span>${fmtPrice(a.p)}</span>
-            <span style="color:#8b92a4;">${a.s}</span>
+          <div style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); padding:3px 6px; border-radius:4px; overflow:hidden;">
+            <div style="position:absolute; right:0; top:0; bottom:0; width:${a.w}%; background:rgba(240, 79, 94, 0.12); pointer-events:none;"></div>
+            <span style="color:#f04f5e; font-weight:700; position:relative; z-index:1;">${fmtPrice(a.p)}</span>
+            <span style="color:#c0c6d4; position:relative; z-index:1;">${a.s}</span>
           </div>
         `).join('')}
       </div>
-      <div style="text-align:center; padding:6px 0; font-size:13px; font-weight:800; font-family:var(--font-price); color:#ff9900; border-top:1px dashed rgba(255,255,255,0.08); border-bottom:1px dashed rgba(255,255,255,0.08); margin:4px 0;">
-        ${getCurrencySymbol()}${fmtPrice(price)}
+      <div style="text-align:center; padding:8px 0; font-size:15px; font-weight:800; font-family:var(--font-price); color:#ff9900; background:rgba(255, 153, 0, 0.05); border-radius:6px; margin:6px 0; display:flex; align-items:center; justify-content:center; gap:6px;">
+        <span>${getCurrencySymbol()}${fmtPrice(price)}</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
       </div>
-      <div style="display:flex; flex-direction:column; gap:2px;">
+      <div style="display:flex; flex-direction:column; gap:3px;">
         ${bids.map(b => `
-          <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); color:#00c087;">
-            <span>${fmtPrice(b.p)}</span>
-            <span style="color:#8b92a4;">${b.s}</span>
+          <div style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); padding:3px 6px; border-radius:4px; overflow:hidden;">
+            <div style="position:absolute; right:0; top:0; bottom:0; width:${b.w}%; background:rgba(0, 192, 135, 0.12); pointer-events:none;"></div>
+            <span style="color:#00c087; font-weight:700; position:relative; z-index:1;">${fmtPrice(b.p)}</span>
+            <span style="color:#c0c6d4; position:relative; z-index:1;">${b.s}</span>
           </div>
         `).join('')}
       </div>
@@ -5346,24 +5399,26 @@ function renderTradeDeskOrderBookAndTrades() {
   }
 
   if (trContainer) {
-    const times = ['10:35:12', '10:35:08', '10:34:55', '10:34:42', '10:34:30', '10:34:11'];
+    const times = ['10:35:12', '10:35:08', '10:34:55', '10:34:42', '10:34:30', '10:34:11', '10:33:58', '10:33:45'];
     trContainer.innerHTML = `
-      <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:4px; font-weight:700;">
+      <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
         <span>Price</span>
         <span>Size</span>
         <span>Time</span>
       </div>
-      ${times.map((t, idx) => {
-        const isBuy = idx % 2 === 0;
-        const trPrice = price * (1 + (isBuy ? 0.0002 : -0.0002) * idx);
-        return `
-          <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); padding:2px 0;">
-            <span style="color:${isBuy ? '#00c087' : '#f04f5e'}; font-weight:700;">${fmtPrice(trPrice)}</span>
-            <span style="color:#8b92a4;">${(Math.random() * 0.8 + 0.05).toFixed(3)}</span>
-            <span style="color:#555f75; font-size:11px;">${t}</span>
-          </div>
-        `;
-      }).join('')}
+      <div style="display:flex; flex-direction:column; gap:3px;">
+        ${times.map((t, idx) => {
+          const isBuy = idx % 2 === 0;
+          const trPrice = price * (1 + (isBuy ? 0.0002 : -0.0002) * idx);
+          return `
+            <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); padding:3px 6px;">
+              <span style="color:${isBuy ? '#00c087' : '#f04f5e'}; font-weight:700;">${fmtPrice(trPrice)}</span>
+              <span style="color:#c0c6d4;">${(Math.random() * 0.8 + 0.05).toFixed(3)}</span>
+              <span style="color:#6b7280; font-size:11px;">${t}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
     `;
   }
 }

@@ -487,35 +487,32 @@
           </div>
         </div>
 
-        <!-- Full-Width Workspace: Chart & Depth (Left) + Order Desk (Right) -->
+        <!-- Professional 3-Column Workspace: Chart (Left) + Order Book (Center) + Order Terminal (Right) -->
         <div class="trade-workspace-grid">
 
-          <!-- Left Column: Chart & Market Depth -->
-          <div class="trade-main-column">
-            <!-- Large Responsive Chart Panel -->
-            <div class="trade-chart-box" id="trade-candlestick-container">
-              <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
-                src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=15&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1"
-                allowtransparency="true" frameborder="0">
-              </iframe>
-              <svg id="candlestick-svg" class="hidden" viewBox="0 0 800 400" preserveAspectRatio="none"></svg>
-            </div>
+          <!-- Column 1: Responsive Chart Panel -->
+          <div class="trade-chart-box" id="trade-candlestick-container">
+            <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
+              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=15&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1"
+              allowtransparency="true" frameborder="0">
+            </iframe>
+            <svg id="candlestick-svg" class="hidden" viewBox="0 0 800 400" preserveAspectRatio="none"></svg>
+          </div>
 
-            <!-- Compact Order Book & Recent Trades Panel -->
-            <div class="trade-depth-panel">
-              <div class="tdp-tabs">
-                <button class="tdp-tab active" id="tdp-tab-book" onclick="switchTradeDepthTab('book')">Order Book (Depth)</button>
-                <button class="tdp-tab" id="tdp-tab-trades" onclick="switchTradeDepthTab('trades')">Recent Market Trades</button>
+          <!-- Column 2: Dedicated Order Book & Recent Trades Panel -->
+          <div class="trade-depth-panel">
+            <div class="tdp-tabs">
+              <button class="tdp-tab active" id="tdp-tab-book" onclick="switchTradeDepthTab('book')">Order Book (Depth)</button>
+              <button class="tdp-tab" id="tdp-tab-trades" onclick="switchTradeDepthTab('trades')">Recent Market Trades</button>
+            </div>
+            <div class="tdp-content" id="tdp-content-book">
+              <div class="orderbook-compact-grid" id="orderbook-compact-grid">
+                <!-- Live bids and asks -->
               </div>
-              <div class="tdp-content" id="tdp-content-book">
-                <div class="orderbook-compact-grid" id="orderbook-compact-grid">
-                  <!-- Live bids and asks -->
-                </div>
-              </div>
-              <div class="tdp-content hidden" id="tdp-content-trades">
-                <div class="recent-trades-compact-list" id="recent-trades-compact-list">
-                  <!-- Live trade executions -->
-                </div>
+            </div>
+            <div class="tdp-content hidden" id="tdp-content-trades">
+              <div class="recent-trades-compact-list" id="recent-trades-compact-list">
+                <!-- Live trade executions -->
               </div>
             </div>
           </div>
