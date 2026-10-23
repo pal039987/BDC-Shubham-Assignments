@@ -2814,7 +2814,7 @@ function openFullscreenChart() {
   switchFsTab('price');
   renderFsTabContent();
 
-  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=0&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
   if (forceReload || !iframe.src || iframe.src !== url) {
     iframe.src = url;
   }
