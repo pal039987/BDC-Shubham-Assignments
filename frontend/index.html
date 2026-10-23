@@ -775,72 +775,126 @@
     <section class="app-screen-view" id="screen-trade">
       <div class="trade-fullwidth-container">
 
-        <!-- Top Ticker Bar for Selected Instrument -->
-        <div class="trade-instrument-bar">
-          <div class="tib-coin-meta" onclick="openMarketSelectorModal()" style="cursor: pointer;" title="Change Trading Instrument">
-            <img id="trade-cur-icon" src="icons/btc.png" alt="BTC" class="tib-avatar" onerror="handleCoinIconError(this, 'BTC', 'futures')" />
-            <img id="trade-coin-icon" src="icons/btc.png" alt="BTC" class="tib-avatar hidden" />
-            <div class="tib-titles">
-              <div class="tib-pair-row">
-                <span class="tib-pair" id="trade-coin-pair">BTC/USDT</span>
-                <span class="tib-badge" id="trade-coin-cat">Futures</span>
-              </div>
-              <span class="tib-name" id="trade-coin-name">Bitcoin</span>
-            </div>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <!-- Top Ticker Sub-Tabs & Mini Tickers (Screenshot 3 Reference) -->
+        <div class="tib-top-subtabs">
+          <div class="tib-active-ticker-tab">
+            <span id="trade-coin-tab-pair">BTC-USDT</span>
+            <span class="tib-tab-sep">•</span>
+            <span id="trade-coin-tab-price">81,562.7</span>
           </div>
+          <div class="tib-mini-tickers">
+            <span class="tib-mini-pill" onclick="selectCoinAndTrade('btc')"><span class="tib-mini-dot btc"></span> BTC-USDT <span class="tib-mini-chg up" id="tib-chg-btc">+0.42%</span></span>
+            <span class="tib-mini-pill" onclick="selectCoinAndTrade('eth')"><span class="tib-mini-dot eth"></span> ETH-USDT <span class="tib-mini-chg up" id="tib-chg-eth">+1.15%</span></span>
+            <span class="tib-mini-pill" onclick="selectCoinAndTrade('sol')"><span class="tib-mini-dot sol"></span> SOL-USDT <span class="tib-mini-chg down" id="tib-chg-sol">-0.35%</span></span>
+          </div>
+        </div>
+
+        <!-- Top Horizontal Header Bar (Screenshot 3 Arrangement with VTrade Live Data) -->
+        <div class="trade-instrument-bar">
+          <div class="tib-left-group">
+            <div class="tib-coin-meta" onclick="openMarketSelectorModal()" style="cursor: pointer;" title="Change Trading Instrument">
+              <img id="trade-cur-icon" src="icons/btc.png" alt="BTC" class="tib-avatar" onerror="handleCoinIconError(this, 'BTC', 'futures')" />
+              <img id="trade-coin-icon" src="icons/btc.png" alt="BTC" class="tib-avatar hidden" />
+              <div class="tib-titles">
+                <div class="tib-pair-row">
+                  <span class="tib-pair" id="trade-coin-pair">BTC-USDT</span>
+                  <span class="tib-arrow-drop">▾</span>
+                  <span class="tib-badge hidden" id="trade-coin-cat">Futures</span>
+                </div>
+                <span class="tib-name hidden" id="trade-coin-name">Bitcoin</span>
+              </div>
+            </div>
+
+            <div class="tib-price-wrapper">
+              <span class="tib-live-price" id="trade-price-val">$81,562.7</span>
+              <span class="tib-price-arrow down" id="trade-price-arrow">↓</span>
+            </div>
+          </div>
+
+          <div class="tib-vdivider"></div>
 
           <div class="tib-stats-row">
             <div class="tib-stat">
-              <span class="tib-lbl">Price</span>
-              <span class="tib-val" id="trade-price-val">$81,900.00</span>
+              <span class="tib-lbl">Rate since May'26</span>
+              <span class="tib-val" id="trade-rate-val">1 USDT ⇄ ₹91.50</span>
             </div>
+            <div class="tib-vdivider"></div>
             <div class="tib-stat">
               <span class="tib-lbl">24h Change</span>
               <span class="tib-val up" id="trade-change-val">+0.42%</span>
             </div>
-            <div class="tib-stat desktop-only">
-              <span class="tib-lbl">24h High</span>
-              <span class="tib-val" id="trade-high-val">$82,078.00</span>
-            </div>
+            <div class="tib-vdivider"></div>
             <div class="tib-stat desktop-only">
               <span class="tib-lbl">24h Low</span>
               <span class="tib-val" id="trade-low-val">$80,819.66</span>
             </div>
+            <div class="tib-vdivider"></div>
             <div class="tib-stat desktop-only">
-              <span class="tib-lbl">24h Volume</span>
-              <span class="tib-val" id="trade-vol-val">610.0M USDT</span>
+              <span class="tib-lbl">24h High</span>
+              <span class="tib-val" id="trade-high-val">$82,078.00</span>
+            </div>
+            <div class="tib-vdivider"></div>
+            <div class="tib-stat desktop-only">
+              <span class="tib-lbl">24h Vol (USDT)</span>
+              <span class="tib-val" id="trade-vol-val">610.0M</span>
+            </div>
+            <div class="tib-vdivider"></div>
+            <div class="tib-stat desktop-only">
+              <span class="tib-lbl">Funding Rate / Countdown</span>
+              <span class="tib-val tib-funding" id="trade-funding-val">0.0056% / 04:45:11</span>
             </div>
           </div>
 
-          <!-- Timeframe Switcher Strip (11 Exact Intervals) -->
-          <div class="trade-timeframe-strip">
-            <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
-            <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
-            <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
-            <button class="ctf-btn active" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
-            <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
-            <button class="ctf-btn" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
-            <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
-            <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
-            <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
-            <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
-            <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
-            <button class="ctf-btn ctf-toggle-ob" id="ctf-toggle-ob" onclick="toggleTradeDeskOrderBook()" title="Customize Workspace: Toggle Order Book">
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="15" y1="3" x2="15" y2="21"></line></svg>
-              <span id="ctf-ob-text">Order Book: ON</span>
+          <!-- Utility / Window Action Icons (Screenshot 3 Right) -->
+          <div class="tib-right-actions">
+            <button class="tib-icon-btn" onclick="openMarketSelectorModal()" title="Search Coins">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
-            <button class="ctf-btn ctf-fs" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Fullscreen Chart">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+            <button class="tib-icon-btn ctf-toggle-ob" id="ctf-toggle-ob" onclick="toggleTradeDeskOrderBook()" title="Customize Workspace: Toggle Order Book">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+              <span id="ctf-ob-text" style="display:none;">Order Book: ON</span>
+            </button>
+            <button class="tib-icon-btn ctf-fs" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Fullscreen Chart">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
             </button>
           </div>
         </div>
 
-        <!-- Professional 3-Column Workspace: Chart (Left) + Order Book (Center) + Order Terminal (Right) -->
+        <!-- 3 Distinct Institutional Cards: Chart Box (Left) + Order Book (Center) + Buy/Sell Dock (Right) -->
         <div class="trade-workspace-grid" id="trade-workspace-grid">
 
-          <!-- Column 1: Responsive Chart Panel -->
+          <!-- Column 1: Responsive Chart Panel (Distinct Card with Screenshot 1 Top Bar) -->
           <div class="trade-chart-box" id="trade-candlestick-container">
+            <div class="tcb-header-bar">
+              <div class="tcb-tabs-left">
+                <button class="tcb-tab active" id="tcb-tab-mark" onclick="switchChartPriceType('mark')">Mark Price</button>
+                <button class="tcb-tab" id="tcb-tab-last" onclick="switchChartPriceType('last')">Last Traded Price</button>
+                <div class="tcb-tf-strip">
+                  <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
+                  <button class="ctf-btn active" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
+                  <button class="ctf-btn" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
+                  <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
+                  <span class="hidden" style="display:none;">
+                    <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
+                    <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
+                    <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
+                    <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
+                    <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
+                    <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
+                    <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
+                  </span>
+                </div>
+              </div>
+              <div class="tcb-1click-box">
+                <span class="tcb-1click-text">1-Click Trade</span>
+                <span class="tcb-1click-info" title="Instant 1-Click trade execution">ⓘ</span>
+                <label class="tcb-switch">
+                  <input type="checkbox" id="tcb-1click-input" onchange="toggle1ClickTrade(this.checked)">
+                  <span class="tcb-slider"></span>
+                </label>
+              </div>
+            </div>
+
             <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
               src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=15&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1"
               allowtransparency="true" frameborder="0">
@@ -867,33 +921,28 @@
             </div>
           </div>
 
-          <!-- Right Column: Desktop Side Order Execution Terminal Dock -->
+          <!-- Right Column: Desktop Side Order Execution Terminal Dock (Screenshot 1 Layout) -->
           <aside class="desktop-trade-order-dock" id="desktop-trade-order-dock">
-            <div class="dtod-header">
-              <span class="dtod-title">Order Execution</span>
-              <span class="dtod-badge">Zero Commission</span>
-            </div>
-
-            <!-- Buy / Long vs Sell / Short Segment Switcher -->
+            <!-- Buy / Long vs Sell / Short Switcher (Screenshot 1 Top) -->
             <div class="dtod-side-switcher">
-              <button class="dtod-side-btn active-buy" id="dtod-btn-buy" onclick="setDesktopOrderSide('long')">Buy / Long</button>
-              <button class="dtod-side-btn" id="dtod-btn-sell" onclick="setDesktopOrderSide('short')">Sell / Short</button>
+              <button class="dtod-side-btn active-buy" id="dtod-btn-buy" onclick="setDesktopOrderSide('long')">
+                <span class="dtod-arrow">↗</span> Buy
+              </button>
+              <button class="dtod-side-btn" id="dtod-btn-sell" onclick="setDesktopOrderSide('short')">
+                <span class="dtod-arrow">↘</span> Sell
+              </button>
             </div>
 
-            <!-- Order Type Switcher: Market vs Limit -->
-            <div class="dtod-type-switcher">
-              <button class="dtod-type-btn active" id="dtod-type-market" onclick="setDesktopOrderType('market')">Market</button>
-              <button class="dtod-type-btn" id="dtod-type-limit" onclick="setDesktopOrderType('limit')">Limit</button>
+            <!-- Mode & Leverage Pill Row (Screenshot 1) -->
+            <div class="dtod-sub-row">
+              <button class="dtod-pill-mode" id="dtod-pill-mode" type="button">Isolated Margin Mode</button>
+              <button class="dtod-pill-lev" id="dtod-pill-lev" type="button" onclick="toggleDesktopLevDropdown()">
+                <span id="dtod-lev-pill-val">20x</span> ▾
+              </button>
             </div>
 
-            <!-- Limit Price Input (Shown only if Limit selected) -->
-            <div class="dtod-input-group hidden" id="dtod-limit-group">
-              <label class="dtod-label">Order Price (USDT)</label>
-              <input type="number" step="any" class="dtod-input" id="dtod-limit-price" placeholder="Trigger Price" oninput="updateDesktopOrderCalculations()" />
-            </div>
-
-            <!-- Leverage Selector (1x - 150x) with Quick Chips -->
-            <div class="dtod-leverage-wrap">
+            <!-- Expandable Leverage Dropdown/Slider Box -->
+            <div class="dtod-leverage-wrap hidden" id="dtod-leverage-wrap">
               <div class="dtod-lev-header">
                 <span class="dtod-label">Leverage</span>
                 <span class="dtod-lev-val" id="dtod-lev-val">20x</span>
@@ -909,48 +958,99 @@
               </div>
             </div>
 
-            <!-- Order Size Input + Quick % Chips -->
+            <!-- Order Type Switcher Tabs: Market, Limit, Stop-L, Stop-M (Screenshot 1) -->
+            <div class="dtod-type-switcher">
+              <button class="dtod-type-btn active" id="dtod-type-market" onclick="setDesktopOrderType('market')">Market</button>
+              <button class="dtod-type-btn" id="dtod-type-limit" onclick="setDesktopOrderType('limit')">Limit</button>
+              <button class="dtod-type-btn" id="dtod-type-stop-l" onclick="setDesktopOrderType('stop-l')">Stop-L</button>
+              <button class="dtod-type-btn" id="dtod-type-stop-m" onclick="setDesktopOrderType('stop-m')">Stop-M</button>
+              <span class="dtod-type-info" title="Order Type Details">ⓘ</span>
+            </div>
+
+            <!-- Limit Price Input (Shown only if Limit selected) -->
+            <div class="dtod-input-group hidden" id="dtod-limit-group">
+              <label class="dtod-label">Order Price (USDT)</label>
+              <input type="number" step="any" class="dtod-input" id="dtod-limit-price" placeholder="Trigger Price" oninput="updateDesktopOrderCalculations()" />
+            </div>
+
+            <!-- Order Size / Quantity Input + Unit Toggle + Quick % Chips (Screenshot 1) -->
             <div class="dtod-input-group">
               <div class="dtod-label-row">
-                <label class="dtod-label">Order Size</label>
-                <span class="dtod-max-label" id="dtod-max-size">Max: 0.12 BTC</span>
+                <label class="dtod-label">Quantity</label>
+                <div class="dtod-unit-toggle" id="dtod-unit-toggle">
+                  <span class="dtod-u-active" id="dtod-coin-unit">BTC</span>
+                  <span class="dtod-unit-sep">|</span>
+                  <span>USDT</span>
+                </div>
               </div>
               <div class="dtod-input-box">
-                <input type="number" step="any" class="dtod-input" id="dtod-order-size" value="0.05" oninput="handleDesktopSizeInput(this.value)" />
-                <span class="dtod-unit" id="dtod-coin-unit">BTC</span>
+                <input type="number" step="any" class="dtod-input" id="dtod-order-size" value="0.05" placeholder="Min : 0.002 BTC" oninput="handleDesktopSizeInput(this.value)" />
+                <span class="dtod-max-label" id="dtod-max-size" style="display:none;">Max: 0.12 BTC</span>
               </div>
               <div class="dtod-pct-chips">
                 <button class="dtod-pchip" onclick="setDesktopOrderPct(25)">25%</button>
                 <button class="dtod-pchip" onclick="setDesktopOrderPct(50)">50%</button>
                 <button class="dtod-pchip" onclick="setDesktopOrderPct(75)">75%</button>
-                <button class="dtod-pchip" onclick="setDesktopOrderPct(100)">100%</button>
+                <button class="dtod-pchip" onclick="setDesktopOrderPct(100)">Max</button>
               </div>
             </div>
 
-            <!-- Live Metrics Breakdown Card -->
-            <div class="dtod-metrics-card">
-              <div class="dtod-m-row">
-                <span class="dtod-mk">Required Margin:</span>
-                <span class="dtod-mv" id="dtod-m-margin">$205.40</span>
-              </div>
-              <div class="dtod-m-row">
-                <span class="dtod-mk">Notional Value:</span>
-                <span class="dtod-mv" id="dtod-m-notional">$4,108.00</span>
-              </div>
-              <div class="dtod-m-row">
-                <span class="dtod-mk">Est. Liquidation:</span>
-                <span class="dtod-mv dtod-liq" id="dtod-m-liq">$78,120.00</span>
-              </div>
-              <div class="dtod-m-row">
-                <span class="dtod-mk">Trading Fee:</span>
-                <span class="dtod-mv" style="color: #00c087;">$0.00 (Free)</span>
-              </div>
+            <!-- Auth Buttons from Screenshot 1 (When Not Logged In) -->
+            <div class="dtod-auth-gate" id="dtod-auth-gate">
+              <button class="dtod-auth-login-btn" type="button" onclick="openAuthModal('login')">Log In to Trade</button>
+              <div class="dtod-auth-new-text">New to VTrade?</div>
+              <button class="dtod-auth-reg-btn" type="button" onclick="openAuthModal('register')">Create Account</button>
             </div>
 
-            <!-- Primary Action Button with Tactile Feedback -->
-            <button class="dtod-submit-btn buy" id="dtod-submit-btn" onclick="executeDesktopOrder()">
+            <!-- Primary Action Button (When Logged In) -->
+            <button class="dtod-submit-btn buy hidden" id="dtod-submit-btn" onclick="executeDesktopOrder()">
               Place Buy / Long Order
             </button>
+
+            <!-- Margin Ratio & Balance Section (Screenshot 1) -->
+            <div class="dtod-margin-card">
+              <div class="dtod-mr-header">
+                <div class="dtod-mr-title-wrap">
+                  <span class="dtod-mr-title">Margin Ratio</span>
+                  <span class="dtod-mr-coin" id="dtod-mr-coin">
+                    <span class="dtod-mr-dot">🟠</span> <span id="dtod-mr-symbol">BTC-USDT</span>
+                  </span>
+                  <span class="dtod-mr-info">ⓘ</span>
+                </div>
+                <span class="dtod-mr-pct" id="dtod-mr-pct">0.00%</span>
+              </div>
+              <div class="dtod-mr-divider"></div>
+              <div class="dtod-mr-details">
+                <div class="dtod-mr-col">
+                  <span class="dtod-mr-k">Maintenance Margin</span>
+                  <span class="dtod-mr-v" id="dtod-maint-margin">0.0000 USDT</span>
+                </div>
+                <div class="dtod-mr-col">
+                  <span class="dtod-mr-k">Margin Balance</span>
+                  <span class="dtod-mr-v" id="dtod-margin-balance">0.0000 USDT</span>
+                </div>
+              </div>
+
+              <!-- Live Calculations metrics -->
+              <div class="dtod-live-calc-rows">
+                <div class="dtod-m-row">
+                  <span class="dtod-mk">Required Margin:</span>
+                  <span class="dtod-mv" id="dtod-m-margin">$205.40</span>
+                </div>
+                <div class="dtod-m-row">
+                  <span class="dtod-mk">Notional Value:</span>
+                  <span class="dtod-mv" id="dtod-m-notional">$4,108.00</span>
+                </div>
+                <div class="dtod-m-row">
+                  <span class="dtod-mk">Est. Liquidation:</span>
+                  <span class="dtod-mv dtod-liq" id="dtod-m-liq">$78,120.00</span>
+                </div>
+                <div class="dtod-m-row">
+                  <span class="dtod-mk">Trading Fee:</span>
+                  <span class="dtod-mv" style="color: #00c087;">$0.00 (Free)</span>
+                </div>
+              </div>
+            </div>
           </aside>
 
           <!-- Positions & Orders Ledger Deck (Positioned directly under Chart, Equal to Chart Width) -->

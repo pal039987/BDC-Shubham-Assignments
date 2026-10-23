@@ -3827,7 +3827,20 @@ function renderTradeScreen() {
   if (coinPair) coinPair.textContent = getCoinDisplayPair(selectedCoin);
   if (coinCat) coinCat.textContent = (selectedCoin.category || 'FUTURES').toUpperCase();
   if (coinName) coinName.textContent = selectedCoin.name;
-  if (priceVal) priceVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+  if (priceVal) {
+    priceVal.className = `tib-live-price ${isUp ? 'up' : 'down'}`;
+    priceVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+  }
+  const priceArrow = document.getElementById('trade-price-arrow');
+  if (priceArrow) {
+    priceArrow.textContent = isUp ? '↑' : '↓';
+    priceArrow.className = `tib-price-arrow ${isUp ? 'up' : 'down'}`;
+  }
+  const tabPair = document.getElementById('trade-coin-tab-pair');
+  const tabPrice = document.getElementById('trade-coin-tab-price');
+  if (tabPair) tabPair.textContent = `${selectedCoin.symbol}-USDT`;
+  if (tabPrice) tabPrice.textContent = fmtPrice(selectedCoin.price);
+
   if (changeVal) {
     changeVal.className = `tib-val ${isUp ? 'up' : 'down'}`;
     changeVal.textContent = `${isUp ? '+' : ''}${selectedCoin.change ? selectedCoin.change.toFixed(2) : '0.00'}%`;
@@ -5472,6 +5485,13 @@ function syncDesktopHeaderState() {
     if (hubName) hubName.textContent = 'Sign In';
     if (hubAvatar) hubAvatar.textContent = '👤';
   }
+
+  // Update Screenshot 1 Buy/Sell Dock Auth Gate
+  const isAuthedSession = !!(sess && !sess.isGuest && sess.email);
+  const dtodAuthGate = document.getElementById('dtod-auth-gate');
+  const dtodSubmitBtn = document.getElementById('dtod-submit-btn');
+  if (dtodAuthGate) dtodAuthGate.classList.toggle('hidden', isAuthedSession);
+  if (dtodSubmitBtn) dtodSubmitBtn.classList.toggle('hidden', !isAuthedSession);
 }
 
 // ─── DESKTOP AUTH WORKSTATION LOGIC ────────────────────────────────────
@@ -5897,12 +5917,12 @@ function setDesktopOrderSide(side) {
 
 function setDesktopOrderType(type) {
   desktopOrderType = type;
-  const mBtn = document.getElementById('dtod-type-market');
-  const lBtn = document.getElementById('dtod-type-limit');
+  const types = ['market', 'limit', 'stop-l', 'stop-m'];
+  types.forEach(t => {
+    const btn = document.getElementById(`dtod-type-${t}`);
+    if (btn) btn.classList.toggle('active', t === type);
+  });
   const limitGroup = document.getElementById('dtod-limit-group');
-
-  if (mBtn) mBtn.classList.toggle('active', type === 'market');
-  if (lBtn) lBtn.classList.toggle('active', type === 'limit');
   if (limitGroup) limitGroup.classList.toggle('hidden', type !== 'limit');
   updateDesktopOrderCalculations();
 }
@@ -5911,6 +5931,8 @@ function handleDesktopLeverageInput(val) {
   desktopLeverage = Math.min(parseInt(val) || 20, selectedCoin.maxLev || 150);
   const levVal = document.getElementById('dtod-lev-val');
   if (levVal) levVal.textContent = `${desktopLeverage}x`;
+  const levPillVal = document.getElementById('dtod-lev-pill-val');
+  if (levPillVal) levPillVal.textContent = `${desktopLeverage}x`;
 
   const chips = document.querySelectorAll('.dtod-lchip');
   chips.forEach(c => {
@@ -5923,6 +5945,23 @@ function setDesktopLeverage(val) {
   const slider = document.getElementById('dtod-lev-slider');
   if (slider) slider.value = val;
   handleDesktopLeverageInput(val);
+}
+
+function toggleDesktopLevDropdown() {
+  const wrap = document.getElementById('dtod-leverage-wrap');
+  if (wrap) wrap.classList.toggle('hidden');
+}
+
+function switchChartPriceType(type) {
+  const markBtn = document.getElementById('tcb-tab-mark');
+  const lastBtn = document.getElementById('tcb-tab-last');
+  if (markBtn) markBtn.classList.toggle('active', type === 'mark');
+  if (lastBtn) lastBtn.classList.toggle('active', type === 'last');
+  if (typeof showToast === 'function') showToast(`Switched chart price display to ${type === 'mark' ? 'Mark Price' : 'Last Traded Price'}`);
+}
+
+function toggle1ClickTrade(checked) {
+  if (typeof showToast === 'function') showToast(checked ? '1-Click Trade enabled' : '1-Click Trade disabled');
 }
 
 function handleDesktopSizeInput(val) {
@@ -5974,6 +6013,23 @@ function updateDesktopOrderCalculations() {
   if (maxEl) {
     const maxCoins = ((walletState.cashBalance || 10000) * desktopLeverage) / price;
     maxEl.textContent = `Max: ${maxCoins.toFixed(3)} ${selectedCoin.symbol}`;
+  }
+
+  // Screenshot 1 & 3 Updates:
+  const levPillVal = document.getElementById('dtod-lev-pill-val');
+  if (levPillVal) levPillVal.textContent = `${desktopLeverage}x`;
+  const mrSym = document.getElementById('dtod-mr-symbol');
+  if (mrSym) mrSym.textContent = `${selectedCoin.symbol}-USDT`;
+  const mrPct = document.getElementById('dtod-mr-pct');
+  if (mrPct) {
+    const ratio = walletState && walletState.positions && walletState.positions.length > 0 ? (reqMarginUsd / (walletState.cashBalance || 10000) * 100) : 0;
+    mrPct.textContent = `${ratio.toFixed(2)}%`;
+  }
+  const maintEl = document.getElementById('dtod-maint-margin');
+  if (maintEl) maintEl.textContent = `${(reqMarginUsd * 0.05).toFixed(4)} USDT`;
+  const balEl = document.getElementById('dtod-margin-balance');
+  if (balEl && typeof walletState !== 'undefined') {
+    balEl.textContent = `${fmtMoney(walletState.cashBalance || 10000)} USDT`;
   }
 }
 
