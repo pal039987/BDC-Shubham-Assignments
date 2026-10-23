@@ -7684,7 +7684,7 @@ html:not(.is-native-apk) .tv-fs-header {
   display: flex;
   flex-direction: column;
   overflow: visible;
-  padding: 0 0 80px 0;
+  padding: 0 0 16px 0;
   background: #080b11;
 }
 
@@ -7697,6 +7697,8 @@ html:not(.is-native-apk) .tv-fs-header {
   justify-content: space-between;
   padding: 6px 16px 0 16px;
   background: #06080d;
+  flex-shrink: 0;
+  min-height: 28px;
 }
 
 .tib-active-ticker-tab {
@@ -7770,7 +7772,11 @@ html:not(.is-native-apk) .tv-fs-header {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
+  flex-shrink: 0;
+  min-height: 48px;
+  height: auto;
 }
 .trade-instrument-bar::-webkit-scrollbar { display: none; }
 
@@ -7852,6 +7858,8 @@ html:not(.is-native-apk) .tv-fs-header {
   gap: 14px;
   flex: 1;
   overflow-x: auto;
+  overflow-y: hidden;
+  flex-shrink: 0;
 }
 
 .tib-stat {
@@ -7859,6 +7867,7 @@ html:not(.is-native-apk) .tv-fs-header {
   flex-direction: column;
   gap: 2px;
   white-space: nowrap;
+  line-height: 1.25;
 }
 
 .tib-lbl {
@@ -8018,8 +8027,9 @@ html:not(.is-native-apk) .tv-fs-header {
 }
 
 .trade-chart-box {
-  height: 485px;
-  min-height: 485px;
+  height: 370px;
+  min-height: 360px;
+  max-height: 390px;
   position: relative;
   background: #0b0f17;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -8119,7 +8129,7 @@ html:not(.is-native-apk) .tv-fs-header {
 
 .trade-depth-panel {
   height: auto;
-  min-height: 485px;
+  min-height: 360px;
   background: #0b0f17;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
@@ -8173,6 +8183,7 @@ html:not(.is-native-apk) .tv-fs-header {
   grid-column: 1;
   grid-row: 2;
   width: 100%;
+  min-height: 220px;
   background: #0c1018;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
@@ -8242,11 +8253,11 @@ html:not(.is-native-apk) .tv-fs-header {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 180px;
+  min-height: 160px;
   font-size: 14px;
   font-weight: 500;
   text-align: center;
-  padding: 40px 20px;
+  padding: 28px 20px;
 }
 
 .tblc-auth-link {
@@ -8324,6 +8335,7 @@ html:not(.is-native-apk) .tv-fs-header {
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  min-height: 598px;
 }
 
 .dtod-side-switcher {

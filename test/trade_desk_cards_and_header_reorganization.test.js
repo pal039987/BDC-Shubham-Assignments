@@ -14,10 +14,10 @@ assert.ok(styleCss.includes('.trade-workspace-grid {') && styleCss.includes('gap
   '.trade-workspace-grid must have gap: 8px separating distinct blocks');
 assert.ok(styleCss.includes('.trade-chart-box {') && styleCss.includes('border: 1px solid rgba(255, 255, 255, 0.08);') && styleCss.includes('border-radius: 8px;'),
   '.trade-chart-box must be a distinct card container with border and rounded corners');
-assert.ok(styleCss.includes('height: 485px;') || styleCss.includes('min-height: 485px;'),
-  '.trade-chart-box height must be calibrated (~485px) matching Screenshot 1 proportions');
-assert.ok(styleCss.includes('.trade-bottom-ledger-card {') && styleCss.includes('border: 1px solid rgba(255, 255, 255, 0.08);') && styleCss.includes('border-radius: 8px;'),
-  '.trade-bottom-ledger-card must be a distinct card container with border and rounded corners');
+assert.ok(styleCss.includes('height: 370px;') || styleCss.includes('min-height: 360px;') || styleCss.includes('height: 485px;'),
+  '.trade-chart-box height must be calibrated matching Screenshot 1 proportions');
+assert.ok(styleCss.includes('.trade-bottom-ledger-card {') && styleCss.includes('border: 1px solid rgba(255, 255, 255, 0.08);') && styleCss.includes('border-radius: 8px;') && styleCss.includes('min-height: 220px;'),
+  '.trade-bottom-ledger-card must be a complete distinct card container with border, rounded corners, and min-height: 220px');
 assert.ok(styleCss.includes('.desktop-trade-order-dock {') && styleCss.includes('border: 1px solid rgba(255, 255, 255, 0.08)') && styleCss.includes('border-radius: 8px'),
   '.desktop-trade-order-dock must be a distinct card container with border and rounded corners');
 console.log('  ✓ Distinct card containers (Chart, Ledger, Order Dock) and 8px gap verified');
@@ -28,9 +28,11 @@ assert.ok(indexHtml.includes('id="tcb-tab-mark"'), 'Mark Price tab must exist in
 assert.ok(indexHtml.includes('id="tcb-tab-last"'), 'Last Traded Price tab must exist in chart header');
 assert.ok(indexHtml.includes('id="tcb-1click-input"'), '1-Click Trade switch input must exist');
 assert.ok(indexHtml.includes('1-Click Trade'), '1-Click Trade label must be present');
+assert.ok(indexHtml.includes('id="tcb-hidden-tf-strip"') && indexHtml.includes('style="display:none;"'),
+  'Extra timeframe strip must be hidden as TradingView provides native timeframes (Screenshot 4 fix)');
 assert.ok(appJs.includes('function switchChartPriceType('), 'switchChartPriceType function must exist');
 assert.ok(appJs.includes('function toggle1ClickTrade('), 'toggle1ClickTrade function must exist');
-console.log('  ✓ Chart box subheader (Mark Price, Last Traded Price, 1-Click Trade toggle) verified');
+console.log('  ✓ Chart box subheader (Mark Price, Last Traded Price, 1-Click Trade toggle, hidden redundant timeframes) verified');
 
 // 3. Verify Buy/Sell Order Dock Structure & Controls (Screenshot 1)
 console.log('3. Testing Buy/Sell Terminal Dock Controls & Margin Ratio Card...');
@@ -62,7 +64,9 @@ assert.ok(indexHtml.includes('id="trade-low-val"') && indexHtml.includes('id="tr
 assert.ok(indexHtml.includes('id="trade-vol-val"'), '24h Volume stat must exist');
 assert.ok(indexHtml.includes('id="trade-funding-val"'), 'Funding Rate / Countdown stat must exist');
 assert.ok(indexHtml.includes('class="tib-vdivider"'), 'Vertical divider styling must exist');
-console.log('  ✓ Screenshot 3 horizontal layout (subtabs, price arrow, stats columns, dividers) verified');
+assert.ok(styleCss.includes('.trade-instrument-bar {') && styleCss.includes('flex-shrink: 0;'),
+  '.trade-instrument-bar must have flex-shrink: 0 to prevent vertical squishing/clipping (Screenshot 3 fix)');
+console.log('  ✓ Screenshot 3 horizontal layout (subtabs, price arrow, stats columns, dividers, flex-shrink) verified');
 
 // 5. Verify Functional Integration & Logic
 console.log('5. Testing Functional Integration in app.js...');

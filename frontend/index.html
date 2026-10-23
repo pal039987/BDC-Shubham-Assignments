@@ -869,20 +869,18 @@
               <div class="tcb-tabs-left">
                 <button class="tcb-tab active" id="tcb-tab-mark" onclick="switchChartPriceType('mark')">Mark Price</button>
                 <button class="tcb-tab" id="tcb-tab-last" onclick="switchChartPriceType('last')">Last Traded Price</button>
-                <div class="tcb-tf-strip">
+                <div class="hidden" style="display:none;" id="tcb-hidden-tf-strip">
                   <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
+                  <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
+                  <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
                   <button class="ctf-btn active" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
+                  <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
                   <button class="ctf-btn" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
+                  <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
+                  <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
                   <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
-                  <span class="hidden" style="display:none;">
-                    <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
-                    <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
-                    <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
-                    <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
-                    <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
-                    <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
-                    <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
-                  </span>
+                  <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
+                  <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
                 </div>
               </div>
               <div class="tcb-1click-box">
