@@ -2149,7 +2149,10 @@ function switchBottomTab(tab) {
     }
   });
 
-  if (activeTab === 'home') renderHomeScreen();
+  if (activeTab === 'home') {
+    renderHomeScreen();
+    if (typeof initHeroGlassBlockInteractions === 'function') initHeroGlassBlockInteractions();
+  }
   else if (activeTab === 'markets') renderMarketsScreen();
   else if (activeTab === 'trade') renderTradeScreen();
   else if (activeTab === 'portfolio') renderPortfolioScreen();
@@ -2229,6 +2232,113 @@ function getActiveGsapScroller() {
     return homeScroll;
   }
   return window;
+}
+
+let heroGlassRafId = null;
+let heroGlassPointerActive = false;
+
+function initHeroGlassBlockInteractions() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  const heroBlock = document.getElementById('vtrade-hero-glass-block') || document.querySelector('.landing-hero-section');
+  if (!heroBlock) return;
+
+  if (heroBlock.dataset.heroGlassBound) return;
+  heroBlock.dataset.heroGlassBound = 'true';
+
+  const isFinePointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const isReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // On touch devices or reduced motion, preserve native performance without continuous tracking
+  if (!isFinePointer || isReducedMotion) return;
+
+  let currentX = 0;
+  let currentY = 0;
+  let targetX = 0;
+  let targetY = 0;
+
+  let currentTiltX = 0;
+  let currentTiltY = 0;
+  let targetTiltX = 0;
+  let targetTiltY = 0;
+
+  let spotlightOpacity = 0;
+  let targetOpacity = 0;
+
+  function updateHeroGlassFrame() {
+    // 0.10 smooth LERP for fluid, non-jumping light follow
+    currentX += (targetX - currentX) * 0.10;
+    currentY += (targetY - currentY) * 0.10;
+    currentTiltX += (targetTiltX - currentTiltX) * 0.08;
+    currentTiltY += (targetTiltY - currentTiltY) * 0.08;
+    spotlightOpacity += (targetOpacity - spotlightOpacity) * 0.08;
+
+    heroBlock.style.setProperty('--hero-spotlight-x', `${currentX.toFixed(1)}px`);
+    heroBlock.style.setProperty('--hero-spotlight-y', `${currentY.toFixed(1)}px`);
+    heroBlock.style.setProperty('--hero-spotlight-opacity', spotlightOpacity.toFixed(3));
+
+    // Subtle 3D Tilt (maximum ~2.2 degrees for optimal text contrast and readability)
+    if (!isReducedMotion) {
+      heroBlock.style.transform = `perspective(1100px) rotateX(${currentTiltX.toFixed(2)}deg) rotateY(${currentTiltY.toFixed(2)}deg) translateZ(0)`;
+    }
+
+    const isMoving = Math.abs(targetX - currentX) > 0.15 ||
+                     Math.abs(targetY - currentY) > 0.15 ||
+                     Math.abs(targetTiltX - currentTiltX) > 0.01 ||
+                     Math.abs(targetTiltY - currentTiltY) > 0.01 ||
+                     Math.abs(targetOpacity - spotlightOpacity) > 0.01;
+
+    if (heroGlassPointerActive || isMoving) {
+      heroGlassRafId = requestAnimationFrame(updateHeroGlassFrame);
+    } else {
+      heroGlassRafId = null;
+      if (!heroGlassPointerActive) {
+        heroBlock.style.transform = '';
+      }
+    }
+  }
+
+  function onPointerMove(e) {
+    const rect = heroBlock.getBoundingClientRect();
+    targetX = e.clientX - rect.left;
+    targetY = e.clientY - rect.top;
+    targetOpacity = 1;
+
+    // Calculate restrained 3D tilt angles (-2.2deg to +2.2deg)
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    targetTiltX = ((targetY - cy) / cy) * -2.2;
+    targetTiltY = ((targetX - cx) / cx) * 2.2;
+
+    heroGlassPointerActive = true;
+    if (!heroGlassRafId) {
+      heroGlassRafId = requestAnimationFrame(updateHeroGlassFrame);
+    }
+  }
+
+  function onPointerEnter(e) {
+    heroGlassPointerActive = true;
+    heroBlock.classList.add('hero-glass-hovered');
+    onPointerMove(e);
+  }
+
+  function onPointerLeave() {
+    heroGlassPointerActive = false;
+    heroBlock.classList.remove('hero-glass-hovered');
+    const rect = heroBlock.getBoundingClientRect();
+    targetX = rect.width / 2;
+    targetY = rect.height / 2;
+    targetTiltX = 0;
+    targetTiltY = 0;
+    targetOpacity = 0;
+
+    if (!heroGlassRafId) {
+      heroGlassRafId = requestAnimationFrame(updateHeroGlassFrame);
+    }
+  }
+
+  heroBlock.addEventListener('pointerenter', onPointerEnter);
+  heroBlock.addEventListener('pointermove', onPointerMove);
+  heroBlock.addEventListener('pointerleave', onPointerLeave);
 }
 
 function initHeroGsapTimeline() {
@@ -2547,6 +2657,7 @@ function initSpotlightAndTiltCards() {
 
 window.updateNavIndicator = updateNavIndicator;
 window.initHeroTextAnimation = initHeroTextAnimation;
+window.initHeroGlassBlockInteractions = initHeroGlassBlockInteractions;
 window.initScrollRevealEngine = initScrollRevealEngine;
 window.initSpotlightAndTiltCards = initSpotlightAndTiltCards;
 window.initGsapScrollTriggerAnimations = initGsapScrollTriggerAnimations;
@@ -4979,6 +5090,7 @@ function initVTradeApp() {
 
   // Initialize Aceternity, Skiper-UI & GSAP Animation Suite
   initHeroTextAnimation();
+  if (typeof initHeroGlassBlockInteractions === 'function') initHeroGlassBlockInteractions();
   if (typeof initHeroGsapTimeline === 'function') initHeroGsapTimeline();
   initScrollRevealEngine();
   initSpotlightAndTiltCards();
