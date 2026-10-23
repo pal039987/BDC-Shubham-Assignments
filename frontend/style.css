@@ -7683,3 +7683,372 @@ html:not(.is-native-apk) .tv-fs-header {
 .toast-msg.success { border-color: #00c087; color: #00c087; }
 .toast-msg.error { border-color: #f04f5e; color: #f04f5e; }
 .toast-msg.info { border-color: #ff9900; color: #ff9900; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM ANIMATION & INTERACTION ENGINE (ACETERNITY / SKIPER-UI / ANIMMASTER)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Hero Dynamic Atmosphere & Ambient Aurora */
+.landing-hero-section {
+  position: relative;
+  background: linear-gradient(135deg, rgba(16, 22, 34, 0.94), rgba(8, 11, 17, 0.98)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 24px;
+  padding: 52px 42px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-ambient-aurora {
+  position: absolute;
+  width: 650px;
+  height: 380px;
+  top: -120px;
+  right: -80px;
+  background: radial-gradient(ellipse, rgba(255, 153, 0, 0.16) 0%, rgba(0, 229, 255, 0.08) 45%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(65px);
+  pointer-events: none;
+  z-index: 0;
+  animation: auroraPulse 12s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@keyframes auroraPulse {
+  0% { transform: translate3d(0, 0, 0) scale(0.95); opacity: 0.7; }
+  50% { transform: translate3d(-35px, 25px, 0) scale(1.12); opacity: 1; }
+  100% { transform: translate3d(25px, -15px, 0) scale(1.02); opacity: 0.85; }
+}
+
+.hero-beam-ray {
+  position: absolute;
+  top: 0;
+  left: 25%;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(255, 153, 0, 0.28) 0%, rgba(255, 255, 255, 0.03) 60%, transparent 100%);
+  pointer-events: none;
+  opacity: 0.5;
+  filter: blur(1px);
+}
+
+/* 2. Word-by-Word Hero Headline Typography Reveal */
+.hero-word-wrap {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(22px) scale(0.95);
+  filter: blur(8px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity, filter;
+  margin-right: 0.26em;
+}
+
+.hero-word-wrap.revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+}
+
+/* 3. Radiant Flowing Shimmer Gradient Text */
+.gradient-text-animated {
+  background: linear-gradient(
+    135deg,
+    #00c087 0%,
+    #00e5ff 25%,
+    #ffd000 50%,
+    #00e5ff 75%,
+    #00c087 100%
+  ) !important;
+  background-size: 250% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: textShimmerFlow 6s linear infinite !important;
+  text-shadow: 0 0 35px rgba(0, 229, 255, 0.22);
+}
+
+@keyframes textShimmerFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 250% 50%; }
+}
+
+/* 4. Staggered Entrance Sequence for Hero Elements */
+.lhs-badge {
+  opacity: 0;
+  transform: translateY(12px) scale(0.94);
+  animation: heroElementSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+
+.lhs-subtext {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: heroElementSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
+}
+
+.lhs-cta-row {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: heroElementSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+.lhs-metrics-bar {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: heroElementSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.65s forwards;
+}
+
+@keyframes heroElementSlideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 5. Button Shimmer & Tactile Hover Dynamics */
+.lhs-btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.lhs-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -70%;
+  width: 45%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: rotate(25deg);
+  transition: all 0.75s ease;
+  pointer-events: none;
+}
+
+.lhs-btn-primary:hover::after {
+  left: 140%;
+}
+
+.lhs-btn-primary svg {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lhs-btn-primary:hover svg {
+  transform: translateX(5px);
+}
+
+.lhs-btn-primary:active {
+  transform: scale(0.97) !important;
+}
+
+.header-trade-cta-btn svg,
+.section-more-btn svg {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-trade-cta-btn:hover svg,
+.section-more-btn:hover svg {
+  transform: translateX(4px);
+}
+
+.header-trade-cta-btn:active,
+.lhs-btn-secondary:active,
+.dtod-submit-btn:active,
+.sheet-confirm-btn:active {
+  transform: scale(0.98);
+}
+
+/* 6. Aceternity Spotlight Cards (Interactive Cursor-Following Radial Glow) */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s ease,
+              box-shadow 0.28s ease;
+}
+
+.spotlight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    420px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+    rgba(255, 153, 0, 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  z-index: 2;
+}
+
+@media (hover: hover) {
+  .spotlight-card:hover::before {
+    opacity: 1;
+  }
+  .spotlight-card:hover {
+    border-color: rgba(255, 153, 0, 0.32) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 153, 0, 0.08) !important;
+  }
+}
+
+/* 7. Animated Glowing Border Beam (Aceternity Border Beam Effect) */
+.border-beam-card {
+  position: relative;
+}
+
+.border-beam-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--beam-angle, 0deg) at 50% 50%,
+    transparent 0%,
+    transparent 65%,
+    #ff9900 85%,
+    #00e5ff 95%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 3;
+  animation: rotateBorderBeam 7s linear infinite;
+}
+
+@property --beam-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rotateBorderBeam {
+  from { --beam-angle: 0deg; }
+  to { --beam-angle: 360deg; }
+}
+
+/* 8. 3D Perspective Tilt on Interactive Cards */
+@media (hover: hover) {
+  .tilt-card {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+    will-change: transform;
+  }
+}
+
+/* 9. Scroll-Triggered Viewport Entrance Engine */
+.reveal-on-scroll,
+.home-market-intel-grid {
+  opacity: 0;
+  transform: translateY(28px) scale(0.985);
+  filter: blur(4px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity, filter;
+}
+
+.reveal-on-scroll.is-revealed,
+.home-market-intel-grid.is-revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+}
+
+/* 10. Top Floating Navbar Animated Indicator */
+.desktop-header-nav {
+  position: relative;
+}
+
+.dnav-indicator-pill {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, #ff9900, #ffb700);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(255, 153, 0, 0.8);
+  transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* 11. Screen View Glide Transitions */
+.app-screen-view {
+  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-screen-view.entering {
+  opacity: 0;
+  transform: scale(0.995) translateY(6px);
+}
+
+/* 12. Real-Time Price Change Flash Waves (Financial Restraint) */
+@keyframes priceFlashGreen {
+  0% {
+    background: rgba(0, 192, 135, 0.28);
+    text-shadow: 0 0 12px #00c087;
+  }
+  100% {
+    background: transparent;
+    text-shadow: none;
+  }
+}
+
+@keyframes priceFlashRed {
+  0% {
+    background: rgba(240, 79, 94, 0.28);
+    text-shadow: 0 0 12px #f04f5e;
+  }
+  100% {
+    background: transparent;
+    text-shadow: none;
+  }
+}
+
+.price-flash-up {
+  animation: priceFlashGreen 0.65s ease-out;
+  border-radius: 4px;
+}
+
+.price-flash-down {
+  animation: priceFlashRed 0.65s ease-out;
+  border-radius: 4px;
+}
+
+/* 13. Accessibility & Prefers-Reduced-Motion Guardrails */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .hero-word-wrap,
+  .reveal-on-scroll,
+  .lhs-badge,
+  .lhs-subtext,
+  .lhs-cta-row,
+  .lhs-metrics-bar {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+  }
+  .border-beam-card::after {
+    display: none !important;
+  }
+  .hero-ambient-aurora {
+    animation: none !important;
+  }
+}
+

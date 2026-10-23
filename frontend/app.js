@@ -2097,7 +2097,7 @@ function clearTradeHistory() {
   showToast('Trade ledger cleared', 'info');
 }
 
-// ─── 7. BOTTOM NAVIGATION CONTROLLER ────────────────────────────────────
+// ─── 7. BOTTOM NAVIGATION CONTROLLER & ANIMATION ENGINE ─────────────────
 function switchBottomTab(tab) {
   activeTab = tab || 'home';
 
@@ -2106,9 +2106,18 @@ function switchBottomTab(tab) {
     const btn = document.getElementById(`vnav-${t}`);
     const dbtn = document.getElementById(`dnav-${t}`);
     const screen = document.getElementById(`screen-${t}`);
-    if (btn) btn.classList.toggle('active', t === activeTab);
-    if (dbtn) dbtn.classList.toggle('active', t === activeTab);
-    if (screen) screen.classList.toggle('active', t === activeTab);
+    const isTarget = t === activeTab;
+    if (btn) btn.classList.toggle('active', isTarget);
+    if (dbtn) dbtn.classList.toggle('active', isTarget);
+    if (screen) {
+      if (isTarget && !screen.classList.contains('active')) {
+        screen.classList.add('entering');
+        requestAnimationFrame(() => {
+          setTimeout(() => screen.classList.remove('entering'), 30);
+        });
+      }
+      screen.classList.toggle('active', isTarget);
+    }
   });
 
   if (activeTab === 'home') renderHomeScreen();
@@ -2119,7 +2128,115 @@ function switchBottomTab(tab) {
   else if (activeTab === 'auth') renderDesktopAuthPage();
 
   syncDesktopHeaderState();
+  updateNavIndicator();
+  if (typeof initScrollRevealEngine === 'function') initScrollRevealEngine();
+  if (typeof initSpotlightAndTiltCards === 'function') initSpotlightAndTiltCards();
 }
+
+function updateNavIndicator() {
+  const activeLink = document.querySelector('.desktop-header-nav .dnav-link.active');
+  const indicator = document.getElementById('dnav-indicator-pill');
+  const nav = document.getElementById('desktop-header-nav');
+  if (!activeLink || !indicator || !nav) return;
+
+  const linkRect = activeLink.getBoundingClientRect();
+  const navRect = nav.getBoundingClientRect();
+  const left = linkRect.left - navRect.left;
+  const width = linkRect.width;
+
+  if (width > 0) {
+    indicator.style.left = `${left + 10}px`;
+    indicator.style.width = `${Math.max(16, width - 20)}px`;
+  }
+}
+
+function initHeroTextAnimation() {
+  const headline = document.getElementById('lhs-headline');
+  if (!headline) return;
+
+  const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const words = headline.querySelectorAll('.hero-word-wrap');
+
+  if (words.length > 0) {
+    words.forEach((w, idx) => {
+      if (isReduced) {
+        w.classList.add('revealed');
+      } else {
+        w.style.transitionDelay = `${idx * 65}ms`;
+        requestAnimationFrame(() => {
+          setTimeout(() => w.classList.add('revealed'), 50 + idx * 60);
+        });
+      }
+    });
+  }
+}
+
+function initScrollRevealEngine() {
+  const elements = document.querySelectorAll('.reveal-on-scroll:not(.is-revealed), .home-market-intel-grid:not(.is-revealed)');
+  if (elements.length === 0) return;
+
+  const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (isReduced) {
+    elements.forEach(el => el.classList.add('is-revealed'));
+    return;
+  }
+
+  if (typeof IntersectionObserver !== 'undefined') {
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-revealed');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.08,
+      rootMargin: '0px 0px -30px 0px'
+    });
+
+    elements.forEach(el => observer.observe(el));
+  } else {
+    elements.forEach(el => el.classList.add('is-revealed'));
+  }
+}
+
+function initSpotlightAndTiltCards() {
+  if (typeof window === 'undefined' || !window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+  const cards = document.querySelectorAll('.spotlight-card, .tilt-card');
+  cards.forEach(card => {
+    if (card.dataset.spotlightBound) return;
+    card.dataset.spotlightBound = 'true';
+
+    card.addEventListener('pointermove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x.toFixed(1)}px`);
+      card.style.setProperty('--mouse-y', `${y.toFixed(1)}px`);
+
+      if (card.classList.contains('tilt-card')) {
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const rotX = ((y - cy) / cy) * -3.5;
+        const rotY = ((x - cx) / cx) * 3.5;
+        card.style.transform = `perspective(900px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateY(-4px)`;
+      }
+    });
+
+    card.addEventListener('pointerleave', () => {
+      card.style.removeProperty('--mouse-x');
+      card.style.removeProperty('--mouse-y');
+      if (card.classList.contains('tilt-card')) {
+        card.style.transform = '';
+      }
+    });
+  });
+}
+
+window.updateNavIndicator = updateNavIndicator;
+window.initHeroTextAnimation = initHeroTextAnimation;
+window.initScrollRevealEngine = initScrollRevealEngine;
+window.initSpotlightAndTiltCards = initSpotlightAndTiltCards;
 
 // ─── 8. NET EQUITY & PnL CALCULATIONS ────────────────────────────────────
 function calculateUnrealizedPnL() {
@@ -2164,7 +2281,7 @@ function renderHomeSpotlightBento() {
     const isUp = c.change >= 0;
     const displayPair = getCoinDisplayPair(c);
     return `
-      <div class="bento-card" onclick="selectCoinAndTrade('${c.id}')">
+      <div class="bento-card spotlight-card tilt-card" onclick="selectCoinAndTrade('${c.id}')">
         <div class="bento-card-top">
           <div class="bento-card-asset">
             <img src="${c.icon}" alt="${c.symbol}" class="bento-coin-icon" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category}')" />
@@ -2186,6 +2303,7 @@ function renderHomeSpotlightBento() {
       </div>
     `;
   }).join('');
+  if (typeof initSpotlightAndTiltCards === 'function') initSpotlightAndTiltCards();
 }
 
 function renderHomeBalanceCard() {
@@ -4269,6 +4387,19 @@ function checkPendingOrdersTrigger() {
 }
 
 let lastObRenderTime = 0;
+const lastRecordedPrices = {};
+
+function triggerPriceFlash(el, newPrice, oldPrice) {
+  if (!el || typeof newPrice !== 'number' || typeof oldPrice !== 'number' || newPrice === oldPrice) return;
+  el.classList.remove('price-flash-up', 'price-flash-down');
+  void el.offsetWidth;
+  if (newPrice > oldPrice) {
+    el.classList.add('price-flash-up');
+  } else if (newPrice < oldPrice) {
+    el.classList.add('price-flash-down');
+  }
+}
+
 function renderLivePriceUpdates() {
   if (activeTab === 'home') {
     renderHomeBalanceCard();
@@ -4280,7 +4411,13 @@ function renderLivePriceUpdates() {
     const livePriceEl = document.getElementById('trade-header-price');
     const liveChangeEl = document.getElementById('trade-header-change');
     const isUp = selectedCoin.change >= 0;
-    if (livePriceEl) livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+    if (livePriceEl) {
+      const prevPrice = lastRecordedPrices[selectedCoin.id];
+      if (typeof prevPrice === 'number' && prevPrice !== selectedCoin.price) {
+        triggerPriceFlash(livePriceEl, selectedCoin.price, prevPrice);
+      }
+      livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+    }
     if (liveChangeEl) {
       liveChangeEl.className = `trade-live-change ${isUp ? 'up' : 'down'}`;
       liveChangeEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
@@ -4300,7 +4437,13 @@ function renderLivePriceUpdates() {
     const fsHigh = document.getElementById('tv-fs-high');
     const fsLow = document.getElementById('tv-fs-low');
     const fsVol = document.getElementById('tv-fs-vol');
-    if (fsPrice) fsPrice.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+    if (fsPrice) {
+      const prevPrice = lastRecordedPrices[selectedCoin.id];
+      if (typeof prevPrice === 'number' && prevPrice !== selectedCoin.price) {
+        triggerPriceFlash(fsPrice, selectedCoin.price, prevPrice);
+      }
+      fsPrice.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+    }
     if (fsChange) {
       const isUp = selectedCoin.change >= 0;
       fsChange.className = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
@@ -4309,6 +4452,10 @@ function renderLivePriceUpdates() {
     if (fsHigh) fsHigh.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price * 1.018)}`;
     if (fsLow) fsLow.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price * 0.982)}`;
     if (fsVol) fsVol.textContent = `${selectedCoin.vol || '304.6M USDT'}`;
+  }
+
+  if (selectedCoin && selectedCoin.id) {
+    lastRecordedPrices[selectedCoin.id] = selectedCoin.price;
   }
 }
 
@@ -4510,6 +4657,13 @@ function initVTradeApp() {
 
   // Render initial screen
   switchBottomTab('home');
+
+  // Initialize Aceternity & Skiper-UI Animation Suite
+  initHeroTextAnimation();
+  initScrollRevealEngine();
+  initSpotlightAndTiltCards();
+  updateNavIndicator();
+  window.addEventListener('resize', updateNavIndicator);
 
   // Initial fetch of candlesticks
   fetchRealBinanceCandles();
