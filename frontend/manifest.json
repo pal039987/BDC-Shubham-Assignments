@@ -1,7 +1,7 @@
 {
   "name": "VTrade",
   "short_name": "VTrade",
-  "description": "Professional paper trading platform for BTC/USDT, ETH/USDT, and SOL/USDT",
+  "description": "Professional virtual paper trading platform for BTC/USDT, ETH/USDT, and SOL/USDT",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b0f19",

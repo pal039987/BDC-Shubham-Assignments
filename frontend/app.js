@@ -5787,6 +5787,50 @@ function renderTradeDeskOrderBookAndTrades() {
   }
 }
 
+let deferredPwaInstallPrompt = null;
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPwaInstallPrompt = e;
+  });
+}
+
+function openPwaInstallPrompt() {
+  if (deferredPwaInstallPrompt) {
+    deferredPwaInstallPrompt.prompt();
+    deferredPwaInstallPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult && choiceResult.outcome === 'accepted') {
+        if (typeof showNotification === 'function') {
+          showNotification('VTrade App added to Home Screen!', 'success');
+        }
+      }
+      deferredPwaInstallPrompt = null;
+    });
+    return;
+  }
+
+  const isIos = typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIos) {
+    if (typeof showNotification === 'function') {
+      showNotification("To install on iOS: Tap 'Share' (⎋) in Safari and select 'Add to Home Screen' (+)", 'info', 7000);
+    } else if (typeof alert === 'function') {
+      alert("To install on iOS: Tap Safari's 'Share' button and select 'Add to Home Screen'");
+    }
+  } else {
+    if (typeof showNotification === 'function') {
+      showNotification('Downloading VTrade Android APK directly...', 'success');
+    }
+    if (typeof document !== 'undefined') {
+      const link = document.createElement('a');
+      link.href = '/vtrade.apk';
+      link.download = 'VTrade.apk';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.handleAuthLogout = handleAuthLogout;
   window.logoutAuthUser = logoutAuthUser;
@@ -5795,6 +5839,7 @@ if (typeof window !== 'undefined') {
   window.handleForgotPasswordClick = handleForgotPasswordClick;
   window.quickFillAuthModal = quickFillAuthModal;
   window.togglePasswordVisibility = togglePasswordVisibility;
+  window.openPwaInstallPrompt = openPwaInstallPrompt;
 
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', () => {
@@ -5805,3 +5850,4 @@ if (typeof window !== 'undefined') {
     setTimeout(initVTradeApp, 20);
   }
 }
+
