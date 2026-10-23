@@ -26,7 +26,7 @@ console.log('2. Testing 3-Column CSS Grid & Scrollbar Polish...');
 assert.ok(styleCss.includes('grid-template-columns: 1fr 270px 330px;') || styleCss.includes('grid-template-columns: 1fr'), '3-column grid template must be defined');
 assert.ok(styleCss.includes('.trade-bottom-ledger-card') && styleCss.includes('background: #0c1018;'), 'Bottom ledger card must have solid clean background to prevent bleed-through');
 assert.ok(styleCss.includes('.trade-fullwidth-container') && styleCss.includes('overflow: visible !important;'), 'trade-fullwidth-container must not have nested scrollbar');
-assert.ok(styleCss.includes('#screen-trade.active') && styleCss.includes('overflow: visible !important;'), '#screen-trade.active must have overflow: visible to eliminate nested scrollbar');
+assert.ok(styleCss.includes('#screen-trade.active') && styleCss.includes('overflow-y: auto !important;'), '#screen-trade.active must have overflow-y: auto to display bottom ledger');
 console.log('  ✓ 3-Column Grid CSS, solid ledger background, and single smooth window scrollbar verified');
 
 // 3. Verify Order Execution Logic for Authenticated Users
@@ -97,5 +97,23 @@ assert.strictEqual(openedPos.side, 'long', 'Default side should be long');
 assert.strictEqual(openedPos.size, 0.05, 'Size must match 0.05 BTC from input');
 assert.ok(updatedWallet.cashBalance < 10000, 'Cash balance must be deducted for margin');
 console.log(`  ✓ Order executed successfully: 0.05 ${openedPos.symbol} @ $${openedPos.entryPrice}, Margin: $${openedPos.margin.toFixed(2)}, New Balance: $${updatedWallet.cashBalance.toFixed(2)}`);
+
+// 5. Verify Fullscreen Broker Bottom Dock & Slide-Up Order Sheet
+console.log('5. Testing Fullscreen Broker Dock & Slide-Up Order Sheet...');
+assert.ok(styleCss.includes('.tv-fs-new-order-btn'), 'tv-fs-new-order-btn styling must be defined');
+assert.ok(styleCss.includes('.tv-fs-qbtn.buy') && styleCss.includes('.tv-fs-qbtn.sell'), 'tv-fs-qbtn buy and sell styles must be defined');
+assert.ok(indexHtml.includes('order-sheet-backdrop') && indexHtml.includes('order-sheet-container'), 'order sheet container must exist');
+assert.ok(appJs.includes('window.openOrderSheet = openOrderSheet;'), 'openOrderSheet must be exposed globally');
+assert.ok(appJs.includes('window.setSheetOrderType = setOrderSheetType;'), 'setSheetOrderType alias must be defined');
+
+vm.runInContext(`
+  openOrderSheet('short');
+  executeOrderFromSheet();
+`, ctx);
+
+const positionsAfterShort = vm.runInContext('walletState.positions', ctx);
+assert.strictEqual(positionsAfterShort.length, 2, 'Two positions must exist after openOrderSheet short execution');
+assert.strictEqual(positionsAfterShort[0].side, 'short', 'Second position side must be short');
+console.log('  ✓ Fullscreen broker dock buttons and slide-up order execution verified successfully');
 
 console.log('\n=== ALL DESKTOP TRADE DESK LAYOUT & ORDER PLACEMENT TESTS PASSED! ===\n');

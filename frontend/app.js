@@ -3418,11 +3418,12 @@ function openOrderSheet(side) {
   sheetSide = side; // 'long' or 'short'
 
   const backdrop = document.getElementById('order-sheet-backdrop');
+  const container = document.getElementById('order-sheet-container');
   const badge = document.getElementById('sheet-side-badge');
   const pairTitle = document.getElementById('sheet-pair-title');
   const confirmBtn = document.getElementById('sheet-confirm-btn');
   const sizeInput = document.getElementById('sheet-size-input');
-  const unitLabel = document.getElementById('sheet-qty-unit-label');
+  const unitLabel = document.getElementById('sheet-qty-unit-label') || document.getElementById('sheet-coin-unit');
   const sizeDenom = document.getElementById('sheet-size-denom');
 
   if (badge) {
@@ -3440,32 +3441,36 @@ function openOrderSheet(side) {
   }
 
   // Calculate sensible default position size (around 5% of cash)
-  const defaultNotional = walletState.cashBalance * 0.05 * sheetLeverage;
-  sheetSizeCoins = Math.max(0.001, parseFloat((defaultNotional / selectedCoin.price).toFixed(4)));
+  const availableFunds = (walletState.cashBalance && walletState.cashBalance >= 10) ? walletState.cashBalance : 10000;
+  const defaultNotional = availableFunds * 0.05 * sheetLeverage;
+  sheetSizeCoins = Math.max(0.001, parseFloat((defaultNotional / (selectedCoin.price || 80000)).toFixed(4)));
   if (sizeInput) sizeInput.value = sheetSizeCoins;
 
   // Set leverage slider max to coin max
   const levSlider = document.getElementById('sheet-leverage-slider');
   if (levSlider) {
-    levSlider.max = selectedCoin.maxLev;
-    levSlider.value = Math.min(sheetLeverage, selectedCoin.maxLev);
+    levSlider.max = selectedCoin.maxLev || 150;
+    levSlider.value = Math.min(sheetLeverage, selectedCoin.maxLev || 150);
   }
 
   updateOrderSheetCalculations();
 
   if (backdrop) backdrop.classList.remove('hidden');
+  if (container) container.classList.remove('hidden');
 }
 
 function closeOrderSheet() {
   const backdrop = document.getElementById('order-sheet-backdrop');
+  const container = document.getElementById('order-sheet-container');
   if (backdrop) backdrop.classList.add('hidden');
+  if (container) container.classList.add('hidden');
 }
 
 function setOrderSheetType(type) {
   sheetOrderType = type;
   const mBtn = document.getElementById('sot-market');
   const lBtn = document.getElementById('sot-limit');
-  const limitInputWrap = document.getElementById('sheet-limit-input-wrap');
+  const limitInputWrap = document.getElementById('sheet-limit-input-wrap') || document.getElementById('sheet-limit-group');
 
   if (mBtn) mBtn.classList.toggle('active', type === 'market');
   if (lBtn) lBtn.classList.toggle('active', type === 'limit');
@@ -3475,11 +3480,11 @@ function setOrderSheetType(type) {
 }
 
 function setOrderSheetLeverage(lev) {
-  sheetLeverage = Math.min(lev, selectedCoin.maxLev);
+  sheetLeverage = Math.min(lev, selectedCoin.maxLev || 150);
   const slider = document.getElementById('sheet-leverage-slider');
   if (slider) slider.value = sheetLeverage;
 
-  const chips = document.querySelectorAll('.sc-chip');
+  const chips = document.querySelectorAll('.sc-chip, .sheet-lchip');
   chips.forEach(c => {
     c.classList.toggle('active', c.textContent.trim() === `${sheetLeverage}x`);
   });
@@ -3489,10 +3494,10 @@ function setOrderSheetLeverage(lev) {
 
 function handleLeverageSliderInput(val) {
   sheetLeverage = parseInt(val, 10);
-  const badge = document.getElementById('sheet-lev-value-badge');
+  const badge = document.getElementById('sheet-lev-value-badge') || document.getElementById('sheet-lev-val');
   if (badge) badge.textContent = `${sheetLeverage}x`;
 
-  const chips = document.querySelectorAll('.sc-chip');
+  const chips = document.querySelectorAll('.sc-chip, .sheet-lchip');
   chips.forEach(c => {
     c.classList.toggle('active', c.textContent.trim() === `${sheetLeverage}x`);
   });
@@ -3506,19 +3511,24 @@ function handleSizeInput(val) {
 }
 
 function setOrderSheetPct(pct) {
-  // Size = (Available Cash * Leverage * pct) / Price
-  const availableCash = walletState.cashBalance;
-  const maxNotional = availableCash * sheetLeverage * pct;
-  sheetSizeCoins = Math.max(0.0001, parseFloat((maxNotional / selectedCoin.price).toFixed(4)));
+  const numericPct = pct > 1 ? pct / 100 : pct;
+  const availableCash = (walletState.cashBalance && walletState.cashBalance >= 10) ? walletState.cashBalance : 10000;
+  const maxNotional = availableCash * sheetLeverage * numericPct;
+  sheetSizeCoins = Math.max(0.0001, parseFloat((maxNotional / (selectedCoin.price || 80000)).toFixed(4)));
 
   const sizeInput = document.getElementById('sheet-size-input');
   if (sizeInput) sizeInput.value = sheetSizeCoins;
+
+  const chips = document.querySelectorAll('.sheet-pchip');
+  chips.forEach(c => {
+    c.classList.toggle('active', c.textContent.trim() === `${Math.round(numericPct * 100)}%`);
+  });
 
   updateOrderSheetCalculations();
 }
 
 function updateOrderSheetCalculations() {
-  const badge = document.getElementById('sheet-lev-value-badge');
+  const badge = document.getElementById('sheet-lev-value-badge') || document.getElementById('sheet-lev-val');
   if (badge) badge.textContent = `${sheetLeverage}x`;
 
   const price = sheetOrderType === 'limit' 
@@ -3528,9 +3538,6 @@ function updateOrderSheetCalculations() {
   const notionalUsd = sheetSizeCoins * price;
   const reqMarginUsd = notionalUsd / sheetLeverage;
 
-  // Liquidation Price calculation:
-  // Long: Entry * (1 - (1/lev)*0.9)
-  // Short: Entry * (1 + (1/lev)*0.9)
   const liqFactor = (1 / sheetLeverage) * 0.9;
   const liqPrice = sheetSide === 'long' 
     ? price * (1 - liqFactor) 
@@ -3539,11 +3546,33 @@ function updateOrderSheetCalculations() {
   const notionalEl = document.getElementById('scalc-notional');
   const marginEl = document.getElementById('scalc-margin');
   const liqEl = document.getElementById('scalc-liq-price');
+  const maxEl = document.getElementById('sheet-max-size');
 
   if (notionalEl) notionalEl.textContent = `${getCurrencySymbol()}${fmtMoney(notionalUsd)}`;
   if (marginEl) marginEl.textContent = `${getCurrencySymbol()}${fmtMoney(reqMarginUsd)}`;
   if (liqEl) liqEl.textContent = `${getCurrencySymbol()}${fmtPrice(Math.max(0, liqPrice))}`;
+  if (maxEl) {
+    const maxCoins = (((walletState.cashBalance && walletState.cashBalance >= 10) ? walletState.cashBalance : 10000) * sheetLeverage) / price;
+    maxEl.textContent = `Max: ${maxCoins.toFixed(3)} ${selectedCoin.symbol}`;
+  }
 }
+
+// Window scope aliases
+window.openOrderSheet = openOrderSheet;
+window.closeOrderSheet = closeOrderSheet;
+window.setOrderSheetType = setOrderSheetType;
+window.setSheetOrderType = setOrderSheetType;
+window.setOrderSheetLeverage = setOrderSheetLeverage;
+window.setSheetLeverage = setOrderSheetLeverage;
+window.handleLeverageSliderInput = handleLeverageSliderInput;
+window.handleSheetLeverageInput = handleLeverageSliderInput;
+window.handleSizeInput = handleSizeInput;
+window.handleSheetSizeInput = handleSizeInput;
+window.setOrderSheetPct = setOrderSheetPct;
+window.setSheetOrderPct = setOrderSheetPct;
+window.updateOrderSheetCalculations = updateOrderSheetCalculations;
+window.updateSheetCalculations = updateOrderSheetCalculations;
+window.executeOrderFromSheet = executeOrderFromSheet;
 
 // ─── 15. ORDER EXECUTION (REAL WORKING PAPER TRADING) ───────────────────
 function executeOrderFromSheet() {
@@ -3577,8 +3606,13 @@ function executeOrderFromSheet() {
   const reqMarginUsd = notionalUsd / sheetLeverage;
 
   if (reqMarginUsd > walletState.cashBalance) {
-    showToast(`❌ Insufficient demo funds! Required: ${getCurrencySymbol()}${fmtMoney(reqMarginUsd)}, Available: ${getCurrencySymbol()}${fmtMoney(walletState.cashBalance)}`, 'error');
-    return;
+    if (walletState.cashBalance < 5) {
+      refillPaperDemoBalance();
+      showToast(`⚠️ Low demo funds refilled to ${getCurrencySymbol()}${fmtMoney(10000.00)}! Order executing...`, 'info');
+    } else {
+      showToast(`❌ Insufficient demo funds! Required: ${getCurrencySymbol()}${fmtMoney(reqMarginUsd)}, Available: ${getCurrencySymbol()}${fmtMoney(walletState.cashBalance)}`, 'error');
+      return;
+    }
   }
 
   if (sheetOrderType === 'limit') {

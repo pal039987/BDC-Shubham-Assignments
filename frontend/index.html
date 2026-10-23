@@ -979,83 +979,88 @@
   </div>
 
   <!-- ══════════════════════ 10. SLIDE-UP ORDER BOTTOM SHEET (MOBILE & RESPONSIVE) ══════════════════════ -->
-  <div class="order-sheet-backdrop hidden" id="order-sheet-backdrop" onclick="closeOrderSheet()"></div>
-  <div class="order-sheet-container hidden" id="order-sheet-container">
-    <div class="sheet-drag-handle" onclick="closeOrderSheet()"></div>
-    <div class="sheet-header">
-      <div class="sheet-title-left">
-        <span class="sheet-side-badge buy" id="sheet-side-badge">BUY / LONG</span>
-        <span class="sheet-pair-title" id="sheet-pair-title">BTC/USDT</span>
+  <div class="order-sheet-backdrop hidden" id="order-sheet-backdrop" onclick="closeOrderSheet()">
+    <div class="order-sheet-container" id="order-sheet-container" onclick="event.stopPropagation()">
+      <div class="sheet-drag-handle" onclick="closeOrderSheet()"></div>
+      <div class="sheet-header">
+        <div class="sheet-title-left">
+          <span class="sheet-side-badge buy" id="sheet-side-badge">BUY / LONG</span>
+          <span class="sheet-pair-title" id="sheet-pair-title">BTC/USDT</span>
+        </div>
+        <button class="sheet-close-btn" onclick="closeOrderSheet()">✕</button>
       </div>
-      <button class="sheet-close-btn" onclick="closeOrderSheet()">✕</button>
-    </div>
 
-    <!-- Order Type Selector -->
-    <div class="sheet-type-switcher">
-      <button class="sot-btn active" id="sot-market" onclick="setSheetOrderType('market')">Market</button>
-      <button class="sot-btn" id="sot-limit" onclick="setSheetOrderType('limit')">Limit</button>
-    </div>
+      <!-- Order Type Selector -->
+      <div class="sheet-type-switcher">
+        <button class="sot-btn active" id="sot-market" onclick="setOrderSheetType('market')">Market</button>
+        <button class="sot-btn" id="sot-limit" onclick="setOrderSheetType('limit')">Limit</button>
+      </div>
 
-    <!-- Limit Price Input -->
-    <div class="sheet-input-group hidden" id="sheet-limit-group">
-      <label class="sheet-label">Order Price (USDT)</label>
-      <input type="number" step="any" class="sheet-input" id="sheet-limit-price" placeholder="Target execution price" oninput="updateSheetCalculations()" />
-    </div>
+      <!-- Limit Price Input -->
+      <div class="sheet-input-group hidden" id="sheet-limit-input-wrap">
+        <label class="sheet-label">Order Price (USDT)</label>
+        <input type="number" step="any" class="sheet-input" id="sheet-limit-price" placeholder="Target execution price" oninput="updateOrderSheetCalculations()" />
+      </div>
 
-    <!-- Leverage Slider -->
-    <div class="sheet-leverage-wrap">
-      <div class="sheet-lev-header">
-        <span class="sheet-label">Leverage</span>
-        <span class="sheet-lev-val" id="sheet-lev-val">20x</span>
+      <!-- Leverage Slider -->
+      <div class="sheet-leverage-wrap">
+        <div class="sheet-lev-header">
+          <span class="sheet-label">Leverage</span>
+          <span class="sheet-lev-val" id="sheet-lev-val">20x</span>
+          <span class="hidden" id="sheet-lev-value-badge">20x</span>
+        </div>
+        <input type="range" min="1" max="150" value="20" class="sheet-lev-slider" id="sheet-leverage-slider" oninput="handleLeverageSliderInput(this.value)" />
+        <div class="sheet-lev-chips">
+          <button class="sheet-lchip" onclick="setOrderSheetLeverage(5)">5x</button>
+          <button class="sheet-lchip" onclick="setOrderSheetLeverage(10)">10x</button>
+          <button class="sheet-lchip active" onclick="setOrderSheetLeverage(20)">20x</button>
+          <button class="sheet-lchip" onclick="setOrderSheetLeverage(50)">50x</button>
+          <button class="sheet-lchip" onclick="setOrderSheetLeverage(100)">100x</button>
+          <button class="sheet-lchip" onclick="setOrderSheetLeverage(150)">150x</button>
+        </div>
       </div>
-      <input type="range" min="1" max="150" value="20" class="sheet-lev-slider" id="sheet-leverage-slider" oninput="handleSheetLeverageInput(this.value)" />
-      <div class="sheet-lev-chips">
-        <button class="sheet-lchip" onclick="setSheetLeverage(5)">5x</button>
-        <button class="sheet-lchip" onclick="setSheetLeverage(10)">10x</button>
-        <button class="sheet-lchip active" onclick="setSheetLeverage(20)">20x</button>
-        <button class="sheet-lchip" onclick="setSheetLeverage(50)">50x</button>
-        <button class="sheet-lchip" onclick="setSheetLeverage(100)">100x</button>
-      </div>
-    </div>
 
-    <!-- Order Size Input -->
-    <div class="sheet-input-group">
-      <div class="sheet-label-row">
-        <label class="sheet-label">Order Size</label>
-        <span class="sheet-max-label" id="sheet-max-size">Max: 0.12 BTC</span>
+      <!-- Order Size Input -->
+      <div class="sheet-input-group">
+        <div class="sheet-label-row">
+          <label class="sheet-label">Order Size</label>
+          <span class="sheet-max-label" id="sheet-max-size">Max: 0.12 BTC</span>
+        </div>
+        <div class="sheet-input-box">
+          <input type="number" step="any" class="sheet-input" id="sheet-size-input" value="0.05" oninput="handleSizeInput(this.value)" />
+          <span class="sheet-unit" id="sheet-coin-unit">BTC</span>
+          <span class="hidden" id="sheet-qty-unit-label">BTC</span>
+          <span class="hidden" id="sheet-size-denom">BTC</span>
+        </div>
+        <div class="sheet-pct-chips">
+          <button class="sheet-pchip" onclick="setOrderSheetPct(25)">25%</button>
+          <button class="sheet-pchip" onclick="setOrderSheetPct(50)">50%</button>
+          <button class="sheet-pchip" onclick="setOrderSheetPct(75)">75%</button>
+          <button class="sheet-pchip" onclick="setOrderSheetPct(100)">100%</button>
+        </div>
       </div>
-      <div class="sheet-input-box">
-        <input type="number" step="any" class="sheet-input" id="sheet-size-input" value="0.05" oninput="handleSheetSizeInput(this.value)" />
-        <span class="sheet-unit" id="sheet-coin-unit">BTC</span>
-      </div>
-      <div class="sheet-pct-chips">
-        <button class="sheet-pchip" onclick="setSheetOrderPct(25)">25%</button>
-        <button class="sheet-pchip" onclick="setSheetOrderPct(50)">50%</button>
-        <button class="sheet-pchip" onclick="setSheetOrderPct(75)">75%</button>
-        <button class="sheet-pchip" onclick="setSheetOrderPct(100)">100%</button>
-      </div>
-    </div>
 
-    <!-- Calculations Breakdown -->
-    <div class="sheet-metrics-card">
-      <div class="sm-row">
-        <span>Notional Value:</span>
-        <span id="scalc-notional">$4,095.00</span>
+      <!-- Calculations Breakdown -->
+      <div class="sheet-metrics-card">
+        <div class="sm-row">
+          <span>Notional Value:</span>
+          <span id="scalc-notional">$4,095.00</span>
+        </div>
+        <div class="sm-row">
+          <span>Required Margin:</span>
+          <span id="scalc-margin">$204.75</span>
+        </div>
+        <div class="sm-row">
+          <span>Est. Liquidation Price:</span>
+          <span class="sm-liq" id="scalc-liq-price">$78,258.00</span>
+        </div>
       </div>
-      <div class="sm-row">
-        <span>Required Margin:</span>
-        <span id="scalc-margin">$204.75</span>
-      </div>
-      <div class="sm-row">
-        <span>Est. Liquidation Price:</span>
-        <span class="sm-liq" id="scalc-liq-price">$78,258.00</span>
-      </div>
-    </div>
 
-    <!-- Confirm Button -->
-    <button class="sheet-confirm-btn buy" id="sheet-confirm-btn" onclick="executeOrderFromSheet()">
-      Confirm Buy / Long
-    </button>
+      <!-- Confirm Button -->
+      <button class="sheet-confirm-btn buy" id="sheet-confirm-btn" onclick="executeOrderFromSheet()">
+        Confirm Buy / Long Order
+      </button>
+    </div>
   </div>
 
   <!-- ══════════════════════ 11. FULLSCREEN BROKER TRADINGVIEW MODAL ══════════════════════ -->
@@ -1101,10 +1106,22 @@
 
     <!-- Bottom Floating Broker Dock -->
     <div class="tv-fs-bottom-dock" id="tv-fs-bottom-dock">
-      <button class="tv-fs-new-order-btn" onclick="openOrderSheet('long')">Create New Order ^</button>
+      <button class="tv-fs-new-order-btn" onclick="openOrderSheet('long')" title="Open Order Execution Drawer">
+        <div class="tv-fs-nob-left">
+          <span class="tv-fs-nob-bolt">⚡</span>
+          <span class="tv-fs-nob-title">Create New Order</span>
+        </div>
+        <span class="tv-fs-nob-arrow">▲</span>
+      </button>
       <div class="tv-fs-quick-actions">
-        <button class="tv-fs-qbtn buy" onclick="openOrderSheet('long')">Instant Buy</button>
-        <button class="tv-fs-qbtn sell" onclick="openOrderSheet('short')">Instant Sell</button>
+        <button class="tv-fs-qbtn buy" onclick="openOrderSheet('long')" title="Instant Buy / Long">
+          <span class="tv-fs-qb-icon">▲</span>
+          <span class="tv-fs-qb-lbl">Instant Buy</span>
+        </button>
+        <button class="tv-fs-qbtn sell" onclick="openOrderSheet('short')" title="Instant Sell / Short">
+          <span class="tv-fs-qb-icon">▼</span>
+          <span class="tv-fs-qb-lbl">Instant Sell</span>
+        </button>
       </div>
     </div>
   </div>
