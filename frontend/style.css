@@ -5460,7 +5460,8 @@ html:not(.is-native-apk) .tv-fs-header {
     flex-direction: column !important;
     height: calc(100vh - 50px) !important;
     max-height: calc(100vh - 50px) !important;
-    overflow: hidden !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
 
   html:not(.is-native-apk) #screen-trade.active::-webkit-scrollbar {
@@ -8393,64 +8394,61 @@ html:not(.is-native-apk) .tv-fs-header {
   margin-left: 2px;
 }
 
-/* ─── SHARK EXCHANGE ZERO-SCROLL 100VH LAYOUT ON TRADE DESK ─── */
+/* ─── SHARK EXCHANGE 2-PART SCROLL FLOW ON TRADE DESK (SS 2 TOP + SS 3 BOTTOM) ─── */
 body.trade-screen-active .trade-fullwidth-container {
-  height: 100% !important;
-  max-height: 100% !important;
-  overflow: hidden !important;
-  padding: 0 !important;
+  height: auto !important;
+  min-height: 100% !important;
+  overflow: visible !important;
+  padding: 0 0 32px 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  flex: 1 !important;
 }
 
 body.trade-screen-active .trade-workspace-grid {
-  height: 100% !important;
-  flex: 1 !important;
-  min-height: 0 !important;
-  padding: 6px 12px 8px 12px !important;
-  overflow: hidden !important;
-  grid-template-rows: minmax(320px, 1.35fr) minmax(210px, 1fr) !important;
+  height: auto !important;
+  min-height: 820px !important;
+  padding: 6px 12px 24px 12px !important;
+  overflow: visible !important;
+  grid-template-rows: auto auto !important;
 }
 
 body.trade-screen-active .trade-chart-box {
-  height: 100% !important;
-  min-height: 0 !important;
+  height: 485px !important;
+  min-height: 485px !important;
   max-height: none !important;
 }
 
 body.trade-screen-active .trade-bottom-ledger-card {
-  height: 100% !important;
-  min-height: 0 !important;
+  height: auto !important;
+  min-height: 320px !important;
   display: flex !important;
   flex-direction: column !important;
-  overflow: hidden !important;
-  padding-bottom: 0 !important;
+  overflow: visible !important;
+  padding-bottom: 16px !important;
 }
 
 body.trade-screen-active .tblc-view {
-  flex: 1 !important;
-  height: 100% !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow: visible !important;
 }
 
 body.trade-screen-active .tblc-table-wrap {
-  height: calc(100% - 2px) !important;
-  min-height: 0 !important;
-  overflow-y: auto !important;
+  width: 100% !important;
+  min-height: 240px !important;
   overflow-x: auto !important;
+  overflow-y: visible !important;
 }
 
 body.trade-screen-active .desktop-trade-order-dock {
-  height: 100% !important;
-  min-height: 0 !important;
-  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 813px !important;
+  overflow-y: visible !important;
 }
 
 body.trade-screen-active .trade-depth-panel {
-  height: 100% !important;
-  min-height: 0 !important;
+  height: auto !important;
+  min-height: 813px !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════

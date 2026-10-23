@@ -63,19 +63,19 @@ assert.ok(indexHtml.includes('Log In') && indexHtml.includes('Register Now') && 
   'Centered "Log In or Register Now to trade." prompt must exist');
 console.log('  ✓ Tray icon "No data" empty state & guest auth prompt verified');
 
-// 4. Verify Shark Exchange Zero-Scroll 100vh Desktop Layout
-console.log('4. Testing Shark Exchange Zero-Scroll 100vh Desktop Layout...');
+// 4. Verify Shark Exchange 2-Part Scroll Flow Layout (SS 2 Top + SS 3 Bottom)
+console.log('4. Testing Shark Exchange 2-Part Scroll Flow Layout (SS 2 Top + SS 3 Bottom)...');
 assert.ok(appJs.includes("classList.toggle('trade-screen-active'"),
   'switchBottomTab must toggle trade-screen-active class on body for trade page');
 assert.ok(styleCss.includes('body.trade-screen-active .desktop-marquee-wrap') && styleCss.includes('display: none !important;'),
   'desktop-marquee-wrap must be hidden on Trade Desk to prevent vertical overflow');
 assert.ok(styleCss.includes('body.trade-screen-active .app-top-header') && styleCss.includes('height: 50px !important;'),
   'app-top-header must be 50px compact height matching Shark Exchange');
-assert.ok(styleCss.includes('body.trade-screen-active #screen-trade.active') && styleCss.includes('overflow: hidden !important;'),
-  '#screen-trade.active must have overflow: hidden to eliminate window scrolling on desktop');
-assert.ok(styleCss.includes('body.trade-screen-active .trade-workspace-grid') && styleCss.includes('grid-template-rows:'),
-  'trade-workspace-grid must fit height with calibrated rows');
-console.log('  ✓ Zero-scroll 100vh desktop layout verified (50px navbar, marquee hidden on trade desk, overflow: hidden)');
+assert.ok(styleCss.includes('body.trade-screen-active #screen-trade.active') && styleCss.includes('overflow-y: auto !important;'),
+  '#screen-trade.active must have overflow-y: auto to allow smooth vertical scrolling between SS 2 top and SS 3 bottom');
+assert.ok(styleCss.includes('body.trade-screen-active .trade-bottom-ledger-card') && styleCss.includes('min-height: 320px !important;'),
+  'trade-bottom-ledger-card must have min-height: 320px to display full table body & "No data" empty state on scroll');
+console.log('  ✓ 2-part vertical scroll flow verified (50px navbar, overflow-y: auto, min-height: 320px positions block)');
 
 // 5. Verify Live Working TradingView Candlestick Chart (NOT blank)
 console.log('5. Testing Live Working Chart...');
