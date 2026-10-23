@@ -2111,11 +2111,67 @@ function toggleBalanceVisibility() {
   renderHomeBalanceCard();
 }
 
-// ─── 6. PAPER FAUCET (REFILL $10,000) ──────────────────────────────
+// ─── 6. CUSTOMIZABLE ACCOUNT BALANCE & REFILL CONTROLLER ─────────────────────
+function openCustomBalanceModal() {
+  const modal = document.getElementById('custom-balance-modal');
+  const input = document.getElementById('cbm-amount-input');
+  if (!modal) return;
+  const currentAmt = (typeof walletState !== 'undefined' && walletState.cashBalance) ? walletState.cashBalance : 10000;
+  if (input) {
+    input.value = currentAmt;
+  }
+  setCustomBalancePresetActive(currentAmt);
+  modal.classList.remove('hidden');
+  setTimeout(() => { if (input) input.select(); }, 50);
+}
+
+function closeCustomBalanceModal() {
+  const modal = document.getElementById('custom-balance-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function setCustomBalancePresetActive(amt) {
+  const presets = [1000, 5000, 10000, 50000, 100000];
+  const btns = document.querySelectorAll('.cbm-preset-btn');
+  btns.forEach((btn, idx) => {
+    btn.classList.toggle('active', presets[idx] === Number(amt));
+  });
+}
+
+function setCustomBalanceInput(amt) {
+  const input = document.getElementById('cbm-amount-input');
+  if (input) {
+    input.value = amt;
+    input.focus();
+  }
+  setCustomBalancePresetActive(amt);
+}
+
+function applyCustomBalance() {
+  const input = document.getElementById('cbm-amount-input');
+  if (!input) return;
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val <= 0) {
+    showToast('Please enter a valid amount greater than 0', 'error');
+    return;
+  }
+  if (typeof walletState !== 'undefined') {
+    walletState.cashBalance = val;
+    saveWalletState();
+  }
+  showToast(`🎉 Account balance set to ${getCurrencySymbol()}${fmtMoney(val)}!`, 'success');
+  closeCustomBalanceModal();
+  renderAllViews();
+}
+
 function refillPaperDemoBalance() {
-  walletState.cashBalance = 10000.00;
-  saveWalletState();
-  showToast(`🎉 Balance refilled to ${getCurrencySymbol()}${fmtMoney(10000.00)}!`, 'success');
+  const customAmount = arguments[0];
+  const amt = (typeof customAmount === 'number' && customAmount > 0) ? customAmount : 10000.00;
+  if (typeof walletState !== 'undefined') {
+    walletState.cashBalance = amt;
+    saveWalletState();
+  }
+  showToast(`🎉 Balance updated to ${getCurrencySymbol()}${fmtMoney(amt)}!`, 'success');
   renderAllViews();
 }
 
@@ -6479,6 +6535,11 @@ if (typeof window !== 'undefined') {
   window.quickFillAuthModal = quickFillAuthModal;
   window.togglePasswordVisibility = togglePasswordVisibility;
   window.openPwaInstallPrompt = openPwaInstallPrompt;
+  window.openCustomBalanceModal = openCustomBalanceModal;
+  window.closeCustomBalanceModal = closeCustomBalanceModal;
+  window.setCustomBalanceInput = setCustomBalanceInput;
+  window.applyCustomBalance = applyCustomBalance;
+  window.refillPaperDemoBalance = refillPaperDemoBalance;
 
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', () => {

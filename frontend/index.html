@@ -104,10 +104,10 @@
       </nav>
 
       <div class="header-actions-wrap">
-        <!-- Live Cash Badge (Paper Wallet Equity) -->
-        <div class="header-cash-badge" id="header-cash-badge" onclick="switchBottomTab('portfolio')" title="Wallet Equity">
+        <!-- Live Real Badge (Wallet Equity) -->
+        <div class="header-cash-badge" id="header-cash-badge" onclick="openCustomBalanceModal()" title="Wallet Equity (Click to adjust balance)">
           <span class="hcb-dot"></span>
-          <span class="hcb-label">Cash:</span>
+          <span class="hcb-label">Real:</span>
           <span class="hcb-val" id="header-cash-val">$10,000.00</span>
         </div>
 
@@ -1237,9 +1237,9 @@
             <span class="pfm-v" id="pf-active-pos-count">0</span>
           </div>
           <div class="pf-metric-card">
-            <span class="pfm-k">Refill Funds</span>
-            <button class="pfm-refill-btn" onclick="refillPaperDemoBalance()" title="Reset Paper Balance to $10,000">
-              Reset $10,000
+            <span class="pfm-k">Account Balance</span>
+            <button class="pfm-refill-btn" id="pfm-balance-btn" onclick="openCustomBalanceModal()" title="Customize Account Balance">
+              Balance
             </button>
           </div>
         </div>
@@ -1346,11 +1346,11 @@
           </div>
           <div class="pref-row">
             <div class="pref-info">
-              <span class="pref-title">Reset Funds</span>
-              <span class="pref-desc">Reset paper portfolio to initial $10,000.00</span>
+              <span class="pref-title">Adjust Balance</span>
+              <span class="pref-desc">Customize trading capital or set custom balance</span>
             </div>
-            <button class="pref-action-btn danger" onclick="refillPaperDemoBalance()">
-              Reset $10,000
+            <button class="pref-action-btn danger" id="pref-balance-btn" onclick="openCustomBalanceModal()">
+              Balance
             </button>
           </div>
           <div class="pref-row">
@@ -1752,6 +1752,44 @@
       <div class="umc-actions">
         <button class="umc-btn-cancel" onclick="closeUpdateModal()">Later</button>
         <a href="/vtrade.apk" class="umc-btn-confirm" download="VTrade.apk">Update Now</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 15B. CUSTOM ACCOUNT BALANCE MODAL ══════════════════════ -->
+  <div class="custom-balance-modal-overlay hidden" id="custom-balance-modal" onclick="if(event.target===this)closeCustomBalanceModal()">
+    <div class="custom-balance-modal-card" onclick="event.stopPropagation()">
+      <div class="cbm-header">
+        <div class="cbm-title-wrap">
+          <span class="cbm-icon">💎</span>
+          <div>
+            <h3 class="cbm-title">Adjust Account Balance</h3>
+            <p class="cbm-subtitle">Set your custom trading capital</p>
+          </div>
+        </div>
+        <button class="cbm-close-btn" onclick="closeCustomBalanceModal()" aria-label="Close" title="Close">✕</button>
+      </div>
+
+      <div class="cbm-body">
+        <label class="cbm-input-label" for="cbm-amount-input">Custom Capital Amount (USDT)</label>
+        <div class="cbm-input-wrap">
+          <span class="cbm-currency-symbol">$</span>
+          <input type="number" id="cbm-amount-input" class="cbm-input" placeholder="e.g. 25000" min="1" step="any" autocomplete="off" onkeydown="if(event.key==='Enter')applyCustomBalance()" />
+        </div>
+
+        <div class="cbm-presets-label">Quick Presets:</div>
+        <div class="cbm-presets-grid">
+          <button type="button" class="cbm-preset-btn" onclick="setCustomBalanceInput(1000)">$1,000</button>
+          <button type="button" class="cbm-preset-btn" onclick="setCustomBalanceInput(5000)">$5,000</button>
+          <button type="button" class="cbm-preset-btn" onclick="setCustomBalanceInput(10000)">$10,000</button>
+          <button type="button" class="cbm-preset-btn" onclick="setCustomBalanceInput(50000)">$50,000</button>
+          <button type="button" class="cbm-preset-btn" onclick="setCustomBalanceInput(100000)">$100,000</button>
+        </div>
+      </div>
+
+      <div class="cbm-footer">
+        <button type="button" class="cbm-cancel-btn" onclick="closeCustomBalanceModal()">Cancel</button>
+        <button type="button" class="cbm-confirm-btn" id="cbm-confirm-btn" onclick="applyCustomBalance()">Update Balance</button>
       </div>
     </div>
   </div>
