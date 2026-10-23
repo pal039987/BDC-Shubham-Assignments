@@ -5,8 +5,13 @@
  * ══════════════════════════════════════════════════════════════════════════
  */
 
-// ─── 1. CONSTANTS & METADATA ─────────────────────────────────────────────
 const INR_RATE = 83.50; // 1 USD = 83.50 INR
+
+function getCoinDisplayPair(coin) {
+  if (!coin) return '';
+  if (coin.id === 'gold' || coin.symbol === 'XAU') return 'GOLD/USDT';
+  return coin.pair;
+}
 
 const COINS = [
   {
@@ -2141,8 +2146,44 @@ function renderHomeScreen() {
   renderHomeBalanceCard();
   renderPortfolioCurve();
   renderHomeMarketIntel();
+  renderHomeSpotlightBento();
   renderHomeMarketList();
   initPortfolioScrubberListeners();
+}
+
+function renderHomeSpotlightBento() {
+  const bentoGrid = document.getElementById('home-spotlight-bento');
+  if (!bentoGrid || typeof COINS === 'undefined') return;
+
+  const spotlightIds = ['bitcoin', 'ethereum', 'gold', 'solana'];
+  const spotlightCoins = spotlightIds.map(id => COINS.find(c => c.id === id)).filter(Boolean);
+
+  bentoGrid.innerHTML = spotlightCoins.map(c => {
+    const isUp = c.change >= 0;
+    const displayPair = getCoinDisplayPair(c);
+    return `
+      <div class="bento-card" onclick="selectCoinAndTrade('${c.id}')">
+        <div class="bento-card-top">
+          <div class="bento-card-asset">
+            <img src="${c.icon}" alt="${c.symbol}" class="bento-coin-icon" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category}')" />
+            <div>
+              <div class="bento-sym">${displayPair}</div>
+              <div class="bento-name">${c.name}</div>
+            </div>
+          </div>
+          <span class="coin-lev-badge">${c.maxLev}x</span>
+        </div>
+        <div class="bento-price-row">
+          <span class="bento-price">${getCurrencySymbol()}${fmtPrice(c.price)}</span>
+          <span class="bento-chg ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-top:6px; border-top:1px solid rgba(255,255,255,0.05);">
+          <span>24h Vol: ${c.vol || 'N/A'}</span>
+          <span style="color:#ff9900; font-weight:700;">Trade Desk →</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderHomeBalanceCard() {
@@ -2606,20 +2647,21 @@ function renderHomeMarketList() {
 
 // ─── 10. MARKETS SCREEN RENDERING ────────────────────────────────────────
 function renderMarketsScreen() {
+  const tbody = document.getElementById('markets-table-body');
   const container = document.getElementById('markets-coin-list-container');
-  if (!container) return;
+  if (!tbody && !container) return;
 
   let list = [...COINS];
 
   // Category Filter
   if (marketCategory !== 'all') {
-    list = list.filter(c => c.category === marketCategory || (marketCategory === 'futures' && c.maxLev >= 75));
+    list = list.filter(c => c.category === marketCategory || (marketCategory === 'futures' && (c.maxLev >= 75 || c.id === 'gold')));
   }
 
   // Search filter
   if (marketSearchQuery) {
     const q = marketSearchQuery.toLowerCase();
-    list = list.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q));
+    list = list.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q) || (c.id === 'gold' && 'gold/usdt'.includes(q)));
   }
 
   // Sort
@@ -2629,36 +2671,71 @@ function renderMarketsScreen() {
     list.sort((a, b) => marketSortAsc ? a.change - b.change : b.change - a.change);
   } else if (marketSortBy === 'name') {
     list.sort((a, b) => marketSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
+  } else if (marketSortBy === 'vol') {
+    list.sort((a, b) => marketSortAsc ? (parseFloat(a.vol) || 0) - (parseFloat(b.vol) || 0) : (parseFloat(b.vol) || 0) - (parseFloat(a.vol) || 0));
   }
 
-  container.innerHTML = list.map(c => {
-    const isUp = c.change >= 0;
-    return `
-      <div class="mkt-coin-item" onclick="selectCoinAndTrade('${c.id}')">
-        <div class="coin-row-left">
-          <img class="coin-avatar-img" src="${c.icon}" alt="${c.name}" style="width:28px;height:28px;" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category || ''}')" />
-          <div class="coin-meta-col">
-            <div class="coin-sym-row">
-              <span class="coin-sym-name" style="font-size:13.5px;">${c.symbol}</span>
-              <span class="coin-lev-badge">${c.maxLev}x</span>
+  if (tbody) {
+    tbody.innerHTML = list.map(c => {
+      const isUp = c.change >= 0;
+      const displayPair = getCoinDisplayPair(c);
+      return `
+        <tr onclick="selectCoinAndTrade('${c.id}')" style="cursor: pointer;">
+          <td>
+            <div class="mkt-cell-asset">
+              <img src="${c.icon}" alt="${c.symbol}" class="mkt-coin-avatar" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category || ''}')" />
+              <div class="mkt-cell-names">
+                <span class="mkt-cell-sym">${displayPair}</span>
+                <span class="mkt-cell-fullname">${c.name}</span>
+              </div>
             </div>
-            <span class="coin-full-name">${c.name}</span>
+          </td>
+          <td style="text-align: right; font-family: var(--font-price); font-weight: 700;">${getCurrencySymbol()}${fmtPrice(c.price)}</td>
+          <td style="text-align: right;">
+            <span class="coin-chg-badge ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%</span>
+          </td>
+          <td style="text-align: right; color: #8b92a4; font-family: var(--font-price); font-size: 13px;">${getCurrencySymbol()}${fmtPrice(c.high || c.price)} / ${getCurrencySymbol()}${fmtPrice(c.low || c.price)}</td>
+          <td style="text-align: right; color: #8b92a4; font-size: 13px;">${c.vol ? (c.vol.includes('M') || c.vol.includes('B') ? c.vol : '$' + c.vol) : 'N/A'}</td>
+          <td style="text-align: center;"><span class="coin-lev-badge">${c.maxLev}x</span></td>
+          <td style="text-align: right;">
+            <button class="mkt-trade-btn" onclick="event.stopPropagation(); selectCoinAndTrade('${c.id}')">Trade</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  if (container) {
+    container.innerHTML = list.map(c => {
+      const isUp = c.change >= 0;
+      const displayPair = getCoinDisplayPair(c);
+      return `
+        <div class="mkt-coin-item" onclick="selectCoinAndTrade('${c.id}')">
+          <div class="coin-row-left">
+            <img class="coin-avatar-img" src="${c.icon}" alt="${c.name}" style="width:28px;height:28px;" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category || ''}')" />
+            <div class="coin-meta-col">
+              <div class="coin-sym-row">
+                <span class="coin-sym-name" style="font-size:13.5px;">${displayPair}</span>
+                <span class="coin-lev-badge">${c.maxLev}x</span>
+              </div>
+              <span class="coin-full-name">${c.name}</span>
+            </div>
+          </div>
+
+          <div class="coin-price-col">
+            <span class="coin-cur-price" style="font-size:13px;">${getCurrencySymbol()}${fmtPrice(c.price)}</span>
+            <span style="font-size:10px; color:#8b92a4;">Vol: $${c.vol}</span>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end;">
+            <span class="coin-chg-badge ${isUp ? 'up' : 'down'}" style="font-size:12px;">
+              ${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%
+            </span>
           </div>
         </div>
-
-        <div class="coin-price-col">
-          <span class="coin-cur-price" style="font-size:13px;">${getCurrencySymbol()}${fmtPrice(c.price)}</span>
-          <span style="font-size:10px; color:#8b92a4;">Vol: $${c.vol}</span>
-        </div>
-
-        <div style="display:flex; justify-content:flex-end;">
-          <span class="coin-chg-badge ${isUp ? 'up' : 'down'}" style="font-size:12px;">
-            ${isUp ? '+' : ''}${c.change.toFixed(2)}%
-          </span>
-        </div>
-      </div>
-    `;
-  }).join('');
+      `;
+    }).join('');
+  }
 }
 
 function handleMarketSearch(val) {
@@ -2690,6 +2767,10 @@ function sortMarketList(field) {
     marketSortAsc = false;
   }
   renderMarketsScreen();
+}
+
+function sortMarkets(field) {
+  sortMarketList(field);
 }
 
 // ─── 11. TRADE SCREEN & CANDLESTICK CHART ENGINE ─────────────────────────
@@ -3069,6 +3150,33 @@ function renderTradeScreen() {
     liveChangeEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
   }
 
+  // Update Full-Width Top Instrument Bar
+  const coinIcon = document.getElementById('trade-coin-icon');
+  const coinPair = document.getElementById('trade-coin-pair');
+  const coinCat = document.getElementById('trade-coin-cat');
+  const coinName = document.getElementById('trade-coin-name');
+  const priceVal = document.getElementById('trade-price-val');
+  const changeVal = document.getElementById('trade-change-val');
+  const highVal = document.getElementById('trade-high-val');
+  const lowVal = document.getElementById('trade-low-val');
+  const volVal = document.getElementById('trade-vol-val');
+
+  if (coinIcon) {
+    coinIcon.src = selectedCoin.icon;
+    coinIcon.onerror = function() { handleCoinIconError(this, selectedCoin.symbol, selectedCoin.category); };
+  }
+  if (coinPair) coinPair.textContent = getCoinDisplayPair(selectedCoin);
+  if (coinCat) coinCat.textContent = (selectedCoin.category || 'FUTURES').toUpperCase();
+  if (coinName) coinName.textContent = selectedCoin.name;
+  if (priceVal) priceVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+  if (changeVal) {
+    changeVal.className = `tib-val ${isUp ? 'up' : 'down'}`;
+    changeVal.textContent = `${isUp ? '+' : ''}${selectedCoin.change ? selectedCoin.change.toFixed(2) : '0.00'}%`;
+  }
+  if (highVal) highVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price)}`;
+  if (lowVal) lowVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price)}`;
+  if (volVal) volVal.textContent = `${selectedCoin.vol ? (selectedCoin.vol.includes('M') ? selectedCoin.vol + ' USDT' : selectedCoin.vol) : 'N/A'}`;
+
   // Update floating dock button subtitles
   const buySub = document.getElementById('dock-buy-sub');
   const sellSub = document.getElementById('dock-sell-sub');
@@ -3080,6 +3188,8 @@ function renderTradeScreen() {
   renderOrderbook();
   renderPositions();
   renderOrders();
+  renderTradeBottomLedger();
+  renderTradeDeskOrderBookAndTrades();
   connectCoinTickerWs(selectedCoin.binanceSym);
   updateDesktopOrderCalculations();
 }
@@ -4915,17 +5025,19 @@ function initDesktopMarquee() {
   const track = document.getElementById('desktop-marquee-track');
   if (!track || typeof COINS === 'undefined') return;
 
-  const showcaseCoins = COINS.slice(0, 10);
+  const showcaseCoins = COINS; // All 56 coins plus Gold!
   const itemsHtml = showcaseCoins.map(coin => {
-    const isUp = coin.change24h >= 0;
+    const chgVal = coin.change !== undefined ? coin.change : (coin.change24h || 0);
+    const isUp = chgVal >= 0;
     const changeClass = isUp ? 'up' : 'down';
     const changeSign = isUp ? '+' : '';
+    const displayPair = getCoinDisplayPair(coin);
     return `
       <div class="marquee-coin-item" onclick="selectCoinAndTrade('${coin.id}')">
         <img src="${coin.icon}" alt="${coin.symbol}" class="marquee-coin-icon" onerror="handleCoinIconError(this, '${coin.symbol}', '${coin.category}')" />
-        <span class="m-sym">${coin.symbol}</span>
-        <span class="m-price" id="marq-price-${coin.id}">$${fmtPrice(coin.price)}</span>
-        <span class="m-chg ${changeClass}" id="marq-chg-${coin.id}">${changeSign}${coin.change24h ? coin.change24h.toFixed(2) : '0.00'}%</span>
+        <span class="m-sym">${displayPair}</span>
+        <span class="m-price" id="marq-price-${coin.id}">${getCurrencySymbol()}${fmtPrice(coin.price)}</span>
+        <span class="m-chg ${changeClass}" id="marq-chg-${coin.id}">${changeSign}${chgVal ? chgVal.toFixed(2) : '0.00'}%</span>
       </div>
     `;
   }).join('');
@@ -4935,10 +5047,11 @@ function initDesktopMarquee() {
 
 function updateDesktopMarqueePrices() {
   if (typeof COINS === 'undefined') return;
-  COINS.slice(0, 10).forEach(coin => {
+  COINS.forEach(coin => {
     const priceEls = document.querySelectorAll(`[id="marq-price-${coin.id}"]`);
     const chgEls = document.querySelectorAll(`[id="marq-chg-${coin.id}"]`);
-    const isUp = coin.change24h >= 0;
+    const chgVal = coin.change !== undefined ? coin.change : (coin.change24h || 0);
+    const isUp = chgVal >= 0;
     const changeSign = isUp ? '+' : '';
 
     priceEls.forEach(el => {
@@ -4946,7 +5059,7 @@ function updateDesktopMarqueePrices() {
     });
     chgEls.forEach(el => {
       el.className = `m-chg ${isUp ? 'up' : 'down'}`;
-      el.textContent = `${changeSign}${coin.change24h ? coin.change24h.toFixed(2) : '0.00'}%`;
+      el.textContent = `${changeSign}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
     });
   });
 }
@@ -5072,6 +5185,187 @@ function executeDesktopOrder() {
 
   executeOrderFromSheet();
   syncDesktopHeaderState();
+}
+
+function switchLedgerTab(tab) {
+  ['positions', 'orders', 'history'].forEach(t => {
+    const tabBtn = document.getElementById(`tblc-tab-${t}`);
+    const view = document.getElementById(`tblc-view-${t}`);
+    if (tabBtn) tabBtn.classList.toggle('active', t === tab);
+    if (view) view.classList.toggle('hidden', t !== tab);
+  });
+  renderTradeBottomLedger();
+}
+
+function switchTradeDepthTab(tab) {
+  ['book', 'trades'].forEach(t => {
+    const tabBtn = document.getElementById(`tdp-tab-${t}`);
+    const content = document.getElementById(`tdp-content-${t}`);
+    if (tabBtn) tabBtn.classList.toggle('active', t === tab);
+    if (content) content.classList.toggle('hidden', t !== tab);
+  });
+}
+
+function renderTradeBottomLedger() {
+  const posCount = document.getElementById('ledger-pos-count');
+  const ordCount = document.getElementById('ledger-ord-count');
+  if (posCount && walletState && walletState.positions) posCount.textContent = walletState.positions.length;
+  if (ordCount && walletState && walletState.orders) ordCount.textContent = walletState.orders.length;
+
+  const posTbody = document.getElementById('tblc-positions-tbody');
+  if (posTbody && walletState) {
+    if (!walletState.positions || walletState.positions.length === 0) {
+      posTbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:32px; color:#555f75;">No open positions. Place a Buy/Long or Sell/Short order above.</td></tr>`;
+    } else {
+      posTbody.innerHTML = walletState.positions.map(pos => {
+        const coin = COINS.find(c => c.id === pos.coinId) || selectedCoin;
+        const curPrice = coin.price;
+        const diff = pos.side === 'long' ? (curPrice - pos.entryPrice) : (pos.entryPrice - curPrice);
+        const pnlUsd = diff * pos.size;
+        const isUp = pnlUsd >= 0;
+        const roe = pos.margin > 0 ? (pnlUsd / pos.margin) * 100 : 0;
+        const displayPair = getCoinDisplayPair(coin);
+        return `
+          <tr>
+            <td><strong>${displayPair}</strong></td>
+            <td><span class="pos-dir-badge ${pos.side}">${pos.side.toUpperCase()}</span></td>
+            <td>${pos.leverage}x</td>
+            <td>${pos.size} ${pos.symbol}</td>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(pos.entryPrice)}</td>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(curPrice)}</td>
+            <td style="font-family:var(--font-price); color:#ff9900;">${getCurrencySymbol()}${fmtPrice(pos.liqPrice)}</td>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtMoney(pos.margin)}</td>
+            <td style="font-family:var(--font-price); font-weight:700;" class="${isUp ? 'up' : 'down'}">
+              ${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(pnlUsd)} (${isUp ? '+' : ''}${roe.toFixed(2)}%)
+            </td>
+            <td>
+              <button class="pos-close-btn" style="padding:4px 10px; font-size:12px;" onclick="closePosition(${pos.id})">Close</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  const ordTbody = document.getElementById('tblc-orders-tbody');
+  if (ordTbody && walletState) {
+    if (!walletState.orders || walletState.orders.length === 0) {
+      ordTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:32px; color:#555f75;">No pending limit orders.</td></tr>`;
+    } else {
+      ordTbody.innerHTML = walletState.orders.map(ord => {
+        const coin = COINS.find(c => c.id === ord.coinId) || selectedCoin;
+        const displayPair = getCoinDisplayPair(coin);
+        return `
+          <tr>
+            <td><strong>${displayPair}</strong></td>
+            <td>LIMIT</td>
+            <td><span class="pos-dir-badge ${ord.side}">${ord.side.toUpperCase()}</span></td>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(ord.price)}</td>
+            <td>${ord.size} ${ord.symbol}</td>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtMoney(ord.margin)}</td>
+            <td style="color:#8b92a4; font-size:12px;">${ord.time || 'Just now'}</td>
+            <td>
+              <button class="pos-close-btn" style="padding:4px 10px; font-size:12px;" onclick="cancelPendingOrder(${ord.id})">Cancel</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
+  const histTbody = document.getElementById('tblc-history-tbody');
+  if (histTbody && walletState) {
+    if (!walletState.trades || walletState.trades.length === 0) {
+      histTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:#555f75;">No closed trades yet.</td></tr>`;
+    } else {
+      histTbody.innerHTML = walletState.trades.map(tr => {
+        const isUp = tr.pnl >= 0;
+        return `
+          <tr>
+            <td><strong>${tr.pair}</strong></td>
+            <td><span class="pos-dir-badge ${tr.side}">${tr.side.toUpperCase()}</span></td>
+            <td>${tr.size}</td>
+            <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtPrice(tr.closePrice || tr.price)}</td>
+            <td style="font-family:var(--font-price); font-weight:700;" class="${isUp ? 'up' : 'down'}">
+              ${isUp ? '+' : ''}${getCurrencySymbol()}${fmtMoney(tr.pnl)}
+            </td>
+            <td style="color:#8b92a4; font-size:12px;">${tr.time || 'Recently'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+}
+
+function renderTradeDeskOrderBookAndTrades() {
+  const obContainer = document.getElementById('orderbook-compact-grid');
+  const trContainer = document.getElementById('recent-trades-compact-list');
+  if (!selectedCoin) return;
+
+  const price = selectedCoin.price;
+  if (obContainer) {
+    const asks = [
+      { p: price * 1.0025, s: (Math.random() * 2 + 0.1).toFixed(3) },
+      { p: price * 1.0018, s: (Math.random() * 3 + 0.2).toFixed(3) },
+      { p: price * 1.0010, s: (Math.random() * 1.5 + 0.1).toFixed(3) },
+      { p: price * 1.0004, s: (Math.random() * 0.8 + 0.05).toFixed(3) }
+    ].reverse();
+
+    const bids = [
+      { p: price * 0.9996, s: (Math.random() * 1.2 + 0.1).toFixed(3) },
+      { p: price * 0.9990, s: (Math.random() * 2.5 + 0.2).toFixed(3) },
+      { p: price * 0.9982, s: (Math.random() * 1.8 + 0.1).toFixed(3) },
+      { p: price * 0.9975, s: (Math.random() * 3.2 + 0.5).toFixed(3) }
+    ];
+
+    obContainer.innerHTML = `
+      <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:4px; font-weight:700;">
+        <span>Price (${selectedCoin.symbol})</span>
+        <span>Size</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        ${asks.map(a => `
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); color:#f04f5e;">
+            <span>${fmtPrice(a.p)}</span>
+            <span style="color:#8b92a4;">${a.s}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div style="text-align:center; padding:6px 0; font-size:13px; font-weight:800; font-family:var(--font-price); color:#ff9900; border-top:1px dashed rgba(255,255,255,0.08); border-bottom:1px dashed rgba(255,255,255,0.08); margin:4px 0;">
+        ${getCurrencySymbol()}${fmtPrice(price)}
+      </div>
+      <div style="display:flex; flex-direction:column; gap:2px;">
+        ${bids.map(b => `
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); color:#00c087;">
+            <span>${fmtPrice(b.p)}</span>
+            <span style="color:#8b92a4;">${b.s}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  if (trContainer) {
+    const times = ['10:35:12', '10:35:08', '10:34:55', '10:34:42', '10:34:30', '10:34:11'];
+    trContainer.innerHTML = `
+      <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:4px; font-weight:700;">
+        <span>Price</span>
+        <span>Size</span>
+        <span>Time</span>
+      </div>
+      ${times.map((t, idx) => {
+        const isBuy = idx % 2 === 0;
+        const trPrice = price * (1 + (isBuy ? 0.0002 : -0.0002) * idx);
+        return `
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); padding:2px 0;">
+            <span style="color:${isBuy ? '#00c087' : '#f04f5e'}; font-weight:700;">${fmtPrice(trPrice)}</span>
+            <span style="color:#8b92a4;">${(Math.random() * 0.8 + 0.05).toFixed(3)}</span>
+            <span style="color:#555f75; font-size:11px;">${t}</span>
+          </div>
+        `;
+      }).join('')}
+    `;
+  }
 }
 
 if (typeof window !== 'undefined') {

@@ -1,35 +1,1203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="obsidian">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-  <title>VTrade – Next-Gen Institutional Crypto Paper Trading Platform</title>
-  <meta name="description" content="Trade 50+ cryptocurrencies with institutional real-time charts, zero-latency execution, and zero financial risk on VTrade." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <title>VTrade – Next-Gen Institutional Crypto Paper Trading & Futures Platform</title>
+  <meta name="description" content="Trade 50+ cryptocurrencies with institutional real-time TradingView charts, up to 150x leverage simulator, zero latency, and zero financial risk on VTrade." />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#080b11" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-  <!-- Premium Typography -->
+  <!-- Google Fonts: Inter, Roboto, Outfit, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
 
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=3.0" />
+  <link rel="stylesheet" href="style.css?v=2.9" />
 
-  <!-- Charting Libraries -->
+  <script>
+    (function() {
+      var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+      if (isCapacitor) {
+        document.documentElement.classList.add('is-native-apk', 'is-mobile-app');
+      } else {
+        var hideSplash = function() {
+          var sp = document.getElementById('vtrade-splash-screen');
+          if (sp) sp.style.display = 'none';
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', hideSplash);
+        } else {
+          hideSplash();
+        }
+      }
+    })();
+  </script>
+
+  <!-- External Charting Libraries -->
   <script src="lightweight-charts.js"></script>
   <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
-  <!-- Clean Canvas App Shell ready for New Website UI Implementation -->
-  <div id="app" class="vtrade-web-root">
-    <!-- Old UI removed. Ready for new luxury website UI redesign -->
+  <!-- ══════════════════════ 0. APP LAUNCH ANIMATED SPLASH SCREEN (APK ONLY) ══════════════════════ -->
+  <div class="vtrade-splash-screen" id="vtrade-splash-screen">
+    <div class="splash-content">
+      <div class="splash-emblem-wrap">
+        <div class="splash-pulse-glow"></div>
+        <img src="vtrade_master_icon.png" alt="VTrade" class="splash-emblem-img" />
+      </div>
+      <div class="splash-brand-title">
+        <span class="sbt-v">V</span><span class="sbt-trade">Trade</span>
+      </div>
+      <div class="splash-tagline">INSTITUTIONAL PAPER TRADING</div>
+      <div class="splash-loader-wrap">
+        <div class="splash-loader-bar" id="splash-loader-bar"></div>
+      </div>
+    </div>
   </div>
+
+  <!-- Root App Shell (Full-Width Responsive 120 FPS Platform) -->
+  <div id="app" class="vtrade-app-root">
+
+    <!-- ══════════════════════ 1. GLOBAL FLOATING & STICKY NAVBAR ══════════════════════ -->
+    <header class="app-top-header" id="app-top-header">
+      <div class="header-brand-wrap" onclick="switchBottomTab('home')" style="cursor: pointer;">
+        <div class="header-logo-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ff9900" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div class="header-brand-text">
+          <span class="brand-name">VTrade</span>
+          <span class="brand-sub-badge">PRO</span>
+        </div>
+      </div>
+
+      <!-- Desktop Floating Header Nav (Aceternity Floating Dock) -->
+      <nav class="desktop-header-nav" id="desktop-header-nav">
+        <button class="dnav-link active" id="dnav-home" onclick="switchBottomTab('home')">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          <span>Home</span>
+        </button>
+        <button class="dnav-link" id="dnav-markets" onclick="switchBottomTab('markets')">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="7 14 10 10 14 13 17 8"></polyline></svg>
+          <span>Markets</span>
+        </button>
+        <button class="dnav-link" id="dnav-trade" onclick="switchBottomTab('trade')">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 10l-4-4-4 4"></path><path d="M8 14l4 4 4-4"></path></svg>
+          <span>Trade Desk</span>
+        </button>
+        <button class="dnav-link" id="dnav-portfolio" onclick="switchBottomTab('portfolio')">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M16 12h4"></path></svg>
+          <span>Portfolio</span>
+        </button>
+        <button class="dnav-link" id="dnav-account" onclick="switchBottomTab('account')">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="header-actions-wrap">
+        <!-- Live Cash Badge (Paper Wallet Equity) -->
+        <div class="header-cash-badge" id="header-cash-badge" onclick="switchBottomTab('portfolio')" title="Virtual Wallet Equity">
+          <span class="hcb-dot"></span>
+          <span class="hcb-label">Cash:</span>
+          <span class="hcb-val" id="header-cash-val">$10,000.00</span>
+        </div>
+
+        <!-- Currency Toggle Switcher: USD ($) ⇄ INR (₹) -->
+        <button class="currency-toggle-btn" id="currency-toggle-btn" onclick="toggleCurrency()" title="Toggle Currency USD / INR">
+          <span class="curr-icon" id="curr-toggle-icon">$</span>
+          <span class="curr-label" id="curr-toggle-label">USD</span>
+        </button>
+
+        <!-- User Account / Sign In Pill -->
+        <button class="header-user-btn" id="header-user-btn" onclick="openAuthModal('login')" title="User Profile / Sign In">
+          <span class="hub-avatar" id="hub-avatar">👤</span>
+          <span class="hub-name" id="hub-name">Sign In</span>
+        </button>
+
+        <!-- Direct Trade Desk Button on Desktop -->
+        <button class="header-trade-cta-btn" id="header-trade-cta-btn" onclick="switchBottomTab('trade')">
+          <span>Trade Desk</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ══════════════════════ 2. INFINITE LIVE CRYPTO MARQUEE TICKER (56 COINS + GOLD) ══════════════════════ -->
+    <div class="desktop-marquee-wrap" id="desktop-marquee-wrap">
+      <div class="desktop-marquee-track" id="desktop-marquee-track">
+        <!-- Live populated by initDesktopMarquee() with all 56 coins + GOLD/USDT -->
+      </div>
+    </div>
+
+    <!-- ══════════════════════ 3. SCREEN: HOME / LANDING DASHBOARD ══════════════════════ -->
+    <section class="app-screen-view active" id="screen-home">
+      <div class="home-scroll-container">
+
+        <!-- Luxury Hero Landing Banner -->
+        <div class="landing-hero-section">
+          <div class="lhs-badge">
+            <span class="lhs-badge-pulse"></span>
+            <span>Institutional Paper Trading Platform</span>
+          </div>
+          <h1 class="lhs-headline">
+            Master Crypto Futures with <span class="gradient-text">Zero Risk</span>.
+          </h1>
+          <p class="lhs-subtext">
+            Simulate 150x leverage, execute market and limit orders on real-time Binance feeds, and analyze 50+ live markets with institutional TradingView charts.
+          </p>
+          <div class="lhs-cta-row">
+            <button class="lhs-btn-primary" onclick="switchBottomTab('trade')">
+              <span>Launch Trade Desk</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button class="lhs-btn-secondary" onclick="switchBottomTab('markets')">
+              <span>Explore 50+ Markets</span>
+            </button>
+            <a href="/vtrade.apk" class="lhs-btn-download" download="VTrade.apk" title="Download Android APK">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Download APK</span>
+            </a>
+          </div>
+
+          <!-- Quick Metrics Bar -->
+          <div class="lhs-metrics-bar">
+            <div class="lhs-m-item">
+              <span class="lhs-m-val">$10,000</span>
+              <span class="lhs-m-lbl">Virtual Starting Funds</span>
+            </div>
+            <div class="lhs-m-item">
+              <span class="lhs-m-val">56+</span>
+              <span class="lhs-m-lbl">Crypto & Gold Markets</span>
+            </div>
+            <div class="lhs-m-item">
+              <span class="lhs-m-val">Up to 150x</span>
+              <span class="lhs-m-lbl">Simulated Leverage</span>
+            </div>
+            <div class="lhs-m-item">
+              <span class="lhs-m-val">0 ms</span>
+              <span class="lhs-m-lbl">Realtime Execution Latency</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Market Intelligence Cards (Animmaster & Aceternity Style) -->
+        <div class="home-market-intel-grid">
+          <div class="intel-card" id="intel-fear-greed">
+            <div class="intel-head">
+              <span class="intel-label">Fear & Greed</span>
+              <span class="intel-badge neutral">Neutral</span>
+            </div>
+            <div class="intel-main-val">54 <span class="intel-sub">/ 100</span></div>
+            <div class="intel-caption">Market sentiment is balanced</div>
+          </div>
+          <div class="intel-card" id="intel-top-gainer" onclick="tradeTopGainer()" style="cursor: pointer;">
+            <div class="intel-head">
+              <span class="intel-label">Top 24h Gainer</span>
+              <span class="intel-badge up" id="intel-top-gainer-badge">+0.0%</span>
+            </div>
+            <div class="intel-main-val" id="intel-top-gainer-sym">BTC</div>
+            <div class="intel-caption">Click to trade top momentum asset</div>
+          </div>
+          <div class="intel-card" id="intel-global-vol">
+            <div class="intel-head">
+              <span class="intel-label">24h Global Volume</span>
+              <span class="intel-badge blue">Binance Vision</span>
+            </div>
+            <div class="intel-main-val" id="intel-global-vol-val">$84.2B</div>
+            <div class="intel-caption">Active paper liquidity pool</div>
+          </div>
+          <div class="intel-card" id="intel-ai-signal">
+            <div class="intel-head">
+              <span class="intel-label">AI Market Signal</span>
+              <span class="intel-badge green">Strong Buy</span>
+            </div>
+            <div class="intel-main-val">BULLISH</div>
+            <div class="intel-caption">Algorithmic technical indicator</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Real-Time Portfolio Performance Card -->
+        <div class="home-balance-card">
+          <div class="hbal-top-row">
+            <div class="hbal-top-left">
+              <span class="hbal-title">Total Portfolio Equity</span>
+              <button class="hbal-eye-btn" id="hbal-eye-btn" onclick="toggleBalanceVisibility()" aria-label="Toggle Balance Visibility">
+                <svg id="eye-icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Home Portfolio Chart Type Switcher (Line vs Candlestick) -->
+            <div class="home-chart-type-toggle">
+              <button class="hct-btn active" id="hct-line" onclick="setHomeChartType('line')" title="Line Chart">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 16 6 10 15 2 9"></polyline>
+                </svg>
+                <span>Line</span>
+              </button>
+              <button class="hct-btn" id="hct-candles" onclick="setHomeChartType('candles')" title="Candlestick Chart">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <rect x="5" y="6" width="4" height="12" rx="1" fill="currentColor"></rect>
+                  <line x1="7" y1="2" x2="7" y2="6"></line>
+                  <line x1="7" y1="18" x2="7" y2="22"></line>
+                  <rect x="15" y="4" width="4" height="10" rx="1" fill="currentColor"></rect>
+                  <line x1="17" y1="1" x2="17" y2="4"></line>
+                  <line x1="17" y1="14" x2="17" y2="20"></line>
+                </svg>
+                <span>Candles</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="hbal-amount-wrap">
+            <span class="hbal-currency-sym" id="hbal-curr-sym">$</span>
+            <span class="hbal-amount-val" id="hbal-amount-val">10,000.00</span>
+          </div>
+
+          <div class="hbal-change-row">
+            <span class="hbal-change-badge up" id="hbal-change-badge">+0.00%</span>
+            <span class="hbal-period-text">All-time Paper Performance</span>
+          </div>
+
+          <!-- Dynamic SVG Portfolio Curve & Touch Scrubber -->
+          <div class="portfolio-curve-wrap" id="portfolio-curve-wrap">
+            <svg class="portfolio-curve-svg" id="portfolio-curve-svg" viewBox="0 0 600 160" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="curveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#00c087" stop-opacity="0.32" />
+                  <stop offset="100%" stop-color="#00c087" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path id="curve-area" fill="url(#curveGradient)" d=""></path>
+              <path id="curve-line" fill="none" stroke="#00c087" stroke-width="2.6" stroke-linecap="round" d=""></path>
+            </svg>
+
+            <!-- SVG Candlestick View Container -->
+            <svg class="portfolio-candles-svg hidden" id="portfolio-candles-svg" viewBox="0 0 600 160" preserveAspectRatio="none"></svg>
+
+            <!-- Scrubber line and tooltip -->
+            <div class="portfolio-scrubber-line hidden" id="portfolio-scrubber-line"></div>
+            <div class="portfolio-scrubber-tooltip hidden" id="portfolio-scrubber-tooltip">
+              <span class="pst-val" id="pst-val">$10,000.00</span>
+              <span class="pst-date" id="pst-date">Today</span>
+            </div>
+            <div class="portfolio-touch-target" id="portfolio-touch-target"></div>
+          </div>
+
+          <!-- Timeframe Selector Chips -->
+          <div class="portfolio-timeframe-row">
+            <button class="pct-btn" id="pct-1d" onclick="setPortfolioTimeframe('1D')">1D</button>
+            <button class="pct-btn" id="pct-1w" onclick="setPortfolioTimeframe('1W')">1W</button>
+            <button class="pct-btn" id="pct-1m" onclick="setPortfolioTimeframe('1M')">1M</button>
+            <button class="pct-btn" id="pct-1y" onclick="setPortfolioTimeframe('1Y')">1Y</button>
+            <button class="pct-btn active" id="pct-all" onclick="setPortfolioTimeframe('ALL')">ALL</button>
+          </div>
+        </div>
+
+        <!-- Aceternity Bento Grid Spotlight Market Cards -->
+        <div class="home-bento-section">
+          <div class="section-header-row">
+            <h2 class="section-title">Spotlight Markets</h2>
+            <button class="section-more-btn" onclick="switchBottomTab('markets')">
+              <span>View All 56 Coins</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+
+          <div class="bento-grid" id="home-spotlight-bento">
+            <!-- Dynamically populated spotlight cards for BTC, ETH, GOLD, SOL -->
+          </div>
+        </div>
+
+        <!-- Platform Features (Bento Grid) -->
+        <div class="home-features-section">
+          <div class="section-header-row">
+            <h2 class="section-title">Why Professional Traders Choose VTrade</h2>
+          </div>
+          <div class="features-bento-grid">
+            <div class="feature-card">
+              <div class="fc-icon">⚡</div>
+              <h3 class="fc-title">Zero Financial Risk</h3>
+              <p class="fc-desc">Every account starts with $10,000 in virtual funds. Test advanced futures strategies without risking personal capital.</p>
+            </div>
+            <div class="feature-card">
+              <div class="fc-icon">📊</div>
+              <h3 class="fc-title">Live TradingView Charts</h3>
+              <p class="fc-desc">Interactive multi-timeframe candlestick charts with full drawing tools, technical indicators, and real-time tick sync.</p>
+            </div>
+            <div class="feature-card">
+              <div class="fc-icon">🚀</div>
+              <h3 class="fc-title">Up to 150x Leverage</h3>
+              <p class="fc-desc">Simulate realistic margin requirements, liquidation price thresholds, and live P&L calculations on crypto derivatives.</p>
+            </div>
+            <div class="feature-card">
+              <div class="fc-icon">🪙</div>
+              <h3 class="fc-title">56+ Assets & Gold Spot</h3>
+              <p class="fc-desc">From Bitcoin and Ethereum to Meme coins and London Gold Spot (GOLD/USDT), access a diverse, real-time market catalog.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="vtrade-footer">
+          <div class="footer-top-row">
+            <div class="footer-brand">
+              <span class="brand-name">VTrade PRO</span>
+              <p class="footer-tagline">Institutional Crypto & Futures Paper Trading Platform</p>
+            </div>
+            <div class="footer-links">
+              <a href="javascript:void(0)" onclick="switchBottomTab('home')">Home</a>
+              <a href="javascript:void(0)" onclick="switchBottomTab('markets')">Markets</a>
+              <a href="javascript:void(0)" onclick="switchBottomTab('trade')">Trade Desk</a>
+              <a href="javascript:void(0)" onclick="switchBottomTab('portfolio')">Portfolio</a>
+              <a href="/vtrade.apk" download>Download APK</a>
+            </div>
+          </div>
+          <div class="footer-bottom-row">
+            <p class="footer-disclaimer">
+              Notice: VTrade is a 100% simulated paper-trading platform created for financial education and strategy testing. No real money, deposits, withdrawals, or actual cryptocurrency transactions occur.
+            </p>
+            <p class="footer-copy">© 2026 VTrade. All rights reserved.</p>
+          </div>
+        </footer>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════ 4. SCREEN: SEARCHABLE MARKETS PAGE (56 COINS + GOLD) ══════════════════════ -->
+    <section class="app-screen-view" id="screen-markets">
+      <div class="markets-scroll-container">
+        
+        <!-- Markets Header & Search Bar -->
+        <div class="markets-header-card">
+          <div class="mhc-left">
+            <h1 class="mhc-title">Markets Explorer</h1>
+            <p class="mhc-subtitle">Live real-time prices and 24h stats for 56 crypto assets & Gold Spot</p>
+          </div>
+          <div class="markets-search-wrap">
+            <svg class="msw-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="markets-search-input" class="markets-search-input" placeholder="Search 56+ coins or Gold (e.g. BTC, ETH, GOLD, SOL)..." oninput="handleMarketSearch(this.value)" />
+          </div>
+        </div>
+
+        <!-- Category Filter Chips -->
+        <div class="markets-category-bar">
+          <button class="mcat-chip active" id="mcat-all" onclick="setMarketCategory('all')">All Markets (57)</button>
+          <button class="mcat-chip" id="mcat-futures" onclick="setMarketCategory('futures')">Futures / Major</button>
+          <button class="mcat-chip" id="mcat-l1" onclick="setMarketCategory('l1')">Layer 1</button>
+          <button class="mcat-chip" id="mcat-defi" onclick="setMarketCategory('defi')">DeFi</button>
+          <button class="mcat-chip" id="mcat-meme" onclick="setMarketCategory('meme')">Meme Coins</button>
+          <button class="mcat-chip" id="mcat-ai" onclick="setMarketCategory('ai')">AI & Data</button>
+          <button class="mcat-chip" id="mcat-l2" onclick="setMarketCategory('l2')">Layer 2</button>
+        </div>
+
+        <!-- Full-Width Responsive Markets Table -->
+        <div class="markets-table-card">
+          <div class="markets-table-wrap">
+            <table class="markets-table">
+              <thead>
+                <tr>
+                  <th onclick="sortMarkets('name')">Asset</th>
+                  <th onclick="sortMarkets('price')" style="text-align: right;">Last Price</th>
+                  <th onclick="sortMarkets('change')" style="text-align: right;">24h Change</th>
+                  <th style="text-align: right;">24h High / Low</th>
+                  <th onclick="sortMarkets('vol')" style="text-align: right;">24h Volume</th>
+                  <th style="text-align: center;">Max Leverage</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="markets-table-body">
+                <!-- Dynamically populated with all 56 coins + Gold Spot (GOLD/USDT) -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════ 5. SCREEN: FULL-WIDTH DESKTOP TRADING TERMINAL ══════════════════════ -->
+    <section class="app-screen-view" id="screen-trade">
+      <div class="trade-fullwidth-container">
+
+        <!-- Top Ticker Bar for Selected Instrument -->
+        <div class="trade-instrument-bar">
+          <div class="tib-coin-meta" onclick="openMarketSelectorModal()" style="cursor: pointer;" title="Change Trading Instrument">
+            <img id="trade-cur-icon" src="icons/btc.png" alt="BTC" class="tib-avatar" onerror="handleCoinIconError(this, 'BTC', 'futures')" />
+            <img id="trade-coin-icon" src="icons/btc.png" alt="BTC" class="tib-avatar hidden" />
+            <div class="tib-titles">
+              <div class="tib-pair-row">
+                <span class="tib-pair" id="trade-coin-pair">BTC/USDT</span>
+                <span class="tib-badge" id="trade-coin-cat">Futures</span>
+              </div>
+              <span class="tib-name" id="trade-coin-name">Bitcoin</span>
+            </div>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+
+          <div class="tib-stats-row">
+            <div class="tib-stat">
+              <span class="tib-lbl">Price</span>
+              <span class="tib-val" id="trade-price-val">$81,900.00</span>
+            </div>
+            <div class="tib-stat">
+              <span class="tib-lbl">24h Change</span>
+              <span class="tib-val up" id="trade-change-val">+0.42%</span>
+            </div>
+            <div class="tib-stat desktop-only">
+              <span class="tib-lbl">24h High</span>
+              <span class="tib-val" id="trade-high-val">$82,078.00</span>
+            </div>
+            <div class="tib-stat desktop-only">
+              <span class="tib-lbl">24h Low</span>
+              <span class="tib-val" id="trade-low-val">$80,819.66</span>
+            </div>
+            <div class="tib-stat desktop-only">
+              <span class="tib-lbl">24h Volume</span>
+              <span class="tib-val" id="trade-vol-val">610.0M USDT</span>
+            </div>
+          </div>
+
+          <!-- Timeframe Switcher Strip (11 Exact Intervals) -->
+          <div class="trade-timeframe-strip">
+            <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
+            <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
+            <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
+            <button class="ctf-btn active" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
+            <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
+            <button class="ctf-btn" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
+            <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
+            <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
+            <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
+            <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
+            <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
+            <button class="ctf-btn ctf-fs" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Fullscreen Chart">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Full-Width Workspace: Chart & Depth (Left) + Order Desk (Right) -->
+        <div class="trade-workspace-grid">
+
+          <!-- Left Column: Chart & Market Depth -->
+          <div class="trade-main-column">
+            <!-- Large Responsive Chart Panel -->
+            <div class="trade-chart-box" id="trade-candlestick-container">
+              <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
+                src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=15&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=1&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1"
+                allowtransparency="true" frameborder="0">
+              </iframe>
+              <svg id="candlestick-svg" class="hidden" viewBox="0 0 800 400" preserveAspectRatio="none"></svg>
+            </div>
+
+            <!-- Compact Order Book & Recent Trades Panel -->
+            <div class="trade-depth-panel">
+              <div class="tdp-tabs">
+                <button class="tdp-tab active" id="tdp-tab-book" onclick="switchTradeDepthTab('book')">Order Book (Depth)</button>
+                <button class="tdp-tab" id="tdp-tab-trades" onclick="switchTradeDepthTab('trades')">Recent Market Trades</button>
+              </div>
+              <div class="tdp-content" id="tdp-content-book">
+                <div class="orderbook-compact-grid" id="orderbook-compact-grid">
+                  <!-- Live bids and asks -->
+                </div>
+              </div>
+              <div class="tdp-content hidden" id="tdp-content-trades">
+                <div class="recent-trades-compact-list" id="recent-trades-compact-list">
+                  <!-- Live trade executions -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Desktop Side Order Execution Terminal Dock -->
+          <aside class="desktop-trade-order-dock" id="desktop-trade-order-dock">
+            <div class="dtod-header">
+              <span class="dtod-title">Order Execution</span>
+              <span class="dtod-badge">Zero Commission</span>
+            </div>
+
+            <!-- Buy / Long vs Sell / Short Segment Switcher -->
+            <div class="dtod-side-switcher">
+              <button class="dtod-side-btn active-buy" id="dtod-btn-buy" onclick="setDesktopOrderSide('long')">Buy / Long</button>
+              <button class="dtod-side-btn" id="dtod-btn-sell" onclick="setDesktopOrderSide('short')">Sell / Short</button>
+            </div>
+
+            <!-- Order Type Switcher: Market vs Limit -->
+            <div class="dtod-type-switcher">
+              <button class="dtod-type-btn active" id="dtod-type-market" onclick="setDesktopOrderType('market')">Market</button>
+              <button class="dtod-type-btn" id="dtod-type-limit" onclick="setDesktopOrderType('limit')">Limit</button>
+            </div>
+
+            <!-- Limit Price Input (Shown only if Limit selected) -->
+            <div class="dtod-input-group hidden" id="dtod-limit-group">
+              <label class="dtod-label">Order Price (USDT)</label>
+              <input type="number" step="any" class="dtod-input" id="dtod-limit-price" placeholder="Trigger Price" oninput="updateDesktopOrderCalculations()" />
+            </div>
+
+            <!-- Leverage Selector (1x - 150x) with Quick Chips -->
+            <div class="dtod-leverage-wrap">
+              <div class="dtod-lev-header">
+                <span class="dtod-label">Leverage</span>
+                <span class="dtod-lev-val" id="dtod-lev-val">20x</span>
+              </div>
+              <input type="range" min="1" max="150" value="20" class="dtod-lev-slider" id="dtod-lev-slider" oninput="handleDesktopLeverageInput(this.value)" />
+              <div class="dtod-lev-chips">
+                <button class="dtod-lchip" onclick="setDesktopLeverage(5)">5x</button>
+                <button class="dtod-lchip" onclick="setDesktopLeverage(10)">10x</button>
+                <button class="dtod-lchip active" onclick="setDesktopLeverage(20)">20x</button>
+                <button class="dtod-lchip" onclick="setDesktopLeverage(50)">50x</button>
+                <button class="dtod-lchip" onclick="setDesktopLeverage(100)">100x</button>
+                <button class="dtod-lchip" onclick="setDesktopLeverage(150)">150x</button>
+              </div>
+            </div>
+
+            <!-- Order Size Input + Quick % Chips -->
+            <div class="dtod-input-group">
+              <div class="dtod-label-row">
+                <label class="dtod-label">Order Size</label>
+                <span class="dtod-max-label" id="dtod-max-size">Max: 0.12 BTC</span>
+              </div>
+              <div class="dtod-input-box">
+                <input type="number" step="any" class="dtod-input" id="dtod-order-size" value="0.05" oninput="handleDesktopSizeInput(this.value)" />
+                <span class="dtod-unit" id="dtod-coin-unit">BTC</span>
+              </div>
+              <div class="dtod-pct-chips">
+                <button class="dtod-pchip" onclick="setDesktopOrderPct(25)">25%</button>
+                <button class="dtod-pchip" onclick="setDesktopOrderPct(50)">50%</button>
+                <button class="dtod-pchip" onclick="setDesktopOrderPct(75)">75%</button>
+                <button class="dtod-pchip" onclick="setDesktopOrderPct(100)">100%</button>
+              </div>
+            </div>
+
+            <!-- Live Metrics Breakdown Card -->
+            <div class="dtod-metrics-card">
+              <div class="dtod-m-row">
+                <span class="dtod-mk">Required Margin:</span>
+                <span class="dtod-mv" id="dtod-m-margin">$205.40</span>
+              </div>
+              <div class="dtod-m-row">
+                <span class="dtod-mk">Notional Value:</span>
+                <span class="dtod-mv" id="dtod-m-notional">$4,108.00</span>
+              </div>
+              <div class="dtod-m-row">
+                <span class="dtod-mk">Est. Liquidation:</span>
+                <span class="dtod-mv dtod-liq" id="dtod-m-liq">$78,120.00</span>
+              </div>
+              <div class="dtod-m-row">
+                <span class="dtod-mk">Trading Fee:</span>
+                <span class="dtod-mv" style="color: #00c087;">$0.00 (Free)</span>
+              </div>
+            </div>
+
+            <!-- Primary Action Button with Tactile Feedback -->
+            <button class="dtod-submit-btn buy" id="dtod-submit-btn" onclick="executeDesktopOrder()">
+              Place Buy / Long Order
+            </button>
+          </aside>
+
+        </div>
+
+        <!-- Bottom Full-Width Positions & Orders Ledger Deck -->
+        <div class="trade-bottom-ledger-card">
+          <div class="tblc-tabs">
+            <button class="tblc-tab active" id="tblc-tab-positions" onclick="switchLedgerTab('positions')">
+              <span>Open Positions</span>
+              <span class="tblc-badge" id="ledger-pos-count">0</span>
+            </button>
+            <button class="tblc-tab" id="tblc-tab-orders" onclick="switchLedgerTab('orders')">
+              <span>Open Orders</span>
+              <span class="tblc-badge" id="ledger-ord-count">0</span>
+            </button>
+            <button class="tblc-tab" id="tblc-tab-history" onclick="switchLedgerTab('history')">
+              <span>Trade History</span>
+            </button>
+          </div>
+
+          <!-- Positions Tab View -->
+          <div class="tblc-view" id="tblc-view-positions">
+            <div class="tblc-table-wrap">
+              <table class="tblc-table">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Side</th>
+                    <th>Leverage</th>
+                    <th>Size</th>
+                    <th>Entry Price</th>
+                    <th>Mark Price</th>
+                    <th>Liquidation Price</th>
+                    <th>Margin</th>
+                    <th>Unrealized P&L</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="tblc-positions-tbody">
+                  <!-- Live user positions rendered from walletState.positions -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Open Orders Tab View -->
+          <div class="tblc-view hidden" id="tblc-view-orders">
+            <div class="tblc-table-wrap">
+              <table class="tblc-table">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Type</th>
+                    <th>Side</th>
+                    <th>Target Price</th>
+                    <th>Size</th>
+                    <th>Margin</th>
+                    <th>Created At</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="tblc-orders-tbody">
+                  <!-- Live pending orders rendered from walletState.orders -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Trade History Tab View -->
+          <div class="tblc-view hidden" id="tblc-view-history">
+            <div class="tblc-table-wrap">
+              <table class="tblc-table">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Side</th>
+                    <th>Size</th>
+                    <th>Price</th>
+                    <th>Realized P&L</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody id="tblc-history-tbody">
+                  <!-- Rendered from walletState.trades -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Floating Action Dock (Coinbase Style) -->
+        <div class="trade-floating-dock" id="trade-floating-dock">
+          <button class="dock-action-btn dock-buy" id="trade-btn-long" onclick="openOrderSheet('long')">
+            <span class="dock-btn-main">Buy / Long</span>
+            <span class="dock-btn-sub" id="dock-buy-sub">Up to 150x</span>
+          </button>
+          <button class="dock-action-btn dock-sell" id="trade-btn-short" onclick="openOrderSheet('short')">
+            <span class="dock-btn-main">Sell / Short</span>
+            <span class="dock-btn-sub" id="dock-sell-sub">Up to 150x</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════ 6. SCREEN: PORTFOLIO & ASSETS ══════════════════════ -->
+    <section class="app-screen-view" id="screen-portfolio">
+      <div class="portfolio-scroll-container">
+        
+        <!-- Portfolio Hero Summary -->
+        <div class="pf-hero-card">
+          <span class="pf-hero-title">Account Virtual Equity</span>
+          <div class="pf-hero-val-wrap">
+            <span class="pf-curr-sym" id="pf-curr-sym">$</span>
+            <span class="pf-total-val" id="pf-total-val">10,000.00</span>
+          </div>
+          <div class="pf-hero-sub">100% Zero-Risk Demo Trading Funds</div>
+        </div>
+
+        <!-- Portfolio Key Financial Metrics Grid -->
+        <div class="pf-metrics-grid">
+          <div class="pf-metric-card">
+            <span class="pfm-k">Available Cash</span>
+            <span class="pfm-v" id="pfm-free-cash">$10,000.00</span>
+          </div>
+          <div class="pf-metric-card">
+            <span class="pfm-k">Used Margin</span>
+            <span class="pfm-v" id="pfm-used-margin">$0.00</span>
+          </div>
+          <div class="pf-metric-card">
+            <span class="pfm-k">Unrealized P&L</span>
+            <span class="pfm-v up" id="pfm-unrealized-pnl">+$0.00</span>
+          </div>
+          <div class="pf-metric-card">
+            <span class="pfm-k">Risk Ratio</span>
+            <span class="pfm-v" id="pfm-risk-ratio">0.0% (Safe)</span>
+          </div>
+          <div class="pf-metric-card">
+            <span class="pfm-k">Active Positions</span>
+            <span class="pfm-v" id="pf-active-pos-count">0</span>
+          </div>
+          <div class="pf-metric-card">
+            <span class="pfm-k">Demo Refill</span>
+            <button class="pfm-refill-btn" onclick="refillPaperDemoBalance()" title="Reset Paper Balance to $10,000">
+              Reset $10,000
+            </button>
+          </div>
+        </div>
+
+        <!-- Open Positions Section -->
+        <div class="pf-section-card">
+          <div class="pf-sec-header">
+            <span class="pf-sec-title">Open Positions</span>
+          </div>
+          <div class="pf-positions-container" id="pf-positions-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Trade History Section (heading strictly without '(Paper Ledger)') -->
+        <div class="pf-section-card">
+          <div class="pf-sec-header">
+            <span class="pf-sec-title">Trade History</span>
+          </div>
+          <div class="pf-history-container" id="pf-history-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════ 7. SCREEN: ACCOUNT, PROFILE & SETTINGS ══════════════════════ -->
+    <section class="app-screen-view" id="screen-account">
+      <div class="account-scroll-container">
+        
+        <!-- Profile Identity Card -->
+        <div class="account-profile-card">
+          <div class="apc-avatar-wrap" onclick="document.getElementById('account-dp-file-input').click()" style="cursor: pointer;" title="Change Profile Photo">
+            <img id="account-dp-img" src="icons/btc.png" alt="Profile Avatar" class="apc-dp" />
+            <div class="apc-avatar-overlay">📷</div>
+            <input type="file" id="account-dp-file-input" accept="image/*" class="hidden" onchange="handleAvatarFileSelect(this)" />
+          </div>
+          <div class="apc-info">
+            <h2 class="apc-name" id="account-display-name">Demo Trader</h2>
+            <p class="apc-email" id="account-display-email">trader@vtrade.org</p>
+            <div class="apc-tag-row">
+              <span class="apc-tag gold">Verified Paper Trader</span>
+              <span class="apc-tag green">Zero Risk</span>
+            </div>
+          </div>
+          <button class="apc-edit-btn" onclick="openProfileEditModal()">Edit Profile</button>
+        </div>
+
+        <!-- Preset Avatars Selector -->
+        <div class="settings-card">
+          <h3 class="settings-card-title">Choose Preset Avatar</h3>
+          <div class="preset-avatars-row">
+            <button class="preset-avatar-btn active" id="pab-bitcoin" onclick="selectPresetAvatar('icons/btc.png')"><img src="icons/btc.png" alt="BTC" /></button>
+            <button class="preset-avatar-btn" id="pab-ethereum" onclick="selectPresetAvatar('icons/eth.png')"><img src="icons/eth.png" alt="ETH" /></button>
+            <button class="preset-avatar-btn" id="pab-solana" onclick="selectPresetAvatar('icons/sol.png')"><img src="icons/sol.png" alt="SOL" /></button>
+            <button class="preset-avatar-btn" id="pab-doge" onclick="selectPresetAvatar('icons/doge.png')"><img src="icons/doge.png" alt="DOGE" /></button>
+          </div>
+        </div>
+
+        <!-- 4 Luxury Dark Themes Switcher -->
+        <div class="settings-card">
+          <h3 class="settings-card-title">Terminal Theme</h3>
+          <div class="theme-options-grid">
+            <button class="theme-card active" id="theme-opt-obsidian" onclick="setAppTheme('obsidian')">
+              <div class="tc-preview obsidian"></div>
+              <span>Obsidian Black</span>
+            </button>
+            <button class="theme-card" id="theme-opt-midnight" onclick="setAppTheme('midnight')">
+              <div class="tc-preview midnight"></div>
+              <span>Midnight Navy</span>
+            </button>
+            <button class="theme-card" id="theme-opt-oled" onclick="setAppTheme('oled')">
+              <div class="tc-preview oled"></div>
+              <span>OLED Pure Black</span>
+            </button>
+            <button class="theme-card" id="theme-opt-cyber" onclick="setAppTheme('cyber')">
+              <div class="tc-preview cyber"></div>
+              <span>Cyber Neon</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Currency & Preferences -->
+        <div class="settings-card">
+          <h3 class="settings-card-title">Preferences</h3>
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-title">Display Currency</span>
+              <span class="pref-desc">Toggle between US Dollar ($) and Indian Rupee (₹)</span>
+            </div>
+            <button class="pref-action-btn" onclick="toggleCurrency()">
+              Toggle USD / INR
+            </button>
+          </div>
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-title">Cloud Wallet Database Sync</span>
+              <span class="pref-desc">Synchronize paper trades with central Render database</span>
+            </div>
+            <button class="pref-action-btn" id="acc-cloud-sync-btn" onclick="triggerManualCloudWalletSync()">
+              Sync Cloud
+            </button>
+          </div>
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-title">Reset Demo Funds</span>
+              <span class="pref-desc">Reset paper portfolio to initial $10,000.00</span>
+            </div>
+            <button class="pref-action-btn danger" onclick="refillPaperDemoBalance()">
+              Reset $10,000
+            </button>
+          </div>
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-title">Android APK</span>
+              <span class="pref-desc">Install native Android app for 120 FPS mobile trading</span>
+            </div>
+            <a href="/vtrade.apk" download="VTrade.apk" class="pref-action-btn download-btn">
+              Download APK
+            </a>
+          </div>
+        </div>
+
+        <!-- Session & Logout -->
+        <div class="settings-card">
+          <button class="logout-btn" onclick="handleAuthLogout()">
+            Sign Out of VTrade
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════ 8. MOBILE BOTTOM NAVIGATION BAR ══════════════════════ -->
+    <nav class="vtrade-bottom-nav" id="vtrade-bottom-nav">
+      <button class="vnav-item active" id="vnav-home" onclick="switchBottomTab('home')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+        <span>Home</span>
+      </button>
+      <button class="vnav-item" id="vnav-markets" onclick="switchBottomTab('markets')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="7 14 10 10 14 13 17 8"></polyline></svg>
+        <span>Markets</span>
+      </button>
+      <button class="vnav-item" id="vnav-trade" onclick="switchBottomTab('trade')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 10l-4-4-4 4"></path><path d="M8 14l4 4 4-4"></path></svg>
+        <span>Trade</span>
+      </button>
+      <button class="vnav-item" id="vnav-portfolio" onclick="switchBottomTab('portfolio')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M16 12h4"></path></svg>
+        <span>Portfolio</span>
+      </button>
+      <button class="vnav-item" id="vnav-account" onclick="switchBottomTab('account')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ══════════════════════ 9. LUXURY SIGN IN / SIGN UP MODAL (AUTH WALL) ══════════════════════ -->
+  <div class="auth-modal-overlay hidden" id="auth-modal-overlay" onclick="handleBackdropClick(event)">
+    <div class="auth-modal-card" id="auth-modal-card">
+      <button class="auth-close-btn" onclick="closeAuthModal()" aria-label="Close Auth Modal">✕</button>
+      
+      <!-- Brand & Tabs -->
+      <div class="auth-brand-wrap">
+        <div class="auth-brand-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#ff9900" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        </div>
+        <h2 class="auth-brand-title">VTrade PRO</h2>
+        <p class="auth-brand-subtitle">Access your persistent paper trading account</p>
+      </div>
+
+      <div class="auth-tab-row">
+        <button class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab-btn" id="auth-tab-register" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+
+      <!-- In-Modal Alert Banner -->
+      <div class="auth-inline-alert auth-alert-banner hidden" id="auth-inline-alert"></div>
+      <div class="auth-alert-banner hidden" id="auth-alert-banner"></div>
+
+      <!-- Sign In Form -->
+      <form class="auth-form" id="auth-login-form" onsubmit="handleAuthLogin(event)">
+        <div class="auth-input-group">
+          <label class="auth-label">Email Address</label>
+          <input type="email" class="auth-input" id="auth-login-email" placeholder="name@example.com" required autocomplete="email" />
+        </div>
+        <div class="auth-input-group">
+          <div class="auth-label-row">
+            <label class="auth-label">Password</label>
+            <a href="javascript:void(0)" class="auth-forgot-link" onclick="handleForgotPasswordClick()">Forgot?</a>
+          </div>
+          <div class="auth-password-wrap">
+            <input type="password" class="auth-input" id="auth-login-password" placeholder="Enter password" required autocomplete="current-password" />
+            <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('auth-login-password', this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="auth-primary-btn" id="auth-login-submit">
+          Sign In to Terminal
+        </button>
+      </form>
+
+      <!-- Create Account Form -->
+      <form class="auth-form hidden" id="auth-register-form" onsubmit="handleAuthRegister(event)">
+        <div class="auth-input-group">
+          <label class="auth-label">Username</label>
+          <input type="text" class="auth-input" id="auth-register-username" placeholder="Choose username" required autocomplete="username" />
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">Email Address</label>
+          <input type="email" class="auth-input" id="auth-register-email" placeholder="name@example.com" required autocomplete="email" />
+        </div>
+        <div class="auth-input-group">
+          <label class="auth-label">Password (min 6 chars)</label>
+          <div class="auth-password-wrap">
+            <input type="password" class="auth-input" id="auth-register-password" placeholder="Create strong password" required minlength="6" autocomplete="new-password" />
+            <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('auth-register-password', this)">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="auth-primary-btn" id="auth-register-submit">
+          Create Account ($10,000 Demo)
+        </button>
+      </form>
+
+      <div class="auth-footer-note" id="auth-footer-note">
+        🔒 Connected to SQLite Auth Database & Persistent Ledger
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 10. SLIDE-UP ORDER BOTTOM SHEET (MOBILE & RESPONSIVE) ══════════════════════ -->
+  <div class="order-sheet-backdrop hidden" id="order-sheet-backdrop" onclick="closeOrderSheet()"></div>
+  <div class="order-sheet-container hidden" id="order-sheet-container">
+    <div class="sheet-drag-handle" onclick="closeOrderSheet()"></div>
+    <div class="sheet-header">
+      <div class="sheet-title-left">
+        <span class="sheet-side-badge buy" id="sheet-side-badge">BUY / LONG</span>
+        <span class="sheet-pair-title" id="sheet-pair-title">BTC/USDT</span>
+      </div>
+      <button class="sheet-close-btn" onclick="closeOrderSheet()">✕</button>
+    </div>
+
+    <!-- Order Type Selector -->
+    <div class="sheet-type-switcher">
+      <button class="sot-btn active" id="sot-market" onclick="setSheetOrderType('market')">Market</button>
+      <button class="sot-btn" id="sot-limit" onclick="setSheetOrderType('limit')">Limit</button>
+    </div>
+
+    <!-- Limit Price Input -->
+    <div class="sheet-input-group hidden" id="sheet-limit-group">
+      <label class="sheet-label">Order Price (USDT)</label>
+      <input type="number" step="any" class="sheet-input" id="sheet-limit-price" placeholder="Target execution price" oninput="updateSheetCalculations()" />
+    </div>
+
+    <!-- Leverage Slider -->
+    <div class="sheet-leverage-wrap">
+      <div class="sheet-lev-header">
+        <span class="sheet-label">Leverage</span>
+        <span class="sheet-lev-val" id="sheet-lev-val">20x</span>
+      </div>
+      <input type="range" min="1" max="150" value="20" class="sheet-lev-slider" id="sheet-leverage-slider" oninput="handleSheetLeverageInput(this.value)" />
+      <div class="sheet-lev-chips">
+        <button class="sheet-lchip" onclick="setSheetLeverage(5)">5x</button>
+        <button class="sheet-lchip" onclick="setSheetLeverage(10)">10x</button>
+        <button class="sheet-lchip active" onclick="setSheetLeverage(20)">20x</button>
+        <button class="sheet-lchip" onclick="setSheetLeverage(50)">50x</button>
+        <button class="sheet-lchip" onclick="setSheetLeverage(100)">100x</button>
+      </div>
+    </div>
+
+    <!-- Order Size Input -->
+    <div class="sheet-input-group">
+      <div class="sheet-label-row">
+        <label class="sheet-label">Order Size</label>
+        <span class="sheet-max-label" id="sheet-max-size">Max: 0.12 BTC</span>
+      </div>
+      <div class="sheet-input-box">
+        <input type="number" step="any" class="sheet-input" id="sheet-size-input" value="0.05" oninput="handleSheetSizeInput(this.value)" />
+        <span class="sheet-unit" id="sheet-coin-unit">BTC</span>
+      </div>
+      <div class="sheet-pct-chips">
+        <button class="sheet-pchip" onclick="setSheetOrderPct(25)">25%</button>
+        <button class="sheet-pchip" onclick="setSheetOrderPct(50)">50%</button>
+        <button class="sheet-pchip" onclick="setSheetOrderPct(75)">75%</button>
+        <button class="sheet-pchip" onclick="setSheetOrderPct(100)">100%</button>
+      </div>
+    </div>
+
+    <!-- Calculations Breakdown -->
+    <div class="sheet-metrics-card">
+      <div class="sm-row">
+        <span>Notional Value:</span>
+        <span id="scalc-notional">$4,095.00</span>
+      </div>
+      <div class="sm-row">
+        <span>Required Margin:</span>
+        <span id="scalc-margin">$204.75</span>
+      </div>
+      <div class="sm-row">
+        <span>Est. Liquidation Price:</span>
+        <span class="sm-liq" id="scalc-liq-price">$78,258.00</span>
+      </div>
+    </div>
+
+    <!-- Confirm Button -->
+    <button class="sheet-confirm-btn buy" id="sheet-confirm-btn" onclick="executeOrderFromSheet()">
+      Confirm Buy / Long
+    </button>
+  </div>
+
+  <!-- ══════════════════════ 11. FULLSCREEN BROKER TRADINGVIEW MODAL ══════════════════════ -->
+  <div class="tv-fullscreen-modal hidden" id="tv-fullscreen-modal">
+    <div class="tv-fs-header">
+      <button class="tv-fs-back-btn" onclick="closeFullscreenChart()" aria-label="Close Fullscreen">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <div class="tv-fs-coin-meta">
+        <img id="tv-fs-coin-icon" src="icons/btc.png" alt="Coin" class="tv-fs-icon" />
+        <span id="tv-fs-pair" class="tv-fs-pair-text">BTC/USDT</span>
+        <span id="tv-fs-change" class="tv-fs-change-pill up">+0.00%</span>
+      </div>
+      <div class="tv-fs-actions">
+        <button class="tv-fs-action-btn" id="tv-fs-star-btn" onclick="toggleFavoriteCurrentCoin()" title="Favorite">★</button>
+        <button class="tv-fs-action-btn" id="tv-fs-settings-btn" onclick="openFsSettings()" title="Chart Settings">⚙</button>
+      </div>
+    </div>
+
+    <!-- 4 Sub-Header Tabs -->
+    <div class="tv-fs-subtabs">
+      <button class="tv-fs-tab active" id="tv-fs-tab-price" onclick="switchFsTab('price')">Price</button>
+      <button class="tv-fs-tab" id="tv-fs-tab-info" onclick="switchFsTab('info')">Info</button>
+      <button class="tv-fs-tab" id="tv-fs-tab-orderbook" onclick="switchFsTab('orderbook')">Order Book</button>
+      <button class="tv-fs-tab" id="tv-fs-tab-trades" onclick="switchFsTab('trades')">Trades</button>
+    </div>
+
+    <!-- Fullscreen Content Panels -->
+    <div class="tv-fs-body">
+      <div class="tv-fs-panel active" id="tv-fs-panel-chart">
+        <iframe id="tv-fullscreen-iframe" class="tv-fullscreen-iframe" allow="clipboard-write; pointer-lock" allowtransparency="true" frameborder="0"></iframe>
+      </div>
+      <div class="tv-fs-panel" id="tv-fs-panel-info">
+        <div class="fs-info-content" id="fs-info-content"></div>
+      </div>
+      <div class="tv-fs-panel" id="tv-fs-panel-orderbook">
+        <div class="fs-orderbook-content" id="fs-orderbook-content"></div>
+      </div>
+      <div class="tv-fs-panel" id="tv-fs-panel-trades">
+        <div class="fs-trades-content" id="fs-trades-content"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Floating Broker Dock -->
+    <div class="tv-fs-bottom-dock" id="tv-fs-bottom-dock">
+      <button class="tv-fs-new-order-btn" onclick="openOrderSheet('long')">Create New Order ^</button>
+      <div class="tv-fs-quick-actions">
+        <button class="tv-fs-qbtn buy" onclick="openOrderSheet('long')">Instant Buy</button>
+        <button class="tv-fs-qbtn sell" onclick="openOrderSheet('short')">Instant Sell</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 12. CHART SETTINGS MODAL ══════════════════════ -->
+  <div class="cs-modal-backdrop hidden" id="tv-chart-settings-modal" onclick="closeFsSettings()">
+    <div class="cs-modal-card" onclick="event.stopPropagation()">
+      <div class="cs-modal-header">
+        <span class="cs-title">Chart Properties</span>
+        <button class="cs-close" onclick="closeFsSettings()">✕</button>
+      </div>
+      <div class="cs-body">
+        <div class="cs-row">
+          <label>Chart Style</label>
+          <select id="cs-style-select" onchange="updateChartSettings()">
+            <option value="1">Candles</option>
+            <option value="2">Bars</option>
+            <option value="3">Line</option>
+            <option value="8">Heikin Ashi</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 13. MODERN 2D FLAT ONBOARDING MODAL ══════════════════════ -->
+  <div class="onboarding-modal hidden" id="vtrade-onboarding-modal">
+    <div class="onboarding-card">
+      <div class="onboarding-track" id="onboarding-track">
+        <div class="onboarding-slide" data-slide="0">
+          <div class="os-icon">⚡</div>
+          <h2 class="os-title">Up to 150x Leverage</h2>
+          <p class="os-desc">Simulate institutional crypto derivatives with full leverage control and realistic margin modeling.</p>
+        </div>
+        <div class="onboarding-slide" data-slide="1">
+          <div class="os-icon">📊</div>
+          <h2 class="os-title">TradingView Charts</h2>
+          <p class="os-desc">Access 11 live intervals, complete drawing tools, and Binance Vision real-time price synchronization.</p>
+        </div>
+        <div class="onboarding-slide" data-slide="2">
+          <div class="os-icon">🛡️</div>
+          <h2 class="os-title">100% Risk-Free</h2>
+          <p class="os-desc">Start with $10,000 in virtual paper equity. Test strategies freely without risking personal funds.</p>
+        </div>
+        <div class="onboarding-slide" data-slide="3">
+          <div class="os-icon">🚀</div>
+          <h2 class="os-title">Instant Execution</h2>
+          <p class="os-desc">Real-time market and limit orders backed by SQLite persistent storage and multi-device sync.</p>
+        </div>
+      </div>
+      <div class="onboarding-footer">
+        <div class="onboarding-dots" id="onboarding-dots">
+          <span class="os-dot active"></span>
+          <span class="os-dot"></span>
+          <span class="os-dot"></span>
+          <span class="os-dot"></span>
+        </div>
+        <button class="onboarding-next-btn" id="onboarding-next-btn" onclick="nextOnboardingSlide()">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 14. OFFLINE NETWORK BLOCKING OVERLAY ══════════════════════ -->
+  <div class="offline-overlay hidden" id="offline-network-overlay">
+    <div class="offline-card">
+      <div class="offline-icon">📡</div>
+      <h3 class="offline-title">Connection Interrupted</h3>
+      <p class="offline-desc">Real-time market feeds have paused. Reconnecting to live market stream...</p>
+      <button class="offline-retry-btn" id="offline-retry-btn" onclick="retryNetworkConnection()">Reconnect Now</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 15. IN-APP UPDATE MODAL ══════════════════════ -->
+  <div class="update-modal-overlay hidden" id="vtrade-update-modal">
+    <div class="update-modal-card">
+      <div class="umc-icon">🚀</div>
+      <h3 class="umc-title">New Update Available</h3>
+      <p class="umc-desc" id="vtrade-update-desc">A new version of VTrade is ready for download.</p>
+      <div class="umc-actions">
+        <button class="umc-btn-cancel" onclick="closeUpdateModal()">Later</button>
+        <a href="/vtrade.apk" class="umc-btn-confirm" download="VTrade.apk">Update Now</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 16. TOAST NOTIFICATIONS CONTAINER (ANIMMASTER STYLE) ══════════════════════ -->
+  <div class="vtrade-toast-container" id="vtrade-toast-container"></div>
 
   <!-- Application Logic & Backend Integration -->
   <script src="settings.js"></script>
-  <script src="app.js?v=3.0"></script>
+  <script src="app.js?v=2.9"></script>
 </body>
 </html>
