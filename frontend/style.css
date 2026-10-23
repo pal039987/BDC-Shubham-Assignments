@@ -6977,16 +6977,85 @@ html:not(.is-native-apk) .tv-fs-header {
 .section-more-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  color: #ff9900;
-  font-size: 13px;
-  font-weight: 700;
+  gap: 8px;
+  color: #ff9900 !important;
+  background: rgba(255, 153, 0, 0.08) !important;
+  border: 1px solid rgba(255, 153, 0, 0.32) !important;
+  border-radius: 999px !important;
+  padding: 8px 18px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
   cursor: pointer;
-  transition: opacity 0.2s;
+  outline: none;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .section-more-btn:hover {
-  opacity: 0.8;
+  background: rgba(255, 153, 0, 0.16) !important;
+  border-color: #ff9900 !important;
+  color: #ffaa22 !important;
+  box-shadow: 0 0 18px rgba(255, 153, 0, 0.32), 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  transform: translateY(-1.5px);
+}
+
+.section-more-btn:active {
+  transform: scale(0.96) translateY(0) !important;
+  background: rgba(255, 153, 0, 0.24) !important;
+}
+
+.section-more-btn:focus-visible {
+  outline: 2px solid #ff9900 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(255, 153, 0, 0.22) !important;
+}
+
+.section-more-btn svg,
+.section-more-btn .smb-arrow {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  color: inherit;
+}
+
+.section-more-btn:hover svg,
+.section-more-btn:hover .smb-arrow {
+  transform: translateX(4px);
+}
+
+.home-bento-section {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 12px 0 24px 0;
+  isolation: isolate;
+}
+
+/* 7. Subtle Continuous Animated Background Detail */
+.spotlight-section-ambient {
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    circle at 35% 45%,
+    rgba(255, 153, 0, 0.045) 0%,
+    rgba(0, 242, 254, 0.03) 40%,
+    transparent 72%
+  );
+  animation: ambientSpotlightDrift 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes ambientSpotlightDrift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4%, 3%) scale(1.04); }
+  100% { transform: translate(-3%, -2%) scale(0.97); }
+}
+
+.home-bento-section .section-header-row,
+.home-bento-section .bento-grid {
+  position: relative;
+  z-index: 1;
 }
 
 .bento-grid {
@@ -7013,6 +7082,239 @@ html:not(.is-native-apk) .tv-fs-header {
   border-color: rgba(255, 153, 0, 0.4);
   transform: translateY(-3px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* 2. Spotlight Market Card (Distinct Hover Elevation, Independent Spotlights, Animated Edges) */
+.spotlight-market-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(19, 25, 37, 0.8), rgba(11, 15, 23, 0.92)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.spotlight-market-card:hover {
+  transform: translateY(-5px) !important;
+  background: linear-gradient(135deg, rgba(25, 33, 49, 0.9), rgba(15, 21, 33, 0.96)) !important;
+}
+
+/* Independent per-card cursor-following spotlight */
+.smc-spotlight {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  mix-blend-mode: screen;
+}
+
+.spotlight-market-card:hover .smc-spotlight {
+  opacity: 1;
+}
+
+/* Animated edge highlight / rotating border beam per card */
+.smc-edge-beam {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.spotlight-market-card:hover .smc-edge-beam {
+  opacity: 1;
+}
+
+.smc-edge-beam::before {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  animation: rotateCardEdgeBeam 7s linear infinite;
+}
+
+@keyframes rotateCardEdgeBeam {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 2b. Coordinated Accent Colors (BTC, ETH, GOLD, SOL) */
+/* BTC: Warm Bitcoin orange */
+.smc-bitcoin .smc-spotlight {
+  background: radial-gradient(
+    280px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(247, 147, 26, 0.24) 0%,
+    rgba(255, 153, 0, 0.08) 45%,
+    transparent 70%
+  );
+}
+.smc-bitcoin:hover {
+  border-color: rgba(247, 147, 26, 0.48) !important;
+  box-shadow: 0 16px 38px -8px rgba(0, 0, 0, 0.7),
+              0 0 26px -4px rgba(247, 147, 26, 0.28) !important;
+}
+.smc-bitcoin .smc-edge-beam::before {
+  background: conic-gradient(from 0deg, transparent 0%, rgba(247, 147, 26, 0.75) 25%, transparent 50%);
+}
+
+/* ETH: Restrained Ethereum violet */
+.smc-ethereum .smc-spotlight {
+  background: radial-gradient(
+    280px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(142, 117, 252, 0.24) 0%,
+    rgba(98, 126, 234, 0.08) 45%,
+    transparent 70%
+  );
+}
+.smc-ethereum:hover {
+  border-color: rgba(142, 117, 252, 0.48) !important;
+  box-shadow: 0 16px 38px -8px rgba(0, 0, 0, 0.7),
+              0 0 26px -4px rgba(142, 117, 252, 0.28) !important;
+}
+.smc-ethereum .smc-edge-beam::before {
+  background: conic-gradient(from 0deg, transparent 0%, rgba(142, 117, 252, 0.75) 25%, transparent 50%);
+}
+
+/* GOLD: Elegant metallic gold */
+.smc-gold .smc-spotlight {
+  background: radial-gradient(
+    280px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(255, 215, 0, 0.25) 0%,
+    rgba(212, 175, 55, 0.09) 45%,
+    transparent 70%
+  );
+}
+.smc-gold:hover {
+  border-color: rgba(255, 215, 0, 0.48) !important;
+  box-shadow: 0 16px 38px -8px rgba(0, 0, 0, 0.7),
+              0 0 26px -4px rgba(255, 215, 0, 0.3) !important;
+}
+.smc-gold .smc-edge-beam::before {
+  background: conic-gradient(from 0deg, transparent 0%, rgba(255, 215, 0, 0.75) 25%, transparent 50%);
+}
+
+/* SOL: Teal and violet */
+.smc-solana .smc-spotlight {
+  background: radial-gradient(
+    280px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(20, 241, 149, 0.22) 0%,
+    rgba(153, 69, 255, 0.12) 45%,
+    transparent 70%
+  );
+}
+.smc-solana:hover {
+  border-color: rgba(20, 241, 149, 0.48) !important;
+  box-shadow: 0 16px 38px -8px rgba(0, 0, 0, 0.7),
+              0 0 26px -4px rgba(20, 241, 149, 0.24) !important;
+}
+.smc-solana .smc-edge-beam::before {
+  background: conic-gradient(from 0deg, transparent 0%, rgba(20, 241, 149, 0.8) 20%, rgba(153, 69, 255, 0.7) 40%, transparent 60%);
+}
+
+/* 3. Coin Icon Micro-Animations */
+.bento-coin-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, filter;
+  position: relative;
+  z-index: 3;
+}
+
+/* BTC: gentle scale-up and warm orange glow on hover */
+.smc-bitcoin:hover .bento-coin-icon {
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 14px rgba(247, 147, 26, 0.75));
+}
+
+/* ETH: subtle floating movement on hover */
+.smc-ethereum:hover .bento-coin-icon {
+  animation: ethFloatHover 2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 14px rgba(142, 117, 252, 0.75));
+}
+
+@keyframes ethFloatHover {
+  0% { transform: translateY(0px) scale(1.05); }
+  100% { transform: translateY(-4px) scale(1.10); }
+}
+
+/* GOLD: restrained metallic shimmer / rotating reflection on hover */
+.smc-gold:hover .bento-coin-icon {
+  animation: goldShimmerHover 2.2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes goldShimmerHover {
+  0% { transform: scale(1.05); filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5)) brightness(1); }
+  100% { transform: scale(1.10); filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.95)) brightness(1.2); }
+}
+
+/* SOL: soft gradient glow on hover */
+.smc-solana:hover .bento-coin-icon {
+  transform: scale(1.10);
+  filter: drop-shadow(0 0 14px rgba(20, 241, 149, 0.8)) drop-shadow(0 0 8px rgba(153, 69, 255, 0.65));
+}
+
+/* 5. Card Content Reveal & Micro-Interactions */
+.spotlight-market-card:hover .bento-name {
+  color: #cdd4e4;
+  transition: color 0.25s ease;
+}
+
+.spotlight-market-card:hover .bento-price {
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
+  transition: text-shadow 0.25s ease;
+}
+
+.smc-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #8b92a4;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 2px;
+  position: relative;
+  z-index: 3;
+}
+
+.smc-trade-desk {
+  color: #ff9900;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.smc-trade-arrow {
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.spotlight-market-card:hover .smc-trade-arrow {
+  transform: translateX(4px);
 }
 
 .bento-card-top {

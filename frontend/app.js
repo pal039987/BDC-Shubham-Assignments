@@ -2498,6 +2498,28 @@ function initGsapScrollTriggerAnimations() {
     activeGsapTriggers.push(trig);
   }
 
+  // 3c. Spotlight Market Cards Staggered Sequential Entrance (BTC, ETH, GOLD, SOL)
+  const bentoSec = document.querySelector('.home-bento-section');
+  const bentoGrid = document.getElementById('home-spotlight-bento');
+  if (bentoSec && bentoGrid) {
+    const cards = bentoGrid.querySelectorAll('.bento-card');
+    if (cards.length > 0) {
+      const trig = ScrollTrigger.create({
+        trigger: bentoSec,
+        scroller: scroller,
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          gsap.fromTo(cards,
+            { opacity: 0, y: 32, scale: 0.95 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.65, stagger: 0.09, ease: 'power2.out', clearProps: 'transform' }
+          );
+        }
+      });
+      activeGsapTriggers.push(trig);
+    }
+  }
+
   // 4. Selective Pinned Section (Desktop only - 3D smartphones interactive separation on scroll)
   const isDesktop = window.innerWidth >= 1024;
   const showcaseSec = document.getElementById('home-apk-showcase-section');
@@ -2665,6 +2687,8 @@ window.cleanUpGsapScrollAnimations = cleanUpGsapScrollAnimations;
 window.getActiveGsapScroller = getActiveGsapScroller;
 window.initHeroGsapTimeline = initHeroGsapTimeline;
 window.animateSpotlightBentoCards = animateSpotlightBentoCards;
+window.initSpotlightMarketCardPointers = initSpotlightMarketCardPointers;
+window.updateSpotlightBentoPrices = updateSpotlightBentoPrices;
 
 // ─── 8. NET EQUITY & PnL CALCULATIONS ────────────────────────────────────
 function calculateUnrealizedPnL() {
@@ -2698,6 +2722,8 @@ function renderHomeScreen() {
   initPortfolioScrubberListeners();
 }
 
+let lastRecordedSpotlightPrices = {};
+
 function renderHomeSpotlightBento() {
   const bentoGrid = document.getElementById('home-spotlight-bento');
   if (!bentoGrid || typeof COINS === 'undefined') return;
@@ -2708,11 +2734,14 @@ function renderHomeSpotlightBento() {
   bentoGrid.innerHTML = spotlightCoins.map(c => {
     const isUp = c.change >= 0;
     const displayPair = getCoinDisplayPair(c);
+    lastRecordedSpotlightPrices[c.id] = c.price;
     return `
-      <div class="bento-card spotlight-card tilt-card" onclick="selectCoinAndTrade('${c.id}')">
+      <div class="bento-card spotlight-card spotlight-market-card smc-${c.id}" id="spotlight-card-${c.id}" data-coin="${c.id}" onclick="selectCoinAndTrade('${c.id}')">
+        <div class="smc-spotlight" aria-hidden="true"></div>
+        <div class="smc-edge-beam" aria-hidden="true"></div>
         <div class="bento-card-top">
           <div class="bento-card-asset">
-            <img src="${c.icon}" alt="${c.symbol}" class="bento-coin-icon" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category}')" />
+            <img src="${c.icon}" alt="${c.symbol}" class="bento-coin-icon bento-coin-${c.id}" onerror="handleCoinIconError(this, '${c.symbol}', '${c.category}')" />
             <div>
               <div class="bento-sym">${displayPair}</div>
               <div class="bento-name">${c.name}</div>
@@ -2721,19 +2750,84 @@ function renderHomeSpotlightBento() {
           <span class="coin-lev-badge">${c.maxLev}x</span>
         </div>
         <div class="bento-price-row">
-          <span class="bento-price">${getCurrencySymbol()}${fmtPrice(c.price)}</span>
-          <span class="bento-chg ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%</span>
+          <span class="bento-price" id="spotlight-price-${c.id}">${getCurrencySymbol()}${fmtPrice(c.price)}</span>
+          <span class="bento-chg ${isUp ? 'up' : 'down'}" id="spotlight-chg-${c.id}">${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%</span>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-top:6px; border-top:1px solid rgba(255,255,255,0.05);">
-          <span>24h Vol: ${c.vol || 'N/A'}</span>
-          <span style="color:#ff9900; font-weight:700;">Trade Desk →</span>
+        <div class="smc-bottom-row">
+          <span class="smc-vol" id="spotlight-vol-${c.id}">24h Vol: ${c.vol || 'N/A'}</span>
+          <span class="smc-trade-desk">Trade Desk <span class="smc-trade-arrow">→</span></span>
         </div>
       </div>
     `;
   }).join('');
+
+  initSpotlightMarketCardPointers();
   if (typeof initSpotlightAndTiltCards === 'function') initSpotlightAndTiltCards();
   if (typeof animateSpotlightBentoCards === 'function') animateSpotlightBentoCards();
   if (typeof window !== 'undefined' && window.ScrollTrigger) window.ScrollTrigger.refresh();
+}
+
+function initSpotlightMarketCardPointers() {
+  if (typeof window === 'undefined' || !window.matchMedia) return;
+  const isFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!isFine) return;
+
+  const cards = document.querySelectorAll('.spotlight-market-card');
+  cards.forEach(card => {
+    if (card.dataset.smcBound) return;
+    card.dataset.smcBound = 'true';
+
+    card.addEventListener('pointermove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--card-mouse-x', `${x.toFixed(1)}px`);
+      card.style.setProperty('--card-mouse-y', `${y.toFixed(1)}px`);
+      card.style.setProperty('--mouse-x', `${x.toFixed(1)}px`);
+      card.style.setProperty('--mouse-y', `${y.toFixed(1)}px`);
+    });
+
+    card.addEventListener('pointerleave', () => {
+      card.style.removeProperty('--card-mouse-x');
+      card.style.removeProperty('--card-mouse-y');
+      card.style.removeProperty('--mouse-x');
+      card.style.removeProperty('--mouse-y');
+    });
+  });
+}
+
+function updateSpotlightBentoPrices() {
+  if (typeof document === 'undefined' || typeof COINS === 'undefined') return;
+  const spotlightIds = ['bitcoin', 'ethereum', 'gold', 'solana'];
+
+  spotlightIds.forEach(id => {
+    const coin = COINS.find(c => c.id === id);
+    if (!coin) return;
+
+    const priceEl = document.getElementById(`spotlight-price-${id}`);
+    const chgEl = document.getElementById(`spotlight-chg-${id}`);
+    const volEl = document.getElementById(`spotlight-vol-${id}`);
+
+    if (priceEl) {
+      const prevPrice = lastRecordedSpotlightPrices[id];
+      if (typeof prevPrice === 'number' && prevPrice !== coin.price) {
+        triggerPriceFlash(priceEl, coin.price, prevPrice);
+      }
+      priceEl.textContent = `${getCurrencySymbol()}${fmtPrice(coin.price)}`;
+    }
+
+    if (chgEl) {
+      const isUp = coin.change >= 0;
+      chgEl.className = `bento-chg ${isUp ? 'up' : 'down'}`;
+      chgEl.textContent = `${isUp ? '+' : ''}${coin.change ? coin.change.toFixed(2) : '0.00'}%`;
+    }
+
+    if (volEl && coin.vol) {
+      volEl.textContent = `24h Vol: ${coin.vol}`;
+    }
+
+    lastRecordedSpotlightPrices[id] = coin.price;
+  });
 }
 
 function renderHomeBalanceCard() {
@@ -4835,6 +4929,7 @@ function renderLivePriceUpdates() {
     renderHomeBalanceCard();
     renderHomeMarketIntel();
     renderHomeMarketList();
+    if (typeof updateSpotlightBentoPrices === 'function') updateSpotlightBentoPrices();
   } else if (activeTab === 'markets') {
     renderMarketsScreen();
   } else if (activeTab === 'trade') {
