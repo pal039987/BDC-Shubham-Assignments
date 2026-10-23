@@ -77,12 +77,17 @@ assert.ok(styleCss.includes('body.trade-screen-active .trade-bottom-ledger-card'
   'trade-bottom-ledger-card must have min-height: 320px to display full table body & "No data" empty state on scroll');
 console.log('  ✓ 2-part vertical scroll flow verified (50px navbar, overflow-y: auto, min-height: 320px positions block)');
 
-// 5. Verify Live Working TradingView Candlestick Chart (NOT blank)
-console.log('5. Testing Live Working Chart...');
+// 5. Verify Live Working TradingView Candlestick Chart (NOT blank) with Native Left Drawing Toolbar
+console.log('5. Testing Live Working Chart & Native Left Drawing Toolbar (Shark Exchange Tools)...');
 assert.ok(indexHtml.includes('id="trade-candlestick-container"'), 'Chart container must exist');
 assert.ok(indexHtml.includes('id="tradingview-chart-iframe"'), 'TradingView chart iframe must exist');
+assert.ok(indexHtml.includes('hide_side_toolbar=0'), 'Default chart iframe in index.html must have hide_side_toolbar=0 to show left drawing tools');
 assert.ok(appJs.includes('function renderTradingViewChart('),
   'TradingView chart function renderTradingViewChart must exist and load live chart canvas');
-console.log('  ✓ Live working TradingView chart verified (NOT blank)');
+assert.ok(appJs.includes('hide_side_toolbar=0') && appJs.match(/frameElementId=tradingview-chart-iframe[^`]*hide_side_toolbar=0/),
+  'renderTradingViewChart in app.js must set hide_side_toolbar=0 for normal chart to show functional drawing tools');
+assert.ok(appJs.match(/frameElementId=tv-fullscreen-iframe[^`]*hide_side_toolbar=0/),
+  'openFullscreenChart in app.js must retain hide_side_toolbar=0 for fullscreen chart');
+console.log('  ✓ Live working TradingView chart & native left drawing toolbar verified (hide_side_toolbar=0 on both normal and fullscreen)');
 
 console.log('\n=== ALL SHARK EXCHANGE POSITIONS & ZERO-SCROLL 100VH TESTS PASSED! ===\n');
