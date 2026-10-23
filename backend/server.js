@@ -1385,7 +1385,7 @@ app.post('/api/user/reset-balance', authenticateToken, (req, res) => {
     db.prepare('UPDATE portfolio SET amount = 0, avg_entry_price = 0 WHERE user_id = ?').run(req.user.id);
     res.json({
       success: true,
-      message: `Virtual wallet reset to $${STARTING_BALANCE.toLocaleString()} USDT`,
+      message: `Wallet reset to $${STARTING_BALANCE.toLocaleString()} USDT`,
       balance: STARTING_BALANCE
     });
   } catch (err) {

@@ -264,7 +264,7 @@ function executeSafeWalletReset() {
   closeSettingsSheet();
   triggerVibrate([40, 50, 40]);
   if (typeof showToast === 'function') {
-    showToast('Virtual wallet reset to $10,000.00', 'success');
+    showToast('Wallet reset to $10,000.00', 'success');
   }
 }
 

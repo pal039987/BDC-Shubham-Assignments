@@ -930,7 +930,7 @@ function loadWalletState() {
     console.warn('Failed to load wallet state, initializing fresh:', e);
   }
   return {
-    cashBalance: 10000.00, // $10,000 USD virtual demo cash
+    cashBalance: 10000.00, // $10,000 USD cash
     positions: [],
     orders: [],
     tradesHistory: [],
@@ -2082,11 +2082,11 @@ function toggleBalanceVisibility() {
   renderHomeBalanceCard();
 }
 
-// ─── 6. PAPER DEMO FAUCET (REFILL $10,000) ──────────────────────────────
+// ─── 6. PAPER FAUCET (REFILL $10,000) ──────────────────────────────
 function refillPaperDemoBalance() {
   walletState.cashBalance = 10000.00;
   saveWalletState();
-  showToast(`🎉 Demo Balance refilled to ${getCurrencySymbol()}${fmtMoney(10000.00)}!`, 'success');
+  showToast(`🎉 Balance refilled to ${getCurrencySymbol()}${fmtMoney(10000.00)}!`, 'success');
   renderAllViews();
 }
 
@@ -3741,9 +3741,9 @@ function executeOrderFromSheet() {
   if (reqMarginUsd > walletState.cashBalance) {
     if (walletState.cashBalance < 5) {
       refillPaperDemoBalance();
-      showToast(`⚠️ Low demo funds refilled to ${getCurrencySymbol()}${fmtMoney(10000.00)}! Order executing...`, 'info');
+      showToast(`⚠️ Low funds refilled to ${getCurrencySymbol()}${fmtMoney(10000.00)}! Order executing...`, 'info');
     } else {
-      showToast(`❌ Insufficient demo funds! Required: ${getCurrencySymbol()}${fmtMoney(reqMarginUsd)}, Available: ${getCurrencySymbol()}${fmtMoney(walletState.cashBalance)}`, 'error');
+      showToast(`❌ Insufficient funds! Required: ${getCurrencySymbol()}${fmtMoney(reqMarginUsd)}, Available: ${getCurrencySymbol()}${fmtMoney(walletState.cashBalance)}`, 'error');
       return;
     }
   }
@@ -4576,7 +4576,7 @@ function copyAccountUID() {
 }
 
 function resetDemoAccountFull() {
-  if (confirm('Are you sure you want to reset your virtual account to $10,000 and clear all positions?')) {
+  if (confirm('Are you sure you want to reset your account to $10,000 and clear all positions?')) {
     walletState = {
       cashBalance: 10000.00,
       positions: [],
@@ -4587,7 +4587,7 @@ function resetDemoAccountFull() {
     };
     saveWalletState();
     renderAllViews();
-    showToast('Demo Account successfully reset to $10,000', 'success');
+    showToast('Account successfully reset to $10,000', 'success');
   }
 }
 
@@ -5024,11 +5024,43 @@ function openSwitchAccountMode() {
   }
 }
 
-function logoutDesktopUser() {
-  logoutAuthUser();
-  renderDesktopAuthPage();
-  syncDesktopHeaderState();
+function logoutAuthUser() {
+  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
+  const loggedOutEmail = sess && sess.email ? sess.email : '';
+  clearAuthSession();
+  userProfile = {
+    name: 'Trader',
+    email: '',
+    avatar: (typeof PRESET_AVATARS !== 'undefined' && PRESET_AVATARS.cyberpunk) ? PRESET_AVATARS.cyberpunk : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
+    selectedPreset: 'cyberpunk',
+    uid: '84920158'
+  };
+  if (typeof saveUserProfile === 'function') saveUserProfile();
+  localStorage.setItem('vtrade_show_onboarding_on_relaunch', 'true');
+  localStorage.removeItem('vtrade_onboarding_completed');
+
+  if (typeof syncDesktopHeaderState === 'function') syncDesktopHeaderState();
+  if (typeof updateAccountAuthUI === 'function') updateAccountAuthUI();
+  if (typeof renderDesktopAuthPage === 'function') renderDesktopAuthPage();
+  if (typeof renderAccountScreen === 'function') renderAccountScreen();
+  return loggedOutEmail;
+}
+
+function handleAuthLogout() {
+  const loggedOutEmail = logoutAuthUser();
+  if (typeof renderAllViews === 'function') renderAllViews();
   showToast('Signed out successfully.', 'info');
+  if (typeof clearAuthAlert === 'function') clearAuthAlert();
+  if (typeof openAuthModal === 'function') openAuthModal('login');
+
+  const loginEmail = document.getElementById('login-email');
+  if (loginEmail && loggedOutEmail) loginEmail.value = loggedOutEmail;
+  const pwdInput = document.getElementById('login-password');
+  if (pwdInput) pwdInput.value = '';
+}
+
+function logoutDesktopUser() {
+  handleAuthLogout();
 }
 
 function showDesktopAuthAlert(msg, type = 'error') {
@@ -5727,6 +5759,10 @@ function renderTradeDeskOrderBookAndTrades() {
 }
 
 if (typeof window !== 'undefined') {
+  window.handleAuthLogout = handleAuthLogout;
+  window.logoutAuthUser = logoutAuthUser;
+  window.logoutDesktopUser = logoutDesktopUser;
+
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(initVTradeApp, 50);

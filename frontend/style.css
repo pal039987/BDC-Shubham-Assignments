@@ -1796,7 +1796,7 @@ html.is-native-apk .vtrade-app-root {
   box-shadow: 0 4px 20px rgba(240, 79, 94, 0.4);
 }
 
-/* ════════ REFILL DEMO BALANCE CARD ════════ */
+/* ════════ REFILL BALANCE CARD ════════ */
 .refill-balance-card {
   background: linear-gradient(145deg, #1b160b 0%, #10141f 100%);
   border: 1px solid rgba(255, 153, 0, 0.35);
@@ -5150,7 +5150,7 @@ html:not(.is-native-apk) .tv-fs-header {
     align-items: center;
     gap: 32px;
     white-space: nowrap;
-    animation: marqueeScroll 40s linear infinite;
+    animation: marqueeScroll 130s linear infinite;
     width: max-content;
   }
 
