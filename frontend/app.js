@@ -2736,11 +2736,45 @@ function initSpotlightAndTiltCards() {
   });
 }
 
+function toggleSharkFAQ(element) {
+  if (!element) return;
+  const faqItem = element.closest('.shark-faq-item');
+  if (!faqItem) return;
+  const answer = faqItem.querySelector('.sfi-answer');
+  const toggleIcon = faqItem.querySelector('.sfi-toggle-icon');
+  
+  const isExpanded = faqItem.classList.contains('active');
+  if (isExpanded) {
+    faqItem.classList.remove('active');
+    if (answer) answer.classList.add('hidden');
+    if (toggleIcon) toggleIcon.textContent = '+';
+  } else {
+    // Accordion behavior: close other items in the same list
+    const parentList = faqItem.parentElement;
+    if (parentList) {
+      const allItems = parentList.querySelectorAll('.shark-faq-item');
+      allItems.forEach(item => {
+        if (item !== faqItem) {
+          item.classList.remove('active');
+          const ans = item.querySelector('.sfi-answer');
+          const icon = item.querySelector('.sfi-toggle-icon');
+          if (ans) ans.classList.add('hidden');
+          if (icon) icon.textContent = '+';
+        }
+      });
+    }
+    faqItem.classList.add('active');
+    if (answer) answer.classList.remove('hidden');
+    if (toggleIcon) toggleIcon.textContent = '−';
+  }
+}
+
 window.updateNavIndicator = updateNavIndicator;
 window.initHeroTextAnimation = initHeroTextAnimation;
 window.initHeroGlassBlockInteractions = initHeroGlassBlockInteractions;
 window.initScrollRevealEngine = initScrollRevealEngine;
 window.initSpotlightAndTiltCards = initSpotlightAndTiltCards;
+window.toggleSharkFAQ = toggleSharkFAQ;
 window.initGsapScrollTriggerAnimations = initGsapScrollTriggerAnimations;
 window.cleanUpGsapScrollAnimations = cleanUpGsapScrollAnimations;
 window.getActiveGsapScroller = getActiveGsapScroller;
