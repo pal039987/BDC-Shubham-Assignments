@@ -206,6 +206,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
+// Explicit favicon handler for browser tabs
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/favicon.ico'));
+});
+
 // Serve Android APK directly from downloads folder
 app.get('/vtrade.apk', (req, res) => {
   const apkPath = path.join(__dirname, '../downloads/VTrade.apk');
