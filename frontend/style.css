@@ -7925,18 +7925,21 @@ html:not(.is-native-apk) .tv-fs-header {
    ══════════════════════════════════════════════════════════════════ */
 .trade-workspace-grid {
   display: grid;
-  grid-template-columns: 1fr 270px 330px;
+  grid-template-columns: minmax(0, 1fr) 270px 330px;
   grid-template-rows: auto auto;
   gap: 8px;
   padding: 8px 12px;
   height: auto;
   min-height: 550px;
   background: #06080d;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1200px) {
   .trade-workspace-grid {
-    grid-template-columns: 1fr 250px 310px;
+    grid-template-columns: minmax(0, 1fr) 250px 310px;
   }
 }
 
@@ -7953,21 +7956,28 @@ html:not(.is-native-apk) .tv-fs-header {
   grid-column: 1;
   grid-row: 1;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .trade-depth-panel {
   grid-column: 2;
   grid-row: 1 / span 2;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .desktop-trade-order-dock {
   grid-column: 3;
   grid-row: 1 / span 2;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .trade-workspace-grid.orderbook-hidden {
-  grid-template-columns: 1fr 340px !important;
+  grid-template-columns: minmax(0, 1fr) 340px !important;
 }
 
 .trade-workspace-grid.orderbook-hidden .trade-chart-box {
@@ -8192,6 +8202,8 @@ html:not(.is-native-apk) .tv-fs-header {
   grid-column: 1;
   grid-row: 2;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 220px;
   background: #0c1018;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -8202,6 +8214,7 @@ html:not(.is-native-apk) .tv-fs-header {
   z-index: 5;
   overflow: hidden;
   padding-bottom: 16px;
+  box-sizing: border-box;
 }
 
 .tblc-tabs {
@@ -8293,8 +8306,11 @@ html:not(.is-native-apk) .tv-fs-header {
 
 .tblc-table-wrap {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   min-height: 180px;
+  box-sizing: border-box;
 }
 
 .tblc-table-wrap::-webkit-scrollbar {
@@ -8311,7 +8327,7 @@ html:not(.is-native-apk) .tv-fs-header {
 }
 
 .tblc-table th {
-  padding: 12px 18px;
+  padding: 10px 14px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -8322,8 +8338,8 @@ html:not(.is-native-apk) .tv-fs-header {
 }
 
 .tblc-table td {
-  padding: 12px 18px;
-  font-size: 13px;
+  padding: 10px 14px;
+  font-size: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   white-space: nowrap;
 }
@@ -8398,57 +8414,95 @@ html:not(.is-native-apk) .tv-fs-header {
 body.trade-screen-active .trade-fullwidth-container {
   height: auto !important;
   min-height: 100% !important;
-  overflow: visible !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
   padding: 0 0 32px 0 !important;
   display: flex !important;
   flex-direction: column !important;
+  box-sizing: border-box !important;
 }
 
 body.trade-screen-active .trade-workspace-grid {
   height: auto !important;
   min-height: 820px !important;
+  width: 100% !important;
+  max-width: 100% !important;
   padding: 6px 12px 24px 12px !important;
   overflow: visible !important;
+  grid-template-columns: minmax(0, 1fr) 270px 330px !important;
   grid-template-rows: auto auto !important;
+  box-sizing: border-box !important;
+}
+
+body.trade-screen-active .trade-workspace-grid.orderbook-hidden {
+  grid-template-columns: minmax(0, 1fr) 340px !important;
 }
 
 body.trade-screen-active .trade-chart-box {
   height: 485px !important;
   min-height: 485px !important;
   max-height: none !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
 body.trade-screen-active .trade-bottom-ledger-card {
   height: auto !important;
   min-height: 320px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   padding-bottom: 16px !important;
+  box-sizing: border-box !important;
 }
 
 body.trade-screen-active .tblc-view {
   width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
   height: auto !important;
-  overflow: visible !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
 }
 
 body.trade-screen-active .tblc-table-wrap {
   width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
   min-height: 240px !important;
   overflow-x: auto !important;
   overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
 }
 
 body.trade-screen-active .desktop-trade-order-dock {
   height: auto !important;
   min-height: 813px !important;
   overflow-y: visible !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 340px !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
 }
 
 body.trade-screen-active .trade-depth-panel {
   height: auto !important;
   min-height: 813px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 270px !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════
