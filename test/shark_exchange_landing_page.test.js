@@ -151,7 +151,7 @@ console.log('  ✓ Referral program 3 steps and glowing perspective floor CTA ve
 // 10. Verify Section 10: Affiliate / KOL Program (SS 15)
 console.log('10. Testing Affiliate / KOL Program Section (SS 15)...');
 assert.ok(html.includes('id="shark-affiliate-banner-section"'), 'Affiliate banner container verified');
-assert.ok(html.includes('Join Shark Exchange Affiliate / KOL Program'), 'Affiliate banner title verified');
+assert.ok(html.includes('Join VTrade Affiliate / KOL Program'), 'Affiliate banner title verified');
 assert.ok(html.includes('Apply for Partner Program'), 'Partner program button verified');
 assert.ok(html.includes('class="sac-money-sack"'), '3D money sack graphic verified');
 assert.ok(html.includes('floating-gold-coins'), 'Floating gold coins verified');
@@ -168,7 +168,7 @@ assert.ok(html.includes('INR FUTURES'), 'INR FUTURES column verified');
 assert.ok(html.includes('USDT FUTURES'), 'USDT FUTURES column verified');
 assert.ok(html.includes('OPTIONS'), 'OPTIONS column verified');
 assert.ok(html.includes('TradingView'), 'TradingView disclaimer verified');
-assert.ok(html.includes('© 2026 Shark Exchange'), 'Copyright notice verified');
+assert.ok(html.includes('© 2026 VTrade'), 'Copyright notice verified');
 console.log('  ✓ Comprehensive footer verified with explicit address: "Vadod Gam, Surat, Gujarat"');
 
 console.log('\n=== ALL SHARK EXCHANGE LANDING PAGE TESTS PASSED SUCCESSFULLY! ===\n');

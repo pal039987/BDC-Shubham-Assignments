@@ -8410,7 +8410,7 @@ html:not(.is-native-apk) .tv-fs-header {
   margin-left: 2px;
 }
 
-/* ─── SHARK EXCHANGE 2-PART SCROLL FLOW ON TRADE DESK (SS 2 TOP + SS 3 BOTTOM) ─── */
+/* ─── VTRADE 2-PART SCROLL FLOW ON TRADE DESK (SS 2 TOP + SS 3 BOTTOM) ─── */
 body.trade-screen-active .trade-fullwidth-container {
   height: auto !important;
   min-height: 100% !important;
@@ -11348,7 +11348,7 @@ body.trade-screen-active .trade-depth-panel {
 }
 
 /* ═════════════════════════════════════════════════════════════════════════
-   SHARK EXCHANGE FULL LANDING PAGE REDESIGN STYLES (SS 1 - 16)
+   VTRADE FULL LANDING PAGE REDESIGN STYLES (SS 1 - 16)
    ═════════════════════════════════════════════════════════════════════════ */
 
 /* Top Header TRADE NOW CTA Button */
