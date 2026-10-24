@@ -124,16 +124,15 @@
           <span class="curr-label" id="curr-toggle-label">USD</span>
         </button>
 
-        <!-- User Account / Sign In Pill -->
-        <button class="header-user-btn" id="header-user-btn" onclick="openAuthModal('login')" title="User Profile / Sign In">
-          <span class="hub-avatar" id="hub-avatar">👤</span>
-          <span class="hub-name" id="hub-name">Sign In</span>
-        </button>
-
-        <!-- Direct Trade Desk Button on Desktop -->
-        <button class="header-trade-cta-btn" id="header-trade-cta-btn" onclick="switchBottomTab('trade')">
-          <span>Trade Desk</span>
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <!-- Screenshot 2: Single Profile Block (Replaces yellow Trade Desk + user pill) -->
+        <button class="header-my-profile-btn" id="header-my-profile-btn" onclick="toggleProfileDrawer()" title="My Profile & P&L Dashboard">
+          <div class="hmp-avatar-ring">
+            <div class="hmp-avatar" id="hmp-avatar-initial">F</div>
+          </div>
+          <span class="hmp-label" id="hmp-label-text">My Profile</span>
+          <!-- Hidden fallback elements for backwards compatibility -->
+          <span id="hub-avatar" class="hidden">👤</span>
+          <span id="hub-name" class="hidden">Sign In</span>
         </button>
       </div>
     </header>
@@ -1797,6 +1796,266 @@
       <div class="cbm-footer">
         <button type="button" class="cbm-cancel-btn" onclick="closeCustomBalanceModal()">Cancel</button>
         <button type="button" class="cbm-confirm-btn" id="cbm-confirm-btn" onclick="applyCustomBalance()">Update Balance</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ 17. PROFILE DRAWER & ACTIONS (SCREENSHOTS 3 & 4) ══════════════════════ -->
+  <div class="vtrade-profile-backdrop hidden" id="vtrade-profile-backdrop" onclick="closeProfileDrawer()"></div>
+  <aside class="vtrade-profile-drawer" id="vtrade-profile-drawer" aria-label="User Profile Drawer">
+    <div class="vpd-header">
+      <span class="vpd-header-title">Account Center</span>
+      <button class="vpd-close-btn" onclick="closeProfileDrawer()" aria-label="Close Profile Drawer" title="Close">✕</button>
+    </div>
+
+    <div class="vpd-scrollable-body">
+      <!-- 1. My Account Card -->
+      <div class="vpd-account-card" id="vpd-account-card" onclick="handleDrawerAccountClick()">
+        <div class="vpd-ac-left">
+          <div class="vpd-ac-avatar" id="vpd-ac-avatar">F</div>
+          <div class="vpd-ac-info">
+            <div class="vpd-ac-title" id="vpd-ac-title">My Account</div>
+            <div class="vpd-ac-sub" id="vpd-ac-sub">Active Trader</div>
+          </div>
+        </div>
+        <div class="vpd-ac-balance-badge" id="vpd-ac-balance-badge" onclick="event.stopPropagation(); closeProfileDrawer(); openCustomBalanceModal();" title="Adjust Balance">
+          <span class="vpd-abb-label">Real:</span>
+          <span class="vpd-abb-val" id="vpd-abb-val">$10,000.00</span>
+        </div>
+      </div>
+
+      <!-- 2. Connect with us card (From Screenshot 3) -->
+      <div class="vpd-connect-card" id="vpd-connect-card" onclick="toggleDrawerConnectDropdown()">
+        <div class="vpd-cc-top">
+          <span class="vpd-cc-label">Connect with us</span>
+          <svg class="vpd-cc-arrow" id="vpd-cc-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="vpd-cc-dropdown hidden" id="vpd-cc-dropdown">
+          <a href="https://t.me/vtrade_official" target="_blank" rel="noopener" class="vpd-cc-link" onclick="event.stopPropagation()">
+            <span>✈️ Telegram Official</span>
+          </a>
+          <a href="https://twitter.com" target="_blank" rel="noopener" class="vpd-cc-link" onclick="event.stopPropagation()">
+            <span>𝕏 Twitter / X News</span>
+          </a>
+          <a href="mailto:support@vtrade.org" class="vpd-cc-link" onclick="event.stopPropagation()">
+            <span>✉️ Email Support</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 3. Download our App Section (From Screenshot 3) -->
+      <div class="vpd-download-section">
+        <div class="vpd-ds-header">
+          <span class="vpd-ds-title">Download our App</span>
+          <span class="vpd-ds-badge">Get the App</span>
+        </div>
+        <div class="vpd-ds-grid">
+          <div class="vpd-store-btns">
+            <!-- Google Play Store Button -->
+            <a href="/vtrade.apk" class="vpd-store-btn" download="VTrade.apk" title="Download Android APK">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                <path d="M3.6 2.5C3.3 2.9 3.1 3.5 3.1 4.2v15.6c0 .7.2 1.3.5 1.7l.1.1 9-9v-.2l-9.1-9.2z" fill="#00D2FF"/>
+                <path d="M16 15.5l-3.3-3.3v-.4l3.3-3.3.1.1 3.9 2.2c1.1.6 1.1 1.6 0 2.2l-3.9 2.2-.1.3z" fill="#FFC837"/>
+                <path d="M16.1 15.4L12.7 12 3.6 21.1c.4.4 1 .4 1.7.1l10.8-5.8" fill="#F6465D"/>
+                <path d="M16.1 8.6L5.3 2.8C4.6 2.4 4 2.5 3.6 2.9l9.1 9.1 3.4-3.4" fill="#00C087"/>
+              </svg>
+              <div class="vpd-sb-text">
+                <small>GET IT ON</small>
+                <strong>Google Play</strong>
+              </div>
+            </a>
+            <!-- Apple App Store Button -->
+            <a href="/vtrade.apk" class="vpd-store-btn" download="VTrade.apk" title="Download iOS Web App / APK">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M18.7 19.5c-.8 1.2-1.7 2.4-3 2.4-1.3 0-1.7-.8-3.2-.8s-2 .8-3.2.8c-1.3 0-2.3-1.3-3.2-2.5C4.3 16.9 3 12.8 4.4 10.3c.7-1.2 1.9-2 3.2-2 1.3 0 2.1.8 3.2.8 1 0 2-.8 3.3-.8 1.1 0 2.2.6 3 1.5-2.6 1.5-2.2 4.9.4 6-.6 1.4-1.4 2.6-2.4 3.7zm-3.2-13.8c.6-.8 1-1.8.9-2.7-.9 0-1.9.6-2.5 1.3-.5.6-1 1.6-.8 2.5 1 .1 1.8-.4 2.4-1.1z"/>
+              </svg>
+              <div class="vpd-sb-text">
+                <small>Download on the</small>
+                <strong>App Store</strong>
+              </div>
+            </a>
+          </div>
+          <!-- QR Code Container -->
+          <div class="vpd-qr-box" title="Scan to Download VTrade APK">
+            <svg class="vpd-qr-svg" viewBox="0 0 100 100" width="64" height="64">
+              <rect width="100" height="100" fill="#ffffff" rx="6"/>
+              <rect x="8" y="8" width="28" height="28" fill="#000000"/>
+              <rect x="12" y="12" width="20" height="20" fill="#ffffff"/>
+              <rect x="16" y="16" width="12" height="12" fill="#000000"/>
+              <rect x="64" y="8" width="28" height="28" fill="#000000"/>
+              <rect x="68" y="12" width="20" height="20" fill="#ffffff"/>
+              <rect x="72" y="16" width="12" height="12" fill="#000000"/>
+              <rect x="8" y="64" width="28" height="28" fill="#000000"/>
+              <rect x="12" y="68" width="20" height="20" fill="#ffffff"/>
+              <rect x="16" y="72" width="12" height="12" fill="#000000"/>
+              <rect x="42" y="12" width="8" height="8" fill="#000000"/>
+              <rect x="48" y="24" width="8" height="8" fill="#000000"/>
+              <rect x="42" y="38" width="16" height="8" fill="#000000"/>
+              <rect x="16" y="44" width="12" height="8" fill="#000000"/>
+              <rect x="64" y="44" width="10" height="8" fill="#000000"/>
+              <rect x="80" y="42" width="10" height="8" fill="#000000"/>
+              <rect x="44" y="58" width="8" height="18" fill="#000000"/>
+              <rect x="60" y="64" width="16" height="8" fill="#000000"/>
+              <rect x="62" y="78" width="8" height="14" fill="#000000"/>
+              <rect x="76" y="76" width="16" height="16" fill="#000000"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Menu List Items (Strictly P&L Dashboard as #3 from Shark Exchange, plus VTrade features; NO redundant profile section) -->
+      <nav class="vpd-nav-list" aria-label="Drawer Navigation">
+        <!-- THE HIGHLIGHT: P&L Dashboard (Option #3 as requested by user) -->
+        <button class="vpd-nav-item vpd-nav-pnl highlight" id="vpd-nav-pnl" onclick="closeProfileDrawer(); openPnLDashboardModal();">
+          <div class="vpd-ni-left">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>P&amp;L Dashboard</span>
+          </div>
+          <span class="vpd-ni-badge">New</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Trade Desk Shortcut -->
+        <button class="vpd-nav-item" onclick="closeProfileDrawer(); switchBottomTab('trade');">
+          <div class="vpd-ni-left">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            <span>Trade Desk &amp; Futures</span>
+          </div>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Explore 56 Markets -->
+        <button class="vpd-nav-item" onclick="closeProfileDrawer(); switchBottomTab('markets');">
+          <div class="vpd-ni-left">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle><polyline points="7 14 10 10 14 13 17 8"></polyline>
+            </svg>
+            <span>Spotlight Markets (56 Coins)</span>
+          </div>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+
+        <!-- Fee Structure (From Screenshot 4) -->
+        <button class="vpd-nav-item" onclick="closeProfileDrawer(); showToast('Fee Structure: 0.00% Maker / 0.03% Taker (Institutional VIP-0 Tier)');">
+          <div class="vpd-ni-left">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Fee Structure</span>
+          </div>
+          <span class="vpd-ni-pill-green">0% Maker</span>
+        </button>
+
+        <!-- Currency Switcher -->
+        <button class="vpd-nav-item" onclick="toggleCurrency(); updateDrawerProfileUI();">
+          <div class="vpd-ni-left">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Currency: <strong id="vpd-curr-label">USD ($)</strong></span>
+          </div>
+          <span class="vpd-ni-pill-cyan">Switch</span>
+        </button>
+
+        <!-- Support (From Screenshot 4) -->
+        <button class="vpd-nav-item" onclick="closeProfileDrawer(); showToast('24/7 Institutional Support: support@vtrade.org');">
+          <div class="vpd-ni-left">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <span>Support</span>
+          </div>
+        </button>
+      </nav>
+
+      <!-- 5. Bottom Section: Sign Out Button (From Screenshot 4) -->
+      <div class="vpd-bottom-section">
+        <button class="vpd-signout-btn" id="vpd-signout-btn" onclick="handleDrawerSignOut()">
+          <span>Sign Out</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════ 18. NET P&L SUMMARY DASHBOARD MODAL (FROM USER SCREENSHOT) ══════════════════════ -->
+  <div class="pnl-modal-overlay hidden" id="pnl-dashboard-modal" onclick="if(event.target===this)closePnLDashboardModal()">
+    <div class="pnl-modal-card" onclick="event.stopPropagation()">
+      <!-- Top Modal Bar -->
+      <div class="pnl-top-header">
+        <div class="pnl-title-group">
+          <div class="pnl-cyan-accent-bar"></div>
+          <div>
+            <h2 class="pnl-main-title">Net P&amp;L Summary</h2>
+            <p class="pnl-sub-title">Overall realized profit &amp; loss for the selected period</p>
+          </div>
+        </div>
+        <button class="pnl-close-btn" onclick="closePnLDashboardModal()" aria-label="Close" title="Close">✕</button>
+      </div>
+
+      <!-- Main Net P&L Card Container (From User's Screenshot) -->
+      <div class="pnl-summary-box">
+        <!-- Left: Net Realized P&L -->
+        <div class="pnl-box-left">
+          <div class="pnl-label-row">
+            <span class="pnl-col-label">Net Realized P&amp;L</span>
+            <span class="pnl-period-badge" id="pnl-period-badge">30 Days</span>
+          </div>
+          <div class="pnl-net-value" id="pnl-net-value">₹0</div>
+        </div>
+
+        <!-- Middle: Dynamic Days Blocks Grid -->
+        <div class="pnl-box-middle">
+          <div class="pnl-month-calendar-header">
+            <span class="pnl-mch-title" id="pnl-mch-title">October 2026</span>
+            <span class="pnl-mch-sub" id="pnl-mch-sub">31 Days in Month</span>
+          </div>
+          <div class="pnl-days-grid" id="pnl-days-grid">
+            <!-- Dynamically populated according to actual month days count (28, 29, 30, or 31) -->
+          </div>
+          <!-- Hover Tooltip (Never shows the word "Profit") -->
+          <div class="pnl-day-tooltip hidden" id="pnl-day-tooltip"></div>
+        </div>
+
+        <!-- Right: Total Profit & Total Loss Columns -->
+        <div class="pnl-box-right">
+          <!-- Total Profit Column -->
+          <div class="pnl-stat-column profit-col">
+            <div class="pnl-stat-header">
+              <span class="pnl-stat-icon green-icon">↗</span>
+              <span class="pnl-stat-title">Total Profit</span>
+            </div>
+            <div class="pnl-stat-val green-val" id="pnl-total-profit-val">₹0</div>
+            <div class="pnl-stat-sub" id="pnl-avg-profit-sub">Average Profit: ₹0 / trade</div>
+          </div>
+
+          <div class="pnl-stat-divider"></div>
+
+          <!-- Total Loss Column -->
+          <div class="pnl-stat-column loss-col">
+            <div class="pnl-stat-header">
+              <span class="pnl-stat-icon red-icon">↘</span>
+              <span class="pnl-stat-title">Total Loss</span>
+            </div>
+            <div class="pnl-stat-val red-val" id="pnl-total-loss-val">₹0</div>
+            <div class="pnl-stat-sub" id="pnl-avg-loss-sub">Average Loss: ₹0 / trade</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

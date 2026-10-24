@@ -5062,6 +5062,11 @@ function renderAllViews() {
   renderTradeScreen();
   renderPortfolioScreen();
   renderAccountScreen();
+  if (typeof updateDrawerProfileUI === 'function') updateDrawerProfileUI();
+  const pnlModal = typeof document !== 'undefined' && document.getElementById ? document.getElementById('pnl-dashboard-modal') : null;
+  if (pnlModal && pnlModal.classList && typeof pnlModal.classList.contains === 'function' && pnlModal.classList.contains('hidden') === false && typeof renderPnLDashboard === 'function') {
+    renderPnLDashboard();
+  }
 }
 
 // ─── 19. ACCOUNTS & PROFILE SCREEN CONTROLLER ────────────────────────────
@@ -5551,6 +5556,11 @@ function syncDesktopHeaderState() {
   const dtodSubmitBtn = document.getElementById('dtod-submit-btn');
   if (dtodAuthGate) dtodAuthGate.classList.toggle('hidden', isAuthedSession);
   if (dtodSubmitBtn) dtodSubmitBtn.classList.toggle('hidden', !isAuthedSession);
+
+  // Update Screenshot 2 My Profile block & Drawer UI
+  if (typeof updateDrawerProfileUI === 'function') {
+    updateDrawerProfileUI();
+  }
 }
 
 // ─── DESKTOP AUTH WORKSTATION LOGIC ────────────────────────────────────
@@ -6526,6 +6536,257 @@ function openPwaInstallPrompt() {
   }
 }
 
+// ─── 24. SCREENSHOT 2 MY PROFILE DRAWER & NET P&L DASHBOARD CONTROLLER ──────────────
+function updateDrawerProfileUI() {
+  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
+  const isAuthed = !!(sess && !sess.isGuest && sess.email);
+  const displayName = isAuthed ? ((userProfile && userProfile.name) || sess.username || 'Trader') : 'Guest';
+  const initial = isAuthed ? (displayName[0] || 'U').toUpperCase() : 'F';
+
+  // Screenshot 2 Header Block Initial
+  const hmpInitial = document.getElementById('hmp-avatar-initial');
+  if (hmpInitial) hmpInitial.textContent = initial;
+
+  // Drawer Profile Card
+  const vpdAvatar = document.getElementById('vpd-ac-avatar');
+  if (vpdAvatar) vpdAvatar.textContent = initial;
+
+  const vpdTitle = document.getElementById('vpd-ac-title');
+  if (vpdTitle) vpdTitle.textContent = isAuthed ? displayName : 'My Account';
+
+  const vpdSub = document.getElementById('vpd-ac-sub');
+  if (vpdSub) vpdSub.textContent = isAuthed ? sess.email : 'Click to Sign In / Register';
+
+  const vpdBal = document.getElementById('vpd-abb-val');
+  if (vpdBal && typeof walletState !== 'undefined') {
+    vpdBal.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
+  }
+
+  const vpdCurr = document.getElementById('vpd-curr-label');
+  if (vpdCurr && typeof walletState !== 'undefined') {
+    vpdCurr.textContent = walletState.currency === 'INR' ? 'INR (₹)' : 'USD ($)';
+  }
+}
+
+function toggleProfileDrawer(forceState) {
+  const drawer = document.getElementById('vtrade-profile-drawer');
+  const backdrop = document.getElementById('vtrade-profile-backdrop');
+  if (!drawer) return;
+
+  const shouldOpen = typeof forceState === 'boolean' ? forceState : !drawer.classList.contains('is-open');
+  if (shouldOpen) {
+    updateDrawerProfileUI();
+    drawer.classList.add('is-open');
+    if (backdrop) backdrop.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  } else {
+    drawer.classList.remove('is-open');
+    if (backdrop) backdrop.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+}
+
+function openProfileDrawer() {
+  toggleProfileDrawer(true);
+}
+
+function closeProfileDrawer() {
+  toggleProfileDrawer(false);
+}
+
+function handleDrawerAccountClick() {
+  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
+  const isAuthed = !!(sess && !sess.isGuest && sess.email);
+  closeProfileDrawer();
+  if (isAuthed) {
+    if (typeof switchBottomTab === 'function') switchBottomTab('account');
+  } else {
+    if (typeof openAuthModal === 'function') openAuthModal('login');
+  }
+}
+
+function toggleDrawerConnectDropdown() {
+  const dd = document.getElementById('vpd-cc-dropdown');
+  const arrow = document.getElementById('vpd-cc-arrow');
+  if (dd) dd.classList.toggle('hidden');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+function handleDrawerSignOut() {
+  closeProfileDrawer();
+  if (typeof handleAuthLogout === 'function') {
+    handleAuthLogout();
+  }
+}
+
+function openPnLDashboardModal() {
+  const modal = document.getElementById('pnl-dashboard-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    renderPnLDashboard();
+  }
+}
+
+function closePnLDashboardModal() {
+  const modal = document.getElementById('pnl-dashboard-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function renderPnLDashboard() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-indexed (Oct = 9)
+  // Dynamically calculate actual number of days in the current month (28, 29, 30, or 31)
+  const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthName = monthNames[currentMonth];
+
+  // Set Headers & Badges
+  const mchTitle = document.getElementById('pnl-mch-title');
+  if (mchTitle) mchTitle.textContent = `${monthName} ${currentYear}`;
+
+  const mchSub = document.getElementById('pnl-mch-sub');
+  if (mchSub) mchSub.textContent = `${totalDaysInMonth} Days in Month`;
+
+  const periodBadge = document.getElementById('pnl-period-badge');
+  if (periodBadge) periodBadge.textContent = `${totalDaysInMonth} Days`;
+
+  // Aggregate user trades for current month
+  const trades = typeof getTradeHistoryList === 'function' ? getTradeHistoryList() : (walletState.tradesHistory || []);
+  const dayTrades = {};
+
+  let totalProfit = 0;
+  let totalLoss = 0;
+  let profitTradesCount = 0;
+  let lossTradesCount = 0;
+
+  trades.forEach(t => {
+    let tDate;
+    if (t.closed_at) {
+      tDate = new Date(t.closed_at);
+    } else if (t.id && typeof t.id === 'number') {
+      tDate = new Date(t.id);
+    } else {
+      tDate = new Date();
+    }
+
+    if (tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth) {
+      const day = tDate.getDate();
+      if (!dayTrades[day]) dayTrades[day] = { pnl: 0, count: 0 };
+      const pnl = Number(t.pnl) || 0;
+      dayTrades[day].pnl += pnl;
+      dayTrades[day].count += 1;
+
+      if (pnl > 0) {
+        totalProfit += pnl;
+        profitTradesCount += 1;
+      } else if (pnl < 0) {
+        totalLoss += Math.abs(pnl);
+        lossTradesCount += 1;
+      }
+    }
+  });
+
+  const netRealized = totalProfit - totalLoss;
+  const avgProfit = profitTradesCount > 0 ? (totalProfit / profitTradesCount) : 0;
+  const avgLoss = lossTradesCount > 0 ? (totalLoss / lossTradesCount) : 0;
+  const sym = typeof getCurrencySymbol === 'function' ? getCurrencySymbol() : '$';
+
+  // Update Left Net Realized P&L
+  const netValEl = document.getElementById('pnl-net-value');
+  if (netValEl) {
+    if (netRealized > 0) {
+      netValEl.textContent = `+${sym}${fmtMoney(netRealized)}`;
+      netValEl.className = 'pnl-net-value';
+    } else if (netRealized < 0) {
+      netValEl.textContent = `-${sym}${fmtMoney(Math.abs(netRealized))}`;
+      netValEl.className = 'pnl-net-value is-loss';
+    } else {
+      netValEl.textContent = `${sym}0`;
+      netValEl.className = 'pnl-net-value is-neutral';
+    }
+  }
+
+  // Update Right Stats
+  const totProfitEl = document.getElementById('pnl-total-profit-val');
+  if (totProfitEl) totProfitEl.textContent = totalProfit > 0 ? `${sym}${fmtMoney(totalProfit)}` : `${sym}0`;
+
+  const avgProfitEl = document.getElementById('pnl-avg-profit-sub');
+  if (avgProfitEl) avgProfitEl.textContent = `Average Profit: ${sym}${fmtMoney(avgProfit)} / trade`;
+
+  const totLossEl = document.getElementById('pnl-total-loss-val');
+  if (totLossEl) totLossEl.textContent = totalLoss > 0 ? `${sym}${fmtMoney(totalLoss)}` : `${sym}0`;
+
+  const avgLossEl = document.getElementById('pnl-avg-loss-sub');
+  if (avgLossEl) avgLossEl.textContent = `Average Loss: ${sym}${fmtMoney(avgLoss)} / trade`;
+
+  // Render Dynamic Days Grid according to month days
+  const grid = document.getElementById('pnl-days-grid');
+  const tooltip = document.getElementById('pnl-day-tooltip');
+  if (grid) {
+    grid.innerHTML = '';
+    const shortMonth = monthName.slice(0, 3);
+
+    for (let d = 1; d <= totalDaysInMonth; d++) {
+      const cell = document.createElement('div');
+      if (!cell.dataset) cell.dataset = {};
+      const data = dayTrades[d];
+
+      let tipText = `${d} ${shortMonth}: ${sym}0`;
+      if (!data || data.count === 0) {
+        // Normal color for days with no trades (neutral dark glass, no green, no red)
+        cell.className = 'pnl-day-cell no-trade';
+        tipText = `${d} ${shortMonth}: ${sym}0`;
+      } else if (data.pnl > 0) {
+        // Green block for profit days
+        cell.className = 'pnl-day-cell is-profit';
+        tipText = `${d} ${shortMonth}: +${sym}${fmtMoney(data.pnl)}`;
+      } else if (data.pnl < 0) {
+        // Red block for loss days
+        cell.className = 'pnl-day-cell is-loss';
+        tipText = `${d} ${shortMonth}: -${sym}${fmtMoney(Math.abs(data.pnl))}`;
+      } else {
+        cell.className = 'pnl-day-cell no-trade';
+        tipText = `${d} ${shortMonth}: ${sym}0`;
+      }
+
+      // Hover tooltip: Never show the word "Profit", only Date and Amount
+      cell.dataset.tip = tipText;
+      if (cell.setAttribute) cell.setAttribute('data-tip', tipText);
+
+      // No words written inside tiles (as requested by user)
+      cell.textContent = '';
+
+      // Hover events
+      if (cell.addEventListener) {
+        cell.addEventListener('mouseenter', (e) => {
+          if (!tooltip) return;
+          const tip = (cell.dataset && cell.dataset.tip) || (cell.getAttribute && cell.getAttribute('data-tip')) || '';
+          tooltip.textContent = tip;
+          if (tooltip.classList && tooltip.classList.remove) tooltip.classList.remove('hidden');
+          if (cell.getBoundingClientRect && cell.closest) {
+            const parent = cell.closest('.pnl-box-middle');
+            if (parent && parent.getBoundingClientRect) {
+              const rect = cell.getBoundingClientRect();
+              const parentRect = parent.getBoundingClientRect();
+              const leftOffset = rect.left - parentRect.left + (rect.width / 2);
+              const topOffset = rect.top - parentRect.top - 36;
+              tooltip.style.left = `${leftOffset}px`;
+              tooltip.style.top = `${topOffset}px`;
+            }
+          }
+        });
+
+        cell.addEventListener('mouseleave', () => {
+          if (tooltip && tooltip.classList && tooltip.classList.add) tooltip.classList.add('hidden');
+        });
+      }
+
+      grid.appendChild(cell);
+    }
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.handleAuthLogout = handleAuthLogout;
   window.logoutAuthUser = logoutAuthUser;
@@ -6540,6 +6801,18 @@ if (typeof window !== 'undefined') {
   window.setCustomBalanceInput = setCustomBalanceInput;
   window.applyCustomBalance = applyCustomBalance;
   window.refillPaperDemoBalance = refillPaperDemoBalance;
+
+  // Profile Drawer & Net P&L Dashboard Exports
+  window.toggleProfileDrawer = toggleProfileDrawer;
+  window.openProfileDrawer = openProfileDrawer;
+  window.closeProfileDrawer = closeProfileDrawer;
+  window.updateDrawerProfileUI = updateDrawerProfileUI;
+  window.handleDrawerAccountClick = handleDrawerAccountClick;
+  window.toggleDrawerConnectDropdown = toggleDrawerConnectDropdown;
+  window.handleDrawerSignOut = handleDrawerSignOut;
+  window.openPnLDashboardModal = openPnLDashboardModal;
+  window.closePnLDashboardModal = closePnLDashboardModal;
+  window.renderPnLDashboard = renderPnLDashboard;
 
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', () => {
