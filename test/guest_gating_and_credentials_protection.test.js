@@ -57,14 +57,25 @@ assert.ok(js.includes("document.getElementById('trade-change-val')"), 'renderLiv
 assert.ok(js.includes("document.getElementById('trade-coin-tab-price')"), 'renderLivePriceUpdates must update trade-coin-tab-price');
 console.log('  ✓ Binance @ticker stream and synchronous Trade Desk instrument bar updates verified');
 
-// 6. Verify Candle Closing Countdown Timer across All Timeframes
+// 6. Verify Candle Closing Countdown Timer across All Timeframes (SS 2 Scale Pill)
 console.log('6. Testing Candle Closing Countdown Timer Integration...');
 assert.ok(html.includes('id="candle-countdown-wrap"'), 'candle-countdown-wrap must exist in index.html');
+assert.ok(html.includes('scale-axis-pill'), 'candle-countdown-wrap must be styled as scale-axis-pill');
+assert.ok(html.includes('id="ccw-scale-price"'), 'ccw-scale-price live price element must exist in HTML');
 assert.ok(html.includes('id="ccw-tf-tag"'), 'ccw-tf-tag timeframe tag element must exist in HTML');
 assert.ok(html.includes('id="ccw-timer"'), 'ccw-timer countdown timer element must exist in HTML');
+
+// Verify timer is NOT in subheader tcb-tabs-left
+const tcbTabsLeftMatch = html.match(/<div class="tcb-tabs-left">([\s\S]*?)<\/div>/);
+assert.ok(tcbTabsLeftMatch && !tcbTabsLeftMatch[1].includes('id="candle-countdown-wrap"'), 'candle-countdown-wrap must be removed from subheader tabs');
+
 assert.ok(css.includes('.candle-countdown-wrap {'), '.candle-countdown-wrap must be styled in style.css');
+assert.ok(css.includes('.candle-countdown-wrap .ccw-dashed-line'), '.ccw-dashed-line must be styled in style.css');
+assert.ok(css.includes('.candle-countdown-wrap .ccw-badge-box'), '.ccw-badge-box must be styled in style.css');
 assert.ok(js.includes('"mainSeriesProperties.showCountdown": true'), 'TradingView chart overrides must enable showCountdown');
 assert.ok(js.includes('"scalesProperties.showCountdown": true'), 'TradingView price scale overrides must enable showCountdown');
+assert.ok(js.includes("['countdown']"), 'TradingView enabled_features must include countdown');
+assert.ok(js.includes('selectedCoin.chartChange'), 'selectedCoin.chartChange must be tracked in app.js for chart sync');
 assert.ok(js.includes('function getCandleRemainingSeconds('), 'getCandleRemainingSeconds calculation function must exist');
 assert.ok(js.includes('function formatCountdownTime('), 'formatCountdownTime formatter must exist');
 assert.ok(js.includes('function updateCandleCountdown()'), 'updateCandleCountdown function must exist');

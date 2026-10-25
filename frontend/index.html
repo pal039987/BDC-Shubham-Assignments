@@ -1703,12 +1703,6 @@
               <div class="tcb-tabs-left">
                 <button class="tcb-tab active" id="tcb-tab-mark" onclick="switchChartPriceType('mark')">Mark Price</button>
                 <button class="tcb-tab" id="tcb-tab-last" onclick="switchChartPriceType('last')">Last Traded Price</button>
-                <!-- Live Candle Closing Countdown Timer (screenshot feature) -->
-                <div class="candle-countdown-wrap" id="candle-countdown-wrap" title="Current candle closing countdown timer">
-                  <span class="ccw-icon">⏱️</span>
-                  <span class="ccw-tf-tag" id="ccw-tf-tag">15m</span>
-                  <span class="ccw-timer" id="ccw-timer">--:--</span>
-                </div>
                 <div class="hidden" style="display:none;" id="tcb-hidden-tf-strip">
                   <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
                   <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
@@ -1734,10 +1728,20 @@
             </div>
 
             <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
-              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=15&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1"
+              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=15&theme=dark&style=1&timezone=Etc%2FUTC&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=%5B%22countdown%22%5D&overrides=%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%7D"
               allowtransparency="true" frameborder="0">
             </iframe>
             <svg id="candlestick-svg" class="hidden" viewBox="0 0 800 400" preserveAspectRatio="none"></svg>
+
+            <!-- SS 2: Candle Closing Countdown Timer & Live Price Pill on Right Price Scale Axis -->
+            <div class="candle-countdown-wrap scale-axis-pill" id="candle-countdown-wrap" title="Candle close countdown on price scale">
+              <div class="ccw-dashed-line" id="ccw-dashed-line"></div>
+              <div class="ccw-badge-box" id="ccw-badge-box">
+                <div class="ccw-price" id="ccw-scale-price">80,546.1</div>
+                <div class="ccw-timer" id="ccw-timer">01:18</div>
+              </div>
+              <span class="ccw-tf-tag hidden" id="ccw-tf-tag" style="display:none;">15m</span>
+            </div>
           </div>
 
           <!-- Column 2: Dedicated Order Book & Recent Trades Panel -->

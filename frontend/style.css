@@ -8237,47 +8237,60 @@ html:not(.is-native-apk) .tv-fs-header {
   margin-left: 8px;
 }
 
+/* SS 2: Candle Closing Timer & Live Price Pill on Right Vertical Price Scale */
 .candle-countdown-wrap {
-  display: inline-flex;
+  position: absolute;
+  right: 0;
+  top: 65%;
+  transform: translateY(-50%);
+  display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(0, 242, 254, 0.08);
-  border: 1px solid rgba(0, 242, 254, 0.25);
-  border-radius: 6px;
-  padding: 3px 9px;
-  margin-left: 10px;
+  z-index: 15;
+  pointer-events: none;
+  transition: top 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-  transition: all 0.2s ease;
 }
 
-.candle-countdown-wrap:hover {
-  background: rgba(0, 242, 254, 0.14);
-  border-color: rgba(0, 242, 254, 0.45);
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+.candle-countdown-wrap .ccw-dashed-line {
+  width: 140px;
+  height: 0;
+  border-top: 1px dashed rgba(240, 79, 94, 0.7);
 }
 
-.ccw-icon {
-  font-size: 11px;
-  display: inline-flex;
+.candle-countdown-wrap.is-bull .ccw-dashed-line {
+  border-top-color: rgba(0, 192, 135, 0.7);
 }
 
-.ccw-tf-tag {
-  font-size: 10px;
-  font-weight: 700;
-  color: #00f2fe;
-  background: rgba(0, 242, 254, 0.16);
-  padding: 1px 5px;
+.candle-countdown-wrap .ccw-badge-box {
+  background: #f04f5e;
+  color: #ffffff;
+  padding: 3px 6px;
   border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  text-transform: uppercase;
+  font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, 'Segoe UI', sans-serif;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  min-width: 62px;
+  box-sizing: border-box;
+  transition: background 0.2s ease;
 }
 
-.ccw-timer {
-  font-size: 12px;
-  font-weight: 800;
-  font-family: 'JetBrains Mono', monospace;
-  color: #00f2fe;
+.candle-countdown-wrap.is-bull .ccw-badge-box {
+  background: #00c087;
+}
+
+.candle-countdown-wrap .ccw-price {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.2px;
+}
+
+.candle-countdown-wrap .ccw-timer {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.15;
   letter-spacing: 0.5px;
+  opacity: 0.95;
 }
 
 .tcb-1click-box {

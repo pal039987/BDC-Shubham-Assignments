@@ -3598,6 +3598,7 @@ function renderTradingViewChart() {
 
   loadChartSettings();
   const overrides = getTradingViewOverrides();
+  const enabledFeatures = ['countdown'];
 
   const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
   const tvIntervalMap = {
@@ -3606,9 +3607,9 @@ function renderTradingViewChart() {
   };
   const intervalCode = tvIntervalMap[chartInterval] || '60';
 
-  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
 
-  if (forceReload || !iframe.src || !iframe.src.includes(`symbol=${encodeURIComponent(tvSymbol)}`) || !iframe.src.includes(`interval=${intervalCode}`) || !iframe.src.includes('hide_side_toolbar=0')) {
+  if (forceReload || !iframe.src || !iframe.src.includes(`symbol=${encodeURIComponent(tvSymbol)}`) || !iframe.src.includes(`interval=${intervalCode}`) || !iframe.src.includes('enabled_features') || !iframe.src.includes('showCountdown')) {
     iframe.src = newSrc;
   }
 }
@@ -3628,6 +3629,7 @@ function openFullscreenChart() {
 
   loadChartSettings();
   const overrides = getTradingViewOverrides();
+  const enabledFeatures = ['countdown'];
 
   const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
   const tvIntervalMap = {
@@ -3642,9 +3644,10 @@ function openFullscreenChart() {
   }
   if (pairEl) pairEl.textContent = `${selectedCoin.symbol}/USDT`;
   if (chgEl) {
-    const isUp = selectedCoin.change >= 0;
+    const activeChg = selectedCoin.chartChange !== undefined ? selectedCoin.chartChange : selectedCoin.change;
+    const isUp = activeChg >= 0;
     chgEl.className = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
-    chgEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
+    chgEl.textContent = `${isUp ? '+' : ''}${activeChg.toFixed(2)}%`;
   }
   if (buySub) buySub.textContent = `Up to ${selectedCoin.maxLev}x`;
   if (sellSub) sellSub.textContent = `Up to ${selectedCoin.maxLev}x`;
@@ -3667,7 +3670,7 @@ function openFullscreenChart() {
   switchFsTab('price');
   renderFsTabContent();
 
-  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
   if (forceReload || !iframe.src || iframe.src !== url) {
     iframe.src = url;
   }
@@ -3915,11 +3918,12 @@ function renderTradeScreen() {
   if (curSym) curSym.textContent = selectedCoin.pair;
   if (curFull) curFull.textContent = `${selectedCoin.name} Perpetual`;
 
-  const isUp = selectedCoin.change >= 0;
+  const currentChange = selectedCoin.chartChange !== undefined ? selectedCoin.chartChange : (selectedCoin.change || 0);
+  const isUp = currentChange >= 0;
   if (livePriceEl) livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
   if (liveChangeEl) {
     liveChangeEl.className = `trade-live-change ${isUp ? 'up' : 'down'}`;
-    liveChangeEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
+    liveChangeEl.textContent = `${isUp ? '+' : ''}${currentChange.toFixed(2)}%`;
   }
 
   // Update Full-Width Top Instrument Bar
@@ -3956,7 +3960,7 @@ function renderTradeScreen() {
 
   if (changeVal) {
     changeVal.className = `tib-val ${isUp ? 'up' : 'down'}`;
-    changeVal.textContent = `${isUp ? '+' : ''}${selectedCoin.change ? selectedCoin.change.toFixed(2) : '0.00'}%`;
+    changeVal.textContent = `${isUp ? '+' : ''}${currentChange.toFixed(2)}%`;
   }
   if (highVal) highVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price)}`;
   if (lowVal) lowVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price)}`;
@@ -4035,6 +4039,8 @@ let candleCountdownInterval = null;
 function updateCandleCountdown() {
   const timerEl = document.getElementById('ccw-timer');
   const tagEl = document.getElementById('ccw-tf-tag');
+  const priceEl = document.getElementById('ccw-scale-price');
+  const wrapEl = document.getElementById('candle-countdown-wrap');
   if (!timerEl) return;
 
   const activeTf = chartInterval || '15m';
@@ -4042,6 +4048,28 @@ function updateCandleCountdown() {
 
   const remSec = getCandleRemainingSeconds(activeTf);
   timerEl.textContent = formatCountdownTime(remSec);
+
+  if (selectedCoin) {
+    if (priceEl) {
+      priceEl.textContent = fmtPrice(selectedCoin.price);
+    }
+    if (wrapEl) {
+      const activeChg = selectedCoin.chartChange !== undefined ? selectedCoin.chartChange : selectedCoin.change;
+      const isUp = activeChg >= 0;
+      wrapEl.classList.toggle('is-bull', isUp);
+      wrapEl.classList.toggle('is-bear', !isUp);
+
+      // Calibrate vertical position on the price scale matching SS 2
+      if (selectedCoin.high && selectedCoin.low && selectedCoin.high > selectedCoin.low) {
+        const range = selectedCoin.high - selectedCoin.low;
+        const ratio = Math.max(0.12, Math.min(0.88, (selectedCoin.price - selectedCoin.low) / range));
+        // Chart box height 370px, header ~38px, footer ~28px
+        const chartH = 370 - 38 - 28 - 30;
+        const topY = 38 + (1 - ratio) * chartH;
+        wrapEl.style.top = `${Math.round(topY)}px`;
+      }
+    }
+  }
 }
 
 function startCandleCountdownEngine() {
@@ -4063,6 +4091,9 @@ function setChartInterval(interval) {
   if (typeof updateCandleCountdown === 'function') updateCandleCountdown();
   renderTradingViewChart();
   fetchRealBinanceCandles();
+  if (selectedCoin && selectedCoin.binanceSym && selectedCoin.binanceSym !== 'PAXGUSDT') {
+    connectCoinTickerWs(selectedCoin.binanceSym);
+  }
 }
 
 async function fetchRealBinanceCandles() {
@@ -4102,6 +4133,16 @@ async function fetchRealBinanceCandles() {
             vol: parseFloat(k[5])
           }));
           loaded = true;
+
+          // Synchronize chart candle gain/loss with header
+          const curCandle = chartCandlesData[chartCandlesData.length - 1];
+          if (curCandle && curCandle.open > 0) {
+            const livePrice = (selectedCoin && selectedCoin.price) || curCandle.close;
+            const diff = livePrice - curCandle.open;
+            selectedCoin.chartChange = parseFloat(((diff / curCandle.open) * 100).toFixed(2));
+            selectedCoin.change = selectedCoin.chartChange;
+            renderLivePriceUpdates();
+          }
           break;
         }
       }
@@ -4909,12 +4950,20 @@ function connectCoinTickerWs(binanceSym) {
     return; // Gold uses direct TVC:GOLD TradingView scanner feed
   }
 
+  const binanceTfMap = {
+    '1m': '1m', '3m': '3m', '5m': '5m', '15m': '15m', '30m': '30m',
+    '1h': '1h', '2h': '2h', '4h': '4h', '1d': '1d', '1w': '1w', '1M': '1M'
+  };
+  const bTf = binanceTfMap[chartInterval] || '1h';
+  const sym = binanceSym.toLowerCase();
+
   // Connect to Binance official real-time ticker stream with vision and kline fallbacks
   const endpoints = [
-    `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@ticker`,
-    `wss://data-stream.binance.vision/ws/${binanceSym.toLowerCase()}@ticker`,
-    `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@kline_1d`,
-    `wss://data-stream.binance.vision/ws/${binanceSym.toLowerCase()}@kline_1d`
+    `wss://stream.binance.com:9443/stream?streams=${sym}@kline_${bTf}/${sym}@ticker`,
+    `wss://data-stream.binance.vision/stream?streams=${sym}@kline_${bTf}/${sym}@ticker`,
+    `wss://stream.binance.com:9443/ws/${sym}@kline_${bTf}`,
+    `wss://data-stream.binance.vision/ws/${sym}@kline_${bTf}`,
+    `wss://stream.binance.com:9443/ws/${sym}@ticker`
   ];
 
   let endpointIdx = 0;
@@ -4927,34 +4976,48 @@ function connectCoinTickerWs(binanceSym) {
 
       liveTickerWs.onmessage = (event) => {
         try {
-          const d = JSON.parse(event.data);
+          const raw = JSON.parse(event.data);
+          const d = raw.data || raw;
           if (d && selectedCoin && (d.s === binanceSym || !d.s || selectedCoin.binanceSym === binanceSym)) {
             let newPrice = 0;
             let changePercent = null;
             let high = null;
             let low = null;
 
-            // Direct Binance 24hrTicker stream payload
-            if (d.e === '24hrTicker' || (d.c && d.P !== undefined)) {
-              newPrice = parseFloat(d.c);
-              changePercent = parseFloat(d.P);
-              if (d.h) high = parseFloat(d.h);
-              if (d.l) low = parseFloat(d.l);
-            } else if (d.k) {
+            if (d.k) {
               // Fallback kline payload
               newPrice = parseFloat(d.k.c);
               const openPrice = parseFloat(d.k.o);
               if (openPrice > 0 && !isNaN(openPrice)) {
                 changePercent = parseFloat((((newPrice - openPrice) / openPrice) * 100).toFixed(2));
+                selectedCoin.chartChange = changePercent;
               }
               if (d.k.h) high = parseFloat(d.k.h);
               if (d.k.l) low = parseFloat(d.k.l);
+            } else if (d.e === '24hrTicker' || (d.c && d.P !== undefined)) {
+              // Direct Binance 24hrTicker stream payload
+              newPrice = parseFloat(d.c);
+              if (d.P !== undefined) selectedCoin.change24h = parseFloat(d.P);
+              if (chartCandlesData && chartCandlesData.length > 0) {
+                const curCandle = chartCandlesData[chartCandlesData.length - 1];
+                if (curCandle && curCandle.open > 0) {
+                  changePercent = parseFloat((((newPrice - curCandle.open) / curCandle.open) * 100).toFixed(2));
+                  selectedCoin.chartChange = changePercent;
+                }
+              }
+              if (changePercent === null && d.P !== undefined) {
+                changePercent = parseFloat(d.P);
+              }
+              if (d.h) high = parseFloat(d.h);
+              if (d.l) low = parseFloat(d.l);
             }
 
             if (newPrice > 0 && !isNaN(newPrice)) {
               selectedCoin.price = newPrice;
               if (changePercent !== null && !isNaN(changePercent)) {
                 selectedCoin.change = changePercent;
+              } else if (selectedCoin.chartChange !== undefined) {
+                selectedCoin.change = selectedCoin.chartChange;
               }
               if (high && !isNaN(high)) selectedCoin.high = high;
               if (low && !isNaN(low)) selectedCoin.low = low;
@@ -5171,7 +5234,8 @@ function renderLivePriceUpdates() {
     const tabPrice = document.getElementById('trade-coin-tab-price');
     const highVal = document.getElementById('trade-high-val');
     const lowVal = document.getElementById('trade-low-val');
-    const isUp = selectedCoin.change >= 0;
+    const currentChange = selectedCoin.chartChange !== undefined ? selectedCoin.chartChange : (selectedCoin.change || 0);
+    const isUp = currentChange >= 0;
 
     if (livePriceEl) {
       const prevPrice = lastRecordedPrices[selectedCoin.id];
@@ -5190,13 +5254,16 @@ function renderLivePriceUpdates() {
     }
     if (liveChangeEl) {
       liveChangeEl.className = `tib-val ${isUp ? 'up' : 'down'}`;
-      liveChangeEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change ? selectedCoin.change.toFixed(2) : '0.00'}%`;
+      liveChangeEl.textContent = `${isUp ? '+' : ''}${currentChange ? currentChange.toFixed(2) : '0.00'}%`;
     }
     if (highVal && selectedCoin.high) {
       highVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high)}`;
     }
     if (lowVal && selectedCoin.low) {
       lowVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low)}`;
+    }
+    if (typeof updateCandleCountdown === 'function') {
+      updateCandleCountdown();
     }
     renderPositions();
   } else if (activeTab === 'portfolio') {
