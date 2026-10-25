@@ -5305,7 +5305,7 @@ html:not(.is-native-apk) .tv-fs-header {
   }
 
   html:not(.is-native-apk) .header-cash-badge {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: 8px;
     background: rgba(16, 185, 129, 0.08);
@@ -5314,6 +5314,11 @@ html:not(.is-native-apk) .tv-fs-header {
     padding: 6px 14px;
     cursor: pointer;
     transition: all 0.2s;
+  }
+
+  html:not(.is-native-apk) .header-cash-badge.hidden,
+  .header-cash-badge.hidden {
+    display: none !important;
   }
 
   html:not(.is-native-apk) .header-cash-badge:hover {
@@ -8230,6 +8235,49 @@ html:not(.is-native-apk) .tv-fs-header {
   align-items: center;
   gap: 4px;
   margin-left: 8px;
+}
+
+.candle-countdown-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 242, 254, 0.08);
+  border: 1px solid rgba(0, 242, 254, 0.25);
+  border-radius: 6px;
+  padding: 3px 9px;
+  margin-left: 10px;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.candle-countdown-wrap:hover {
+  background: rgba(0, 242, 254, 0.14);
+  border-color: rgba(0, 242, 254, 0.45);
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+}
+
+.ccw-icon {
+  font-size: 11px;
+  display: inline-flex;
+}
+
+.ccw-tf-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #00f2fe;
+  background: rgba(0, 242, 254, 0.16);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+}
+
+.ccw-timer {
+  font-size: 12px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: #00f2fe;
+  letter-spacing: 0.5px;
 }
 
 .tcb-1click-box {

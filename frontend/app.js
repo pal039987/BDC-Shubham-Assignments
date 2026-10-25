@@ -3569,6 +3569,8 @@ function getTradingViewOverrides() {
   if (currentChartSettings.grid === 'visible') gridColor = 'rgba(255, 255, 255, 0.09)';
 
   return {
+    "mainSeriesProperties.showCountdown": true,
+    "scalesProperties.showCountdown": true,
     "paneProperties.background": bg,
     "paneProperties.vertGridProperties.color": gridColor,
     "paneProperties.horzGridProperties.color": gridColor,
@@ -3977,6 +3979,77 @@ function renderTradeScreen() {
   updateDesktopOrderCalculations();
 }
 
+// ─── CANDLE CLOSING COUNTDOWN ENGINE (DYNAMIC PER TIMEFRAME) ───────────────
+function getCandleRemainingSeconds(interval) {
+  const now = new Date();
+  const nowMs = now.getTime();
+  const nowSec = Math.floor(nowMs / 1000);
+
+  const tfSeconds = {
+    '1m': 60,
+    '3m': 180,
+    '5m': 300,
+    '15m': 900,
+    '30m': 1800,
+    '1h': 3600,
+    '2h': 7200,
+    '4h': 14400,
+    '1d': 86400
+  };
+
+  const period = tfSeconds[interval] || 900; // default to 15m
+
+  if (interval === '1d') {
+    const utcMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+    return Math.max(0, Math.floor((utcMidnight - nowMs) / 1000));
+  }
+
+  if (interval === '1w') {
+    const day = now.getUTCDay();
+    const daysUntilNextSunday = (7 - day) % 7 || 7;
+    const nextSundayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysUntilNextSunday);
+    return Math.max(0, Math.floor((nextSundayUtc - nowMs) / 1000));
+  }
+
+  if (interval === '1M') {
+    const nextMonthUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1);
+    return Math.max(0, Math.floor((nextMonthUtc - nowMs) / 1000));
+  }
+
+  return period - (nowSec % period);
+}
+
+function formatCountdownTime(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  if (hours > 0) {
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
+
+let candleCountdownInterval = null;
+
+function updateCandleCountdown() {
+  const timerEl = document.getElementById('ccw-timer');
+  const tagEl = document.getElementById('ccw-tf-tag');
+  if (!timerEl) return;
+
+  const activeTf = chartInterval || '15m';
+  if (tagEl) tagEl.textContent = activeTf;
+
+  const remSec = getCandleRemainingSeconds(activeTf);
+  timerEl.textContent = formatCountdownTime(remSec);
+}
+
+function startCandleCountdownEngine() {
+  if (candleCountdownInterval) clearInterval(candleCountdownInterval);
+  updateCandleCountdown();
+  candleCountdownInterval = setInterval(updateCandleCountdown, 1000);
+}
+
 // ─── 12. EXACT 11 TIMEFRAMES CANDLESTICK ENGINE ──────────────────────────
 // Timeframes: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 1d, 1w, 1M
 function setChartInterval(interval) {
@@ -3987,6 +4060,7 @@ function setChartInterval(interval) {
     if (btn) btn.classList.toggle('active', i === interval);
   });
   showToast(`Timeframe: ${interval}`, 'info');
+  if (typeof updateCandleCountdown === 'function') updateCandleCountdown();
   renderTradingViewChart();
   fetchRealBinanceCandles();
 }
@@ -4835,10 +4909,12 @@ function connectCoinTickerWs(binanceSym) {
     return; // Gold uses direct TVC:GOLD TradingView scanner feed
   }
 
-  // Connect to unblocked Binance Vision WebSocket with stream.binance.com fallback
+  // Connect to Binance official real-time ticker stream with vision and kline fallbacks
   const endpoints = [
-    `wss://data-stream.binance.vision/ws/${binanceSym.toLowerCase()}@kline_1d`,
-    `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@kline_1d`
+    `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@ticker`,
+    `wss://data-stream.binance.vision/ws/${binanceSym.toLowerCase()}@ticker`,
+    `wss://stream.binance.com:9443/ws/${binanceSym.toLowerCase()}@kline_1d`,
+    `wss://data-stream.binance.vision/ws/${binanceSym.toLowerCase()}@kline_1d`
   ];
 
   let endpointIdx = 0;
@@ -4852,26 +4928,43 @@ function connectCoinTickerWs(binanceSym) {
       liveTickerWs.onmessage = (event) => {
         try {
           const d = JSON.parse(event.data);
-          if (d && d.s === binanceSym && d.k && selectedCoin && selectedCoin.binanceSym === binanceSym) {
-            const k = d.k;
-            const newPrice = parseFloat(k.c);
-            const openPrice = parseFloat(k.o);
+          if (d && selectedCoin && (d.s === binanceSym || !d.s || selectedCoin.binanceSym === binanceSym)) {
+            let newPrice = 0;
+            let changePercent = null;
+            let high = null;
+            let low = null;
+
+            // Direct Binance 24hrTicker stream payload
+            if (d.e === '24hrTicker' || (d.c && d.P !== undefined)) {
+              newPrice = parseFloat(d.c);
+              changePercent = parseFloat(d.P);
+              if (d.h) high = parseFloat(d.h);
+              if (d.l) low = parseFloat(d.l);
+            } else if (d.k) {
+              // Fallback kline payload
+              newPrice = parseFloat(d.k.c);
+              const openPrice = parseFloat(d.k.o);
+              if (openPrice > 0 && !isNaN(openPrice)) {
+                changePercent = parseFloat((((newPrice - openPrice) / openPrice) * 100).toFixed(2));
+              }
+              if (d.k.h) high = parseFloat(d.k.h);
+              if (d.k.l) low = parseFloat(d.k.l);
+            }
+
             if (newPrice > 0 && !isNaN(newPrice)) {
               selectedCoin.price = newPrice;
-              if (openPrice > 0 && !isNaN(openPrice)) {
-                const diff = newPrice - openPrice;
-                selectedCoin.change = parseFloat(((diff / openPrice) * 100).toFixed(2));
-                selectedCoin.open = openPrice;
+              if (changePercent !== null && !isNaN(changePercent)) {
+                selectedCoin.change = changePercent;
               }
-              if (k.h) selectedCoin.high = parseFloat(k.h);
-              if (k.l) selectedCoin.low = parseFloat(k.l);
+              if (high && !isNaN(high)) selectedCoin.high = high;
+              if (low && !isNaN(low)) selectedCoin.low = low;
 
               // Immediate order checking (0ms latency for limits/triggers)
               checkPendingOrdersTrigger();
 
-              // Smooth 600ms DOM update throttle: eliminates rapid buzzing & matches TradingView cadence
+              // Smooth 150ms DOM update throttle: eliminates rapid buzzing & matches TradingView cadence
               const now = Date.now();
-              if (now - lastWsRenderTime >= 600) {
+              if (now - lastWsRenderTime >= 150) {
                 lastWsRenderTime = now;
                 if (wsRenderTimer) { clearTimeout(wsRenderTimer); wsRenderTimer = null; }
                 renderLivePriceUpdates();
@@ -4880,7 +4973,7 @@ function connectCoinTickerWs(binanceSym) {
                   lastWsRenderTime = Date.now();
                   wsRenderTimer = null;
                   renderLivePriceUpdates();
-                }, 600 - (now - lastWsRenderTime));
+                }, 150 - (now - lastWsRenderTime));
               }
             }
           }
@@ -5072,19 +5165,38 @@ function renderLivePriceUpdates() {
   } else if (activeTab === 'markets') {
     renderMarketsScreen();
   } else if (activeTab === 'trade') {
-    const livePriceEl = document.getElementById('trade-header-price');
-    const liveChangeEl = document.getElementById('trade-header-change');
+    const livePriceEl = document.getElementById('trade-price-val') || document.getElementById('trade-header-price');
+    const liveChangeEl = document.getElementById('trade-change-val') || document.getElementById('trade-header-change');
+    const priceArrow = document.getElementById('trade-price-arrow');
+    const tabPrice = document.getElementById('trade-coin-tab-price');
+    const highVal = document.getElementById('trade-high-val');
+    const lowVal = document.getElementById('trade-low-val');
     const isUp = selectedCoin.change >= 0;
+
     if (livePriceEl) {
       const prevPrice = lastRecordedPrices[selectedCoin.id];
       if (typeof prevPrice === 'number' && prevPrice !== selectedCoin.price) {
         triggerPriceFlash(livePriceEl, selectedCoin.price, prevPrice);
       }
+      livePriceEl.className = `tib-live-price ${isUp ? 'up' : 'down'}`;
       livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
     }
+    if (priceArrow) {
+      priceArrow.textContent = isUp ? '↑' : '↓';
+      priceArrow.className = `tib-price-arrow ${isUp ? 'up' : 'down'}`;
+    }
+    if (tabPrice) {
+      tabPrice.textContent = fmtPrice(selectedCoin.price);
+    }
     if (liveChangeEl) {
-      liveChangeEl.className = `trade-live-change ${isUp ? 'up' : 'down'}`;
-      liveChangeEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
+      liveChangeEl.className = `tib-val ${isUp ? 'up' : 'down'}`;
+      liveChangeEl.textContent = `${isUp ? '+' : ''}${selectedCoin.change ? selectedCoin.change.toFixed(2) : '0.00'}%`;
+    }
+    if (highVal && selectedCoin.high) {
+      highVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high)}`;
+    }
+    if (lowVal && selectedCoin.low) {
+      lowVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low)}`;
     }
     renderPositions();
   } else if (activeTab === 'portfolio') {
@@ -5310,6 +5422,9 @@ function initVTradeApp() {
 
   // Initialize TradingView-style Network Monitor
   initNetworkMonitor();
+
+  // Initialize live Candle Closing Countdown Engine
+  startCandleCountdownEngine();
 
   // Check auth session & strictly validate against database users
   const sess = getAuthSession();
@@ -6985,6 +7100,8 @@ if (typeof window !== 'undefined') {
   window.openPnLDashboardModal = openPnLDashboardModal;
   window.closePnLDashboardModal = closePnLDashboardModal;
   window.renderPnLDashboard = renderPnLDashboard;
+  window.updateCandleCountdown = updateCandleCountdown;
+  window.startCandleCountdownEngine = startCandleCountdownEngine;
 
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', () => {

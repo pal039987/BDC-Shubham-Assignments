@@ -108,7 +108,7 @@
 
       <div class="header-actions-wrap">
         <!-- Live Real Badge (Wallet Equity) -->
-        <div class="header-cash-badge" id="header-cash-badge" onclick="openCustomBalanceModal()" title="Wallet Equity (Click to adjust balance)">
+        <div class="header-cash-badge hidden" id="header-cash-badge" onclick="openCustomBalanceModal()" title="Wallet Equity (Click to adjust balance)">
           <span class="hcb-dot"></span>
           <span class="hcb-label">Real:</span>
           <span class="hcb-val" id="header-cash-val">$10,000.00</span>
@@ -1703,6 +1703,12 @@
               <div class="tcb-tabs-left">
                 <button class="tcb-tab active" id="tcb-tab-mark" onclick="switchChartPriceType('mark')">Mark Price</button>
                 <button class="tcb-tab" id="tcb-tab-last" onclick="switchChartPriceType('last')">Last Traded Price</button>
+                <!-- Live Candle Closing Countdown Timer (screenshot feature) -->
+                <div class="candle-countdown-wrap" id="candle-countdown-wrap" title="Current candle closing countdown timer">
+                  <span class="ccw-icon">⏱️</span>
+                  <span class="ccw-tf-tag" id="ccw-tf-tag">15m</span>
+                  <span class="ccw-timer" id="ccw-timer">--:--</span>
+                </div>
                 <div class="hidden" style="display:none;" id="tcb-hidden-tf-strip">
                   <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
                   <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
