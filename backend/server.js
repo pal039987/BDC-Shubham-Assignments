@@ -104,22 +104,31 @@ const USERS_BACKUP_FILE = path.join(__dirname, 'registered_users_backup.json');
 function syncUsersBackup() {
   try {
     const allUsers = db.prepare('SELECT id, username, email, password, balance, created_at FROM users').all();
-    const backupData = allUsers.map(u => {
-      const wallet = db.prepare('SELECT cash_balance, positions_json, orders_json, trades_json, updated_at FROM user_wallets WHERE user_id = ?').get(u.id);
-      return {
-        id: u.id,
-        username: u.username,
-        email: u.email,
-        password: u.password,
-        balance: wallet && typeof wallet.cash_balance === 'number' ? wallet.cash_balance : u.balance,
-        created_at: u.created_at,
-        positions_json: wallet ? wallet.positions_json : '[]',
-        orders_json: wallet ? wallet.orders_json : '[]',
-        trades_json: wallet ? wallet.trades_json : '[]',
-        updated_at: wallet ? wallet.updated_at : Date.now()
-      };
-    });
-    fs.writeFileSync(USERS_BACKUP_FILE, JSON.stringify(backupData, null, 2), 'utf8');
+    const backupData = allUsers
+      .filter(u => !(u.username && u.username.startsWith('FreshTrader_')))
+      .map(u => {
+        const wallet = db.prepare('SELECT cash_balance, positions_json, orders_json, trades_json, updated_at FROM user_wallets WHERE user_id = ?').get(u.id);
+        return {
+          id: u.id,
+          username: u.username,
+          email: u.email,
+          password: u.password,
+          balance: wallet && typeof wallet.cash_balance === 'number' ? wallet.cash_balance : u.balance,
+          created_at: u.created_at,
+          positions_json: wallet ? wallet.positions_json : '[]',
+          orders_json: wallet ? wallet.orders_json : '[]',
+          trades_json: wallet ? wallet.trades_json : '[]',
+          updated_at: wallet ? wallet.updated_at : Date.now()
+        };
+      });
+    const newContent = JSON.stringify(backupData, null, 2);
+    if (fs.existsSync(USERS_BACKUP_FILE)) {
+      const currentContent = fs.readFileSync(USERS_BACKUP_FILE, 'utf8');
+      if (currentContent.trim() === newContent.trim()) {
+        return; // Content identical, avoid touching file to keep git tree clean
+      }
+    }
+    fs.writeFileSync(USERS_BACKUP_FILE, newContent, 'utf8');
   } catch (err) {
     console.error('Failed to sync users backup:', err);
   }
