@@ -2500,16 +2500,17 @@ function initGsapScrollTriggerAnimations() {
     }
   });
 
-  // 2. Section Entrance Animations (opacity, y-position, and carefully selected clip-path reveals)
-  const entranceSections = document.querySelectorAll('.home-bento-section, .home-features-section, .vtrade-footer');
+  // 2. Section Entrance Animations (opacity, y-position, and clean clearProps)
+  const entranceSections = document.querySelectorAll('.reveal-on-scroll, .home-bento-section, .home-features-section, .vtrade-footer');
   entranceSections.forEach(sec => {
     sec.classList.add('is-revealed');
     const trig = ScrollTrigger.create({
       trigger: sec,
       scroller: scroller,
-      start: 'top 88%',
+      start: 'top 95%',
       once: true,
       onEnter: () => {
+        sec.classList.add('is-revealed');
         gsap.fromTo(sec,
           { opacity: 0, y: 38, clipPath: 'inset(3% 0% 3% 0% round 24px)' },
           { opacity: 1, y: 0, clipPath: 'inset(0% 0% 0% 0% round 24px)', duration: 0.85, ease: 'power2.out', clearProps: 'clipPath' }
@@ -2669,11 +2670,19 @@ function initGsapScrollTriggerAnimations() {
 }
 
 function initScrollRevealEngine() {
-  const elements = document.querySelectorAll('.reveal-on-scroll:not(.is-revealed), .home-market-intel-grid:not(.is-revealed)');
+  const elements = document.querySelectorAll('.reveal-on-scroll, .home-market-intel-grid');
+  // Immediately ensure all sections are revealed so there is zero black screen
+  elements.forEach(el => {
+    el.classList.add('is-revealed');
+    if (el.style) {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+      el.style.filter = 'none';
+    }
+  });
 
   const isReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (isReduced) {
-    elements.forEach(el => el.classList.add('is-revealed'));
     return;
   }
 
