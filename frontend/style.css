@@ -13209,80 +13209,113 @@ body.trade-screen-active .trade-depth-panel {
   }
 }
 
-/* ─── Section 12: Comprehensive Footer (SS 16) ─── */
+/* ─── Section 12: Comprehensive Footer (SS 16 / SS 1 Exact Match) ─── */
 .shark-comprehensive-footer {
-  padding: 40px 0 28px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: #080c14;
+  padding: 40px 0 24px;
+  background: #02060b;
+  width: 100%;
 }
 
-.sfooter-main-grid {
+.sfooter-table-wrap {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(3, 7, 14, 0.7);
+  box-sizing: border-box;
+}
+
+.sfooter-upper-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr;
-  gap: 36px;
-  margin-bottom: 32px;
+  grid-template-columns: 290px 1fr 240px;
+  min-height: 290px;
 }
 
-.sfooter-brand-col {
-  max-width: 340px;
+/* Left Column: Brand & Operated by */
+.sfooter-col-brand {
+  padding: 36px 32px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .sfooter-logo-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.sfooter-logo-icon {
-  font-size: 26px;
-}
-
-.sfooter-logo-text {
-  font-size: 20px;
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-}
-
-.sfooter-tagline {
-  font-size: 13px;
-  line-height: 1.6;
-  color: #7f8fa4;
   margin-bottom: 20px;
 }
 
-.sfooter-address-box {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 12px 14px;
+.sfooter-logo-text {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+}
+
+.sfooter-operated-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.sfooter-entity-name {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.sfooter-fiu-tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: #00c087;
+  letter-spacing: 0.03em;
+  margin-bottom: 24px;
+}
+
+.sfooter-address-block {
+  margin-top: auto;
 }
 
 .sfooter-address-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #7f8fa4;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 4px;
 }
 
 .sfooter-address-val {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.sfooter-cin-val {
+  font-size: 11px;
+  color: #475569;
+}
+
+/* Middle: 4 Link Columns */
+.sfooter-col-links-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 36px 32px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+}
+
+.sfooter-link-col {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #00f2fe;
-  font-family: 'JetBrains Mono', monospace;
+  flex-direction: column;
 }
 
 .sfooter-col-title {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 13px;
+  font-weight: 700;
   color: #ffffff;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: 18px;
 }
@@ -13293,111 +13326,117 @@ body.trade-screen-active .trade-depth-panel {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .sfooter-link-list a {
   font-size: 13px;
   color: #94a3b8;
   text-decoration: none;
-  transition: all 0.2s ease;
+  line-height: 1.6;
+  transition: color 0.15s ease;
 }
 
 .sfooter-link-list a:hover {
   color: #00f2fe;
-  transform: translateX(3px);
 }
 
-.sfooter-bottom-wrap {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 20px;
+/* Right Column: Social Media & TradingView Attribution */
+.sfooter-col-right {
+  padding: 36px 28px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  text-align: center;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 16px;
+  box-sizing: border-box;
 }
 
-.sfooter-socials-row {
+.sfooter-social-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
-.sfooter-soc-link {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.sfooter-simple-icon {
+  color: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
   text-decoration: none;
 }
 
-.sfooter-soc-link:hover {
+.sfooter-simple-icon:hover {
   color: #00f2fe;
-  background: rgba(0, 242, 254, 0.12);
-  border-color: rgba(0, 242, 254, 0.35);
   transform: translateY(-2px);
 }
 
-.sfooter-trust-strip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding: 10px 24px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 999px;
+.sfooter-tv-attribution {
   font-size: 12px;
   color: #94a3b8;
 }
 
-.sfts-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #00c087;
+.sfooter-tv-attribution a {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* Middle Full-Width Disclaimer Band (SS 1) */
+.sfooter-mid-band {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 22px 32px;
+  box-sizing: border-box;
+}
+
+.sfooter-mid-title {
+  font-size: 13px;
   font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 6px;
 }
 
-.sfts-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #00c087;
-  box-shadow: 0 0 8px #00c087;
-  display: inline-block;
-}
-
-.sfts-badges {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: #7f8fa4;
-}
-
-.sfts-sep {
-  color: rgba(255, 255, 255, 0.15);
-}
-
-.sfooter-disclaimer-text {
+.sfooter-mid-desc {
   font-size: 12px;
-  line-height: 1.6;
   color: #64748b;
-  max-width: 820px;
+  line-height: 1.6;
+  margin: 0;
 }
 
-.sfooter-copy-text {
+/* Bottom Copyright Bar (SS 1) */
+.sfooter-copyright-bar {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 16px 32px;
+  text-align: center;
   font-size: 12px;
-  color: #475569;
+  color: #64748b;
+  box-sizing: border-box;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1080px) {
+  .sfooter-upper-grid {
+    grid-template-columns: 1fr;
+  }
+  .sfooter-col-brand,
+  .sfooter-col-links-group,
+  .sfooter-col-right {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .sfooter-col-links-group {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .sfooter-col-links-group {
+    grid-template-columns: 1fr;
+  }
+  .sfooter-table-wrap {
+    border-left: none;
+    border-right: none;
+  }
 }
 
 /* ─── Keyframe Animations ─── */
