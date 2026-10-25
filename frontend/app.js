@@ -4617,6 +4617,21 @@ function renderOrders() {
 
 // ─── 17. PORTFOLIO & ASSETS SCREEN RENDERING ─────────────────────────────
 function renderPortfolioScreen() {
+  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
+  const isAuthedSession = !!(sess && !sess.isGuest && sess.email);
+
+  const authGate = document.getElementById('pf-auth-gate');
+  const authedContent = document.getElementById('pf-authed-content');
+
+  if (!isAuthedSession) {
+    if (authGate) authGate.classList.remove('hidden');
+    if (authedContent) authedContent.classList.add('hidden');
+    return;
+  }
+
+  if (authGate) authGate.classList.add('hidden');
+  if (authedContent) authedContent.classList.remove('hidden');
+
   const netEquity = getNetEquity();
   const { totalPnL, totalMargin } = calculateUnrealizedPnL();
 
@@ -5602,6 +5617,18 @@ function syncDesktopHeaderState() {
 
   const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
   const isAuthedSession = !!(sess && !sess.isGuest && sess.email);
+
+  // Real Wallet Equity Badge strictly visible only when user is authenticated
+  const cashBadge = document.getElementById('header-cash-badge');
+  if (cashBadge) {
+    if (isAuthedSession) {
+      cashBadge.classList.remove('hidden');
+      cashBadge.style.display = 'inline-flex';
+    } else {
+      cashBadge.classList.add('hidden');
+      cashBadge.style.display = 'none';
+    }
+  }
 
   const cashValEl = document.getElementById('header-cash-val');
   if (cashValEl && typeof walletState !== 'undefined') {
@@ -6651,7 +6678,7 @@ function updateDrawerProfileUI() {
 
   const vpdBal = document.getElementById('vpd-abb-val');
   if (vpdBal && typeof walletState !== 'undefined') {
-    vpdBal.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
+    vpdBal.textContent = isAuthed ? `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}` : 'Sign In';
   }
 
   const vpdCurr = document.getElementById('vpd-curr-label');
@@ -6700,6 +6727,16 @@ function updateDrawerProfileUI() {
     const btn = document.getElementById(`drawer-theme-${t}`);
     if (btn) btn.classList.toggle('active', t === currentTheme);
   });
+}
+
+function handleHeaderProfileClick() {
+  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
+  const isAuthed = !!(sess && !sess.isGuest && sess.email);
+  if (!isAuthed) {
+    if (typeof openAuthModal === 'function') openAuthModal('login');
+  } else {
+    toggleProfileDrawer();
+  }
 }
 
 function toggleProfileDrawer(forceState) {
@@ -6937,6 +6974,7 @@ if (typeof window !== 'undefined') {
   window.refillPaperDemoBalance = refillPaperDemoBalance;
 
   // Profile Drawer & Net P&L Dashboard Exports
+  window.handleHeaderProfileClick = handleHeaderProfileClick;
   window.toggleProfileDrawer = toggleProfileDrawer;
   window.openProfileDrawer = openProfileDrawer;
   window.closeProfileDrawer = closeProfileDrawer;
