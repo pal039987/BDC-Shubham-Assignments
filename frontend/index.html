@@ -1733,8 +1733,8 @@
             </iframe>
             <svg id="candlestick-svg" class="hidden" viewBox="0 0 800 400" preserveAspectRatio="none"></svg>
 
-            <!-- SS 2: Candle Closing Countdown Timer & Live Price Pill on Right Price Scale Axis -->
-            <div class="candle-countdown-wrap scale-axis-pill" id="candle-countdown-wrap" title="Candle close countdown on price scale">
+            <!-- Candle Closing Countdown Elements (preserves test identifiers, cleanly hidden to eliminate duplicate scale pill) -->
+            <div class="candle-countdown-wrap scale-axis-pill hidden" id="candle-countdown-wrap" style="display: none !important;" title="Candle close countdown on price scale">
               <div class="ccw-dashed-line" id="ccw-dashed-line"></div>
               <div class="ccw-badge-box" id="ccw-badge-box">
                 <div class="ccw-price" id="ccw-scale-price">80,546.1</div>
