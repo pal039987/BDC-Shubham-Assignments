@@ -1258,6 +1258,8 @@ function setAppTheme(themeName) {
   valid.forEach(t => {
     const el = document.getElementById(`theme-opt-${t}`);
     if (el) el.classList.toggle('active', t === themeName);
+    const drawerEl = document.getElementById(`drawer-theme-${t}`);
+    if (drawerEl) drawerEl.classList.toggle('active', t === themeName);
   });
 
   const names = {
@@ -1278,6 +1280,8 @@ function initAppTheme() {
   ['obsidian', 'midnight', 'oled', 'cyber'].forEach(t => {
     const el = document.getElementById(`theme-opt-${t}`);
     if (el) el.classList.toggle('active', t === saved);
+    const drawerEl = document.getElementById(`drawer-theme-${t}`);
+    if (drawerEl) drawerEl.classList.toggle('active', t === saved);
   });
 }
 
@@ -1371,7 +1375,8 @@ function closeAuthModal() {
 
 function dismissAuthModal(force = false) {
   const sess = getAuthSession();
-  if (!force && (!sess || sess.isGuest || !sess.email)) {
+  const isAuthed = !!(sess && !sess.isGuest && sess.email);
+  if (!force && !isAuthed) {
     const card = document.querySelector('.auth-modal-card');
     if (card) {
       card.classList.remove('shake');
@@ -1384,6 +1389,16 @@ function dismissAuthModal(force = false) {
   clearAuthAlert();
   const modal = document.getElementById('auth-modal-overlay');
   if (modal) modal.classList.add('hidden');
+
+  // If user closed the modal without authenticating, ensure they are safely on the Guest Home tab
+  if (!isAuthed) {
+    if (typeof switchBottomTab === 'function') {
+      switchBottomTab('home');
+    }
+    if (typeof syncDesktopHeaderState === 'function') {
+      syncDesktopHeaderState();
+    }
+  }
 }
 
 function handleBackdropClick() {
@@ -2184,6 +2199,12 @@ function clearTradeHistory() {
 
 // ─── 7. BOTTOM NAVIGATION CONTROLLER & ANIMATION ENGINE ─────────────────
 function switchBottomTab(tab) {
+  if (tab === 'account') {
+    if (typeof openProfileDrawer === 'function') {
+      openProfileDrawer();
+    }
+    return;
+  }
   activeTab = tab || 'home';
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle('trade-screen-active', activeTab === 'trade');
@@ -2597,21 +2618,19 @@ function initGsapScrollTriggerAnimations() {
       scrub: 0.6,
       onUpdate: (self) => {
         const p = self.progress;
-        gsap.to(phoneBack, {
+        gsap.set(phoneBack, {
           x: -p * 22,
           z: p * 35,
           rotationY: -18 + p * 8,
           rotationX: 10 - p * 4,
-          overwrite: 'auto',
-          duration: 0.1
+          force3D: true
         });
-        gsap.to(phoneFront, {
+        gsap.set(phoneFront, {
           x: p * 22,
           z: p * 55,
           rotationY: -12 + p * 6,
           rotationX: 8 - p * 4,
-          overwrite: 'auto',
-          duration: 0.1
+          force3D: true
         });
       }
     });
@@ -5168,13 +5187,32 @@ function handleAvatarFileSelect(event) {
 }
 
 function selectPresetAvatar(presetKey) {
+  let key = presetKey;
+  let avatarUrl = presetKey;
+
   if (PRESET_AVATARS[presetKey]) {
-    userProfile.avatar = PRESET_AVATARS[presetKey];
-    userProfile.selectedPreset = presetKey;
-    saveUserProfile();
-    renderAccountScreen();
-    showToast(`Avatar updated to ${presetKey}!`, 'success');
+    key = presetKey;
+    avatarUrl = PRESET_AVATARS[presetKey];
+  } else if (typeof presetKey === 'string' && presetKey.includes('btc')) {
+    key = 'bitcoin';
+    avatarUrl = PRESET_AVATARS.bitcoin || 'icons/btc.png';
+  } else if (typeof presetKey === 'string' && presetKey.includes('eth')) {
+    key = 'ethereum';
+    avatarUrl = PRESET_AVATARS.ethereum || 'icons/eth.png';
+  } else if (typeof presetKey === 'string' && presetKey.includes('sol')) {
+    key = 'solana';
+    avatarUrl = 'icons/sol.png';
+  } else if (typeof presetKey === 'string' && presetKey.includes('doge')) {
+    key = 'doge';
+    avatarUrl = 'icons/doge.png';
   }
+
+  userProfile.avatar = avatarUrl;
+  userProfile.selectedPreset = key;
+  saveUserProfile();
+  renderAccountScreen();
+  if (typeof updateDrawerProfileUI === 'function') updateDrawerProfileUI();
+  showToast(`Avatar updated to ${key}!`, 'success');
 }
 
 function openProfileEditModal() {
@@ -5571,18 +5609,23 @@ function syncDesktopHeaderState() {
     const dbtn = document.getElementById(`dnav-${t}`);
     if (dbtn) dbtn.classList.toggle('active', t === activeTab);
   });
+
+  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
+  const isAuthedSession = !!(sess && !sess.isGuest && sess.email);
+
   const cashValEl = document.getElementById('header-cash-val');
   if (cashValEl && typeof walletState !== 'undefined') {
-    cashValEl.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
+    cashValEl.textContent = isAuthedSession 
+      ? `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`
+      : `${getCurrencySymbol()}0.00`;
   }
 
   // Update Auth nav item & Header user pill
-  const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
   const dnavAuthText = document.getElementById('dnav-auth-text');
   const hubName = document.getElementById('hub-name');
   const hubAvatar = document.getElementById('hub-avatar');
 
-  if (sess && !sess.isGuest && sess.email) {
+  if (isAuthedSession) {
     const displayName = (userProfile && userProfile.name) || sess.username || 'Account';
     if (dnavAuthText) dnavAuthText.textContent = displayName;
     if (hubName) hubName.textContent = displayName;
@@ -5594,7 +5637,6 @@ function syncDesktopHeaderState() {
   }
 
   // Update Screenshot 1 Buy/Sell Dock Auth Gate
-  const isAuthedSession = !!(sess && !sess.isGuest && sess.email);
   const dtodAuthGate = document.getElementById('dtod-auth-gate');
   const dtodSubmitBtn = document.getElementById('dtod-submit-btn');
   if (dtodAuthGate) dtodAuthGate.classList.toggle('hidden', isAuthedSession);
@@ -5707,6 +5749,10 @@ function logoutAuthUser() {
 
 function handleAuthLogout() {
   const loggedOutEmail = logoutAuthUser();
+  // Immediately switch view to Guest Home page so logged-in screens are never visible
+  if (typeof switchBottomTab === 'function') {
+    switchBottomTab('home');
+  }
   if (typeof renderAllViews === 'function') renderAllViews();
   showToast('Signed out successfully.', 'info');
   if (typeof clearAuthAlert === 'function') clearAuthAlert();
@@ -6602,13 +6648,28 @@ function updateDrawerProfileUI() {
 
   const vpdBal = document.getElementById('vpd-abb-val');
   if (vpdBal && typeof walletState !== 'undefined') {
-    vpdBal.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
+    vpdBal.textContent = isAuthed 
+      ? `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}` 
+      : `${getCurrencySymbol()}0.00`;
   }
 
   const vpdCurr = document.getElementById('vpd-curr-label');
   if (vpdCurr && typeof walletState !== 'undefined') {
     vpdCurr.textContent = walletState.currency === 'INR' ? 'INR (₹)' : 'USD ($)';
   }
+
+  // Sync avatar chips in drawer
+  ['bitcoin', 'ethereum', 'solana', 'doge'].forEach(key => {
+    const chip = document.getElementById(`drawer-pab-${key}`);
+    if (chip) chip.classList.toggle('active', (userProfile.selectedPreset || '').toLowerCase() === key);
+  });
+
+  // Sync theme options in drawer
+  const currentTheme = (typeof document !== 'undefined' && document.documentElement && typeof document.documentElement.getAttribute === 'function' && document.documentElement.getAttribute('data-theme')) || 'obsidian';
+  ['obsidian', 'midnight', 'oled', 'cyber'].forEach(t => {
+    const btn = document.getElementById(`drawer-theme-${t}`);
+    if (btn) btn.classList.toggle('active', t === currentTheme);
+  });
 }
 
 function toggleProfileDrawer(forceState) {
@@ -6642,7 +6703,7 @@ function handleDrawerAccountClick() {
   const isAuthed = !!(sess && !sess.isGuest && sess.email);
   closeProfileDrawer();
   if (isAuthed) {
-    if (typeof switchBottomTab === 'function') switchBottomTab('account');
+    if (typeof openProfileEditModal === 'function') openProfileEditModal();
   } else {
     if (typeof openAuthModal === 'function') openAuthModal('login');
   }
