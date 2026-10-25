@@ -1389,16 +1389,6 @@ function dismissAuthModal(force = false) {
   clearAuthAlert();
   const modal = document.getElementById('auth-modal-overlay');
   if (modal) modal.classList.add('hidden');
-
-  // If user closed the modal without authenticating, ensure they are safely on the Guest Home tab
-  if (!isAuthed) {
-    if (typeof switchBottomTab === 'function') {
-      switchBottomTab('home');
-    }
-    if (typeof syncDesktopHeaderState === 'function') {
-      syncDesktopHeaderState();
-    }
-  }
 }
 
 function handleBackdropClick() {
@@ -5615,25 +5605,29 @@ function syncDesktopHeaderState() {
 
   const cashValEl = document.getElementById('header-cash-val');
   if (cashValEl && typeof walletState !== 'undefined') {
-    cashValEl.textContent = isAuthedSession 
-      ? `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`
-      : `${getCurrencySymbol()}0.00`;
+    cashValEl.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
   }
 
   // Update Auth nav item & Header user pill
   const dnavAuthText = document.getElementById('dnav-auth-text');
   const hubName = document.getElementById('hub-name');
   const hubAvatar = document.getElementById('hub-avatar');
+  const hmpInitial = document.getElementById('hmp-avatar-initial');
+  const hmpLabel = document.getElementById('hmp-label-text');
 
   if (isAuthedSession) {
-    const displayName = (userProfile && userProfile.name) || sess.username || 'Account';
+    const displayName = (userProfile && userProfile.name) || sess.username || 'Trader';
     if (dnavAuthText) dnavAuthText.textContent = displayName;
     if (hubName) hubName.textContent = displayName;
     if (hubAvatar) hubAvatar.textContent = '🟢';
+    if (hmpInitial) hmpInitial.textContent = (displayName[0] || 'T').toUpperCase();
+    if (hmpLabel) hmpLabel.textContent = displayName || 'My Profile';
   } else {
     if (dnavAuthText) dnavAuthText.textContent = 'Sign In';
     if (hubName) hubName.textContent = 'Sign In';
     if (hubAvatar) hubAvatar.textContent = '👤';
+    if (hmpInitial) hmpInitial.textContent = '👤';
+    if (hmpLabel) hmpLabel.textContent = 'Sign In';
   }
 
   // Update Screenshot 1 Buy/Sell Dock Auth Gate
@@ -5749,14 +5743,18 @@ function logoutAuthUser() {
 
 function handleAuthLogout() {
   const loggedOutEmail = logoutAuthUser();
+  if (typeof closeProfileDrawer === 'function') {
+    closeProfileDrawer();
+  }
   // Immediately switch view to Guest Home page so logged-in screens are never visible
   if (typeof switchBottomTab === 'function') {
     switchBottomTab('home');
   }
+  if (typeof syncDesktopHeaderState === 'function') syncDesktopHeaderState();
+  if (typeof updateDrawerProfileUI === 'function') updateDrawerProfileUI();
   if (typeof renderAllViews === 'function') renderAllViews();
   showToast('Signed out successfully.', 'info');
   if (typeof clearAuthAlert === 'function') clearAuthAlert();
-  if (typeof openAuthModal === 'function') openAuthModal('login');
 
   const loginEmail = document.getElementById('login-email');
   if (loginEmail && loggedOutEmail) loginEmail.value = loggedOutEmail;
@@ -6630,32 +6628,64 @@ function updateDrawerProfileUI() {
   const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
   const isAuthed = !!(sess && !sess.isGuest && sess.email);
   const displayName = isAuthed ? ((userProfile && userProfile.name) || sess.username || 'Trader') : 'Guest';
-  const initial = isAuthed ? (displayName[0] || 'U').toUpperCase() : 'F';
+  const initial = isAuthed ? (displayName[0] || 'U').toUpperCase() : '👤';
 
-  // Screenshot 2 Header Block Initial
+  // Screenshot 2 Header Block Initial & Label
   const hmpInitial = document.getElementById('hmp-avatar-initial');
   if (hmpInitial) hmpInitial.textContent = initial;
+
+  const hmpLabel = document.getElementById('hmp-label-text');
+  if (hmpLabel) {
+    hmpLabel.textContent = isAuthed ? (displayName || 'My Profile') : 'Sign In';
+  }
 
   // Drawer Profile Card
   const vpdAvatar = document.getElementById('vpd-ac-avatar');
   if (vpdAvatar) vpdAvatar.textContent = initial;
 
   const vpdTitle = document.getElementById('vpd-ac-title');
-  if (vpdTitle) vpdTitle.textContent = isAuthed ? displayName : 'My Account';
+  if (vpdTitle) vpdTitle.textContent = isAuthed ? displayName : 'Guest Trader';
 
   const vpdSub = document.getElementById('vpd-ac-sub');
   if (vpdSub) vpdSub.textContent = isAuthed ? sess.email : 'Click to Sign In / Register';
 
   const vpdBal = document.getElementById('vpd-abb-val');
   if (vpdBal && typeof walletState !== 'undefined') {
-    vpdBal.textContent = isAuthed 
-      ? `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}` 
-      : `${getCurrencySymbol()}0.00`;
+    vpdBal.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
   }
 
   const vpdCurr = document.getElementById('vpd-curr-label');
   if (vpdCurr && typeof walletState !== 'undefined') {
     vpdCurr.textContent = walletState.currency === 'INR' ? 'INR (₹)' : 'USD ($)';
+  }
+
+  // Bottom action button: Sign Out for authed users, Sign In to Terminal for guests
+  const signoutBtn = document.getElementById('vpd-signout-btn');
+  if (signoutBtn) {
+    if (isAuthed) {
+      signoutBtn.innerHTML = `
+        <span>Sign Out</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      `;
+      signoutBtn.onclick = handleDrawerSignOut;
+    } else {
+      signoutBtn.innerHTML = `
+        <span>Sign In to Terminal</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+          <polyline points="10 17 15 12 10 7"></polyline>
+          <line x1="15" y1="12" x2="3" y2="12"></line>
+        </svg>
+      `;
+      signoutBtn.onclick = () => {
+        closeProfileDrawer();
+        openAuthModal('login');
+      };
+    }
   }
 
   // Sync avatar chips in drawer
