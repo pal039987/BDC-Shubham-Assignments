@@ -8032,7 +8032,9 @@ html:not(.is-native-apk) .tv-fs-header {
   font-size: 16px;
   font-weight: 800;
   font-family: var(--font-price, monospace);
+  font-variant-numeric: tabular-nums;
   color: #f04f5e;
+  transition: color 0.15s ease;
 }
 .tib-live-price.up { color: #00c087; }
 .tib-live-price.down { color: #f04f5e; }
@@ -8040,6 +8042,8 @@ html:not(.is-native-apk) .tv-fs-header {
 .tib-price-arrow {
   font-size: 14px;
   font-weight: 800;
+  display: inline-block;
+  transition: color 0.15s ease;
 }
 .tib-price-arrow.up { color: #00c087; }
 .tib-price-arrow.down { color: #f04f5e; }
@@ -8080,6 +8084,8 @@ html:not(.is-native-apk) .tv-fs-header {
   font-weight: 700;
   color: #ffffff;
   font-family: var(--font-price, monospace);
+  font-variant-numeric: tabular-nums;
+  transition: color 0.15s ease;
 }
 .tib-val.up { color: #00c087; }
 .tib-val.down { color: #f04f5e; }

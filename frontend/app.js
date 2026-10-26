@@ -3941,7 +3941,9 @@ function openFullscreenChart() {
   }
   if (pairEl) pairEl.textContent = `${selectedCoin.symbol}/USDT`;
   if (chgEl) {
-    const activeChg = selectedCoin.chartChange !== undefined ? selectedCoin.chartChange : selectedCoin.change;
+    const activeChg = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+      ? selectedCoin.change24h
+      : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0);
     const isUp = activeChg >= 0;
     chgEl.className = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
     chgEl.textContent = `${isUp ? '+' : ''}${activeChg.toFixed(2)}%`;
@@ -4347,10 +4349,9 @@ function renderTradeScreen() {
     curIcon.src = selectedCoin.icon;
     curIcon.onerror = function() { handleCoinIconError(this, selectedCoin.symbol, selectedCoin.category); };
   }
-  if (curSym) curSym.textContent = selectedCoin.pair;
-  if (curFull) curFull.textContent = `${selectedCoin.name} Perpetual`;
-
-  const currentChange = selectedCoin.chartChange !== undefined ? selectedCoin.chartChange : (selectedCoin.change || 0);
+  const currentChange = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+    ? selectedCoin.change24h
+    : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0);
   const isUp = currentChange >= 0;
   if (livePriceEl) livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
   if (liveChangeEl) {
@@ -4569,13 +4570,13 @@ async function fetchRealBinanceCandles() {
           }));
           loaded = true;
 
-          // Synchronize chart candle gain/loss with header
+          // Synchronize chart candle gain/loss
           const curCandle = chartCandlesData[chartCandlesData.length - 1];
           if (curCandle && curCandle.open > 0) {
             const livePrice = (selectedCoin && selectedCoin.price) || curCandle.close;
             const diff = livePrice - curCandle.open;
             selectedCoin.chartChange = parseFloat(((diff / curCandle.open) * 100).toFixed(2));
-            selectedCoin.change = selectedCoin.chartChange;
+            // Keep selectedCoin.change strictly as true 24h change to prevent flicker
             renderLivePriceUpdates();
           }
           break;
@@ -5424,27 +5425,20 @@ function connectCoinTickerWs(binanceSym) {
             let low = null;
 
             if (d.k) {
-              // Fallback kline payload
+              // Fallback kline payload: live price tick
               newPrice = parseFloat(d.k.c);
               const openPrice = parseFloat(d.k.o);
               if (openPrice > 0 && !isNaN(openPrice)) {
-                changePercent = parseFloat((((newPrice - openPrice) / openPrice) * 100).toFixed(2));
-                selectedCoin.chartChange = changePercent;
+                selectedCoin.chartChange = parseFloat((((newPrice - openPrice) / openPrice) * 100).toFixed(2));
               }
               // Do NOT overwrite 24h High / Low with single-candle d.k.h / d.k.l!
             } else if (d.e === '24hrTicker' || (d.c && d.P !== undefined)) {
               // Direct Binance 24hrTicker stream payload
               newPrice = parseFloat(d.c);
-              if (d.P !== undefined) selectedCoin.change24h = parseFloat(d.P);
-              if (chartCandlesData && chartCandlesData.length > 0) {
-                const curCandle = chartCandlesData[chartCandlesData.length - 1];
-                if (curCandle && curCandle.open > 0) {
-                  changePercent = parseFloat((((newPrice - curCandle.open) / curCandle.open) * 100).toFixed(2));
-                  selectedCoin.chartChange = changePercent;
-                }
-              }
-              if (changePercent === null && d.P !== undefined) {
+              if (d.P !== undefined && !isNaN(parseFloat(d.P))) {
                 changePercent = parseFloat(d.P);
+                selectedCoin.change = changePercent;
+                selectedCoin.change24h = changePercent;
               }
               // Strictly capture true 24-hour high and low from 24hr ticker
               if (d.h) high = parseFloat(d.h);
@@ -5455,8 +5449,6 @@ function connectCoinTickerWs(binanceSym) {
               selectedCoin.price = newPrice;
               if (changePercent !== null && !isNaN(changePercent)) {
                 selectedCoin.change = changePercent;
-              } else if (selectedCoin.chartChange !== undefined) {
-                selectedCoin.change = selectedCoin.chartChange;
               }
               if (high && !isNaN(high) && high > 0) selectedCoin.high = high;
               if (low && !isNaN(low) && low > 0) selectedCoin.low = low;
@@ -5673,33 +5665,54 @@ function renderLivePriceUpdates() {
     const tabPrice = document.getElementById('trade-coin-tab-price');
     const highVal = document.getElementById('trade-high-val');
     const lowVal = document.getElementById('trade-low-val');
-    const currentChange = selectedCoin.chartChange !== undefined ? selectedCoin.chartChange : (selectedCoin.change || 0);
+    const currentChange = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+      ? selectedCoin.change24h
+      : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0);
     const isUp = currentChange >= 0;
 
     if (livePriceEl) {
-      const prevPrice = lastRecordedPrices[selectedCoin.id];
-      if (typeof prevPrice === 'number' && prevPrice !== selectedCoin.price) {
-        triggerPriceFlash(livePriceEl, selectedCoin.price, prevPrice);
+      const formattedPrice = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+      if (livePriceEl.textContent !== formattedPrice) {
+        livePriceEl.textContent = formattedPrice;
       }
-      livePriceEl.className = `tib-live-price ${isUp ? 'up' : 'down'}`;
-      livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+      const targetPriceClass = `tib-live-price ${isUp ? 'up' : 'down'}`;
+      if (livePriceEl.className !== targetPriceClass) {
+        livePriceEl.className = targetPriceClass;
+      }
     }
     if (priceArrow) {
-      priceArrow.textContent = isUp ? '↑' : '↓';
-      priceArrow.className = `tib-price-arrow ${isUp ? 'up' : 'down'}`;
+      const targetArrow = isUp ? '↑' : '↓';
+      if (priceArrow.textContent !== targetArrow) {
+        priceArrow.textContent = targetArrow;
+      }
+      const targetArrowClass = `tib-price-arrow ${isUp ? 'up' : 'down'}`;
+      if (priceArrow.className !== targetArrowClass) {
+        priceArrow.className = targetArrowClass;
+      }
     }
     if (tabPrice) {
-      tabPrice.textContent = fmtPrice(selectedCoin.price);
+      const formattedTab = fmtPrice(selectedCoin.price);
+      if (tabPrice.textContent !== formattedTab) {
+        tabPrice.textContent = formattedTab;
+      }
     }
     if (liveChangeEl) {
-      liveChangeEl.className = `tib-val ${isUp ? 'up' : 'down'}`;
-      liveChangeEl.textContent = `${isUp ? '+' : ''}${currentChange ? currentChange.toFixed(2) : '0.00'}%`;
+      const formattedChange = `${isUp ? '+' : ''}${currentChange.toFixed(2)}%`;
+      if (liveChangeEl.textContent !== formattedChange) {
+        liveChangeEl.textContent = formattedChange;
+      }
+      const targetChangeClass = `tib-val ${isUp ? 'up' : 'down'}`;
+      if (liveChangeEl.className !== targetChangeClass) {
+        liveChangeEl.className = targetChangeClass;
+      }
     }
     if (highVal && selectedCoin.high) {
-      highVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high)}`;
+      const formattedHigh = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high)}`;
+      if (highVal.textContent !== formattedHigh) highVal.textContent = formattedHigh;
     }
     if (lowVal && selectedCoin.low) {
-      lowVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low)}`;
+      const formattedLow = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low)}`;
+      if (lowVal.textContent !== formattedLow) lowVal.textContent = formattedLow;
     }
     if (typeof updateCandleCountdown === 'function') {
       updateCandleCountdown();
@@ -5720,20 +5733,31 @@ function renderLivePriceUpdates() {
     const fsLow = document.getElementById('tv-fs-low');
     const fsVol = document.getElementById('tv-fs-vol');
     if (fsPrice) {
-      const prevPrice = lastRecordedPrices[selectedCoin.id];
-      if (typeof prevPrice === 'number' && prevPrice !== selectedCoin.price) {
-        triggerPriceFlash(fsPrice, selectedCoin.price, prevPrice);
-      }
-      fsPrice.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+      const formattedFsPrice = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
+      if (fsPrice.textContent !== formattedFsPrice) fsPrice.textContent = formattedFsPrice;
     }
     if (fsChange) {
-      const isUp = selectedCoin.change >= 0;
-      fsChange.className = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
-      fsChange.textContent = `${isUp ? '+' : ''}${selectedCoin.change.toFixed(2)}%`;
+      const fsChgVal = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+        ? selectedCoin.change24h
+        : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0);
+      const isUp = fsChgVal >= 0;
+      const targetClass = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
+      if (fsChange.className !== targetClass) fsChange.className = targetClass;
+      const formattedFsChange = `${isUp ? '+' : ''}${fsChgVal.toFixed(2)}%`;
+      if (fsChange.textContent !== formattedFsChange) fsChange.textContent = formattedFsChange;
     }
-    if (fsHigh) fsHigh.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price * 1.018)}`;
-    if (fsLow) fsLow.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price * 0.982)}`;
-    if (fsVol) fsVol.textContent = `${selectedCoin.vol || '304.6M USDT'}`;
+    if (fsHigh) {
+      const formattedFsHigh = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price * 1.018)}`;
+      if (fsHigh.textContent !== formattedFsHigh) fsHigh.textContent = formattedFsHigh;
+    }
+    if (fsLow) {
+      const formattedFsLow = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price * 0.982)}`;
+      if (fsLow.textContent !== formattedFsLow) fsLow.textContent = formattedFsLow;
+    }
+    if (fsVol) {
+      const formattedFsVol = `${selectedCoin.vol || '304.6M USDT'}`;
+      if (fsVol.textContent !== formattedFsVol) fsVol.textContent = formattedFsVol;
+    }
   }
 
   if (selectedCoin && selectedCoin.id) {
