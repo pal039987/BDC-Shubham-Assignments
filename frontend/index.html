@@ -1944,6 +1944,8 @@
                     "mainSeriesProperties.highLowAvgPrice.averageClosePriceLabelVisible": false,
                     "scalesProperties.showSymbolLabels": false,
                     "paneProperties.background": settings.bgColor,
+                    "paneProperties.backgroundColor": settings.bgColor,
+                    "paneProperties.backgroundType": "solid",
                     "paneProperties.vertGridProperties.color": gridColor,
                     "paneProperties.horzGridProperties.color": gridColor,
                     "mainSeriesProperties.candleStyle.upColor": settings.upColor,
@@ -1959,7 +1961,11 @@
                     "mainSeriesProperties.haStyle.upColor": settings.upColor,
                     "mainSeriesProperties.haStyle.downColor": settings.downColor,
                     "mainSeriesProperties.haStyle.borderUpColor": settings.upColor,
-                    "mainSeriesProperties.haStyle.borderDownColor": settings.downColor
+                    "mainSeriesProperties.haStyle.borderDownColor": settings.downColor,
+                    "mainSeriesProperties.barStyle.upColor": settings.upColor,
+                    "mainSeriesProperties.barStyle.downColor": settings.downColor,
+                    "mainSeriesProperties.lineStyle.color": settings.upColor,
+                    "mainSeriesProperties.areaStyle.linecolor": settings.upColor
                   };
                   var features = ['header_widget', 'header_symbol_search', 'header_resolutions', 'header_chart_type', 'header_indicators', 'header_compare', 'header_settings', 'header_fullscreen_button', 'header_screenshot', 'header_saveload', 'header_undo_redo', 'use_localstorage_for_settings', 'save_chart_properties_to_local_storage'];
                   if (showCountdown) features.unshift('countdown');
@@ -1972,6 +1978,10 @@
                     "theme": "dark",
                     "style": String(settings.chartStyle || '1'),
                     "locale": "en",
+                    "backgroundColor": settings.bgColor,
+                    "gridColor": gridColor,
+                    "upColor": settings.upColor,
+                    "downColor": settings.downColor,
                     "allow_symbol_change": true,
                     "calendar": false,
                     "hide_side_toolbar": false,
@@ -1989,6 +1999,8 @@
                   var earlySrc = 'https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#' + encodeURIComponent(JSON.stringify(widgetConfig));
                   iframe.src = earlySrc;
                   iframe.setAttribute('data-applied-url', earlySrc);
+                  var chartBoxEl = document.getElementById('trade-candlestick-container');
+                  if (chartBoxEl && settings.bgColor) chartBoxEl.style.backgroundColor = settings.bgColor;
                 } catch(e) {}
               })();
             </script>
@@ -2830,17 +2842,17 @@
         <div class="cs-group">
           <span class="cs-label">Color Presets</span>
           <div class="cs-preset-grid">
-            <button class="cs-preset-pill active" onclick="applyColorPreset('#00c087', '#f04f5e', this)">
+            <button class="cs-preset-pill active" id="cs-preset-classic" onclick="applyColorPreset('#00c087', '#f04f5e', this)">
               <span class="cs-dot" style="background:#00c087;"></span>
               <span class="cs-dot" style="background:#f04f5e;"></span>
               Classic
             </button>
-            <button class="cs-preset-pill" onclick="applyColorPreset('#00d2ff', '#ff3366', this)">
+            <button class="cs-preset-pill" id="cs-preset-neon" onclick="applyColorPreset('#00d2ff', '#ff3366', this)">
               <span class="cs-dot" style="background:#00d2ff;"></span>
               <span class="cs-dot" style="background:#ff3366;"></span>
               Neon
             </button>
-            <button class="cs-preset-pill" onclick="applyColorPreset('#f5a623', '#a855f7', this)">
+            <button class="cs-preset-pill" id="cs-preset-luxury" onclick="applyColorPreset('#f5a623', '#a855f7', this)">
               <span class="cs-dot" style="background:#f5a623;"></span>
               <span class="cs-dot" style="background:#a855f7;"></span>
               Luxury

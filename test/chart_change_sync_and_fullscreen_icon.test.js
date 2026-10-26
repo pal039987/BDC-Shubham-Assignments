@@ -79,4 +79,23 @@ console.log('8. Verifying Mandatory Gujarat Address...');
 assert.ok(html.includes('Vadod Gam, Surat, Gujarat'), 'Mandatory address must exist in HTML');
 console.log('  ✓ Mandatory address "Vadod Gam, Surat, Gujarat" verified');
 
+// 9. Verify Save & Apply Chart Properties, Colors & Background Sync
+console.log('9. Testing Save & Apply Chart Properties & Colors Modal Application...');
+assert.ok(html.includes('id="cs-preset-classic"'), 'cs-preset-classic button id must exist');
+assert.ok(html.includes('id="cs-preset-neon"'), 'cs-preset-neon button id must exist');
+assert.ok(html.includes('id="cs-preset-luxury"'), 'cs-preset-luxury button id must exist');
+assert.ok(html.includes('onclick="saveAndApplyChartSettings()"'), 'saveAndApplyChartSettings click handler must be present on Save & Apply button');
+
+assert.ok(js.includes('function saveAndApplyChartSettings()'), 'saveAndApplyChartSettings must be defined in app.js');
+assert.ok(js.includes('renderTradingViewChart(true)'), 'saveAndApplyChartSettings must trigger forceReload on chart iframe');
+assert.ok(js.includes('iframe.src = \'about:blank\''), 'forceReload must reset iframe document to about:blank to force re-render');
+assert.ok(js.includes('const reloadParam = forceReload ? `&_t=${Date.now()}` : \'\''), 'renderTradingViewChart must append timestamp query param on force reload');
+assert.ok(js.includes('backgroundColor: bg,'), 'widgetConfig must include backgroundColor at root level');
+assert.ok(js.includes('upColor: up,'), 'widgetConfig must include upColor at root level');
+assert.ok(js.includes('downColor: down,'), 'widgetConfig must include downColor at root level');
+assert.ok(js.includes('"paneProperties.backgroundColor": bg'), 'overrides must include paneProperties.backgroundColor');
+assert.ok(js.includes('"paneProperties.backgroundType": "solid"'), 'overrides must include paneProperties.backgroundType');
+assert.ok(js.includes('chartBox.style.backgroundColor = bg'), 'trade-candlestick-container background must match chosen chart background');
+console.log('  ✓ Save & Apply correctly forces iframe reload with chosen colors, background, and presets');
+
 console.log('\n=== ALL CHART CHANGE SYNC, FULLSCREEN ICON & CLEAN CHART TESTS PASSED! ===\n');

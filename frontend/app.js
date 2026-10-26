@@ -3672,6 +3672,8 @@ function getTradingViewOverrides() {
     "mainSeriesProperties.highLowAvgPrice.averageClosePriceLabelVisible": false,
     "scalesProperties.showSymbolLabels": false,
     "paneProperties.background": bg,
+    "paneProperties.backgroundColor": bg,
+    "paneProperties.backgroundType": "solid",
     "paneProperties.vertGridProperties.color": gridColor,
     "paneProperties.horzGridProperties.color": gridColor,
     "mainSeriesProperties.candleStyle.upColor": up,
@@ -3687,7 +3689,11 @@ function getTradingViewOverrides() {
     "mainSeriesProperties.haStyle.upColor": up,
     "mainSeriesProperties.haStyle.downColor": down,
     "mainSeriesProperties.haStyle.borderUpColor": up,
-    "mainSeriesProperties.haStyle.borderDownColor": down
+    "mainSeriesProperties.haStyle.borderDownColor": down,
+    "mainSeriesProperties.barStyle.upColor": up,
+    "mainSeriesProperties.barStyle.downColor": down,
+    "mainSeriesProperties.lineStyle.color": up,
+    "mainSeriesProperties.areaStyle.linecolor": up
   };
 
   if (chartCountdownEnabled === false) {
@@ -3733,14 +3739,25 @@ function renderTradingViewChart() {
     studiesParam = `&studies=${encodeURIComponent(JSON.stringify(activeChartIndicators))}`;
   }
 
+  const up = currentChartSettings.upColor || '#00c087';
+  const down = currentChartSettings.downColor || '#f04f5e';
+  const bg = currentChartSettings.bgColor || '#080b11';
+  let gridColor = 'rgba(0, 0, 0, 0)';
+  if (currentChartSettings.grid === 'subtle') gridColor = 'rgba(255, 255, 255, 0.04)';
+  if (currentChartSettings.grid === 'visible') gridColor = 'rgba(255, 255, 255, 0.09)';
+
   const widgetConfig = {
     autosize: true,
     symbol: tvSymbol,
     interval: intervalCode,
-    timezone: currentChartSettings.timezone,
+    timezone: currentChartSettings.timezone || 'Etc/UTC',
     theme: 'dark',
     style: String(currentChartSettings.chartStyle || '1'),
     locale: 'en',
+    backgroundColor: bg,
+    gridColor: gridColor,
+    upColor: up,
+    downColor: down,
     allow_symbol_change: true,
     calendar: false,
     hide_side_toolbar: false,
@@ -3756,12 +3773,25 @@ function renderTradingViewChart() {
     widgetConfig.studies = activeChartIndicators;
   }
 
-  const newSrc = `https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#${encodeURIComponent(JSON.stringify(widgetConfig))}`;
+  const chartBox = document.getElementById('trade-candlestick-container');
+  if (chartBox) {
+    chartBox.style.backgroundColor = bg;
+  }
+
+  const reloadParam = forceReload ? `&_t=${Date.now()}` : '';
+  const newSrc = `https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en${reloadParam}#${encodeURIComponent(JSON.stringify(widgetConfig))}`;
 
   const currentApplied = iframe.getAttribute('data-applied-url');
   if (forceReload || !iframe.src || currentApplied !== newSrc || iframe.src !== newSrc) {
     iframe.setAttribute('data-applied-url', newSrc);
-    iframe.src = newSrc;
+    if (forceReload) {
+      iframe.src = 'about:blank';
+      setTimeout(() => {
+        if (iframe) iframe.src = newSrc;
+      }, 15);
+    } else {
+      iframe.src = newSrc;
+    }
   }
   syncIndicatorsUI();
   updateCustomWatermark(selectedCoin ? selectedCoin.symbol : 'BTC');
@@ -4018,14 +4048,25 @@ function openFullscreenChart() {
     fsStudiesParam = `&studies=${encodeURIComponent(JSON.stringify(activeChartIndicators))}`;
   }
 
+  const up = currentChartSettings.upColor || '#00c087';
+  const down = currentChartSettings.downColor || '#f04f5e';
+  const bg = currentChartSettings.bgColor || '#080b11';
+  let gridColor = 'rgba(0, 0, 0, 0)';
+  if (currentChartSettings.grid === 'subtle') gridColor = 'rgba(255, 255, 255, 0.04)';
+  if (currentChartSettings.grid === 'visible') gridColor = 'rgba(255, 255, 255, 0.09)';
+
   const fsWidgetConfig = {
     autosize: true,
     symbol: tvSymbol,
     interval: intervalCode,
-    timezone: currentChartSettings.timezone,
+    timezone: currentChartSettings.timezone || 'Etc/UTC',
     theme: 'dark',
     style: String(currentChartSettings.chartStyle || '1'),
     locale: 'en',
+    backgroundColor: bg,
+    gridColor: gridColor,
+    upColor: up,
+    downColor: down,
     allow_symbol_change: true,
     calendar: false,
     hide_side_toolbar: false,
@@ -4041,11 +4082,24 @@ function openFullscreenChart() {
     fsWidgetConfig.studies = activeChartIndicators;
   }
 
-  const url = `https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tv-fullscreen-iframe&hide_side_toolbar=0&locale=en#${encodeURIComponent(JSON.stringify(fsWidgetConfig))}`;
+  const fsChartArea = document.querySelector('.tv-fs-chart-area');
+  if (fsChartArea) {
+    fsChartArea.style.backgroundColor = bg;
+  }
+
+  const reloadParam = forceReload ? `&_t=${Date.now()}` : '';
+  const url = `https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tv-fullscreen-iframe&hide_side_toolbar=0&locale=en${reloadParam}#${encodeURIComponent(JSON.stringify(fsWidgetConfig))}`;
   const currentApplied = iframe.getAttribute('data-applied-url');
   if (forceReload || !iframe.src || currentApplied !== url || iframe.src !== url) {
     iframe.setAttribute('data-applied-url', url);
-    iframe.src = url;
+    if (forceReload) {
+      iframe.src = 'about:blank';
+      setTimeout(() => {
+        if (iframe) iframe.src = url;
+      }, 15);
+    } else {
+      iframe.src = url;
+    }
   }
   modal.classList.remove('hidden');
 }
@@ -4164,6 +4218,21 @@ function syncChartSettingsUI() {
   if (downHex) downHex.textContent = currentChartSettings.downColor;
   if (tzSelect) tzSelect.value = currentChartSettings.timezone || 'Etc/UTC';
 
+  // Sync color preset pills (Classic, Neon, Luxury)
+  const up = (currentChartSettings.upColor || '').toLowerCase();
+  const down = (currentChartSettings.downColor || '').toLowerCase();
+  const classicBtn = document.getElementById('cs-preset-classic');
+  const neonBtn = document.getElementById('cs-preset-neon');
+  const luxuryBtn = document.getElementById('cs-preset-luxury');
+
+  const isClassic = (up === '#00c087' && down === '#f04f5e');
+  const isNeon = (up === '#00d2ff' && down === '#ff3366');
+  const isLuxury = (up === '#f5a623' && down === '#a855f7');
+
+  if (classicBtn) classicBtn.classList.toggle('active', isClassic);
+  if (neonBtn) neonBtn.classList.toggle('active', isNeon);
+  if (luxuryBtn) luxuryBtn.classList.toggle('active', isLuxury);
+
   // Sync grid buttons
   ['hidden', 'subtle', 'visible'].forEach(g => {
     const btn = document.getElementById(`cs-grid-${g}`);
@@ -4185,7 +4254,7 @@ function syncChartSettingsUI() {
   };
   Object.entries(bgMap).forEach(([color, id]) => {
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('active', currentChartSettings.bgColor.toLowerCase() === color.toLowerCase());
+    if (el) el.classList.toggle('active', (currentChartSettings.bgColor || '').toLowerCase() === color.toLowerCase());
   });
 
   syncIndicatorsUI();
@@ -4242,6 +4311,7 @@ function setChartGrid(grid) {
 }
 
 function setChartStyle(style) {
+  currentChartStyle = style;
   currentChartSettings.chartStyle = style;
   ['1', '9', '8', '2'].forEach(s => {
     const btn = document.getElementById(`cs-style-${s}`);
@@ -4273,10 +4343,25 @@ function resetChartSettingsToDefault() {
   saveChartSettings();
   syncChartSettingsUI();
   syncIndicatorsUI();
+  renderTradingViewChart(true);
+  const fsModal = document.getElementById('tv-fullscreen-modal');
+  if (fsModal && !fsModal.classList.contains('hidden')) {
+    openFullscreenChart(true);
+  }
   showToast('Chart settings reset to default');
 }
 
 function saveAndApplyChartSettings() {
+  const upInput = document.getElementById('cs-input-up');
+  const downInput = document.getElementById('cs-input-down');
+  const tzSelect = document.getElementById('cs-timezone-select');
+  const styleSelect = document.getElementById('cs-style-select');
+
+  if (upInput && upInput.value) currentChartSettings.upColor = upInput.value;
+  if (downInput && downInput.value) currentChartSettings.downColor = downInput.value;
+  if (tzSelect && tzSelect.value) currentChartSettings.timezone = tzSelect.value;
+  if (styleSelect && styleSelect.value) currentChartSettings.chartStyle = styleSelect.value;
+
   saveChartSettings();
   closeFsSettings();
   const fsModal = document.getElementById('tv-fullscreen-modal');
