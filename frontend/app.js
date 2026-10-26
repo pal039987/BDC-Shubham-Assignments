@@ -6238,7 +6238,7 @@ function initDesktopMarquee() {
 
   const miniTrack = document.getElementById('tib-mini-track');
   if (miniTrack && typeof COINS !== 'undefined') {
-    const miniCoins = COINS.slice(0, 12);
+    const miniCoins = COINS;
     const miniItemsHtml = miniCoins.map(coin => {
       const chgVal = coin.change !== undefined ? coin.change : (coin.change24h || 0);
       const isUp = chgVal >= 0;

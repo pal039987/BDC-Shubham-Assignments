@@ -7843,11 +7843,13 @@ html:not(.is-native-apk) .tv-fs-header {
 .tib-top-subtabs {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 14px;
   padding: 6px 16px 0 16px;
   background: #06080d;
   flex-shrink: 0;
   min-height: 28px;
+  overflow: hidden;
 }
 
 .tib-active-ticker-tab {
@@ -7862,6 +7864,7 @@ html:not(.is-native-apk) .tv-fs-header {
   font-size: 12px;
   font-weight: 700;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
 .tib-tab-sep {
@@ -7879,18 +7882,20 @@ html:not(.is-native-apk) .tv-fs-header {
   align-items: center;
   overflow: hidden;
   white-space: nowrap;
-  max-width: 680px;
-  mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  mask-image: linear-gradient(to right, transparent 0%, black 8px, black calc(100% - 16px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8px, black calc(100% - 16px), transparent 100%);
 }
 
 .tib-mini-track {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   width: max-content;
   will-change: transform;
-  animation: tibMarqueeScroll 28s linear infinite;
+  animation: tibMarqueeScroll 55s linear infinite;
 }
 
 .tib-mini-track:hover {
