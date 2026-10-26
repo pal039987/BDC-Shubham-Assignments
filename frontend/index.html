@@ -1810,7 +1810,7 @@
 
             <!-- TradingView official chart iframe (supports https://s.tradingview.com/widgetembed/ legacy fallback) -->
             <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
-              src="https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#%7B%22autosize%22%3Atrue%2C%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22interval%22%3A%2260%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22locale%22%3A%22en%22%2C%22allow_symbol_change%22%3Atrue%2C%22calendar%22%3Afalse%2C%22hide_side_toolbar%22%3Afalse%2C%22hide_top_toolbar%22%3Afalse%2C%22withdateranges%22%3Afalse%2C%22save_image%22%3Atrue%2C%22enable_publishing%22%3Afalse%2C%22hideideas%22%3Atrue%2C%22enabled_features%22%3A%5B%22countdown%22%2C%22header_widget%22%2C%22header_symbol_search%22%2C%22header_resolutions%22%2C%22header_chart_type%22%2C%22header_indicators%22%2C%22header_compare%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22header_screenshot%22%2C%22header_saveload%22%2C%22header_undo_redo%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%5D%2C%22overrides%22%3A%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Afalse%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLinesVisible%22%3Afalse%2C%22scalesProperties.showSymbolLabels%22%3Afalse%2C%22paneProperties.background%22%3A%22%23080b11%22%2C%22paneProperties.vertGridProperties.color%22%3A%22rgba(0%2C%200%2C%200%2C%200)%22%2C%22paneProperties.horzGridProperties.color%22%3A%22rgba(0%2C%200%2C%200%2C%200)%22%7D%7D"
+              src="https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#%7B%22autosize%22%3Atrue%2C%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22interval%22%3A%2260%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22locale%22%3A%22en%22%2C%22allow_symbol_change%22%3Atrue%2C%22calendar%22%3Afalse%2C%22hide_side_toolbar%22%3Afalse%2C%22hide_top_toolbar%22%3Afalse%2C%22withdateranges%22%3Afalse%2C%22save_image%22%3Atrue%2C%22enable_publishing%22%3Afalse%2C%22hideideas%22%3Atrue%2C%22disabled_features%22%3A%5B%22show_symbol_labels%22%2C%22symbol_info%22%5D%2C%22enabled_features%22%3A%5B%22countdown%22%2C%22header_widget%22%2C%22header_symbol_search%22%2C%22header_resolutions%22%2C%22header_chart_type%22%2C%22header_indicators%22%2C%22header_compare%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22header_screenshot%22%2C%22header_saveload%22%2C%22header_undo_redo%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%5D%2C%22overrides%22%3A%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Afalse%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLinesVisible%22%3Afalse%2C%22mainSeriesProperties.showPrevClosePriceLine%22%3Afalse%2C%22mainSeriesProperties.prevClosePriceLine.color%22%3A%22rgba(0%2C%200%2C%200%2C%200)%22%2C%22scalesProperties.showPrevClosePriceLabels%22%3Afalse%2C%22scalesProperties.showSymbolLabels%22%3Afalse%2C%22scalesProperties.showSymbolName%22%3Afalse%2C%22mainSeriesProperties.symbolNameLabelVisible%22%3Afalse%2C%22paneProperties.background%22%3A%22%23080b11%22%2C%22paneProperties.vertGridProperties.color%22%3A%22rgba(0%2C%200%2C%200%2C%200)%22%2C%22paneProperties.horzGridProperties.color%22%3A%22rgba(0%2C%200%2C%200%2C%200)%22%7D%7D"
               allowtransparency="true" frameborder="0" allowfullscreen="true" allow="fullscreen; clipboard-write; pointer-lock">
             </iframe>
             <script>
@@ -1942,12 +1942,29 @@
                     "mainSeriesProperties.highLowAvgPrice.highLowPriceLinesVisible": false,
                     "mainSeriesProperties.highLowAvgPrice.averageClosePriceLineVisible": false,
                     "mainSeriesProperties.highLowAvgPrice.averageClosePriceLabelVisible": false,
+                    "mainSeriesProperties.showPrevClosePriceLine": false,
+                    "mainSeriesProperties.prevClosePriceLine.color": "rgba(0, 0, 0, 0)",
+                    "mainSeriesProperties.prevClosePriceLine.width": 0,
+                    "scalesProperties.showPrevClosePriceLabels": false,
+                    "mainSeriesProperties.prevClosePriceLabelsVisible": false,
                     "scalesProperties.showSymbolLabels": false,
+                    "scalesProperties.showSymbolName": false,
+                    "scalesProperties.showSeriesTitle": false,
+                    "mainSeriesProperties.showSymbolLabels": false,
+                    "mainSeriesProperties.symbolNameLabelVisible": false,
+                    "mainSeriesProperties.showSymbolName": false,
+                    "mainSeriesProperties.bidAsk.bidLineVisible": false,
+                    "mainSeriesProperties.bidAsk.askLineVisible": false,
+                    "mainSeriesProperties.bidAsk.bidAskPriceLabelsVisible": false,
+                    "mainSeriesProperties.prePostMarket.preMarketPriceLineVisible": false,
+                    "mainSeriesProperties.prePostMarket.postMarketPriceLineVisible": false,
                     "paneProperties.background": settings.bgColor,
                     "paneProperties.backgroundColor": settings.bgColor,
                     "paneProperties.backgroundType": "solid",
                     "paneProperties.vertGridProperties.color": gridColor,
                     "paneProperties.horzGridProperties.color": gridColor,
+                    "paneProperties.vertGridProperties.style": 0,
+                    "paneProperties.horzGridProperties.style": 0,
                     "mainSeriesProperties.candleStyle.upColor": settings.upColor,
                     "mainSeriesProperties.candleStyle.downColor": settings.downColor,
                     "mainSeriesProperties.candleStyle.borderUpColor": settings.upColor,
@@ -1990,6 +2007,7 @@
                     "save_image": true,
                     "enable_publishing": false,
                     "hideideas": true,
+                    "disabled_features": ["show_symbol_labels", "symbol_info"],
                     "enabled_features": features,
                     "overrides": overrides
                   };
@@ -2840,7 +2858,10 @@
       <div class="cs-modal-body">
         <!-- Preset Palettes -->
         <div class="cs-group">
-          <span class="cs-label">Color Presets</span>
+          <div class="cs-group-header-row">
+            <span class="cs-label">Color Presets</span>
+            <span class="cs-badge-hint">Custom or Preset</span>
+          </div>
           <div class="cs-preset-grid">
             <button class="cs-preset-pill active" id="cs-preset-classic" onclick="applyColorPreset('#00c087', '#f04f5e', this)">
               <span class="cs-dot" style="background:#00c087;"></span>
@@ -2857,33 +2878,54 @@
               <span class="cs-dot" style="background:#a855f7;"></span>
               Luxury
             </button>
+            <button class="cs-preset-pill" id="cs-preset-cyberpunk" onclick="applyColorPreset('#06b6d4', '#f43f5e', this)">
+              <span class="cs-dot" style="background:#06b6d4;"></span>
+              <span class="cs-dot" style="background:#f43f5e;"></span>
+              Cyberpunk
+            </button>
+            <button class="cs-preset-pill" id="cs-preset-sunset" onclick="applyColorPreset('#f59e0b', '#ef4444', this)">
+              <span class="cs-dot" style="background:#f59e0b;"></span>
+              <span class="cs-dot" style="background:#ef4444;"></span>
+              Sunset
+            </button>
+            <button class="cs-preset-pill" id="cs-preset-custom" onclick="activateCustomPresetPill()">
+              <span class="cs-dot" id="cs-preset-dot-up" style="background:#00c087;"></span>
+              <span class="cs-dot" id="cs-preset-dot-down" style="background:#f04f5e;"></span>
+              Custom
+            </button>
           </div>
         </div>
 
         <!-- Custom Candle Colors -->
         <div class="cs-group">
-          <span class="cs-label">Candle Colors</span>
+          <div class="cs-group-header-row">
+            <span class="cs-label">Candle Colors</span>
+            <span class="cs-badge-hint">Any Color Wheel & Hex</span>
+          </div>
           <div class="cs-color-row">
             <div class="cs-color-pick-box">
               <span class="cs-sub-label">Up / Bullish</span>
               <div class="cs-picker-wrapper">
-                <input type="color" id="cs-input-up" value="#00c087" onchange="onCustomColorChange()" />
-                <span class="cs-color-hex" id="cs-hex-up">#00c087</span>
+                <input type="color" id="cs-input-up" value="#00c087" onchange="onCustomColorChange()" oninput="onCustomColorChange()" />
+                <input type="text" class="cs-hex-input" id="cs-hex-up" value="#00c087" maxlength="7" spellcheck="false" onchange="onCustomUpHexInput(this.value)" />
               </div>
             </div>
             <div class="cs-color-pick-box">
               <span class="cs-sub-label">Down / Bearish</span>
               <div class="cs-picker-wrapper">
-                <input type="color" id="cs-input-down" value="#f04f5e" onchange="onCustomColorChange()" />
-                <span class="cs-color-hex" id="cs-hex-down">#f04f5e</span>
+                <input type="color" id="cs-input-down" value="#f04f5e" onchange="onCustomColorChange()" oninput="onCustomColorChange()" />
+                <input type="text" class="cs-hex-input" id="cs-hex-down" value="#f04f5e" maxlength="7" spellcheck="false" onchange="onCustomDownHexInput(this.value)" />
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Background Presets -->
+        <!-- Background Presets & Custom Background -->
         <div class="cs-group">
-          <span class="cs-label">Chart Background</span>
+          <div class="cs-group-header-row">
+            <span class="cs-label">Chart Background</span>
+            <span class="cs-badge-hint">Presets & Custom Color</span>
+          </div>
           <div class="cs-bg-grid">
             <button class="cs-bg-pill active" id="cs-bg-obsidian" onclick="applyBgPreset('#080b11', this)">
               <span class="cs-bg-swatch" style="background:#080b11;"></span>
@@ -2901,6 +2943,31 @@
               <span class="cs-bg-swatch" style="background:#151c2c;"></span>
               Slate Dark
             </button>
+            <button class="cs-bg-pill" id="cs-bg-custom" onclick="document.getElementById('cs-input-bg').click()">
+              <span class="cs-bg-swatch" id="cs-bg-custom-swatch" style="background:#080b11; border:1px dashed rgba(255,255,255,0.4);"></span>
+              Custom
+            </button>
+          </div>
+          <!-- Custom Background Color Picker Row -->
+          <div class="cs-custom-bg-row">
+            <div class="cs-color-pick-box" style="flex:1;">
+              <span class="cs-sub-label">Custom Canvas Color</span>
+              <div class="cs-picker-wrapper">
+                <input type="color" id="cs-input-bg" value="#080b11" oninput="onCustomBgColorChange(this.value)" onchange="onCustomBgColorChange(this.value)" />
+                <input type="text" class="cs-hex-input" id="cs-hex-bg" value="#080b11" maxlength="7" spellcheck="false" onchange="onCustomBgHexInput(this.value)" />
+              </div>
+            </div>
+            <div class="cs-bg-quick-palette">
+              <span class="cs-sub-label">Palette</span>
+              <div class="cs-swatches-strip">
+                <button type="button" class="cs-mini-swatch" style="background:#000000;" onclick="onCustomBgColorChange('#000000')" title="Pure Black"></button>
+                <button type="button" class="cs-mini-swatch" style="background:#080b11;" onclick="onCustomBgColorChange('#080b11')" title="Obsidian"></button>
+                <button type="button" class="cs-mini-swatch" style="background:#0c101a;" onclick="onCustomBgColorChange('#0c101a')" title="Deep Navy"></button>
+                <button type="button" class="cs-mini-swatch" style="background:#151c2c;" onclick="onCustomBgColorChange('#151c2c')" title="Slate Dark"></button>
+                <button type="button" class="cs-mini-swatch" style="background:#0d1117;" onclick="onCustomBgColorChange('#0d1117')" title="Midnight"></button>
+                <button type="button" class="cs-mini-swatch" style="background:#181a20;" onclick="onCustomBgColorChange('#181a20')" title="Charcoal"></button>
+              </div>
+            </div>
           </div>
         </div>
 

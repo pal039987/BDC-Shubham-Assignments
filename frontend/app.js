@@ -3670,12 +3670,29 @@ function getTradingViewOverrides() {
     "mainSeriesProperties.highLowAvgPrice.highLowPriceLinesVisible": false,
     "mainSeriesProperties.highLowAvgPrice.averageClosePriceLineVisible": false,
     "mainSeriesProperties.highLowAvgPrice.averageClosePriceLabelVisible": false,
+    "mainSeriesProperties.showPrevClosePriceLine": false,
+    "mainSeriesProperties.prevClosePriceLine.color": "rgba(0, 0, 0, 0)",
+    "mainSeriesProperties.prevClosePriceLine.width": 0,
+    "scalesProperties.showPrevClosePriceLabels": false,
+    "mainSeriesProperties.prevClosePriceLabelsVisible": false,
     "scalesProperties.showSymbolLabels": false,
+    "scalesProperties.showSymbolName": false,
+    "scalesProperties.showSeriesTitle": false,
+    "mainSeriesProperties.showSymbolLabels": false,
+    "mainSeriesProperties.symbolNameLabelVisible": false,
+    "mainSeriesProperties.showSymbolName": false,
+    "mainSeriesProperties.bidAsk.bidLineVisible": false,
+    "mainSeriesProperties.bidAsk.askLineVisible": false,
+    "mainSeriesProperties.bidAsk.bidAskPriceLabelsVisible": false,
+    "mainSeriesProperties.prePostMarket.preMarketPriceLineVisible": false,
+    "mainSeriesProperties.prePostMarket.postMarketPriceLineVisible": false,
     "paneProperties.background": bg,
     "paneProperties.backgroundColor": bg,
     "paneProperties.backgroundType": "solid",
     "paneProperties.vertGridProperties.color": gridColor,
     "paneProperties.horzGridProperties.color": gridColor,
+    "paneProperties.vertGridProperties.style": 0,
+    "paneProperties.horzGridProperties.style": 0,
     "mainSeriesProperties.candleStyle.upColor": up,
     "mainSeriesProperties.candleStyle.downColor": down,
     "mainSeriesProperties.candleStyle.borderUpColor": up,
@@ -3766,6 +3783,7 @@ function renderTradingViewChart() {
     save_image: true,
     enable_publishing: false,
     hideideas: true,
+    disabled_features: ['show_symbol_labels', 'symbol_info'],
     enabled_features: enabledFeatures,
     overrides: overrides
   };
@@ -4075,6 +4093,7 @@ function openFullscreenChart() {
     save_image: true,
     enable_publishing: false,
     hideideas: true,
+    disabled_features: ['show_symbol_labels', 'symbol_info'],
     enabled_features: enabledFeatures,
     overrides: overrides
   };
@@ -4205,33 +4224,65 @@ function closeFsSettings() {
   if (modal) modal.classList.add('hidden');
 }
 
-function syncChartSettingsUI() {
-  const upInput = document.getElementById('cs-input-up');
-  const downInput = document.getElementById('cs-input-down');
-  const upHex = document.getElementById('cs-hex-up');
-  const downHex = document.getElementById('cs-hex-down');
-  const tzSelect = document.getElementById('cs-timezone-select');
-
-  if (upInput) upInput.value = currentChartSettings.upColor;
-  if (downInput) downInput.value = currentChartSettings.downColor;
-  if (upHex) upHex.textContent = currentChartSettings.upColor;
-  if (downHex) downHex.textContent = currentChartSettings.downColor;
-  if (tzSelect) tzSelect.value = currentChartSettings.timezone || 'Etc/UTC';
-
-  // Sync color preset pills (Classic, Neon, Luxury)
+function syncPresetHighlight() {
   const up = (currentChartSettings.upColor || '').toLowerCase();
   const down = (currentChartSettings.downColor || '').toLowerCase();
   const classicBtn = document.getElementById('cs-preset-classic');
   const neonBtn = document.getElementById('cs-preset-neon');
   const luxuryBtn = document.getElementById('cs-preset-luxury');
+  const cyberpunkBtn = document.getElementById('cs-preset-cyberpunk');
+  const sunsetBtn = document.getElementById('cs-preset-sunset');
+  const customBtn = document.getElementById('cs-preset-custom');
+  const customDotUp = document.getElementById('cs-preset-dot-up');
+  const customDotDown = document.getElementById('cs-preset-dot-down');
+
+  if (customDotUp) customDotUp.style.backgroundColor = up;
+  if (customDotDown) customDotDown.style.backgroundColor = down;
 
   const isClassic = (up === '#00c087' && down === '#f04f5e');
   const isNeon = (up === '#00d2ff' && down === '#ff3366');
   const isLuxury = (up === '#f5a623' && down === '#a855f7');
+  const isCyberpunk = (up === '#06b6d4' && down === '#f43f5e');
+  const isSunset = (up === '#f59e0b' && down === '#ef4444');
 
   if (classicBtn) classicBtn.classList.toggle('active', isClassic);
   if (neonBtn) neonBtn.classList.toggle('active', isNeon);
   if (luxuryBtn) luxuryBtn.classList.toggle('active', isLuxury);
+  if (cyberpunkBtn) cyberpunkBtn.classList.toggle('active', isCyberpunk);
+  if (sunsetBtn) sunsetBtn.classList.toggle('active', isSunset);
+
+  const matchedAny = isClassic || isNeon || isLuxury || isCyberpunk || isSunset;
+  if (customBtn) customBtn.classList.toggle('active', !matchedAny);
+}
+
+function syncChartSettingsUI() {
+  const upInput = document.getElementById('cs-input-up');
+  const downInput = document.getElementById('cs-input-down');
+  const upHex = document.getElementById('cs-hex-up');
+  const downHex = document.getElementById('cs-hex-down');
+  const bgInput = document.getElementById('cs-input-bg');
+  const bgHex = document.getElementById('cs-hex-bg');
+  const tzSelect = document.getElementById('cs-timezone-select');
+
+  if (upInput) upInput.value = currentChartSettings.upColor;
+  if (downInput) downInput.value = currentChartSettings.downColor;
+  if (upHex) {
+    if (upHex.tagName === 'INPUT') upHex.value = currentChartSettings.upColor;
+    else upHex.textContent = currentChartSettings.upColor;
+  }
+  if (downHex) {
+    if (downHex.tagName === 'INPUT') downHex.value = currentChartSettings.downColor;
+    else downHex.textContent = currentChartSettings.downColor;
+  }
+  if (bgInput) bgInput.value = currentChartSettings.bgColor;
+  if (bgHex) {
+    if (bgHex.tagName === 'INPUT') bgHex.value = currentChartSettings.bgColor;
+    else bgHex.textContent = currentChartSettings.bgColor;
+  }
+  if (tzSelect) tzSelect.value = currentChartSettings.timezone || 'Etc/UTC';
+
+  // Sync color presets
+  syncPresetHighlight();
 
   // Sync grid buttons
   ['hidden', 'subtle', 'visible'].forEach(g => {
@@ -4246,16 +4297,25 @@ function syncChartSettingsUI() {
   });
 
   // Sync background pills
+  const curBg = (currentChartSettings.bgColor || '').toLowerCase();
   const bgMap = {
     '#080b11': 'cs-bg-obsidian',
     '#000000': 'cs-bg-pure',
     '#0c101a': 'cs-bg-navy',
     '#151c2c': 'cs-bg-slate'
   };
+  let matchedBg = false;
   Object.entries(bgMap).forEach(([color, id]) => {
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('active', (currentChartSettings.bgColor || '').toLowerCase() === color.toLowerCase());
+    const isMatch = (curBg === color.toLowerCase());
+    if (el) el.classList.toggle('active', isMatch);
+    if (isMatch) matchedBg = true;
   });
+
+  const customBgPill = document.getElementById('cs-bg-custom');
+  const customBgSwatch = document.getElementById('cs-bg-custom-swatch');
+  if (customBgSwatch) customBgSwatch.style.backgroundColor = currentChartSettings.bgColor;
+  if (customBgPill) customBgPill.classList.toggle('active', !matchedBg);
 
   syncIndicatorsUI();
 }
@@ -4269,12 +4329,27 @@ function applyColorPreset(up, down, btn) {
   const downHex = document.getElementById('cs-hex-down');
   if (upInput) upInput.value = up;
   if (downInput) downInput.value = down;
-  if (upHex) upHex.textContent = up;
-  if (downHex) downHex.textContent = down;
+  if (upHex) {
+    if (upHex.tagName === 'INPUT') upHex.value = up;
+    else upHex.textContent = up;
+  }
+  if (downHex) {
+    if (downHex.tagName === 'INPUT') downHex.value = down;
+    else downHex.textContent = down;
+  }
 
   document.querySelectorAll('.cs-preset-pill').forEach(p => p.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  syncPresetHighlight();
   saveChartSettings();
+}
+
+function activateCustomPresetPill() {
+  document.querySelectorAll('.cs-preset-pill').forEach(p => p.classList.remove('active'));
+  const customBtn = document.getElementById('cs-preset-custom');
+  if (customBtn) customBtn.classList.add('active');
+  const upInput = document.getElementById('cs-input-up');
+  if (upInput) upInput.click();
 }
 
 function onCustomColorChange() {
@@ -4284,21 +4359,106 @@ function onCustomColorChange() {
   const downHex = document.getElementById('cs-hex-down');
   if (upInput) {
     currentChartSettings.upColor = upInput.value;
-    if (upHex) upHex.textContent = upInput.value;
+    if (upHex) {
+      if (upHex.tagName === 'INPUT') upHex.value = upInput.value;
+      else upHex.textContent = upInput.value;
+    }
   }
   if (downInput) {
     currentChartSettings.downColor = downInput.value;
-    if (downHex) downHex.textContent = downInput.value;
+    if (downHex) {
+      if (downHex.tagName === 'INPUT') downHex.value = downInput.value;
+      else downHex.textContent = downInput.value;
+    }
   }
-  document.querySelectorAll('.cs-preset-pill').forEach(p => p.classList.remove('active'));
+  syncPresetHighlight();
   saveChartSettings();
+}
+
+function onCustomUpHexInput(val) {
+  if (!val) return;
+  let hex = val.trim();
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+    const upInput = document.getElementById('cs-input-up');
+    if (upInput) upInput.value = hex;
+    currentChartSettings.upColor = hex;
+    syncPresetHighlight();
+    saveChartSettings();
+  }
+}
+
+function onCustomDownHexInput(val) {
+  if (!val) return;
+  let hex = val.trim();
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+    const downInput = document.getElementById('cs-input-down');
+    if (downInput) downInput.value = hex;
+    currentChartSettings.downColor = hex;
+    syncPresetHighlight();
+    saveChartSettings();
+  }
 }
 
 function applyBgPreset(bg, btn) {
   currentChartSettings.bgColor = bg;
   document.querySelectorAll('.cs-bg-pill').forEach(p => p.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  const bgInput = document.getElementById('cs-input-bg');
+  const bgHex = document.getElementById('cs-hex-bg');
+  const customBgSwatch = document.getElementById('cs-bg-custom-swatch');
+  if (bgInput) bgInput.value = bg;
+  if (bgHex) {
+    if (bgHex.tagName === 'INPUT') bgHex.value = bg;
+    else bgHex.textContent = bg;
+  }
+  if (customBgSwatch) customBgSwatch.style.backgroundColor = bg;
+  const chartBox = document.getElementById('trade-candlestick-container');
+  if (chartBox) chartBox.style.backgroundColor = bg;
   saveChartSettings();
+}
+
+function onCustomBgColorChange(val) {
+  if (!val) return;
+  currentChartSettings.bgColor = val;
+  const bgInput = document.getElementById('cs-input-bg');
+  const bgHex = document.getElementById('cs-hex-bg');
+  const customSwatch = document.getElementById('cs-bg-custom-swatch');
+  const customPill = document.getElementById('cs-bg-custom');
+  if (bgInput) bgInput.value = val;
+  if (bgHex) {
+    if (bgHex.tagName === 'INPUT') bgHex.value = val;
+    else bgHex.textContent = val;
+  }
+  if (customSwatch) customSwatch.style.backgroundColor = val;
+
+  document.querySelectorAll('.cs-bg-pill').forEach(p => p.classList.remove('active'));
+  const bgMap = {
+    '#080b11': 'cs-bg-obsidian',
+    '#000000': 'cs-bg-pure',
+    '#0c101a': 'cs-bg-navy',
+    '#151c2c': 'cs-bg-slate'
+  };
+  const matchedPillId = bgMap[val.toLowerCase()];
+  if (matchedPillId && document.getElementById(matchedPillId)) {
+    document.getElementById(matchedPillId).classList.add('active');
+  } else if (customPill) {
+    customPill.classList.add('active');
+  }
+
+  const chartBox = document.getElementById('trade-candlestick-container');
+  if (chartBox) chartBox.style.backgroundColor = val;
+  saveChartSettings();
+}
+
+function onCustomBgHexInput(val) {
+  if (!val) return;
+  let hex = val.trim();
+  if (!hex.startsWith('#')) hex = '#' + hex;
+  if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+    onCustomBgColorChange(hex);
+  }
 }
 
 function setChartGrid(grid) {
@@ -4354,11 +4514,13 @@ function resetChartSettingsToDefault() {
 function saveAndApplyChartSettings() {
   const upInput = document.getElementById('cs-input-up');
   const downInput = document.getElementById('cs-input-down');
+  const bgInput = document.getElementById('cs-input-bg');
   const tzSelect = document.getElementById('cs-timezone-select');
   const styleSelect = document.getElementById('cs-style-select');
 
   if (upInput && upInput.value) currentChartSettings.upColor = upInput.value;
   if (downInput && downInput.value) currentChartSettings.downColor = downInput.value;
+  if (bgInput && bgInput.value) currentChartSettings.bgColor = bgInput.value;
   if (tzSelect && tzSelect.value) currentChartSettings.timezone = tzSelect.value;
   if (styleSelect && styleSelect.value) currentChartSettings.chartStyle = styleSelect.value;
 

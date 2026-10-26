@@ -98,4 +98,26 @@ assert.ok(js.includes('"paneProperties.backgroundType": "solid"'), 'overrides mu
 assert.ok(js.includes('chartBox.style.backgroundColor = bg'), 'trade-candlestick-container background must match chosen chart background');
 console.log('  ✓ Save & Apply correctly forces iframe reload with chosen colors, background, and presets');
 
+// 10. Verify Custom Background Picker, Custom Color Presets & Clean Chart Lines Elimination
+console.log('10. Testing Custom Background Color Picker, Custom Presets & Clean Chart Lines Elimination...');
+assert.ok(html.includes('id="cs-input-bg"'), 'cs-input-bg color input must exist in index.html');
+assert.ok(html.includes('id="cs-hex-bg"'), 'cs-hex-bg input must exist in index.html');
+assert.ok(html.includes('id="cs-bg-custom"'), 'cs-bg-custom button must exist in index.html');
+assert.ok(html.includes('id="cs-preset-custom"'), 'cs-preset-custom button must exist in index.html');
+assert.ok(html.includes('id="cs-preset-cyberpunk"'), 'cs-preset-cyberpunk button must exist in index.html');
+assert.ok(html.includes('id="cs-preset-sunset"'), 'cs-preset-sunset button must exist in index.html');
+
+assert.ok(js.includes('function onCustomBgColorChange('), 'onCustomBgColorChange must be defined in app.js');
+assert.ok(js.includes('function onCustomBgHexInput('), 'onCustomBgHexInput must be defined in app.js');
+assert.ok(js.includes('function onCustomUpHexInput('), 'onCustomUpHexInput must be defined in app.js');
+assert.ok(js.includes('function onCustomDownHexInput('), 'onCustomDownHexInput must be defined in app.js');
+assert.ok(js.includes('function syncPresetHighlight('), 'syncPresetHighlight must be defined in app.js');
+
+assert.ok(js.includes('"mainSeriesProperties.showPrevClosePriceLine": false'), 'showPrevClosePriceLine must be false in app.js');
+assert.ok(js.includes('"mainSeriesProperties.prevClosePriceLine.color": "rgba(0, 0, 0, 0)"'), 'prevClosePriceLine color must be transparent in app.js');
+assert.ok(js.includes('"scalesProperties.showPrevClosePriceLabels": false'), 'showPrevClosePriceLabels must be false in app.js');
+assert.ok(js.includes('disabled_features: [\'show_symbol_labels\', \'symbol_info\']'), 'disabled_features must include show_symbol_labels');
+assert.ok(html.includes('%22mainSeriesProperties.showPrevClosePriceLine%22%3Afalse'), 'showPrevClosePriceLine must be false in initial iframe src');
+console.log('  ✓ Custom background color picker, custom presets & extra lines elimination verified');
+
 console.log('\n=== ALL CHART CHANGE SYNC, FULLSCREEN ICON & CLEAN CHART TESTS PASSED! ===\n');
