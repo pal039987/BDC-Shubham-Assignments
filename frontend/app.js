@@ -23,12 +23,14 @@ const COINS = [
     "binanceSym": "BTCUSDT",
     "category": "futures",
     "maxLev": 150,
-    "price": 80450.00,
-    "change": 0.18,
+    "price": 80418.01,
+    "change": -0.45,
     "high": 80951.57,
     "low": 79368.67,
-    "vol": "610.0M",
-    "tvSymbol": "BINANCE:BTCUSDT"
+    "vol": "1.1B",
+    "tvSymbol": "BINANCE:BTCUSDT",
+    "open": 80782,
+    "change24h": -0.45
   },
   {
     "id": "ethereum",
@@ -39,12 +41,14 @@ const COINS = [
     "binanceSym": "ETHUSDT",
     "category": "futures",
     "maxLev": 150,
-    "price": 2423.02,
-    "change": -0.201,
-    "high": 2441.66,
-    "low": 2356.79,
-    "vol": "322.0M",
-    "tvSymbol": "BINANCE:ETHUSDT"
+    "price": 2326.16,
+    "change": -0.83,
+    "high": 2365.4,
+    "low": 2293.09,
+    "vol": "415.0M",
+    "tvSymbol": "BINANCE:ETHUSDT",
+    "open": 2345.74,
+    "change24h": -0.83
   },
   {
     "id": "gold",
@@ -56,12 +60,13 @@ const COINS = [
     "tvSymbol": "TVC:GOLD",
     "category": "futures",
     "maxLev": 100,
-    "price": 4134.90,
-    "open": 4140.77,
-    "change": -0.16,
-    "high": 4150.0,
-    "low": 4125.0,
-    "vol": "8.5M"
+    "price": 4022.74,
+    "open": 3992.6,
+    "change": 0.68,
+    "high": 4026.74,
+    "low": 3977.93,
+    "vol": "8.5M",
+    "change24h": 0.68
   },
   {
     "id": "solana",
@@ -72,12 +77,14 @@ const COINS = [
     "binanceSym": "SOLUSDT",
     "category": "l1",
     "maxLev": 100,
-    "price": 104.3,
-    "change": -0.515,
-    "high": 105.28,
-    "low": 101.25,
-    "vol": "110.5M",
-    "tvSymbol": "BINANCE:SOLUSDT"
+    "price": 102.11,
+    "change": 0.44,
+    "high": 102.27,
+    "low": 99.88,
+    "vol": "138.1M",
+    "tvSymbol": "BINANCE:SOLUSDT",
+    "open": 101.66,
+    "change24h": 0.44
   },
   {
     "id": "ripple",
@@ -88,12 +95,14 @@ const COINS = [
     "binanceSym": "XRPUSDT",
     "category": "l1",
     "maxLev": 100,
-    "price": 1.301,
-    "change": -0.596,
-    "high": 1.3126,
-    "low": 1.2701,
-    "vol": "57.9M",
-    "tvSymbol": "BINANCE:XRPUSDT"
+    "price": 1.3,
+    "change": 0.01,
+    "high": 1.31,
+    "low": 1.27,
+    "vol": "96.2M",
+    "tvSymbol": "BINANCE:XRPUSDT",
+    "open": 1.3,
+    "change24h": 0.01
   },
   {
     "id": "binancecoin",
@@ -104,12 +113,14 @@ const COINS = [
     "binanceSym": "BNBUSDT",
     "category": "l1",
     "maxLev": 100,
-    "price": 721.57,
-    "change": -0.195,
-    "high": 723.45,
-    "low": 710.15,
-    "vol": "50.2M",
-    "tvSymbol": "BINANCE:BNBUSDT"
+    "price": 745.15,
+    "change": 0.39,
+    "high": 746.07,
+    "low": 732.45,
+    "vol": "65.6M",
+    "tvSymbol": "BINANCE:BNBUSDT",
+    "open": 742.23,
+    "change24h": 0.39
   },
   {
     "id": "dogecoin",
@@ -120,12 +131,14 @@ const COINS = [
     "binanceSym": "DOGEUSDT",
     "category": "meme",
     "maxLev": 75,
-    "price": 0.07963,
-    "change": -1.179,
-    "high": 0.08084,
-    "low": 0.07704,
-    "vol": "33.4M",
-    "tvSymbol": "BINANCE:DOGEUSDT"
+    "price": 0.0778,
+    "change": 0.69,
+    "high": 0.0779,
+    "low": 0.076,
+    "vol": "24.6M",
+    "tvSymbol": "BINANCE:DOGEUSDT",
+    "open": 0.0773,
+    "change24h": 0.69
   },
   {
     "id": "cardano",
@@ -136,12 +149,14 @@ const COINS = [
     "binanceSym": "ADAUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.221,
-    "change": -1.734,
-    "high": 0.2255,
-    "low": 0.2142,
-    "vol": "12.7M",
-    "tvSymbol": "BINANCE:ADAUSDT"
+    "price": 0.2066,
+    "change": 0.63,
+    "high": 0.2071,
+    "low": 0.2005,
+    "vol": "12.9M",
+    "tvSymbol": "BINANCE:ADAUSDT",
+    "open": 0.2053,
+    "change24h": 0.63
   },
   {
     "id": "avalanche-2",
@@ -152,12 +167,14 @@ const COINS = [
     "binanceSym": "AVAXUSDT",
     "category": "l1",
     "maxLev": 75,
-    "price": 9.835,
-    "change": -1.679,
-    "high": 10.102,
-    "low": 9.562,
-    "vol": "16.8M",
-    "tvSymbol": "BINANCE:AVAXUSDT"
+    "price": 9.01,
+    "change": 1.12,
+    "high": 9.02,
+    "low": 8.77,
+    "vol": "9.3M",
+    "tvSymbol": "BINANCE:AVAXUSDT",
+    "open": 8.91,
+    "change24h": 1.12
   },
   {
     "id": "sui",
@@ -168,12 +185,14 @@ const COINS = [
     "binanceSym": "SUIUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.9891,
-    "change": -2.446,
-    "high": 1.0197,
-    "low": 0.9528,
-    "vol": "32.9M",
-    "tvSymbol": "BINANCE:SUIUSDT"
+    "price": 0.9253,
+    "change": 0.97,
+    "high": 0.9343,
+    "low": 0.9001,
+    "vol": "33.4M",
+    "tvSymbol": "BINANCE:SUIUSDT",
+    "open": 0.9164,
+    "change24h": 0.97
   },
   {
     "id": "near",
@@ -184,12 +203,14 @@ const COINS = [
     "binanceSym": "NEARUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 5.016,
-    "change": -1.859,
-    "high": 5.198,
-    "low": 4.764,
-    "vol": "93.4M",
-    "tvSymbol": "BINANCE:NEARUSDT"
+    "price": 4.64,
+    "change": 2.88,
+    "high": 4.7,
+    "low": 4.43,
+    "vol": "95.3M",
+    "tvSymbol": "BINANCE:NEARUSDT",
+    "open": 4.51,
+    "change24h": 2.88
   },
   {
     "id": "aptos",
@@ -200,12 +221,14 @@ const COINS = [
     "binanceSym": "APTUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.794,
-    "change": -5.824,
-    "high": 0.8569,
-    "low": 0.7697,
-    "vol": "11.7M",
-    "tvSymbol": "BINANCE:APTUSDT"
+    "price": 0.7101,
+    "change": 1.28,
+    "high": 0.7136,
+    "low": 0.6845,
+    "vol": "4.5M",
+    "tvSymbol": "BINANCE:APTUSDT",
+    "open": 0.7011,
+    "change24h": 1.28
   },
   {
     "id": "polkadot",
@@ -216,12 +239,14 @@ const COINS = [
     "binanceSym": "DOTUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 1.113,
-    "change": -6.628,
-    "high": 1.208,
-    "low": 1.092,
-    "vol": "7.7M",
-    "tvSymbol": "BINANCE:DOTUSDT"
+    "price": 1.03,
+    "change": -0.48,
+    "high": 1.05,
+    "low": 1,
+    "vol": "4.7M",
+    "tvSymbol": "BINANCE:DOTUSDT",
+    "open": 1.04,
+    "change24h": -0.48
   },
   {
     "id": "tron",
@@ -232,12 +257,14 @@ const COINS = [
     "binanceSym": "TRXUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.3335,
-    "change": -0.507,
-    "high": 0.3372,
-    "low": 0.3332,
-    "vol": "22.1M",
-    "tvSymbol": "BINANCE:TRXUSDT"
+    "price": 0.3311,
+    "change": 0.61,
+    "high": 0.3317,
+    "low": 0.329,
+    "vol": "23.3M",
+    "tvSymbol": "BINANCE:TRXUSDT",
+    "open": 0.3291,
+    "change24h": 0.61
   },
   {
     "id": "the-open-network",
@@ -249,11 +276,13 @@ const COINS = [
     "category": "l1",
     "maxLev": 50,
     "price": 1.6,
-    "change": 0.946,
-    "high": 1.641,
+    "change": 0.95,
+    "high": 1.64,
     "low": 1.58,
     "vol": "7.7M",
-    "tvSymbol": "BINANCE:TONUSDT"
+    "tvSymbol": "BINANCE:TONUSDT",
+    "open": 1.58,
+    "change24h": 0.95
   },
   {
     "id": "filecoin",
@@ -264,12 +293,14 @@ const COINS = [
     "binanceSym": "FILUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 1.0679,
-    "change": -8.695,
-    "high": 1.2236,
-    "low": 1.0369,
-    "vol": "20.3M",
-    "tvSymbol": "BINANCE:FILUSDT"
+    "price": 0.926,
+    "change": 0.29,
+    "high": 0.9326,
+    "low": 0.8974,
+    "vol": "7.8M",
+    "tvSymbol": "BINANCE:FILUSDT",
+    "open": 0.9233,
+    "change24h": 0.29
   },
   {
     "id": "internet-computer",
@@ -280,12 +311,14 @@ const COINS = [
     "binanceSym": "ICPUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 2.939,
-    "change": -2.971,
-    "high": 3.063,
-    "low": 2.869,
-    "vol": "4.4M",
-    "tvSymbol": "BINANCE:ICPUSDT"
+    "price": 2.65,
+    "change": 0.19,
+    "high": 2.67,
+    "low": 2.56,
+    "vol": "5.2M",
+    "tvSymbol": "BINANCE:ICPUSDT",
+    "open": 2.64,
+    "change24h": 0.19
   },
   {
     "id": "sei-network",
@@ -296,12 +329,14 @@ const COINS = [
     "binanceSym": "SEIUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.06282,
-    "change": -2.287,
-    "high": 0.06478,
-    "low": 0.0612,
-    "vol": "5.7M",
-    "tvSymbol": "BINANCE:SEIUSDT"
+    "price": 0.0532,
+    "change": 0.23,
+    "high": 0.0537,
+    "low": 0.0517,
+    "vol": "2.8M",
+    "tvSymbol": "BINANCE:SEIUSDT",
+    "open": 0.0531,
+    "change24h": 0.23
   },
   {
     "id": "celestia",
@@ -312,12 +347,14 @@ const COINS = [
     "binanceSym": "TIAUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.637,
-    "change": -13.826,
-    "high": 0.769,
-    "low": 0.6282,
-    "vol": "24.5M",
-    "tvSymbol": "BINANCE:TIAUSDT"
+    "price": 0.5415,
+    "change": 2.07,
+    "high": 0.5445,
+    "low": 0.5182,
+    "vol": "4.3M",
+    "tvSymbol": "BINANCE:TIAUSDT",
+    "open": 0.5305,
+    "change24h": 2.07
   },
   {
     "id": "algorand",
@@ -328,12 +365,14 @@ const COINS = [
     "binanceSym": "ALGOUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.1121,
-    "change": -2.775,
-    "high": 0.1155,
-    "low": 0.1093,
-    "vol": "1.8M",
-    "tvSymbol": "BINANCE:ALGOUSDT"
+    "price": 0.1051,
+    "change": 0.86,
+    "high": 0.1067,
+    "low": 0.1028,
+    "vol": "1.6M",
+    "tvSymbol": "BINANCE:ALGOUSDT",
+    "open": 0.1042,
+    "change24h": 0.86
   },
   {
     "id": "hedera-hashgraph",
@@ -344,12 +383,14 @@ const COINS = [
     "binanceSym": "HBARUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.08644,
-    "change": 2.807,
-    "high": 0.08695,
-    "low": 0.08209,
-    "vol": "10.5M",
-    "tvSymbol": "BINANCE:HBARUSDT"
+    "price": 0.0777,
+    "change": 0.81,
+    "high": 0.0782,
+    "low": 0.0763,
+    "vol": "5.2M",
+    "tvSymbol": "BINANCE:HBARUSDT",
+    "open": 0.0771,
+    "change24h": 0.81
   },
   {
     "id": "cosmos",
@@ -360,12 +401,14 @@ const COINS = [
     "binanceSym": "ATOMUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 1.7,
-    "change": -3.519,
-    "high": 1.763,
-    "low": 1.665,
-    "vol": "1.1M",
-    "tvSymbol": "BINANCE:ATOMUSDT"
+    "price": 1.66,
+    "change": 1.78,
+    "high": 1.66,
+    "low": 1.61,
+    "vol": "1.6M",
+    "tvSymbol": "BINANCE:ATOMUSDT",
+    "open": 1.63,
+    "change24h": 1.78
   },
   {
     "id": "stellar",
@@ -376,12 +419,14 @@ const COINS = [
     "binanceSym": "XLMUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.1784,
-    "change": -0.779,
-    "high": 0.1802,
-    "low": 0.1742,
-    "vol": "8.4M",
-    "tvSymbol": "BINANCE:XLMUSDT"
+    "price": 0.1701,
+    "change": 0.35,
+    "high": 0.1706,
+    "low": 0.1666,
+    "vol": "7.1M",
+    "tvSymbol": "BINANCE:XLMUSDT",
+    "open": 0.1695,
+    "change24h": 0.35
   },
   {
     "id": "fantom",
@@ -393,11 +438,13 @@ const COINS = [
     "category": "l1",
     "maxLev": 50,
     "price": 0.6994,
-    "change": -0.766,
+    "change": -0.77,
     "high": 0.7111,
     "low": 0.69,
     "vol": "1.3M",
-    "tvSymbol": "BINANCE:FTMUSDT"
+    "tvSymbol": "BINANCE:FTMUSDT",
+    "open": 0.7048,
+    "change24h": -0.77
   },
   {
     "id": "vechain",
@@ -408,12 +455,14 @@ const COINS = [
     "binanceSym": "VETUSDT",
     "category": "l1",
     "maxLev": 50,
-    "price": 0.006773,
-    "change": -2.868,
-    "high": 0.007001,
-    "low": 0.006585,
-    "vol": "0.5M",
-    "tvSymbol": "BINANCE:VETUSDT"
+    "price": 0.006647,
+    "change": -1.89,
+    "high": 0.006954,
+    "low": 0.00632,
+    "vol": "1.8M",
+    "tvSymbol": "BINANCE:VETUSDT",
+    "open": 0.006775,
+    "change24h": -1.89
   },
   {
     "id": "litecoin",
@@ -424,12 +473,14 @@ const COINS = [
     "binanceSym": "LTCUSDT",
     "category": "spot",
     "maxLev": 50,
-    "price": 59.15,
-    "change": -1.269,
-    "high": 59.93,
-    "low": 57.6,
-    "vol": "13.0M",
-    "tvSymbol": "BINANCE:LTCUSDT"
+    "price": 57.13,
+    "change": 0.62,
+    "high": 57.34,
+    "low": 56.01,
+    "vol": "10.3M",
+    "tvSymbol": "BINANCE:LTCUSDT",
+    "open": 56.78,
+    "change24h": 0.62
   },
   {
     "id": "bitcoin-cash",
@@ -440,12 +491,14 @@ const COINS = [
     "binanceSym": "BCHUSDT",
     "category": "spot",
     "maxLev": 50,
-    "price": 277,
-    "change": -1.564,
-    "high": 281.5,
-    "low": 270.5,
-    "vol": "5.8M",
-    "tvSymbol": "BINANCE:BCHUSDT"
+    "price": 277.7,
+    "change": 0.98,
+    "high": 284.7,
+    "low": 273.9,
+    "vol": "6.8M",
+    "tvSymbol": "BINANCE:BCHUSDT",
+    "open": 275,
+    "change24h": 0.98
   },
   {
     "id": "ethereum-classic",
@@ -456,12 +509,14 @@ const COINS = [
     "binanceSym": "ETCUSDT",
     "category": "spot",
     "maxLev": 50,
-    "price": 7.78,
-    "change": -2.506,
-    "high": 8,
-    "low": 7.63,
-    "vol": "1.6M",
-    "tvSymbol": "BINANCE:ETCUSDT"
+    "price": 7.62,
+    "change": 1.06,
+    "high": 7.63,
+    "low": 7.39,
+    "vol": "2.1M",
+    "tvSymbol": "BINANCE:ETCUSDT",
+    "open": 7.54,
+    "change24h": 1.06
   },
   {
     "id": "uniswap",
@@ -472,12 +527,14 @@ const COINS = [
     "binanceSym": "UNIUSDT",
     "category": "defi",
     "maxLev": 75,
-    "price": 7.27,
-    "change": -0.588,
-    "high": 7.36,
-    "low": 6.998,
-    "vol": "20.2M",
-    "tvSymbol": "BINANCE:UNIUSDT"
+    "price": 7.1,
+    "change": 4.16,
+    "high": 7.14,
+    "low": 6.78,
+    "vol": "25.5M",
+    "tvSymbol": "BINANCE:UNIUSDT",
+    "open": 6.82,
+    "change24h": 4.16
   },
   {
     "id": "chainlink",
@@ -488,12 +545,14 @@ const COINS = [
     "binanceSym": "LINKUSDT",
     "category": "defi",
     "maxLev": 75,
-    "price": 12.033,
-    "change": -2.417,
-    "high": 12.36,
-    "low": 11.737,
-    "vol": "16.6M",
-    "tvSymbol": "BINANCE:LINKUSDT"
+    "price": 11.55,
+    "change": 1.05,
+    "high": 11.59,
+    "low": 11.27,
+    "vol": "15.1M",
+    "tvSymbol": "BINANCE:LINKUSDT",
+    "open": 11.43,
+    "change24h": 1.05
   },
   {
     "id": "aave",
@@ -504,12 +563,14 @@ const COINS = [
     "binanceSym": "AAVEUSDT",
     "category": "defi",
     "maxLev": 75,
-    "price": 153.64,
-    "change": -1.696,
-    "high": 157.11,
-    "low": 149.1,
-    "vol": "11.6M",
-    "tvSymbol": "BINANCE:AAVEUSDT"
+    "price": 137.88,
+    "change": 1,
+    "high": 139.02,
+    "low": 133.61,
+    "vol": "13.2M",
+    "tvSymbol": "BINANCE:AAVEUSDT",
+    "open": 136.51,
+    "change24h": 1
   },
   {
     "id": "maker",
@@ -521,11 +582,13 @@ const COINS = [
     "category": "defi",
     "maxLev": 50,
     "price": 1813.7,
-    "change": 0.761,
+    "change": 0.76,
     "high": 1830,
     "low": 1780.6,
     "vol": "0.4M",
-    "tvSymbol": "BINANCE:MKRUSDT"
+    "tvSymbol": "BINANCE:MKRUSDT",
+    "open": 1800,
+    "change24h": 0.76
   },
   {
     "id": "curve-dao-token",
@@ -536,12 +599,14 @@ const COINS = [
     "binanceSym": "CRVUSDT",
     "category": "defi",
     "maxLev": 50,
-    "price": 0.3476,
-    "change": 1.017,
-    "high": 0.3508,
-    "low": 0.3351,
-    "vol": "2.0M",
-    "tvSymbol": "BINANCE:CRVUSDT"
+    "price": 0.3516,
+    "change": 2,
+    "high": 0.3547,
+    "low": 0.3368,
+    "vol": "3.7M",
+    "tvSymbol": "BINANCE:CRVUSDT",
+    "open": 0.3447,
+    "change24h": 2
   },
   {
     "id": "lido-dao",
@@ -552,12 +617,14 @@ const COINS = [
     "binanceSym": "LDOUSDT",
     "category": "defi",
     "maxLev": 50,
-    "price": 0.3906,
-    "change": -2.666,
-    "high": 0.4062,
-    "low": 0.3788,
-    "vol": "2.1M",
-    "tvSymbol": "BINANCE:LDOUSDT"
+    "price": 0.3761,
+    "change": 2.54,
+    "high": 0.3765,
+    "low": 0.3591,
+    "vol": "1.8M",
+    "tvSymbol": "BINANCE:LDOUSDT",
+    "open": 0.3668,
+    "change24h": 2.54
   },
   {
     "id": "pendle",
@@ -568,12 +635,14 @@ const COINS = [
     "binanceSym": "PENDLEUSDT",
     "category": "defi",
     "maxLev": 50,
-    "price": 2.062,
-    "change": -3.419,
-    "high": 2.136,
-    "low": 2.005,
-    "vol": "2.1M",
-    "tvSymbol": "BINANCE:PENDLEUSDT"
+    "price": 1.98,
+    "change": 0,
+    "high": 2,
+    "low": 1.91,
+    "vol": "2.2M",
+    "tvSymbol": "BINANCE:PENDLEUSDT",
+    "open": 1.98,
+    "change24h": 0
   },
   {
     "id": "injective-protocol",
@@ -584,12 +653,14 @@ const COINS = [
     "binanceSym": "INJUSDT",
     "category": "defi",
     "maxLev": 50,
-    "price": 8.628,
-    "change": -3.371,
-    "high": 8.986,
-    "low": 8.378,
-    "vol": "15.3M",
-    "tvSymbol": "BINANCE:INJUSDT"
+    "price": 7.95,
+    "change": 3.3,
+    "high": 8.16,
+    "low": 7.53,
+    "vol": "11.2M",
+    "tvSymbol": "BINANCE:INJUSDT",
+    "open": 7.7,
+    "change24h": 3.3
   },
   {
     "id": "jupiter-exchange-solana",
@@ -600,12 +671,14 @@ const COINS = [
     "binanceSym": "JUPUSDT",
     "category": "defi",
     "maxLev": 50,
-    "price": 0.2935,
-    "change": -3.802,
-    "high": 0.3057,
-    "low": 0.285,
-    "vol": "1.4M",
-    "tvSymbol": "BINANCE:JUPUSDT"
+    "price": 0.2837,
+    "change": -0.42,
+    "high": 0.2876,
+    "low": 0.2739,
+    "vol": "1.9M",
+    "tvSymbol": "BINANCE:JUPUSDT",
+    "open": 0.2849,
+    "change24h": -0.42
   },
   {
     "id": "thorchain",
@@ -616,12 +689,14 @@ const COINS = [
     "binanceSym": "RUNEUSDT",
     "category": "defi",
     "maxLev": 50,
-    "price": 0.64,
-    "change": -0.312,
-    "high": 0.644,
-    "low": 0.627,
-    "vol": "0.9M",
-    "tvSymbol": "BINANCE:RUNEUSDT"
+    "price": 0.637,
+    "change": 1.43,
+    "high": 0.637,
+    "low": 0.618,
+    "vol": "1.5M",
+    "tvSymbol": "BINANCE:RUNEUSDT",
+    "open": 0.628,
+    "change24h": 1.43
   },
   {
     "id": "havven",
@@ -632,12 +707,14 @@ const COINS = [
     "binanceSym": "SNXUSDT",
     "category": "defi",
     "maxLev": 50,
-    "price": 0.2156,
-    "change": -3.578,
-    "high": 0.2241,
-    "low": 0.1998,
+    "price": 0.1988,
+    "change": 1.17,
+    "high": 0.199,
+    "low": 0.1934,
     "vol": "0.2M",
-    "tvSymbol": "BINANCE:SNXUSDT"
+    "tvSymbol": "BINANCE:SNXUSDT",
+    "open": 0.1965,
+    "change24h": 1.17
   },
   {
     "id": "dydx-chain",
@@ -648,12 +725,14 @@ const COINS = [
     "binanceSym": "DYDXUSDT",
     "category": "defi",
     "maxLev": 50,
-    "price": 0.11791,
-    "change": -4.65,
-    "high": 0.12439,
-    "low": 0.11469,
-    "vol": "0.5M",
-    "tvSymbol": "BINANCE:DYDXUSDT"
+    "price": 0.109,
+    "change": 2.64,
+    "high": 0.1097,
+    "low": 0.1056,
+    "vol": "0.6M",
+    "tvSymbol": "BINANCE:DYDXUSDT",
+    "open": 0.1062,
+    "change24h": 2.64
   },
   {
     "id": "arbitrum",
@@ -664,12 +743,14 @@ const COINS = [
     "binanceSym": "ARBUSDT",
     "category": "l2",
     "maxLev": 50,
-    "price": 0.1843,
-    "change": -3.153,
-    "high": 0.1924,
-    "low": 0.1768,
-    "vol": "7.4M",
-    "tvSymbol": "BINANCE:ARBUSDT"
+    "price": 0.1718,
+    "change": 2.2,
+    "high": 0.1737,
+    "low": 0.1655,
+    "vol": "7.6M",
+    "tvSymbol": "BINANCE:ARBUSDT",
+    "open": 0.1681,
+    "change24h": 2.2
   },
   {
     "id": "optimism",
@@ -680,12 +761,14 @@ const COINS = [
     "binanceSym": "OPUSDT",
     "category": "l2",
     "maxLev": 50,
-    "price": 0.1286,
-    "change": -7.482,
-    "high": 0.1408,
-    "low": 0.126,
-    "vol": "5.3M",
-    "tvSymbol": "BINANCE:OPUSDT"
+    "price": 0.1125,
+    "change": 0.99,
+    "high": 0.1128,
+    "low": 0.1087,
+    "vol": "2.5M",
+    "tvSymbol": "BINANCE:OPUSDT",
+    "open": 0.1114,
+    "change24h": 0.99
   },
   {
     "id": "polygon-ecosystem-token",
@@ -696,12 +779,14 @@ const COINS = [
     "binanceSym": "POLUSDT",
     "category": "l2",
     "maxLev": 50,
-    "price": 0.0926,
-    "change": -1.437,
-    "high": 0.09434,
-    "low": 0.09115,
-    "vol": "2.9M",
-    "tvSymbol": "BINANCE:POLUSDT"
+    "price": 0.0911,
+    "change": 2.68,
+    "high": 0.0914,
+    "low": 0.088,
+    "vol": "2.7M",
+    "tvSymbol": "BINANCE:POLUSDT",
+    "open": 0.0887,
+    "change24h": 2.68
   },
   {
     "id": "starknet",
@@ -712,12 +797,14 @@ const COINS = [
     "binanceSym": "STRKUSDT",
     "category": "l2",
     "maxLev": 50,
-    "price": 0.06339,
-    "change": -11.713,
-    "high": 0.07294,
-    "low": 0.0631,
-    "vol": "19.3M",
-    "tvSymbol": "BINANCE:STRKUSDT"
+    "price": 0.0458,
+    "change": 0.84,
+    "high": 0.0464,
+    "low": 0.0442,
+    "vol": "4.7M",
+    "tvSymbol": "BINANCE:STRKUSDT",
+    "open": 0.0454,
+    "change24h": 0.84
   },
   {
     "id": "shiba-inu",
@@ -728,12 +815,14 @@ const COINS = [
     "binanceSym": "SHIBUSDT",
     "category": "meme",
     "maxLev": 50,
-    "price": 0.00000499,
-    "change": -1.772,
-    "high": 0.0000051,
-    "low": 0.00000488,
-    "vol": "1.5M",
-    "tvSymbol": "BINANCE:SHIBUSDT"
+    "price": 0.00000489,
+    "change": 0.2,
+    "high": 0.00000491,
+    "low": 0.00000479,
+    "vol": "2.0M",
+    "tvSymbol": "BINANCE:SHIBUSDT",
+    "open": 0.00000488,
+    "change24h": 0.2
   },
   {
     "id": "pepe",
@@ -744,12 +833,14 @@ const COINS = [
     "binanceSym": "PEPEUSDT",
     "category": "meme",
     "maxLev": 50,
-    "price": 0.0000039,
-    "change": -3.465,
-    "high": 0.00000406,
-    "low": 0.00000378,
-    "vol": "12.7M",
-    "tvSymbol": "BINANCE:PEPEUSDT"
+    "price": 0.00000437,
+    "change": -1.13,
+    "high": 0.00000447,
+    "low": 0.00000421,
+    "vol": "24.8M",
+    "tvSymbol": "BINANCE:PEPEUSDT",
+    "open": 0.00000442,
+    "change24h": -1.13
   },
   {
     "id": "dogwifcoin",
@@ -760,12 +851,14 @@ const COINS = [
     "binanceSym": "WIFUSDT",
     "category": "meme",
     "maxLev": 50,
-    "price": 0.1993,
-    "change": -2.543,
-    "high": 0.2058,
-    "low": 0.1927,
+    "price": 0.1818,
+    "change": 1,
+    "high": 0.1822,
+    "low": 0.1755,
     "vol": "1.1M",
-    "tvSymbol": "BINANCE:WIFUSDT"
+    "tvSymbol": "BINANCE:WIFUSDT",
+    "open": 0.18,
+    "change24h": 1
   },
   {
     "id": "bonk",
@@ -776,12 +869,14 @@ const COINS = [
     "binanceSym": "BONKUSDT",
     "category": "meme",
     "maxLev": 50,
-    "price": 0.00000299,
-    "change": -2.288,
-    "high": 0.00000308,
-    "low": 0.00000289,
-    "vol": "1.0M",
-    "tvSymbol": "BINANCE:BONKUSDT"
+    "price": 0.00000304,
+    "change": 0,
+    "high": 0.00000306,
+    "low": 0.00000295,
+    "vol": "1.7M",
+    "tvSymbol": "BINANCE:BONKUSDT",
+    "open": 0.00000304,
+    "change24h": 0
   },
   {
     "id": "floki",
@@ -792,12 +887,14 @@ const COINS = [
     "binanceSym": "FLOKIUSDT",
     "category": "meme",
     "maxLev": 50,
-    "price": 0.00002368,
-    "change": -1.824,
-    "high": 0.00002414,
-    "low": 0.00002305,
-    "vol": "0.7M",
-    "tvSymbol": "BINANCE:FLOKIUSDT"
+    "price": 0.00002308,
+    "change": 0.17,
+    "high": 0.00002322,
+    "low": 0.00002252,
+    "vol": "0.8M",
+    "tvSymbol": "BINANCE:FLOKIUSDT",
+    "open": 0.00002304,
+    "change24h": 0.17
   },
   {
     "id": "book-of-meme",
@@ -808,12 +905,14 @@ const COINS = [
     "binanceSym": "BOMEUSDT",
     "category": "meme",
     "maxLev": 50,
-    "price": 0.0006427,
-    "change": -4.743,
-    "high": 0.0006776,
-    "low": 0.00063,
+    "price": 0.000635,
+    "change": 1.62,
+    "high": 0.000656,
+    "low": 0.000602,
     "vol": "1.2M",
-    "tvSymbol": "BINANCE:BOMEUSDT"
+    "tvSymbol": "BINANCE:BOMEUSDT",
+    "open": 0.000625,
+    "change24h": 1.62
   },
   {
     "id": "memecoin",
@@ -824,12 +923,14 @@ const COINS = [
     "binanceSym": "MEMEUSDT",
     "category": "meme",
     "maxLev": 50,
-    "price": 0.000491,
-    "change": -3.725,
-    "high": 0.000511,
-    "low": 0.000477,
+    "price": 0.00047,
+    "change": 0.64,
+    "high": 0.000471,
+    "low": 0.000456,
     "vol": "0.3M",
-    "tvSymbol": "BINANCE:MEMEUSDT"
+    "tvSymbol": "BINANCE:MEMEUSDT",
+    "open": 0.000467,
+    "change24h": 0.64
   },
   {
     "id": "render-token",
@@ -840,12 +941,14 @@ const COINS = [
     "binanceSym": "RENDERUSDT",
     "category": "ai",
     "maxLev": 50,
-    "price": 1.858,
-    "change": -2.977,
-    "high": 1.934,
-    "low": 1.805,
-    "vol": "2.8M",
-    "tvSymbol": "BINANCE:RENDERUSDT"
+    "price": 1.75,
+    "change": 2.99,
+    "high": 1.77,
+    "low": 1.68,
+    "vol": "2.5M",
+    "tvSymbol": "BINANCE:RENDERUSDT",
+    "open": 1.7,
+    "change24h": 2.99
   },
   {
     "id": "fetch-ai",
@@ -856,12 +959,14 @@ const COINS = [
     "binanceSym": "FETUSDT",
     "category": "ai",
     "maxLev": 50,
-    "price": 0.193,
-    "change": -0.924,
-    "high": 0.1962,
-    "low": 0.1842,
-    "vol": "11.9M",
-    "tvSymbol": "BINANCE:FETUSDT"
+    "price": 0.1778,
+    "change": 1.43,
+    "high": 0.1783,
+    "low": 0.1715,
+    "vol": "6.2M",
+    "tvSymbol": "BINANCE:FETUSDT",
+    "open": 0.1753,
+    "change24h": 1.43
   },
   {
     "id": "bittensor",
@@ -872,12 +977,14 @@ const COINS = [
     "binanceSym": "TAOUSDT",
     "category": "ai",
     "maxLev": 50,
-    "price": 270.8,
-    "change": -1.777,
-    "high": 277.3,
-    "low": 262,
-    "vol": "16.9M",
-    "tvSymbol": "BINANCE:TAOUSDT"
+    "price": 255,
+    "change": 1.47,
+    "high": 255.4,
+    "low": 247.3,
+    "vol": "11.3M",
+    "tvSymbol": "BINANCE:TAOUSDT",
+    "open": 251.3,
+    "change24h": 1.47
   },
   {
     "id": "worldcoin-wld",
@@ -888,12 +995,14 @@ const COINS = [
     "binanceSym": "WLDUSDT",
     "category": "ai",
     "maxLev": 50,
-    "price": 0.495,
-    "change": -7.025,
-    "high": 0.5398,
-    "low": 0.478,
-    "vol": "33.9M",
-    "tvSymbol": "BINANCE:WLDUSDT"
+    "price": 0.4481,
+    "change": -1.56,
+    "high": 0.4648,
+    "low": 0.4346,
+    "vol": "27.7M",
+    "tvSymbol": "BINANCE:WLDUSDT",
+    "open": 0.4552,
+    "change24h": -1.56
   },
   {
     "id": "the-graph",
@@ -904,12 +1013,14 @@ const COINS = [
     "binanceSym": "GRTUSDT",
     "category": "ai",
     "maxLev": 50,
-    "price": 0.02412,
-    "change": -3.094,
-    "high": 0.02489,
-    "low": 0.02354,
-    "vol": "0.5M",
-    "tvSymbol": "BINANCE:GRTUSDT"
+    "price": 0.0224,
+    "change": -0.71,
+    "high": 0.0229,
+    "low": 0.0219,
+    "vol": "0.6M",
+    "tvSymbol": "BINANCE:GRTUSDT",
+    "open": 0.0226,
+    "change24h": -0.71
   }
 ];
 
@@ -4713,7 +4824,11 @@ function renderTradeScreen() {
 }
 
 async function fetchFastCoinTicker(binanceSym) {
-  if (!binanceSym || binanceSym === 'PAXGUSDT') return;
+  if (!binanceSym) return;
+  if (selectedCoin && (selectedCoin.id === 'gold' || binanceSym === 'PAXGUSDT')) {
+    await pollLiveGoldPrice();
+    return;
+  }
   const urls = [
     `https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${binanceSym}`,
     `https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSym}`,
@@ -4923,10 +5038,17 @@ async function fetchRealBinanceCandles() {
           // Synchronize chart candle gain/loss
           const curCandle = chartCandlesData[chartCandlesData.length - 1];
           if (curCandle && curCandle.open > 0) {
-            selectedCoin.candleOpen = curCandle.open;
-            const livePrice = (selectedCoin && selectedCoin.price) || curCandle.close;
-            const diff = livePrice - curCandle.open;
-            selectedCoin.chartChange = parseFloat(((diff / curCandle.open) * 100).toFixed(2));
+            if (selectedCoin.id === 'gold') {
+              if (!selectedCoin.candleOpen) selectedCoin.candleOpen = selectedCoin.open || 3992.60;
+              const livePrice = selectedCoin.price || curCandle.close;
+              const diff = livePrice - selectedCoin.candleOpen;
+              selectedCoin.chartChange = parseFloat(((diff / selectedCoin.candleOpen) * 100).toFixed(2));
+            } else {
+              selectedCoin.candleOpen = curCandle.open;
+              const livePrice = (selectedCoin && selectedCoin.price) || curCandle.close;
+              const diff = livePrice - curCandle.open;
+              selectedCoin.chartChange = parseFloat(((diff / curCandle.open) * 100).toFixed(2));
+            }
             persistSelectedCoinState();
             renderLivePriceUpdates();
           }
@@ -5691,7 +5813,7 @@ let goldLivePollTimer = null;
 async function pollLiveGoldPrice() {
   try {
     const goldCtl = new AbortController();
-    const goldTmr = setTimeout(() => goldCtl.abort(), 2000);
+    const goldTmr = setTimeout(() => goldCtl.abort(), 2500);
     let tvGold = null;
     try {
       const tvResp = await fetch('https://scanner.tradingview.com/symbol?symbol=TVC:GOLD&fields=close,change,change_abs,open,high,low', { signal: goldCtl.signal });
@@ -5702,21 +5824,57 @@ async function pollLiveGoldPrice() {
     if (gold) {
       if (tvGold && typeof tvGold.close === 'number' && tvGold.close > 0) {
         gold.price = parseFloat(tvGold.close.toFixed(2));
-        if (typeof tvGold.change === 'number') gold.change = parseFloat(tvGold.change.toFixed(2));
-        if (typeof tvGold.open === 'number') gold.open = parseFloat(tvGold.open.toFixed(2));
+        if (typeof tvGold.change === 'number') {
+          gold.change = parseFloat(tvGold.change.toFixed(2));
+          gold.change24h = gold.change;
+          gold.chartChange = gold.change;
+        }
+        if (typeof tvGold.open === 'number') {
+          gold.open = parseFloat(tvGold.open.toFixed(2));
+          gold.open24h = gold.open;
+          gold.candleOpen = gold.open;
+        }
         if (typeof tvGold.high === 'number') gold.high = parseFloat(tvGold.high.toFixed(2));
         if (typeof tvGold.low === 'number') gold.low = parseFloat(tvGold.low.toFixed(2));
       } else {
         const goldR = await fetch('https://api.gold-api.com/price/XAU', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
         if (goldR && goldR.price) {
           gold.price = parseFloat(parseFloat(goldR.price).toFixed(2));
-          if (!gold.open || gold.open === 4166.10 || gold.open === 4133.65) gold.open = 4140.77;
+          if (!gold.open || gold.open > 4100) gold.open = 3992.60;
           const diff = gold.price - gold.open;
           gold.change = parseFloat(((diff / gold.open) * 100).toFixed(2));
+          gold.change24h = gold.change;
+          gold.chartChange = gold.change;
+        } else {
+          const bResp = await fetch('https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PAXGUSDT', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
+          if (bResp && bResp.lastPrice) {
+            gold.price = parseFloat(parseFloat(bResp.lastPrice).toFixed(2));
+            if (bResp.priceChangePercent) {
+              gold.change = parseFloat(parseFloat(bResp.priceChangePercent).toFixed(2));
+              gold.change24h = gold.change;
+              gold.chartChange = gold.change;
+            }
+            if (bResp.openPrice) gold.open = parseFloat(parseFloat(bResp.openPrice).toFixed(2));
+            if (bResp.highPrice) gold.high = parseFloat(parseFloat(bResp.highPrice).toFixed(2));
+            if (bResp.lowPrice) gold.low = parseFloat(parseFloat(bResp.lowPrice).toFixed(2));
+          }
         }
       }
-      if (activeTab === 'trade' && selectedCoin && selectedCoin.id === 'gold') {
-        renderLivePriceUpdates();
+      if (selectedCoin && selectedCoin.id === 'gold') {
+        selectedCoin.price = gold.price;
+        selectedCoin.change = gold.change;
+        selectedCoin.change24h = gold.change24h;
+        selectedCoin.chartChange = gold.chartChange;
+        selectedCoin.open = gold.open;
+        selectedCoin.open24h = gold.open;
+        selectedCoin.candleOpen = gold.candleOpen || gold.open;
+        if (gold.high) selectedCoin.high = gold.high;
+        if (gold.low) selectedCoin.low = gold.low;
+        persistSelectedCoinState();
+        if (activeTab === 'trade') {
+          renderLivePriceUpdates();
+          if (typeof updateDesktopOrderCalculations === 'function') updateDesktopOrderCalculations();
+        }
       }
     }
     clearTimeout(goldTmr);
@@ -5729,7 +5887,7 @@ function startGoldLivePolling() {
     if (activeTab === 'trade' && selectedCoin && selectedCoin.id === 'gold') {
       pollLiveGoldPrice();
     }
-  }, 2000); // Live 2-second TradingView price sync when viewing Gold
+  }, 1500); // 1.5-second live sync with TradingView chart
 }
 
 function connectCoinTickerWs(binanceSym) {
@@ -5742,7 +5900,7 @@ function connectCoinTickerWs(binanceSym) {
     clearTimeout(wsRenderTimer);
     wsRenderTimer = null;
   }
-  if (binanceSym === 'PAXGUSDT') {
+  if (binanceSym === 'PAXGUSDT' || (selectedCoin && selectedCoin.id === 'gold')) {
     pollLiveGoldPrice();
     return; // Gold uses direct TVC:GOLD TradingView scanner feed
   }
@@ -7218,7 +7376,7 @@ function selectCoinAndTrade(coinId) {
   }
   switchBottomTab('trade');
   renderTradeScreen();
-  renderTradingViewChart();
+  renderTradingViewChart(true);
   fetchRealBinanceCandles();
   updateDesktopOrderCalculations();
 }

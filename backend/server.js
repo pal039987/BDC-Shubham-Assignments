@@ -473,62 +473,62 @@ const SUPPORTED_COINS = [
 ];
 
 const COIN_METADATA = {
-  'bitcoin': { symbol: 'BTC', pair: 'BTC/USDT', name: 'Bitcoin', basePrice: 83800.00, baseCap: 1676759000000, baseVol: 31513000000, baseChange: -0.10 },
-  'ethereum': { symbol: 'ETH', pair: 'ETH/USDT', name: 'Ethereum', basePrice: 2515.00, baseCap: 307174000000, baseVol: 16497000000, baseChange: -1.60 },
-  'gold': { symbol: 'XAU', pair: 'XAU/USD', name: 'Gold Spot', basePrice: 4134.90, baseCap: 15000000000000, baseVol: 85000000000, baseChange: -0.16 },
-  'solana': { symbol: 'SOL', pair: 'SOL/USDT', name: 'Solana', basePrice: 107.50, baseCap: 63637000000, baseVol: 4059000000, baseChange: -3.70 },
-  'binancecoin': { symbol: 'BNB', pair: 'BNB/USDT', name: 'BNB', basePrice: 744.00, baseCap: 107000000000, baseVol: 1850000000, baseChange: -0.14 },
-  'dogecoin': { symbol: 'DOGE', pair: 'DOGE/USDT', name: 'Dogecoin', basePrice: 0.085, baseCap: 12500000000, baseVol: 850000000, baseChange: -0.65 },
-  'ripple': { symbol: 'XRP', pair: 'XRP/USDT', name: 'XRP', basePrice: 1.38, baseCap: 78000000000, baseVol: 2450000000, baseChange: -0.85 },
-  'cardano': { symbol: 'ADA', pair: 'ADA/USDT', name: 'Cardano', basePrice: 0.236, baseCap: 8400000000, baseVol: 420000000, baseChange: -1.08 },
-  'sui': { symbol: 'SUI', pair: 'SUI/USDT', name: 'Sui', basePrice: 1.058, baseCap: 3100000000, baseVol: 560000000, baseChange: -1.13 },
-  'avalanche-2': { symbol: 'AVAX', pair: 'AVAX/USDT', name: 'Avalanche', basePrice: 10.23, baseCap: 4100000000, baseVol: 390000000, baseChange: -2.10 },
-  'pepe': { symbol: 'PEPE', pair: 'PEPE/USDT', name: 'Pepe', basePrice: 0.0000042, baseCap: 1800000000, baseVol: 650000000, baseChange: 1.60 },
-  'near': { symbol: 'NEAR', pair: 'NEAR/USDT', name: 'NEAR Protocol', basePrice: 5.045, baseCap: 6200000000, baseVol: 480000000, baseChange: -1.20 },
-  'aptos': { symbol: 'APT', pair: 'APT/USDT', name: 'Aptos', basePrice: 5.82, baseCap: 2800000000, baseVol: 190000000, baseChange: 0.8 },
-  'polkadot': { symbol: 'DOT', pair: 'DOT/USDT', name: 'Polkadot', basePrice: 4.15, baseCap: 5900000000, baseVol: 210000000, baseChange: -0.5 },
-  'tron': { symbol: 'TRX', pair: 'TRX/USDT', name: 'TRON', basePrice: 0.198, baseCap: 17000000000, baseVol: 450000000, baseChange: 0.2 },
-  'the-open-network': { symbol: 'TON', pair: 'TON/USDT', name: 'Toncoin', basePrice: 5.25, baseCap: 13000000000, baseVol: 180000000, baseChange: -1.4 },
-  'filecoin': { symbol: 'FIL', pair: 'FIL/USDT', name: 'Filecoin', basePrice: 3.65, baseCap: 2100000000, baseVol: 110000000, baseChange: -0.8 },
-  'internet-computer': { symbol: 'ICP', pair: 'ICP/USDT', name: 'Internet Computer', basePrice: 8.45, baseCap: 3900000000, baseVol: 130000000, baseChange: -1.1 },
-  'sei-network': { symbol: 'SEI', pair: 'SEI/USDT', name: 'Sei', basePrice: 0.38, baseCap: 1200000000, baseVol: 140000000, baseChange: 1.2 },
-  'celestia': { symbol: 'TIA', pair: 'TIA/USDT', name: 'Celestia', basePrice: 4.85, baseCap: 1100000000, baseVol: 95000000, baseChange: -2.3 },
-  'algorand': { symbol: 'ALGO', pair: 'ALGO/USDT', name: 'Algorand', basePrice: 0.145, baseCap: 1200000000, baseVol: 80000000, baseChange: 0.4 },
-  'hedera-hashgraph': { symbol: 'HBAR', pair: 'HBAR/USDT', name: 'Hedera', basePrice: 0.052, baseCap: 1900000000, baseVol: 75000000, baseChange: -0.2 },
-  'cosmos': { symbol: 'ATOM', pair: 'ATOM/USDT', name: 'Cosmos Hub', basePrice: 4.45, baseCap: 1700000000, baseVol: 90000000, baseChange: -1.5 },
-  'stellar': { symbol: 'XLM', pair: 'XLM/USDT', name: 'Stellar', basePrice: 0.098, baseCap: 2900000000, baseVol: 85000000, baseChange: 0.3 },
-  'fantom': { symbol: 'FTM', pair: 'FTM/USDT', name: 'Fantom', basePrice: 0.72, baseCap: 2000000000, baseVol: 150000000, baseChange: 2.1 },
-  'vechain': { symbol: 'VET', pair: 'VET/USDT', name: 'VeChain', basePrice: 0.022, baseCap: 1800000000, baseVol: 60000000, baseChange: -0.4 },
-  'litecoin': { symbol: 'LTC', pair: 'LTC/USDT', name: 'Litecoin', basePrice: 71.50, baseCap: 5300000000, baseVol: 280000000, baseChange: -0.7 },
-  'bitcoin-cash': { symbol: 'BCH', pair: 'BCH/USDT', name: 'Bitcoin Cash', basePrice: 345.00, baseCap: 6800000000, baseVol: 220000000, baseChange: 0.5 },
-  'ethereum-classic': { symbol: 'ETC', pair: 'ETC/USDT', name: 'Ethereum Classic', basePrice: 18.20, baseCap: 2700000000, baseVol: 140000000, baseChange: -0.9 },
-  'uniswap': { symbol: 'UNI', pair: 'UNI/USDT', name: 'Uniswap', basePrice: 7.80, baseCap: 4700000000, baseVol: 190000000, baseChange: 1.4 },
-  'chainlink': { symbol: 'LINK', pair: 'LINK/USDT', name: 'Chainlink', basePrice: 11.20, baseCap: 6800000000, baseVol: 250000000, baseChange: -1.2 },
-  'aave': { symbol: 'AAVE', pair: 'AAVE/USDT', name: 'Aave', basePrice: 158.00, baseCap: 2300000000, baseVol: 180000000, baseChange: 3.2 },
-  'maker': { symbol: 'MKR', pair: 'MKR/USDT', name: 'Maker', basePrice: 1250.00, baseCap: 1100000000, baseVol: 75000000, baseChange: -0.5 },
-  'curve-dao-token': { symbol: 'CRV', pair: 'CRV/USDT', name: 'Curve DAO', basePrice: 0.28, baseCap: 350000000, baseVol: 55000000, baseChange: 1.8 },
-  'lido-dao': { symbol: 'LDO', pair: 'LDO/USDT', name: 'Lido DAO', basePrice: 1.15, baseCap: 1000000000, baseVol: 85000000, baseChange: -1.7 },
-  'pendle': { symbol: 'PENDLE', pair: 'PENDLE/USDT', name: 'Pendle', basePrice: 4.10, baseCap: 650000000, baseVol: 90000000, baseChange: 2.8 },
-  'injective-protocol': { symbol: 'INJ', pair: 'INJ/USDT', name: 'Injective', basePrice: 19.50, baseCap: 1900000000, baseVol: 110000000, baseChange: 0.9 },
-  'jupiter-exchange-solana': { symbol: 'JUP', pair: 'JUP/USDT', name: 'Jupiter', basePrice: 0.95, baseCap: 1300000000, baseVol: 140000000, baseChange: -0.6 },
-  'thorchain': { symbol: 'RUNE', pair: 'RUNE/USDT', name: 'THORChain', basePrice: 4.80, baseCap: 1600000000, baseVol: 120000000, baseChange: 1.5 },
-  'havven': { symbol: 'SNX', pair: 'SNX/USDT', name: 'Synthetix', basePrice: 1.45, baseCap: 480000000, baseVol: 65000000, baseChange: -0.8 },
-  'dydx-chain': { symbol: 'DYDX', pair: 'DYDX/USDT', name: 'dYdX', basePrice: 0.98, baseCap: 650000000, baseVol: 70000000, baseChange: 0.4 },
-  'arbitrum': { symbol: 'ARB', pair: 'ARB/USDT', name: 'Arbitrum', basePrice: 0.52, baseCap: 1800000000, baseVol: 160000000, baseChange: -1.3 },
-  'optimism': { symbol: 'OP', pair: 'OP/USDT', name: 'Optimism', basePrice: 1.55, baseCap: 1900000000, baseVol: 130000000, baseChange: 0.2 },
-  'polygon-ecosystem-token': { symbol: 'POL', pair: 'POL/USDT', name: 'Polygon Ecosystem', basePrice: 0.36, baseCap: 2800000000, baseVol: 110000000, baseChange: -0.9 },
-  'starknet': { symbol: 'STRK', pair: 'STRK/USDT', name: 'Starknet', basePrice: 0.39, baseCap: 800000000, baseVol: 85000000, baseChange: -2.1 },
-  'shiba-inu': { symbol: 'SHIB', pair: 'SHIB/USDT', name: 'Shiba Inu', basePrice: 0.0000185, baseCap: 10900000000, baseVol: 450000000, baseChange: 0.8 },
-  'dogwifcoin': { symbol: 'WIF', pair: 'WIF/USDT', name: 'dogwifhat', basePrice: 2.35, baseCap: 2350000000, baseVol: 380000000, baseChange: 4.2 },
-  'bonk': { symbol: 'BONK', pair: 'BONK/USDT', name: 'Bonk', basePrice: 0.0000215, baseCap: 1500000000, baseVol: 220000000, baseChange: 1.9 },
-  'floki': { symbol: 'FLOKI', pair: 'FLOKI/USDT', name: 'Floki', basePrice: 0.000145, baseCap: 1400000000, baseVol: 190000000, baseChange: 0.6 },
-  'book-of-meme': { symbol: 'BOME', pair: 'BOME/USDT', name: 'BOOK OF MEME', basePrice: 0.0085, baseCap: 590000000, baseVol: 160000000, baseChange: 3.5 },
-  'memecoin': { symbol: 'MEME', pair: 'MEME/USDT', name: 'Memecoin', basePrice: 0.0125, baseCap: 380000000, baseVol: 85000000, baseChange: -1.2 },
-  'render-token': { symbol: 'RENDER', pair: 'RENDER/USDT', name: 'Render', basePrice: 5.65, baseCap: 2900000000, baseVol: 170000000, baseChange: 1.8 },
-  'fetch-ai': { symbol: 'FET', pair: 'FET/USDT', name: 'Artificial Superintelligence', basePrice: 1.35, baseCap: 3400000000, baseVol: 190000000, baseChange: 0.7 },
-  'bittensor': { symbol: 'TAO', pair: 'TAO/USDT', name: 'Bittensor', basePrice: 520.00, baseCap: 3800000000, baseVol: 180000000, baseChange: 2.9 },
-  'worldcoin-wld': { symbol: 'WLD', pair: 'WLD/USDT', name: 'Worldcoin', basePrice: 1.95, baseCap: 1100000000, baseVol: 240000000, baseChange: -0.4 },
-  'the-graph': { symbol: 'GRT', pair: 'GRT/USDT', name: 'The Graph', basePrice: 0.165, baseCap: 1600000000, baseVol: 90000000, baseChange: 1.1 }
+  'bitcoin': { symbol: 'BTC', pair: 'BTC/USDT', name: 'Bitcoin', basePrice: 80418.01, baseCap: 1676759000000, baseVol: 31513000000, baseChange: -0.45 },
+  'ethereum': { symbol: 'ETH', pair: 'ETH/USDT', name: 'Ethereum', basePrice: 2326.16, baseCap: 307174000000, baseVol: 16497000000, baseChange: -0.83 },
+  'gold': { symbol: 'XAU', pair: 'XAU/USD', name: 'Gold Spot', basePrice: 4022.74, baseCap: 15000000000000, baseVol: 85000000000, baseChange: 0.68 },
+  'solana': { symbol: 'SOL', pair: 'SOL/USDT', name: 'Solana', basePrice: 102.11, baseCap: 63637000000, baseVol: 4059000000, baseChange: 0.44 },
+  'binancecoin': { symbol: 'BNB', pair: 'BNB/USDT', name: 'BNB', basePrice: 745.15, baseCap: 107000000000, baseVol: 1850000000, baseChange: 0.39 },
+  'dogecoin': { symbol: 'DOGE', pair: 'DOGE/USDT', name: 'Dogecoin', basePrice: 0.0778, baseCap: 12500000000, baseVol: 850000000, baseChange: 0.69 },
+  'ripple': { symbol: 'XRP', pair: 'XRP/USDT', name: 'XRP', basePrice: 1.3, baseCap: 78000000000, baseVol: 2450000000, baseChange: 0.01 },
+  'cardano': { symbol: 'ADA', pair: 'ADA/USDT', name: 'Cardano', basePrice: 0.2066, baseCap: 8400000000, baseVol: 420000000, baseChange: 0.63 },
+  'sui': { symbol: 'SUI', pair: 'SUI/USDT', name: 'Sui', basePrice: 0.9253, baseCap: 3100000000, baseVol: 560000000, baseChange: 0.97 },
+  'avalanche-2': { symbol: 'AVAX', pair: 'AVAX/USDT', name: 'Avalanche', basePrice: 9.006, baseCap: 4100000000, baseVol: 390000000, baseChange: 1.25 },
+  'pepe': { symbol: 'PEPE', pair: 'PEPE/USDT', name: 'Pepe', basePrice: 0.00000436, baseCap: 1800000000, baseVol: 650000000, baseChange: -1.36 },
+  'near': { symbol: 'NEAR', pair: 'NEAR/USDT', name: 'NEAR Protocol', basePrice: 4.647, baseCap: 6200000000, baseVol: 480000000, baseChange: 3.29 },
+  'aptos': { symbol: 'APT', pair: 'APT/USDT', name: 'Aptos', basePrice: 0.7077, baseCap: 2800000000, baseVol: 190000000, baseChange: 0.93 },
+  'polkadot': { symbol: 'DOT', pair: 'DOT/USDT', name: 'Polkadot', basePrice: 1.031, baseCap: 5900000000, baseVol: 210000000, baseChange: -0.29 },
+  'tron': { symbol: 'TRX', pair: 'TRX/USDT', name: 'TRON', basePrice: 0.3312, baseCap: 17000000000, baseVol: 450000000, baseChange: 0.64 },
+  'the-open-network': { symbol: 'TON', pair: 'TON/USDT', name: 'Toncoin', basePrice: 1.6, baseCap: 13000000000, baseVol: 180000000, baseChange: 0.95 },
+  'filecoin': { symbol: 'FIL', pair: 'FIL/USDT', name: 'Filecoin', basePrice: 0.9271, baseCap: 2100000000, baseVol: 110000000, baseChange: 0.58 },
+  'internet-computer': { symbol: 'ICP', pair: 'ICP/USDT', name: 'Internet Computer', basePrice: 2.65, baseCap: 3900000000, baseVol: 130000000, baseChange: 0.61 },
+  'sei-network': { symbol: 'SEI', pair: 'SEI/USDT', name: 'Sei', basePrice: 0.0534, baseCap: 1200000000, baseVol: 140000000, baseChange: 0.83 },
+  'celestia': { symbol: 'TIA', pair: 'TIA/USDT', name: 'Celestia', basePrice: 0.542, baseCap: 1100000000, baseVol: 95000000, baseChange: 1.96 },
+  'algorand': { symbol: 'ALGO', pair: 'ALGO/USDT', name: 'Algorand', basePrice: 0.1052, baseCap: 1200000000, baseVol: 80000000, baseChange: 0.96 },
+  'hedera-hashgraph': { symbol: 'HBAR', pair: 'HBAR/USDT', name: 'Hedera', basePrice: 0.0777, baseCap: 1900000000, baseVol: 75000000, baseChange: 0.88 },
+  'cosmos': { symbol: 'ATOM', pair: 'ATOM/USDT', name: 'Cosmos Hub', basePrice: 1.658, baseCap: 1700000000, baseVol: 90000000, baseChange: 1.97 },
+  'stellar': { symbol: 'XLM', pair: 'XLM/USDT', name: 'Stellar', basePrice: 0.1702, baseCap: 2900000000, baseVol: 85000000, baseChange: 0.53 },
+  'fantom': { symbol: 'FTM', pair: 'FTM/USDT', name: 'Fantom', basePrice: 0.6994, baseCap: 2000000000, baseVol: 150000000, baseChange: -0.77 },
+  'vechain': { symbol: 'VET', pair: 'VET/USDT', name: 'VeChain', basePrice: 0.006649, baseCap: 1800000000, baseVol: 60000000, baseChange: -1.9 },
+  'litecoin': { symbol: 'LTC', pair: 'LTC/USDT', name: 'Litecoin', basePrice: 57.11, baseCap: 5300000000, baseVol: 280000000, baseChange: 0.72 },
+  'bitcoin-cash': { symbol: 'BCH', pair: 'BCH/USDT', name: 'Bitcoin Cash', basePrice: 278.1, baseCap: 6800000000, baseVol: 220000000, baseChange: 1.05 },
+  'ethereum-classic': { symbol: 'ETC', pair: 'ETC/USDT', name: 'Ethereum Classic', basePrice: 7.62, baseCap: 2700000000, baseVol: 140000000, baseChange: 1.06 },
+  'uniswap': { symbol: 'UNI', pair: 'UNI/USDT', name: 'Uniswap', basePrice: 7.108, baseCap: 4700000000, baseVol: 190000000, baseChange: 4.47 },
+  'chainlink': { symbol: 'LINK', pair: 'LINK/USDT', name: 'Chainlink', basePrice: 11.565, baseCap: 6800000000, baseVol: 250000000, baseChange: 1.38 },
+  'aave': { symbol: 'AAVE', pair: 'AAVE/USDT', name: 'Aave', basePrice: 137.99, baseCap: 2300000000, baseVol: 180000000, baseChange: 1.25 },
+  'maker': { symbol: 'MKR', pair: 'MKR/USDT', name: 'Maker', basePrice: 1813.7, baseCap: 1100000000, baseVol: 75000000, baseChange: 0.76 },
+  'curve-dao-token': { symbol: 'CRV', pair: 'CRV/USDT', name: 'Curve DAO', basePrice: 0.3528, baseCap: 350000000, baseVol: 55000000, baseChange: 2.38 },
+  'lido-dao': { symbol: 'LDO', pair: 'LDO/USDT', name: 'Lido DAO', basePrice: 0.3757, baseCap: 1000000000, baseVol: 85000000, baseChange: 2.76 },
+  'pendle': { symbol: 'PENDLE', pair: 'PENDLE/USDT', name: 'Pendle', basePrice: 1.984, baseCap: 650000000, baseVol: 90000000, baseChange: 0.35 },
+  'injective-protocol': { symbol: 'INJ', pair: 'INJ/USDT', name: 'Injective', basePrice: 7.969, baseCap: 1900000000, baseVol: 110000000, baseChange: 3.49 },
+  'jupiter-exchange-solana': { symbol: 'JUP', pair: 'JUP/USDT', name: 'Jupiter', basePrice: 0.2835, baseCap: 1300000000, baseVol: 140000000, baseChange: -0.11 },
+  'thorchain': { symbol: 'RUNE', pair: 'RUNE/USDT', name: 'THORChain', basePrice: 0.637, baseCap: 1600000000, baseVol: 120000000, baseChange: 1.43 },
+  'havven': { symbol: 'SNX', pair: 'SNX/USDT', name: 'Synthetix', basePrice: 0.1989, baseCap: 480000000, baseVol: 65000000, baseChange: 1.22 },
+  'dydx-chain': { symbol: 'DYDX', pair: 'DYDX/USDT', name: 'dYdX', basePrice: 0.1092, baseCap: 650000000, baseVol: 70000000, baseChange: 2.92 },
+  'arbitrum': { symbol: 'ARB', pair: 'ARB/USDT', name: 'Arbitrum', basePrice: 0.172, baseCap: 1800000000, baseVol: 160000000, baseChange: 2.56 },
+  'optimism': { symbol: 'OP', pair: 'OP/USDT', name: 'Optimism', basePrice: 0.1123, baseCap: 1900000000, baseVol: 130000000, baseChange: 0.99 },
+  'polygon-ecosystem-token': { symbol: 'POL', pair: 'POL/USDT', name: 'Polygon Ecosystem', basePrice: 0.0913, baseCap: 2800000000, baseVol: 110000000, baseChange: 2.99 },
+  'starknet': { symbol: 'STRK', pair: 'STRK/USDT', name: 'Starknet', basePrice: 0.0458, baseCap: 800000000, baseVol: 85000000, baseChange: 1.13 },
+  'shiba-inu': { symbol: 'SHIB', pair: 'SHIB/USDT', name: 'Shiba Inu', basePrice: 0.0000049, baseCap: 10900000000, baseVol: 450000000, baseChange: 0.41 },
+  'dogwifcoin': { symbol: 'WIF', pair: 'WIF/USDT', name: 'dogwifhat', basePrice: 0.1818, baseCap: 2350000000, baseVol: 380000000, baseChange: 1.06 },
+  'bonk': { symbol: 'BONK', pair: 'BONK/USDT', name: 'Bonk', basePrice: 0.00000305, baseCap: 1500000000, baseVol: 220000000, baseChange: 0.33 },
+  'floki': { symbol: 'FLOKI', pair: 'FLOKI/USDT', name: 'Floki', basePrice: 0.00002312, baseCap: 1400000000, baseVol: 190000000, baseChange: 0.22 },
+  'book-of-meme': { symbol: 'BOME', pair: 'BOME/USDT', name: 'BOOK OF MEME', basePrice: 0.000636, baseCap: 590000000, baseVol: 160000000, baseChange: 2.06 },
+  'memecoin': { symbol: 'MEME', pair: 'MEME/USDT', name: 'Memecoin', basePrice: 0.00047, baseCap: 380000000, baseVol: 85000000, baseChange: 0.64 },
+  'render-token': { symbol: 'RENDER', pair: 'RENDER/USDT', name: 'Render', basePrice: 1.754, baseCap: 2900000000, baseVol: 170000000, baseChange: 3.3 },
+  'fetch-ai': { symbol: 'FET', pair: 'FET/USDT', name: 'Artificial Superintelligence', basePrice: 0.1775, baseCap: 3400000000, baseVol: 190000000, baseChange: 1.54 },
+  'bittensor': { symbol: 'TAO', pair: 'TAO/USDT', name: 'Bittensor', basePrice: 254.8, baseCap: 3800000000, baseVol: 180000000, baseChange: 1.68 },
+  'worldcoin-wld': { symbol: 'WLD', pair: 'WLD/USDT', name: 'Worldcoin', basePrice: 0.4485, baseCap: 1100000000, baseVol: 240000000, baseChange: -0.99 },
+  'the-graph': { symbol: 'GRT', pair: 'GRT/USDT', name: 'The Graph', basePrice: 0.02246, baseCap: 1600000000, baseVol: 90000000, baseChange: -0.53 }
 };
 
 const BINANCE_SYMBOL_MAP = {
@@ -594,7 +594,7 @@ const dailyOpenCache = {
 
 // Track Gold Daily Session Open (00:00 UTC) matching TradingView
 let lastGoldOpenUtcDay = new Date().getUTCDate();
-let goldDailySessionOpen = 4140.77;
+let goldDailySessionOpen = 3992.60;
 
 function getGoldSessionOpen(currentPrice) {
   const now = new Date();
@@ -606,7 +606,7 @@ function getGoldSessionOpen(currentPrice) {
       dailyOpenCache['gold'] = currentPrice;
     }
   }
-  return goldDailySessionOpen || dailyOpenCache['gold'] || 4140.77;
+  return goldDailySessionOpen || dailyOpenCache['gold'] || 3992.60;
 }
 
 async function updateDailyOpenPrices() {
