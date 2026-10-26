@@ -65,9 +65,18 @@ assert.ok(js.includes('if (typeof cached.chartChange === \'number\') coin.chartC
 assert.ok(js.includes('if (typeof cached.candleOpen === \'number\' && cached.candleOpen > 0) coin.candleOpen = cached.candleOpen;'), 'candleOpen must be restored on boot');
 console.log('  ✓ chartChange & candleOpen persisted and restored from localStorage on page refresh');
 
-// 6. Verify Mandatory Address
-console.log('6. Verifying Mandatory Gujarat Address...');
+// 7. Verify Extra Lines Removal (High/Low Lines, Grid Lines, Symbol Labels)
+console.log('7. Testing Extra Lines Elimination (High/Low, Grid, and Symbol Lines)...');
+assert.ok(js.includes('"mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible": false'), 'highLowPriceLabelsVisible must be false in app.js');
+assert.ok(js.includes('"mainSeriesProperties.highLowAvgPrice.highLowPriceLinesVisible": false'), 'highLowPriceLinesVisible must be false in app.js');
+assert.ok(js.includes('"scalesProperties.showSymbolLabels": false'), 'showSymbolLabels must be false in app.js');
+assert.ok(html.includes('%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Afalse'), 'highLowPriceLabelsVisible must be false in initial iframe src');
+assert.ok(html.includes('%22paneProperties.vertGridProperties.color%22%3A%22rgba(0%2C%200%2C%200%2C%200)%22'), 'vertGridProperties.color must be transparent in initial iframe src');
+console.log('  ✓ High/Low lines, symbol labels, and grid lines strictly eliminated for clean chart');
+
+// 8. Verify Mandatory Address
+console.log('8. Verifying Mandatory Gujarat Address...');
 assert.ok(html.includes('Vadod Gam, Surat, Gujarat'), 'Mandatory address must exist in HTML');
 console.log('  ✓ Mandatory address "Vadod Gam, Surat, Gujarat" verified');
 
-console.log('\n=== ALL CHART CHANGE SYNC & FULLSCREEN ICON TESTS PASSED! ===\n');
+console.log('\n=== ALL CHART CHANGE SYNC, FULLSCREEN ICON & CLEAN CHART TESTS PASSED! ===\n');

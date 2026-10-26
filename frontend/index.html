@@ -1810,7 +1810,7 @@
 
             <!-- TradingView official chart iframe (supports https://s.tradingview.com/widgetembed/ legacy fallback) -->
             <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
-              src="https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#%7B%22autosize%22%3Atrue%2C%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22interval%22%3A%2260%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22locale%22%3A%22en%22%2C%22allow_symbol_change%22%3Atrue%2C%22calendar%22%3Afalse%2C%22hide_side_toolbar%22%3Afalse%2C%22hide_top_toolbar%22%3Afalse%2C%22withdateranges%22%3Afalse%2C%22save_image%22%3Atrue%2C%22enable_publishing%22%3Afalse%2C%22hideideas%22%3Atrue%2C%22enabled_features%22%3A%5B%22countdown%22%2C%22header_widget%22%2C%22header_symbol_search%22%2C%22header_resolutions%22%2C%22header_chart_type%22%2C%22header_indicators%22%2C%22header_compare%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22header_screenshot%22%2C%22header_saveload%22%2C%22header_undo_redo%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%5D%2C%22overrides%22%3A%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLinesColor%22%3A%22%232196F3%22%7D%7D"
+              src="https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#%7B%22autosize%22%3Atrue%2C%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22interval%22%3A%2260%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22locale%22%3A%22en%22%2C%22allow_symbol_change%22%3Atrue%2C%22calendar%22%3Afalse%2C%22hide_side_toolbar%22%3Afalse%2C%22hide_top_toolbar%22%3Afalse%2C%22withdateranges%22%3Afalse%2C%22save_image%22%3Atrue%2C%22enable_publishing%22%3Afalse%2C%22hideideas%22%3Atrue%2C%22enabled_features%22%3A%5B%22countdown%22%2C%22header_widget%22%2C%22header_symbol_search%22%2C%22header_resolutions%22%2C%22header_chart_type%22%2C%22header_indicators%22%2C%22header_compare%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22header_screenshot%22%2C%22header_saveload%22%2C%22header_undo_redo%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%5D%2C%22overrides%22%3A%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Afalse%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLinesVisible%22%3Afalse%2C%22scalesProperties.showSymbolLabels%22%3Afalse%2C%22paneProperties.background%22%3A%22%23080b11%22%2C%22paneProperties.vertGridProperties.color%22%3A%22rgba(0%2C%200%2C%200%2C%200)%22%2C%22paneProperties.horzGridProperties.color%22%3A%22rgba(0%2C%200%2C%200%2C%200)%22%7D%7D"
               allowtransparency="true" frameborder="0" allowfullscreen="true" allow="fullscreen; clipboard-write; pointer-lock">
             </iframe>
             <script>
@@ -1938,8 +1938,11 @@
                   var overrides = {
                     "mainSeriesProperties.showCountdown": showCountdown,
                     "scalesProperties.showCountdown": showCountdown,
-                    "mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible": true,
-                    "mainSeriesProperties.highLowAvgPrice.highLowPriceLinesColor": "#2196F3",
+                    "mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible": false,
+                    "mainSeriesProperties.highLowAvgPrice.highLowPriceLinesVisible": false,
+                    "mainSeriesProperties.highLowAvgPrice.averageClosePriceLineVisible": false,
+                    "mainSeriesProperties.highLowAvgPrice.averageClosePriceLabelVisible": false,
+                    "scalesProperties.showSymbolLabels": false,
                     "paneProperties.background": settings.bgColor,
                     "paneProperties.vertGridProperties.color": gridColor,
                     "paneProperties.horzGridProperties.color": gridColor,

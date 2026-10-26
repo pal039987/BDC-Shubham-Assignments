@@ -3666,8 +3666,11 @@ function getTradingViewOverrides() {
   const overrides = {
     "mainSeriesProperties.showCountdown": true,
     "scalesProperties.showCountdown": true,
-    "mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible": true,
-    "mainSeriesProperties.highLowAvgPrice.highLowPriceLinesColor": "#2196F3",
+    "mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible": false,
+    "mainSeriesProperties.highLowAvgPrice.highLowPriceLinesVisible": false,
+    "mainSeriesProperties.highLowAvgPrice.averageClosePriceLineVisible": false,
+    "mainSeriesProperties.highLowAvgPrice.averageClosePriceLabelVisible": false,
+    "scalesProperties.showSymbolLabels": false,
     "paneProperties.background": bg,
     "paneProperties.vertGridProperties.color": gridColor,
     "paneProperties.horzGridProperties.color": gridColor,
