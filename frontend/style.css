@@ -11988,6 +11988,10 @@ body.trade-screen-active .trade-depth-panel {
   flex-shrink: 0;
 }
 
+.header-trade-now-btn.hidden {
+  display: none !important;
+}
+
 .header-trade-now-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 0 24px rgba(0, 242, 254, 0.6);

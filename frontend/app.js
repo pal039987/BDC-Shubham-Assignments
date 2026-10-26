@@ -23,10 +23,10 @@ const COINS = [
     "binanceSym": "BTCUSDT",
     "category": "futures",
     "maxLev": 150,
-    "price": 81911.91,
-    "change": 0.422,
-    "high": 82078,
-    "low": 80819.66,
+    "price": 80450.00,
+    "change": 0.18,
+    "high": 80951.57,
+    "low": 79368.67,
     "vol": "610.0M",
     "tvSymbol": "BINANCE:BTCUSDT"
   },
@@ -2005,16 +2005,51 @@ function initNetworkMonitor() {
 
 
 // ─── 3. APP RUNTIME STATE ────────────────────────────────────────────────
+function persistSelectedCoinState() {
+  if (!selectedCoin || !selectedCoin.id) return;
+  try {
+    localStorage.setItem('vtrade_selected_coin_state', JSON.stringify({
+      id: selectedCoin.id,
+      symbol: selectedCoin.symbol,
+      price: selectedCoin.price,
+      change: selectedCoin.change,
+      change24h: selectedCoin.change24h,
+      open24h: selectedCoin.open24h,
+      high: selectedCoin.high,
+      low: selectedCoin.low,
+      vol: selectedCoin.vol,
+      timestamp: Date.now()
+    }));
+  } catch (e) {}
+}
+
 let activeTab = 'home';
 let selectedCoin = (function() {
   try {
     const saved = localStorage.getItem('vtrade_selected_coin');
+    const cachedStateRaw = localStorage.getItem('vtrade_selected_coin_state');
+    let coin = null;
     if (saved && typeof COINS !== 'undefined') {
-      const c = COINS.find(item => item.id === saved || item.symbol.toLowerCase() === saved.toLowerCase());
-      if (c) return c;
+      coin = COINS.find(item => item.id === saved || item.symbol.toLowerCase() === saved.toLowerCase());
     }
+    if (!coin && typeof COINS !== 'undefined' && COINS[0]) {
+      coin = COINS[0];
+    }
+    if (coin && cachedStateRaw) {
+      const cached = JSON.parse(cachedStateRaw);
+      if (cached && (cached.id === coin.id || !saved || saved === coin.id)) {
+        if (typeof cached.price === 'number' && cached.price > 0) coin.price = cached.price;
+        if (typeof cached.change === 'number') coin.change = cached.change;
+        if (typeof cached.change24h === 'number') coin.change24h = cached.change24h;
+        if (typeof cached.open24h === 'number' && cached.open24h > 0) coin.open24h = cached.open24h;
+        if (typeof cached.high === 'number' && cached.high > 0) coin.high = cached.high;
+        if (typeof cached.low === 'number' && cached.low > 0) coin.low = cached.low;
+        if (cached.vol) coin.vol = cached.vol;
+      }
+    }
+    if (coin) return coin;
   } catch (e) {}
-  return (typeof COINS !== 'undefined' && COINS[0]) ? COINS[0] : { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', price: 80000 };
+  return (typeof COINS !== 'undefined' && COINS[0]) ? COINS[0] : { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', price: 80450 };
 })();
 let chartInterval = (function() {
   try {
@@ -4328,6 +4363,7 @@ function selectCoinAndTrade(coinId) {
     selectedCoin = coin;
     try {
       localStorage.setItem('vtrade_selected_coin', coin.id);
+      persistSelectedCoinState();
     } catch (e) {}
     switchBottomTab('trade');
     renderTradeScreen();
@@ -4412,8 +4448,60 @@ function renderTradeScreen() {
   renderOrders();
   renderTradeBottomLedger();
   renderTradeDeskOrderBookAndTrades();
+  fetchFastCoinTicker(selectedCoin.binanceSym);
   connectCoinTickerWs(selectedCoin.binanceSym);
   updateDesktopOrderCalculations();
+}
+
+async function fetchFastCoinTicker(binanceSym) {
+  if (!binanceSym || binanceSym === 'PAXGUSDT') return;
+  const urls = [
+    `https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${binanceSym}`,
+    `https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSym}`,
+    getApiEndpoint('/api/prices')
+  ];
+  for (const url of urls) {
+    try {
+      const ctl = new AbortController();
+      const tmr = setTimeout(() => ctl.abort(), 2200);
+      const resp = await fetch(url, { signal: ctl.signal });
+      clearTimeout(tmr);
+      if (resp.ok) {
+        const d = await resp.json();
+        const item = d && d.lastPrice ? d : (d && d.prices && selectedCoin && d.prices[selectedCoin.id] ? {
+          lastPrice: d.prices[selectedCoin.id].price,
+          priceChangePercent: d.prices[selectedCoin.id].change24h,
+          openPrice: d.prices[selectedCoin.id].dailyOpen,
+          highPrice: d.prices[selectedCoin.id].high24h,
+          lowPrice: d.prices[selectedCoin.id].low24h,
+          quoteVolume: d.prices[selectedCoin.id].volume24h
+        } : null);
+
+        if (item && item.lastPrice) {
+          const p = parseFloat(item.lastPrice);
+          const chg = parseFloat(item.priceChangePercent);
+          const o = parseFloat(item.openPrice);
+          if (p > 0 && !isNaN(p) && selectedCoin && selectedCoin.binanceSym === binanceSym) {
+            selectedCoin.price = p;
+            if (!isNaN(chg)) {
+              selectedCoin.change = chg;
+              selectedCoin.change24h = chg;
+            }
+            if (o > 0 && !isNaN(o)) selectedCoin.open24h = o;
+            if (item.highPrice && parseFloat(item.highPrice) > 0) selectedCoin.high = parseFloat(item.highPrice);
+            if (item.lowPrice && parseFloat(item.lowPrice) > 0) selectedCoin.low = parseFloat(item.lowPrice);
+            if (item.quoteVolume) {
+              const qv = parseFloat(item.quoteVolume);
+              selectedCoin.vol = qv >= 1e9 ? (qv / 1e9).toFixed(2) + 'B' : (qv / 1e6).toFixed(1) + 'M';
+            }
+            persistSelectedCoinState();
+            renderLivePriceUpdates();
+            break;
+          }
+        }
+      }
+    } catch (e) {}
+  }
 }
 
 // ─── CANDLE CLOSING COUNTDOWN ENGINE (DYNAMIC PER TIMEFRAME) ───────────────
@@ -5435,6 +5523,9 @@ function connectCoinTickerWs(binanceSym) {
             } else if (d.e === '24hrTicker' || (d.c && d.P !== undefined)) {
               // Direct Binance 24hrTicker stream payload
               newPrice = parseFloat(d.c);
+              if (d.o && !isNaN(parseFloat(d.o)) && parseFloat(d.o) > 0) {
+                selectedCoin.open24h = parseFloat(d.o);
+              }
               if (d.P !== undefined && !isNaN(parseFloat(d.P))) {
                 changePercent = parseFloat(d.P);
                 selectedCoin.change = changePercent;
@@ -5447,11 +5538,18 @@ function connectCoinTickerWs(binanceSym) {
 
             if (newPrice > 0 && !isNaN(newPrice)) {
               selectedCoin.price = newPrice;
-              if (changePercent !== null && !isNaN(changePercent)) {
+              if (selectedCoin.open24h && selectedCoin.open24h > 0) {
+                const live24hChg = parseFloat((((newPrice - selectedCoin.open24h) / selectedCoin.open24h) * 100).toFixed(2));
+                selectedCoin.change24h = live24hChg;
+                selectedCoin.change = live24hChg;
+              } else if (changePercent !== null && !isNaN(changePercent)) {
                 selectedCoin.change = changePercent;
+                selectedCoin.change24h = changePercent;
               }
               if (high && !isNaN(high) && high > 0) selectedCoin.high = high;
               if (low && !isNaN(low) && low > 0) selectedCoin.low = low;
+
+              persistSelectedCoinState();
 
               // Immediate order checking (0ms latency for limits/triggers)
               checkPendingOrdersTrigger();
@@ -5507,8 +5605,8 @@ async function fetchLiveBinanceTickers() {
   const encodedSymbols = encodeURIComponent(JSON.stringify(symbols));
 
   const endpoints = [
-    `https://data-api.binance.vision/api/v3/ticker/tradingDay?symbols=${encodedSymbols}`,
-    `https://api.binance.com/api/v3/ticker/tradingDay?symbols=${encodedSymbols}`,
+    `https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${encodedSymbols}`,
+    `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodedSymbols}`,
     'https://data-api.binance.vision/api/v3/ticker/24hr',
     'https://api.binance.com/api/v3/ticker/24hr',
     getApiEndpoint('/api/prices')
@@ -5534,6 +5632,7 @@ async function fetchLiveBinanceTickers() {
               tickerMap.set(k, {
                 lastPrice: p.price,
                 priceChangePercent: p.change24h || 0,
+                openPrice: p.dailyOpen || p.open24h || 0,
                 highPrice: p.high24h || p.price * 1.02,
                 lowPrice: p.low24h || p.price * 0.98,
                 quoteVolume: p.volume24h || 50000000
@@ -5545,21 +5644,32 @@ async function fetchLiveBinanceTickers() {
         if (tickerMap.size > 0) {
           COINS.forEach(c => {
             if (c.id === 'gold') return; // Gold is Spot XAU/USD, updated with exact TradingView Session Open below
-            // NEVER overwrite selectedCoin on Trade tab from background REST polling!
-            // Live WebSocket handles selectedCoin exclusively to prevent jump/flicker
-            if (activeTab === 'trade' && selectedCoin && c.id === selectedCoin.id) {
-              return;
-            }
             const t = tickerMap.get(c.binanceSym) || tickerMap.get(c.id);
             if (t) {
               c.price = parseFloat(t.lastPrice);
               c.change = parseFloat(t.priceChangePercent);
-              if (t.openPrice) c.open = parseFloat(t.openPrice);
+              c.change24h = c.change;
+              if (t.openPrice) {
+                c.open = parseFloat(t.openPrice);
+                c.open24h = parseFloat(t.openPrice);
+              }
               c.high = parseFloat(t.highPrice);
               c.low = parseFloat(t.lowPrice);
               if (t.quoteVolume) {
                 const qv = parseFloat(t.quoteVolume);
                 c.vol = qv >= 1e9 ? (qv / 1e9).toFixed(2) + 'B' : (qv / 1e6).toFixed(1) + 'M';
+              }
+              if (selectedCoin && c.id === selectedCoin.id) {
+                selectedCoin.price = c.price;
+                selectedCoin.change = c.change;
+                selectedCoin.change24h = c.change;
+                if (c.open24h) selectedCoin.open24h = c.open24h;
+                if (c.high) selectedCoin.high = c.high;
+                if (c.low) selectedCoin.low = c.low;
+                persistSelectedCoinState();
+                if (activeTab === 'trade') {
+                  renderLivePriceUpdates();
+                }
               }
             }
           });
@@ -6338,6 +6448,18 @@ function syncDesktopHeaderState() {
     cashValEl.textContent = `${getCurrencySymbol()}${fmtMoney(walletState.cashBalance || 10000)}`;
   }
 
+  // Top Header TRADE NOW CTA Button: strictly visible only for guest / without sign-in (SS 2)
+  const tradeNowBtn = document.getElementById('header-trade-now-btn');
+  if (tradeNowBtn) {
+    if (isAuthedSession) {
+      tradeNowBtn.classList.add('hidden');
+      tradeNowBtn.style.display = 'none';
+    } else {
+      tradeNowBtn.classList.remove('hidden');
+      tradeNowBtn.style.display = 'inline-flex';
+    }
+  }
+
   // Update Auth nav item & Header user pill
   const dnavAuthText = document.getElementById('dnav-auth-text');
   const hubName = document.getElementById('hub-name');
@@ -6808,6 +6930,7 @@ function selectCoinAndTrade(coinId) {
     selectedCoin = found;
     try {
       localStorage.setItem('vtrade_selected_coin', found.id);
+      persistSelectedCoinState();
     } catch (e) {}
   }
   switchBottomTab('trade');

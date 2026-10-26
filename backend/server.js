@@ -639,13 +639,13 @@ async function fetchPrices() {
     const bSymbols = encodeURIComponent(JSON.stringify(Object.keys(BINANCE_SYMBOL_MAP)));
     let bResp = null;
     try {
-      bResp = await fetch(`https://data-api.binance.vision/api/v3/ticker/tradingDay?symbols=${bSymbols}`, { headers: { 'Accept': 'application/json' }, timeout: 3500 });
+      bResp = await fetch(`https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${bSymbols}`, { headers: { 'Accept': 'application/json' }, timeout: 3500 });
     } catch (e) { }
     if (!bResp || !bResp.ok) {
-      bResp = await fetch(`https://api.binance.com/api/v3/ticker/tradingDay?symbols=${bSymbols}`, { headers: { 'Accept': 'application/json' }, timeout: 3500 });
+      bResp = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${bSymbols}`, { headers: { 'Accept': 'application/json' }, timeout: 3500 });
     }
     if (!bResp || !bResp.ok) {
-      bResp = await fetch(`https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${bSymbols}`, { headers: { 'Accept': 'application/json' }, timeout: 3500 });
+      bResp = await fetch(`https://data-api.binance.vision/api/v3/ticker/tradingDay?symbols=${bSymbols}`, { headers: { 'Accept': 'application/json' }, timeout: 3500 });
     }
     if (bResp && bResp.ok) {
       const bList = await bResp.json();
