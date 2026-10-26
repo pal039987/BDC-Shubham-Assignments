@@ -1717,73 +1717,75 @@
               <div class="tcb-tabs-left">
                 <button class="tcb-tab active" id="tcb-tab-mark" onclick="switchChartPriceType('mark')">Mark Price</button>
                 <button class="tcb-tab" id="tcb-tab-last" onclick="switchChartPriceType('last')">Last Traded Price</button>
-                <div class="tcb-tf-strip" id="tcb-visible-tf-strip">
-                  <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
-                  <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
-                  <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
-                  <button class="ctf-btn" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
-                  <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
-                  <button class="ctf-btn active" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
-                  <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
-                  <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
-                  <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
-                  <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
-                  <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
-                </div>
-                <span id="tcb-hidden-tf-strip" style="display:none;"></span>
-                <div class="tcb-indicators-wrap" id="tcb-indicators-wrap">
-                  <button class="tcb-ind-btn" id="tcb-ind-menu-btn" onclick="toggleIndicatorsDropdown(event)" title="Technical Indicators & Countdown">
-                    <span class="tcb-ind-icon">ƒx</span>
-                    <span class="tcb-ind-label">Indicators</span>
-                    <span class="tcb-ind-count" id="tcb-ind-count">0</span>
-                  </button>
-                  <div class="tcb-ind-dropdown hidden" id="tcb-ind-dropdown" onclick="event.stopPropagation()">
-                    <div class="tcb-ind-dropdown-header">
-                      <span>Technical Indicators & Timer</span>
-                      <button class="tcb-ind-close" onclick="closeIndicatorsDropdown()">✕</button>
-                    </div>
-                    <div class="tcb-ind-timer-row">
-                      <div class="tcb-ind-timer-info">
-                        <span class="tcb-ind-timer-title">⏱️ Countdown to Bar Close</span>
-                        <span class="tcb-ind-timer-desc">Candle countdown on price scale</span>
+                <!-- Native TradingView Chart provides timeframe & indicator toolbar (Screenshot 2); hidden compatibility container preserves test hooks -->
+                <div id="tcb-hidden-tf-strip" style="display:none;">
+                  <div class="tcb-tf-strip" id="tcb-visible-tf-strip" style="display:none !important;">
+                    <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
+                    <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
+                    <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
+                    <button class="ctf-btn" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
+                    <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
+                    <button class="ctf-btn active" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
+                    <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
+                    <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
+                    <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
+                    <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
+                    <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
+                  </div>
+                  <div class="tcb-indicators-wrap" id="tcb-indicators-wrap" style="display:none !important;">
+                    <button class="tcb-ind-btn" id="tcb-ind-menu-btn" onclick="toggleIndicatorsDropdown(event)" title="Technical Indicators & Countdown">
+                      <span class="tcb-ind-icon">ƒx</span>
+                      <span class="tcb-ind-label">Indicators</span>
+                      <span class="tcb-ind-count" id="tcb-ind-count">0</span>
+                    </button>
+                    <div class="tcb-ind-dropdown hidden" id="tcb-ind-dropdown" onclick="event.stopPropagation()">
+                      <div class="tcb-ind-dropdown-header">
+                        <span>Technical Indicators & Timer</span>
+                        <button class="tcb-ind-close" onclick="closeIndicatorsDropdown()">✕</button>
                       </div>
-                      <label class="tcb-switch">
-                        <input type="checkbox" id="tcb-ind-countdown-input" checked onchange="toggleChartCountdown(this.checked)">
-                        <span class="tcb-slider"></span>
-                      </label>
-                    </div>
-                    <div class="tcb-ind-divider"></div>
-                    <div class="tcb-ind-list">
-                      <button class="tcb-ind-item" id="tcb-ind-volume" onclick="toggleChartIndicator('Volume@tv-basicstudies')">
-                        <span class="ind-icon">📊</span>
-                        <span class="ind-name">Volume (VOL)</span>
-                        <span class="ind-status">OFF</span>
-                      </button>
-                      <button class="tcb-ind-item" id="tcb-ind-ma" onclick="toggleChartIndicator('MASimple@tv-basicstudies')">
-                        <span class="ind-icon">📈</span>
-                        <span class="ind-name">Moving Average (MA)</span>
-                        <span class="ind-status">OFF</span>
-                      </button>
-                      <button class="tcb-ind-item" id="tcb-ind-ema" onclick="toggleChartIndicator('MAExp@tv-basicstudies')">
-                        <span class="ind-icon">⚡</span>
-                        <span class="ind-name">Exponential MA (EMA)</span>
-                        <span class="ind-status">OFF</span>
-                      </button>
-                      <button class="tcb-ind-item" id="tcb-ind-rsi" onclick="toggleChartIndicator('RSI@tv-basicstudies')">
-                        <span class="ind-icon">📉</span>
-                        <span class="ind-name">Relative Strength (RSI)</span>
-                        <span class="ind-status">OFF</span>
-                      </button>
-                      <button class="tcb-ind-item" id="tcb-ind-macd" onclick="toggleChartIndicator('MACD@tv-basicstudies')">
-                        <span class="ind-icon">🌊</span>
-                        <span class="ind-name">MACD</span>
-                        <span class="ind-status">OFF</span>
-                      </button>
-                      <button class="tcb-ind-item" id="tcb-ind-bb" onclick="toggleChartIndicator('BB@tv-basicstudies')">
-                        <span class="ind-icon">🎯</span>
-                        <span class="ind-name">Bollinger Bands (BB)</span>
-                        <span class="ind-status">OFF</span>
-                      </button>
+                      <div class="tcb-ind-timer-row">
+                        <div class="tcb-ind-timer-info">
+                          <span class="tcb-ind-timer-title">⏱️ Countdown to Bar Close</span>
+                          <span class="tcb-ind-timer-desc">Candle countdown on price scale</span>
+                        </div>
+                        <label class="tcb-switch">
+                          <input type="checkbox" id="tcb-ind-countdown-input" checked onchange="toggleChartCountdown(this.checked)">
+                          <span class="tcb-slider"></span>
+                        </label>
+                      </div>
+                      <div class="tcb-ind-divider"></div>
+                      <div class="tcb-ind-list">
+                        <button class="tcb-ind-item" id="tcb-ind-volume" onclick="toggleChartIndicator('Volume@tv-basicstudies')">
+                          <span class="ind-icon">📊</span>
+                          <span class="ind-name">Volume (VOL)</span>
+                          <span class="ind-status">OFF</span>
+                        </button>
+                        <button class="tcb-ind-item" id="tcb-ind-ma" onclick="toggleChartIndicator('MASimple@tv-basicstudies')">
+                          <span class="ind-icon">📈</span>
+                          <span class="ind-name">Moving Average (MA)</span>
+                          <span class="ind-status">OFF</span>
+                        </button>
+                        <button class="tcb-ind-item" id="tcb-ind-ema" onclick="toggleChartIndicator('MAExp@tv-basicstudies')">
+                          <span class="ind-icon">⚡</span>
+                          <span class="ind-name">Exponential MA (EMA)</span>
+                          <span class="ind-status">OFF</span>
+                        </button>
+                        <button class="tcb-ind-item" id="tcb-ind-rsi" onclick="toggleChartIndicator('RSI@tv-basicstudies')">
+                          <span class="ind-icon">📉</span>
+                          <span class="ind-name">Relative Strength (RSI)</span>
+                          <span class="ind-status">OFF</span>
+                        </button>
+                        <button class="tcb-ind-item" id="tcb-ind-macd" onclick="toggleChartIndicator('MACD@tv-basicstudies')">
+                          <span class="ind-icon">🌊</span>
+                          <span class="ind-name">MACD</span>
+                          <span class="ind-status">OFF</span>
+                        </button>
+                        <button class="tcb-ind-item" id="tcb-ind-bb" onclick="toggleChartIndicator('BB@tv-basicstudies')">
+                          <span class="ind-icon">🎯</span>
+                          <span class="ind-name">Bollinger Bands (BB)</span>
+                          <span class="ind-status">OFF</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1799,7 +1801,7 @@
             </div>
 
             <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
-              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=60&theme=dark&style=1&timezone=Etc%2FUTC&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=%5B%22countdown%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%2C%22chart_template_storage%22%2C%22study_templates%22%2C%22side_toolbar_in_fullscreen_mode%22%5D&overrides=%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%7D"
+              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=60&theme=dark&style=1&timezone=Etc%2FUTC&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=%5B%22countdown%22%2C%22header_widget%22%2C%22header_resolutions%22%2C%22header_indicators%22%2C%22header_symbol_search%22%2C%22header_chart_type%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%2C%22chart_template_storage%22%2C%22study_templates%22%2C%22side_toolbar_in_fullscreen_mode%22%5D&overrides=%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%7D"
               allowtransparency="true" frameborder="0">
             </iframe>
             <script>
@@ -1938,7 +1940,7 @@
                     "mainSeriesProperties.haStyle.borderUpColor": settings.upColor,
                     "mainSeriesProperties.haStyle.borderDownColor": settings.downColor
                   };
-                  var features = ['use_localstorage_for_settings', 'save_chart_properties_to_local_storage', 'chart_template_storage', 'study_templates', 'side_toolbar_in_fullscreen_mode'];
+                  var features = ['header_widget', 'header_resolutions', 'header_indicators', 'header_symbol_search', 'header_chart_type', 'header_settings', 'header_fullscreen_button', 'use_localstorage_for_settings', 'save_chart_properties_to_local_storage', 'chart_template_storage', 'study_templates', 'side_toolbar_in_fullscreen_mode'];
                   if (showCountdown) features.push('countdown');
 
                   var studiesPart = '';

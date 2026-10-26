@@ -3658,6 +3658,13 @@ function renderTradingViewChart() {
   const defaultCountdownFeatures = chartCountdownEnabled ? ['countdown'] : [];
   const enabledFeatures = [
     ...defaultCountdownFeatures,
+    'header_widget',
+    'header_resolutions',
+    'header_indicators',
+    'header_symbol_search',
+    'header_chart_type',
+    'header_settings',
+    'header_fullscreen_button',
     'use_localstorage_for_settings',
     'save_chart_properties_to_local_storage',
     'chart_template_storage',
@@ -3705,6 +3712,13 @@ function openFullscreenChart() {
   const defaultCountdownFeatures = ['countdown'];
   const enabledFeatures = [
     ...defaultCountdownFeatures,
+    'header_widget',
+    'header_resolutions',
+    'header_indicators',
+    'header_symbol_search',
+    'header_chart_type',
+    'header_settings',
+    'header_fullscreen_button',
     'use_localstorage_for_settings',
     'save_chart_properties_to_local_storage',
     'chart_template_storage',
