@@ -49,9 +49,18 @@ assert.ok(js.includes("localStorage.setItem('vtrade_chart_interval'"), 'Chart in
 assert.ok(js.includes("localStorage.setItem('vtrade_selected_coin'"), 'Selected coin must persist to localStorage');
 assert.ok(js.includes("localStorage.setItem('vtrade_chart_price_type'"), 'Mark vs Last price type must persist to localStorage');
 assert.ok(js.includes("localStorage.setItem('vtrade_1click_trade'"), '1-Click trade state must persist to localStorage');
+assert.ok(js.includes("localStorage.setItem('vtrade_active_tab'"), 'Active tab must persist to localStorage');
 assert.ok(js.includes('function restoreSavedChartState()'), 'restoreSavedChartState function must be defined in app.js');
 assert.ok(js.includes('restoreSavedChartState()'), 'restoreSavedChartState must be called during init');
-console.log('  ✓ Chart settings, timeframe, coin, and states strictly persist across page refresh');
+assert.ok(js.includes('use_localstorage_for_settings'), 'TradingView features must include use_localstorage_for_settings');
+assert.ok(js.includes('save_chart_properties_to_local_storage'), 'TradingView features must include save_chart_properties_to_local_storage');
+assert.ok(!js.match(/renderTradingViewChart[^{]*\{[^}]*studies=%5B%5D/), 'renderTradingViewChart must not wipe out user indicators with studies=[]');
+assert.ok(html.includes('id="trade-chart-settings-btn"'), 'Trade Desk header must include direct chart settings button');
+assert.ok(html.includes('use_localstorage_for_settings'), 'index.html chart iframe must enable use_localstorage_for_settings');
+assert.ok(!html.includes('studies=%5B%5D'), 'index.html chart iframe must not hardcode studies=[]');
+assert.ok(html.includes("localStorage.getItem('vtrade_tv_chart_settings')"), 'index.html must include early synchronous chart settings restoration script');
+console.log('  ✓ Chart settings, timeframe, coin, indicators, active tab, and states strictly persist across page refresh');
 
 console.log('\n=== ALL PROBLEMS & CHART PERSISTENCE TESTS PASSED SUCCESSFULLY! ===');
+
 

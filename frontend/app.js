@@ -2211,6 +2211,11 @@ function switchBottomTab(tab) {
     return;
   }
   activeTab = tab || 'home';
+  try {
+    if (activeTab && activeTab !== 'account' && activeTab !== 'auth') {
+      localStorage.setItem('vtrade_active_tab', activeTab);
+    }
+  } catch (e) {}
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle('trade-screen-active', activeTab === 'trade');
   }
@@ -3615,7 +3620,15 @@ function renderTradingViewChart() {
 
   loadChartSettings();
   const overrides = getTradingViewOverrides();
-  const enabledFeatures = ['countdown'];
+  const defaultCountdownFeatures = ['countdown'];
+  const enabledFeatures = [
+    ...defaultCountdownFeatures,
+    'use_localstorage_for_settings',
+    'save_chart_properties_to_local_storage',
+    'chart_template_storage',
+    'study_templates',
+    'side_toolbar_in_fullscreen_mode'
+  ];
 
   const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
   const tvIntervalMap = {
@@ -3624,9 +3637,11 @@ function renderTradingViewChart() {
   };
   const intervalCode = tvIntervalMap[chartInterval] || '60';
 
-  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
 
-  if (forceReload || !iframe.src || !iframe.src.includes(`symbol=${encodeURIComponent(tvSymbol)}`) || !iframe.src.includes(`interval=${intervalCode}`) || !iframe.src.includes('enabled_features') || !iframe.src.includes('showCountdown')) {
+  const currentApplied = iframe.getAttribute('data-applied-url');
+  if (forceReload || !iframe.src || currentApplied !== newSrc || iframe.src !== newSrc) {
+    iframe.setAttribute('data-applied-url', newSrc);
     iframe.src = newSrc;
   }
 }
@@ -3646,7 +3661,15 @@ function openFullscreenChart() {
 
   loadChartSettings();
   const overrides = getTradingViewOverrides();
-  const enabledFeatures = ['countdown'];
+  const defaultCountdownFeatures = ['countdown'];
+  const enabledFeatures = [
+    ...defaultCountdownFeatures,
+    'use_localstorage_for_settings',
+    'save_chart_properties_to_local_storage',
+    'chart_template_storage',
+    'study_templates',
+    'side_toolbar_in_fullscreen_mode'
+  ];
 
   const tvSymbol = selectedCoin.tvSymbol || ('BINANCE:' + (selectedCoin.binanceSym || 'BTCUSDT'));
   const tvIntervalMap = {
@@ -3687,8 +3710,10 @@ function openFullscreenChart() {
   switchFsTab('price');
   renderFsTabContent();
 
-  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&studies=%5B%5D&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=0&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
-  if (forceReload || !iframe.src || iframe.src !== url) {
+  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  const currentApplied = iframe.getAttribute('data-applied-url');
+  if (forceReload || !iframe.src || currentApplied !== url || iframe.src !== url) {
+    iframe.setAttribute('data-applied-url', url);
     iframe.src = url;
   }
   modal.classList.remove('hidden');
@@ -3927,13 +3952,17 @@ function saveAndApplyChartSettings() {
 }
 
 function selectCoinAndTrade(coinId) {
-  const coin = COINS.find(c => c.id === coinId);
+  const coin = COINS.find(c => c.id === coinId || c.symbol.toLowerCase() === coinId.toLowerCase());
   if (coin) {
     selectedCoin = coin;
+    try {
+      localStorage.setItem('vtrade_selected_coin', coin.id);
+    } catch (e) {}
     switchBottomTab('trade');
     renderTradeScreen();
-    renderTradingViewChart();
+    renderTradingViewChart(true);
     fetchRealBinanceCandles();
+    if (typeof updateDesktopOrderCalculations === 'function') updateDesktopOrderCalculations();
   }
 }
 
@@ -4126,7 +4155,7 @@ function setChartInterval(interval) {
   });
   showToast(`Timeframe: ${interval}`, 'info');
   if (typeof updateCandleCountdown === 'function') updateCandleCountdown();
-  renderTradingViewChart();
+  renderTradingViewChart(true);
   fetchRealBinanceCandles();
   if (selectedCoin && selectedCoin.binanceSym && selectedCoin.binanceSym !== 'PAXGUSDT') {
     connectCoinTickerWs(selectedCoin.binanceSym);
@@ -5538,6 +5567,10 @@ function restoreSavedChartState() {
       if (input) input.checked = (saved1Click === 'true');
     }
   } catch (e) {}
+
+  if (typeof syncChartSettingsUI === 'function') {
+    syncChartSettingsUI();
+  }
 }
 
 // ─── 20. INITIALIZATION ON BOOT ──────────────────────────────────────────
@@ -5610,8 +5643,15 @@ function initVTradeApp() {
   // Render TradingView Chart for active coin
   renderTradingViewChart();
 
-  // Render initial screen
-  switchBottomTab('home');
+  // Restore saved active tab or default to 'home'
+  let initialTab = 'home';
+  try {
+    const savedTab = localStorage.getItem('vtrade_active_tab');
+    if (savedTab && ['home', 'markets', 'trade', 'portfolio', 'vtrade'].includes(savedTab)) {
+      initialTab = savedTab;
+    }
+  } catch (e) {}
+  switchBottomTab(initialTab);
 
   // Initialize Aceternity, Skiper-UI & GSAP Animation Suite
   initHeroTextAnimation();
