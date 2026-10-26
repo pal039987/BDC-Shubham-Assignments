@@ -1702,7 +1702,7 @@
             <button class="tib-icon-btn" id="trade-chart-settings-btn" onclick="openFsSettings()" title="Custom View & Chart Properties">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             </button>
-            <button class="tib-icon-btn ctf-fs" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Fullscreen Chart" style="display:none !important;">
+            <button class="tib-icon-btn ctf-fs" id="ctf-fullscreen-btn" onclick="openFullscreenChart()" title="Fullscreen Chart">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
             </button>
           </div>
@@ -1791,20 +1791,27 @@
                   </div>
                 </div>
               </div>
-              <div class="tcb-1click-box">
-                <span class="tcb-1click-text">1-Click Trade</span>
-                <span class="tcb-1click-info" title="Instant 1-Click trade execution">ⓘ</span>
-                <label class="tcb-switch">
-                  <input type="checkbox" id="tcb-1click-input" onchange="toggle1ClickTrade(this.checked)">
-                  <span class="tcb-slider"></span>
-                </label>
+              <div class="tcb-actions-right">
+                <div class="tcb-1click-box">
+                  <span class="tcb-1click-text">1-Click Trade</span>
+                  <span class="tcb-1click-info" title="Instant 1-Click trade execution">ⓘ</span>
+                  <label class="tcb-switch">
+                    <input type="checkbox" id="tcb-1click-input" onchange="toggle1ClickTrade(this.checked)">
+                    <span class="tcb-slider"></span>
+                  </label>
+                </div>
+                <button class="tcb-fullscreen-btn" id="tcb-fullscreen-btn" onclick="openFullscreenChart()" title="Fullscreen Chart" aria-label="Fullscreen Chart">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                  </svg>
+                </button>
               </div>
             </div>
 
             <!-- TradingView official chart iframe (supports https://s.tradingview.com/widgetembed/ legacy fallback) -->
             <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
               src="https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#%7B%22autosize%22%3Atrue%2C%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22interval%22%3A%2260%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22locale%22%3A%22en%22%2C%22allow_symbol_change%22%3Atrue%2C%22calendar%22%3Afalse%2C%22hide_side_toolbar%22%3Afalse%2C%22hide_top_toolbar%22%3Afalse%2C%22withdateranges%22%3Afalse%2C%22save_image%22%3Atrue%2C%22enable_publishing%22%3Afalse%2C%22hideideas%22%3Atrue%2C%22enabled_features%22%3A%5B%22countdown%22%2C%22header_widget%22%2C%22header_symbol_search%22%2C%22header_resolutions%22%2C%22header_chart_type%22%2C%22header_indicators%22%2C%22header_compare%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22header_screenshot%22%2C%22header_saveload%22%2C%22header_undo_redo%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%5D%2C%22overrides%22%3A%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLinesColor%22%3A%22%232196F3%22%7D%7D"
-              allowtransparency="true" frameborder="0">
+              allowtransparency="true" frameborder="0" allowfullscreen="true" allow="fullscreen; clipboard-write; pointer-lock">
             </iframe>
             <script>
               (function() {
@@ -2770,7 +2777,7 @@
     <!-- Fullscreen Content Panels -->
     <div class="tv-fs-body">
       <div class="tv-fs-panel active" id="tv-fs-panel-chart">
-        <iframe id="tv-fullscreen-iframe" class="tv-fullscreen-iframe" allow="clipboard-write; pointer-lock" allowtransparency="true" frameborder="0"></iframe>
+        <iframe id="tv-fullscreen-iframe" class="tv-fullscreen-iframe" allow="clipboard-write; pointer-lock" allowfullscreen="true" allowtransparency="true" frameborder="0"></iframe>
       </div>
       <div class="tv-fs-panel" id="tv-fs-panel-info">
         <div class="fs-info-content" id="fs-info-content"></div>

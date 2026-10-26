@@ -2014,6 +2014,8 @@ function persistSelectedCoinState() {
       price: selectedCoin.price,
       change: selectedCoin.change,
       change24h: selectedCoin.change24h,
+      chartChange: selectedCoin.chartChange,
+      candleOpen: selectedCoin.candleOpen,
       open24h: selectedCoin.open24h,
       high: selectedCoin.high,
       low: selectedCoin.low,
@@ -2041,6 +2043,8 @@ let selectedCoin = (function() {
         if (typeof cached.price === 'number' && cached.price > 0) coin.price = cached.price;
         if (typeof cached.change === 'number') coin.change = cached.change;
         if (typeof cached.change24h === 'number') coin.change24h = cached.change24h;
+        if (typeof cached.chartChange === 'number') coin.chartChange = cached.chartChange;
+        if (typeof cached.candleOpen === 'number' && cached.candleOpen > 0) coin.candleOpen = cached.candleOpen;
         if (typeof cached.open24h === 'number' && cached.open24h > 0) coin.open24h = cached.open24h;
         if (typeof cached.high === 'number' && cached.high > 0) coin.high = cached.high;
         if (typeof cached.low === 'number' && cached.low > 0) coin.low = cached.low;
@@ -3976,9 +3980,11 @@ function openFullscreenChart() {
   }
   if (pairEl) pairEl.textContent = `${selectedCoin.symbol}/USDT`;
   if (chgEl) {
-    const activeChg = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
-      ? selectedCoin.change24h
-      : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0);
+    const activeChg = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange))
+      ? selectedCoin.chartChange
+      : ((selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+          ? selectedCoin.change24h
+          : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0));
     const isUp = activeChg >= 0;
     chgEl.className = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
     chgEl.textContent = `${isUp ? '+' : ''}${activeChg.toFixed(2)}%`;
@@ -4385,9 +4391,11 @@ function renderTradeScreen() {
     curIcon.src = selectedCoin.icon;
     curIcon.onerror = function() { handleCoinIconError(this, selectedCoin.symbol, selectedCoin.category); };
   }
-  const currentChange = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
-    ? selectedCoin.change24h
-    : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0);
+  const currentChange = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange))
+    ? selectedCoin.chartChange
+    : ((selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+        ? selectedCoin.change24h
+        : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0));
   const isUp = currentChange >= 0;
   if (livePriceEl) livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
   if (liveChangeEl) {
@@ -4450,6 +4458,7 @@ function renderTradeScreen() {
   renderTradeDeskOrderBookAndTrades();
   fetchFastCoinTicker(selectedCoin.binanceSym);
   connectCoinTickerWs(selectedCoin.binanceSym);
+  fetchRealBinanceCandles();
   updateDesktopOrderCalculations();
 }
 
@@ -4493,6 +4502,9 @@ async function fetchFastCoinTicker(binanceSym) {
             if (item.quoteVolume) {
               const qv = parseFloat(item.quoteVolume);
               selectedCoin.vol = qv >= 1e9 ? (qv / 1e9).toFixed(2) + 'B' : (qv / 1e6).toFixed(1) + 'M';
+            }
+            if (selectedCoin.candleOpen && selectedCoin.candleOpen > 0) {
+              selectedCoin.chartChange = parseFloat((((p - selectedCoin.candleOpen) / selectedCoin.candleOpen) * 100).toFixed(2));
             }
             persistSelectedCoinState();
             renderLivePriceUpdates();
@@ -4661,10 +4673,11 @@ async function fetchRealBinanceCandles() {
           // Synchronize chart candle gain/loss
           const curCandle = chartCandlesData[chartCandlesData.length - 1];
           if (curCandle && curCandle.open > 0) {
+            selectedCoin.candleOpen = curCandle.open;
             const livePrice = (selectedCoin && selectedCoin.price) || curCandle.close;
             const diff = livePrice - curCandle.open;
             selectedCoin.chartChange = parseFloat(((diff / curCandle.open) * 100).toFixed(2));
-            // Keep selectedCoin.change strictly as true 24h change to prevent flicker
+            persistSelectedCoinState();
             renderLivePriceUpdates();
           }
           break;
@@ -4698,6 +4711,12 @@ function generateSimulatedCandles() {
   }
   // Ensure last close matches current selected coin price
   chartCandlesData[chartCandlesData.length - 1].close = selectedCoin.price;
+  const lastC = chartCandlesData[chartCandlesData.length - 1];
+  if (lastC && lastC.open > 0) {
+    selectedCoin.candleOpen = lastC.open;
+    selectedCoin.chartChange = parseFloat((((selectedCoin.price - lastC.open) / lastC.open) * 100).toFixed(2));
+    persistSelectedCoinState();
+  }
 }
 
 function renderCandlestickSvg() {
@@ -5517,6 +5536,7 @@ function connectCoinTickerWs(binanceSym) {
               newPrice = parseFloat(d.k.c);
               const openPrice = parseFloat(d.k.o);
               if (openPrice > 0 && !isNaN(openPrice)) {
+                selectedCoin.candleOpen = openPrice;
                 selectedCoin.chartChange = parseFloat((((newPrice - openPrice) / openPrice) * 100).toFixed(2));
               }
               // Do NOT overwrite 24h High / Low with single-candle d.k.h / d.k.l!
@@ -5538,6 +5558,15 @@ function connectCoinTickerWs(binanceSym) {
 
             if (newPrice > 0 && !isNaN(newPrice)) {
               selectedCoin.price = newPrice;
+              if (selectedCoin.candleOpen && selectedCoin.candleOpen > 0) {
+                selectedCoin.chartChange = parseFloat((((newPrice - selectedCoin.candleOpen) / selectedCoin.candleOpen) * 100).toFixed(2));
+              } else if (chartCandlesData && chartCandlesData.length > 0) {
+                const curC = chartCandlesData[chartCandlesData.length - 1];
+                if (curC && curC.open > 0) {
+                  selectedCoin.candleOpen = curC.open;
+                  selectedCoin.chartChange = parseFloat((((newPrice - curC.open) / curC.open) * 100).toFixed(2));
+                }
+              }
               if (selectedCoin.open24h && selectedCoin.open24h > 0) {
                 const live24hChg = parseFloat((((newPrice - selectedCoin.open24h) / selectedCoin.open24h) * 100).toFixed(2));
                 selectedCoin.change24h = live24hChg;
@@ -5775,9 +5804,11 @@ function renderLivePriceUpdates() {
     const tabPrice = document.getElementById('trade-coin-tab-price');
     const highVal = document.getElementById('trade-high-val');
     const lowVal = document.getElementById('trade-low-val');
-    const currentChange = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
-      ? selectedCoin.change24h
-      : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0);
+    const currentChange = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange))
+      ? selectedCoin.chartChange
+      : ((selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+          ? selectedCoin.change24h
+          : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0));
     const isUp = currentChange >= 0;
 
     if (livePriceEl) {
@@ -5847,9 +5878,11 @@ function renderLivePriceUpdates() {
       if (fsPrice.textContent !== formattedFsPrice) fsPrice.textContent = formattedFsPrice;
     }
     if (fsChange) {
-      const fsChgVal = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
-        ? selectedCoin.change24h
-        : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0);
+      const fsChgVal = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange))
+        ? selectedCoin.chartChange
+        : ((selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+            ? selectedCoin.change24h
+            : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0));
       const isUp = fsChgVal >= 0;
       const targetClass = `tv-fs-change-pill ${isUp ? 'up' : 'down'}`;
       if (fsChange.className !== targetClass) fsChange.className = targetClass;
