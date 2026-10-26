@@ -2006,8 +2006,23 @@ function initNetworkMonitor() {
 
 // ─── 3. APP RUNTIME STATE ────────────────────────────────────────────────
 let activeTab = 'home';
-let selectedCoin = COINS[0]; // Default BTC
-let chartInterval = '1h'; // Default 1h
+let selectedCoin = (function() {
+  try {
+    const saved = localStorage.getItem('vtrade_selected_coin');
+    if (saved && typeof COINS !== 'undefined') {
+      const c = COINS.find(item => item.id === saved || item.symbol.toLowerCase() === saved.toLowerCase());
+      if (c) return c;
+    }
+  } catch (e) {}
+  return (typeof COINS !== 'undefined' && COINS[0]) ? COINS[0] : { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', price: 80000 };
+})();
+let chartInterval = (function() {
+  try {
+    const saved = localStorage.getItem('vtrade_chart_interval');
+    if (saved) return saved;
+  } catch (e) {}
+  return '1h';
+})();
 let chartCandlesData = [];
 let portfolioTimeframe = '1D';
 let homeChartType = 'line'; // 'line' or 'candles'
@@ -3559,6 +3574,8 @@ function saveChartSettings() {
   } catch (e) {}
 }
 
+loadChartSettings();
+
 function getTradingViewOverrides() {
   loadChartSettings();
   const up = currentChartSettings.upColor || '#00c087';
@@ -3830,6 +3847,7 @@ function applyColorPreset(up, down, btn) {
 
   document.querySelectorAll('.cs-preset-pill').forEach(p => p.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  saveChartSettings();
 }
 
 function onCustomColorChange() {
@@ -3846,12 +3864,14 @@ function onCustomColorChange() {
     if (downHex) downHex.textContent = downInput.value;
   }
   document.querySelectorAll('.cs-preset-pill').forEach(p => p.classList.remove('active'));
+  saveChartSettings();
 }
 
 function applyBgPreset(bg, btn) {
   currentChartSettings.bgColor = bg;
   document.querySelectorAll('.cs-bg-pill').forEach(p => p.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  saveChartSettings();
 }
 
 function setChartGrid(grid) {
@@ -3860,6 +3880,7 @@ function setChartGrid(grid) {
     const btn = document.getElementById(`cs-grid-${g}`);
     if (btn) btn.classList.toggle('active', g === grid);
   });
+  saveChartSettings();
 }
 
 function setChartStyle(style) {
@@ -3868,10 +3889,23 @@ function setChartStyle(style) {
     const btn = document.getElementById(`cs-style-${s}`);
     if (btn) btn.classList.toggle('active', s === style);
   });
+  const styleSelect = document.getElementById('cs-style-select');
+  if (styleSelect) styleSelect.value = style;
+  saveChartSettings();
 }
 
 function onTimezoneChange(tz) {
   currentChartSettings.timezone = tz;
+  saveChartSettings();
+}
+
+function updateChartSettings() {
+  const styleSelect = document.getElementById('cs-style-select');
+  if (styleSelect) {
+    setChartStyle(styleSelect.value);
+  }
+  saveChartSettings();
+  renderTradingViewChart(true);
 }
 
 function resetChartSettingsToDefault() {
@@ -4082,6 +4116,9 @@ function startCandleCountdownEngine() {
 // Timeframes: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 1d, 1w, 1M
 function setChartInterval(interval) {
   chartInterval = interval;
+  try {
+    localStorage.setItem('vtrade_chart_interval', interval);
+  } catch (e) {}
   const intervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '1d', '1w', '1M'];
   intervals.forEach(i => {
     const btn = document.getElementById(`ctf-${i}`);
@@ -4873,8 +4910,12 @@ function selectCoinFromPicker(coinId) {
   const coin = COINS.find(c => c.id === coinId);
   if (coin) {
     selectedCoin = coin;
+    try {
+      localStorage.setItem('vtrade_selected_coin', coin.id);
+    } catch (e) {}
     closeCoinPickerModal();
     renderTradeScreen();
+    renderTradingViewChart();
     fetchRealBinanceCandles();
     const fsModal = document.getElementById('tv-fullscreen-modal');
     if (fsModal && !fsModal.classList.contains('hidden')) {
@@ -5458,6 +5499,47 @@ function resetDemoAccountFull() {
   }
 }
 
+function restoreSavedChartState() {
+  loadChartSettings();
+
+  try {
+    const savedCoinId = localStorage.getItem('vtrade_selected_coin');
+    if (savedCoinId && typeof COINS !== 'undefined') {
+      const match = COINS.find(c => c.id === savedCoinId || c.symbol.toLowerCase() === savedCoinId.toLowerCase());
+      if (match) selectedCoin = match;
+    }
+  } catch (e) {}
+
+  try {
+    const savedInterval = localStorage.getItem('vtrade_chart_interval');
+    if (savedInterval) {
+      chartInterval = savedInterval;
+    }
+  } catch (e) {}
+
+  const intervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '1d', '1w', '1M'];
+  intervals.forEach(i => {
+    const btn = document.getElementById(`ctf-${i}`);
+    if (btn) btn.classList.toggle('active', i === chartInterval);
+  });
+
+  try {
+    const savedPriceType = localStorage.getItem('vtrade_chart_price_type') || 'mark';
+    const markBtn = document.getElementById('tcb-tab-mark');
+    const lastBtn = document.getElementById('tcb-tab-last');
+    if (markBtn) markBtn.classList.toggle('active', savedPriceType === 'mark');
+    if (lastBtn) lastBtn.classList.toggle('active', savedPriceType === 'last');
+  } catch (e) {}
+
+  try {
+    const saved1Click = localStorage.getItem('vtrade_1click_trade');
+    if (saved1Click !== null) {
+      const input = document.getElementById('tcb-1click-input');
+      if (input) input.checked = (saved1Click === 'true');
+    }
+  } catch (e) {}
+}
+
 // ─── 20. INITIALIZATION ON BOOT ──────────────────────────────────────────
 let liveTickerInterval = null;
 
@@ -5521,6 +5603,9 @@ function initVTradeApp() {
       }).catch(() => {});
     }
   }
+
+  // Restore all saved chart settings, timeframe & coin before rendering
+  restoreSavedChartState();
 
   // Render TradingView Chart for active coin
   renderTradingViewChart();
@@ -6285,8 +6370,14 @@ function selectCoinAndTrade(coinId) {
   const found = COINS.find(c => c.id === coinId || c.symbol.toLowerCase() === coinId.toLowerCase());
   if (found) {
     selectedCoin = found;
+    try {
+      localStorage.setItem('vtrade_selected_coin', found.id);
+    } catch (e) {}
   }
   switchBottomTab('trade');
+  renderTradeScreen();
+  renderTradingViewChart();
+  fetchRealBinanceCandles();
   updateDesktopOrderCalculations();
 }
 
@@ -6343,6 +6434,9 @@ function toggleDesktopLevDropdown() {
 }
 
 function switchChartPriceType(type) {
+  try {
+    localStorage.setItem('vtrade_chart_price_type', type);
+  } catch (e) {}
   const markBtn = document.getElementById('tcb-tab-mark');
   const lastBtn = document.getElementById('tcb-tab-last');
   if (markBtn) markBtn.classList.toggle('active', type === 'mark');
@@ -6351,7 +6445,14 @@ function switchChartPriceType(type) {
 }
 
 function toggle1ClickTrade(checked) {
+  try {
+    localStorage.setItem('vtrade_1click_trade', checked ? 'true' : 'false');
+  } catch (e) {}
   if (typeof showToast === 'function') showToast(checked ? '1-Click Trade enabled' : '1-Click Trade disabled');
+}
+
+function openMarketSelectorModal() {
+  switchBottomTab('markets');
 }
 
 function handleDesktopSizeInput(val) {
@@ -7194,6 +7295,9 @@ if (typeof window !== 'undefined') {
   window.renderPnLDashboard = renderPnLDashboard;
   window.updateCandleCountdown = updateCandleCountdown;
   window.startCandleCountdownEngine = startCandleCountdownEngine;
+  window.restoreSavedChartState = restoreSavedChartState;
+  window.updateChartSettings = updateChartSettings;
+  window.openMarketSelectorModal = openMarketSelectorModal;
 
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', () => {

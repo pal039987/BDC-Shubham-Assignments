@@ -2555,21 +2555,127 @@
 
   <!-- ══════════════════════ 12. CHART SETTINGS MODAL ══════════════════════ -->
   <div class="cs-modal-backdrop hidden" id="tv-chart-settings-modal" onclick="closeFsSettings()">
-    <div class="cs-modal-card" onclick="event.stopPropagation()">
+    <div class="cs-modal-sheet" onclick="event.stopPropagation()">
       <div class="cs-modal-header">
-        <span class="cs-title">Chart Properties</span>
-        <button class="cs-close" onclick="closeFsSettings()">✕</button>
+        <div class="cs-header-left">
+          <span class="cs-header-icon">⚙</span>
+          <span class="cs-header-title">Chart Properties & Colors</span>
+        </div>
+        <button class="cs-close-btn" onclick="closeFsSettings()">✕</button>
       </div>
-      <div class="cs-body">
-        <div class="cs-row">
-          <label>Chart Style</label>
-          <select id="cs-style-select" onchange="updateChartSettings()">
+      <div class="cs-modal-body">
+        <!-- Preset Palettes -->
+        <div class="cs-group">
+          <span class="cs-label">Color Presets</span>
+          <div class="cs-preset-grid">
+            <button class="cs-preset-pill active" onclick="applyColorPreset('#00c087', '#f04f5e', this)">
+              <span class="cs-dot" style="background:#00c087;"></span>
+              <span class="cs-dot" style="background:#f04f5e;"></span>
+              Classic
+            </button>
+            <button class="cs-preset-pill" onclick="applyColorPreset('#00d2ff', '#ff3366', this)">
+              <span class="cs-dot" style="background:#00d2ff;"></span>
+              <span class="cs-dot" style="background:#ff3366;"></span>
+              Neon
+            </button>
+            <button class="cs-preset-pill" onclick="applyColorPreset('#f5a623', '#a855f7', this)">
+              <span class="cs-dot" style="background:#f5a623;"></span>
+              <span class="cs-dot" style="background:#a855f7;"></span>
+              Luxury
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Candle Colors -->
+        <div class="cs-group">
+          <span class="cs-label">Candle Colors</span>
+          <div class="cs-color-row">
+            <div class="cs-color-pick-box">
+              <span class="cs-sub-label">Up / Bullish</span>
+              <div class="cs-picker-wrapper">
+                <input type="color" id="cs-input-up" value="#00c087" onchange="onCustomColorChange()" />
+                <span class="cs-color-hex" id="cs-hex-up">#00c087</span>
+              </div>
+            </div>
+            <div class="cs-color-pick-box">
+              <span class="cs-sub-label">Down / Bearish</span>
+              <div class="cs-picker-wrapper">
+                <input type="color" id="cs-input-down" value="#f04f5e" onchange="onCustomColorChange()" />
+                <span class="cs-color-hex" id="cs-hex-down">#f04f5e</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Background Presets -->
+        <div class="cs-group">
+          <span class="cs-label">Chart Background</span>
+          <div class="cs-bg-grid">
+            <button class="cs-bg-pill active" id="cs-bg-obsidian" onclick="applyBgPreset('#080b11', this)">
+              <span class="cs-bg-swatch" style="background:#080b11;"></span>
+              Obsidian
+            </button>
+            <button class="cs-bg-pill" id="cs-bg-pure" onclick="applyBgPreset('#000000', this)">
+              <span class="cs-bg-swatch" style="background:#000000;"></span>
+              Pure Black
+            </button>
+            <button class="cs-bg-pill" id="cs-bg-navy" onclick="applyBgPreset('#0c101a', this)">
+              <span class="cs-bg-swatch" style="background:#0c101a;"></span>
+              Deep Navy
+            </button>
+            <button class="cs-bg-pill" id="cs-bg-slate" onclick="applyBgPreset('#151c2c', this)">
+              <span class="cs-bg-swatch" style="background:#151c2c;"></span>
+              Slate Dark
+            </button>
+          </div>
+        </div>
+
+        <!-- Chart Grid Lines -->
+        <div class="cs-group">
+          <span class="cs-label">Grid Lines</span>
+          <div class="cs-segment-row">
+            <button class="cs-seg-btn active" id="cs-grid-hidden" onclick="setChartGrid('hidden')">Hidden</button>
+            <button class="cs-seg-btn" id="cs-grid-subtle" onclick="setChartGrid('subtle')">Subtle</button>
+            <button class="cs-seg-btn" id="cs-grid-visible" onclick="setChartGrid('visible')">Visible</button>
+          </div>
+        </div>
+
+        <!-- Chart Style -->
+        <div class="cs-group">
+          <span class="cs-label">Chart Style</span>
+          <div class="cs-segment-row">
+            <button class="cs-seg-btn active" id="cs-style-1" onclick="setChartStyle('1')">Candles</button>
+            <button class="cs-seg-btn" id="cs-style-9" onclick="setChartStyle('9')">Hollow</button>
+            <button class="cs-seg-btn" id="cs-style-8" onclick="setChartStyle('8')">Heikin Ashi</button>
+            <button class="cs-seg-btn" id="cs-style-2" onclick="setChartStyle('2')">Line</button>
+          </div>
+          <select id="cs-style-select" onchange="updateChartSettings()" style="display: none;">
             <option value="1">Candles</option>
             <option value="2">Bars</option>
             <option value="3">Line</option>
             <option value="8">Heikin Ashi</option>
+            <option value="9">Hollow Candles</option>
           </select>
         </div>
+
+        <!-- Timezone Selector -->
+        <div class="cs-group">
+          <span class="cs-label">Timezone</span>
+          <select class="cs-select" id="cs-timezone-select" onchange="onTimezoneChange(this.value)">
+            <option value="Etc/UTC">UTC (Coordinated Universal Time)</option>
+            <option value="Asia/Kolkata">IST (Kolkata, India UTC+5:30)</option>
+            <option value="America/New_York">EST (New York UTC-5)</option>
+            <option value="Europe/London">GMT (London UTC+0)</option>
+            <option value="Asia/Singapore">SGT (Singapore UTC+8)</option>
+            <option value="Asia/Tokyo">JST (Tokyo UTC+9)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="cs-modal-footer">
+        <button class="cs-footer-btn reset" onclick="resetChartSettingsToDefault()">Reset Defaults</button>
+        <button class="cs-footer-btn apply primary" onclick="saveAndApplyChartSettings()">Save & Apply</button>
       </div>
     </div>
   </div>

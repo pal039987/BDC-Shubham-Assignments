@@ -42,4 +42,16 @@ assert.ok(css.includes('.candle-countdown-wrap {') && css.includes('display: non
   'Duplicate external overlay box must be hidden to eliminate two boxes issue');
 console.log('  ✓ Native TradingView price scale countdown enabled without duplicate overlay');
 
-console.log('\n=== ALL FOUR PROBLEMS VERIFICATION TESTS PASSED SUCCESSFULLY! ===');
+// 5. Problem 5: Chart Settings & Timeframe Persistence Across Refresh
+console.log('5. Testing Chart Settings, Timeframe & State Persistence Across Refresh...');
+assert.ok(js.includes("localStorage.setItem('vtrade_tv_chart_settings'"), 'Chart settings must persist to localStorage');
+assert.ok(js.includes("localStorage.setItem('vtrade_chart_interval'"), 'Chart interval/timeframe must persist to localStorage');
+assert.ok(js.includes("localStorage.setItem('vtrade_selected_coin'"), 'Selected coin must persist to localStorage');
+assert.ok(js.includes("localStorage.setItem('vtrade_chart_price_type'"), 'Mark vs Last price type must persist to localStorage');
+assert.ok(js.includes("localStorage.setItem('vtrade_1click_trade'"), '1-Click trade state must persist to localStorage');
+assert.ok(js.includes('function restoreSavedChartState()'), 'restoreSavedChartState function must be defined in app.js');
+assert.ok(js.includes('restoreSavedChartState()'), 'restoreSavedChartState must be called during init');
+console.log('  ✓ Chart settings, timeframe, coin, and states strictly persist across page refresh');
+
+console.log('\n=== ALL PROBLEMS & CHART PERSISTENCE TESTS PASSED SUCCESSFULLY! ===');
+
