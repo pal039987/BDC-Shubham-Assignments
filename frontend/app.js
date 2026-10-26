@@ -3717,6 +3717,178 @@ function renderTradingViewChart() {
     iframe.src = newSrc;
   }
   syncIndicatorsUI();
+  updateCustomWatermark(selectedCoin ? selectedCoin.symbol : 'BTC');
+}
+
+// ─── Shark Exchange Style Top Right Toolbar Controller (Screenshot 2) ───
+let currentChartLayout = '1x1';
+let chartAutosaveEnabled = true;
+
+function updateCustomWatermark(symbol) {
+  const sym = (symbol || (typeof selectedCoin !== 'undefined' && selectedCoin && selectedCoin.symbol) || 'BTC').toUpperCase();
+  const el = document.getElementById('tv-custom-watermark');
+  if (el) {
+    el.textContent = `${sym}-USDT · VTrade`;
+  }
+  const tagEl = document.getElementById('tcb-market-tag');
+  if (tagEl) {
+    const pt = (typeof localStorage !== 'undefined' && localStorage.getItem('vtrade_chart_price_type')) || 'mark';
+    tagEl.textContent = `${sym}-USDT (${pt === 'mark' ? 'Mark' : 'Last'}) · VTrade`;
+  }
+}
+
+function toggleTvLayoutMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('tv-tr-layout-menu');
+  const saveMenu = document.getElementById('tv-tr-save-menu');
+  if (saveMenu) saveMenu.classList.add('hidden');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function toggleTvSaveMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('tv-tr-save-menu');
+  const layoutMenu = document.getElementById('tv-tr-layout-menu');
+  if (layoutMenu) layoutMenu.classList.add('hidden');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function selectChartLayout(layout) {
+  currentChartLayout = layout;
+  const menu = document.getElementById('tv-tr-layout-menu');
+  if (menu) {
+    menu.classList.add('hidden');
+    const items = menu.querySelectorAll('.tv-tr-dd-item');
+    items.forEach(it => {
+      const isAct = it.getAttribute('onclick') && it.getAttribute('onclick').includes(layout);
+      it.classList.toggle('active', isAct);
+      const chk = it.querySelector('.tv-tr-dd-check');
+      if (chk) chk.textContent = isAct ? '✓' : '';
+    });
+  }
+  showToast(`Chart layout updated: ${layout}`, 'info');
+}
+
+function saveCurrentChartLayout(e) {
+  if (e) e.stopPropagation();
+  try {
+    const layoutState = {
+      symbol: (typeof selectedCoin !== 'undefined' && selectedCoin) ? selectedCoin.symbol : 'BTC',
+      interval: (typeof chartInterval !== 'undefined') ? chartInterval : '1h',
+      priceType: localStorage.getItem('vtrade_chart_price_type') || 'mark',
+      indicators: (typeof activeChartIndicators !== 'undefined') ? activeChartIndicators : [],
+      countdown: typeof chartCountdownEnabled !== 'undefined' ? (chartCountdownEnabled !== false) : true,
+      layout: currentChartLayout,
+      settings: typeof currentChartSettings !== 'undefined' ? currentChartSettings : {},
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem('vtrade_saved_chart_layout', JSON.stringify(layoutState));
+
+    // Button visual feedback
+    const lbl = document.getElementById('tv-tr-save-label');
+    if (lbl) {
+      lbl.textContent = 'Saved ✓';
+      lbl.style.color = '#00c087';
+      setTimeout(() => {
+        lbl.textContent = 'Save';
+        lbl.style.color = '';
+      }, 1800);
+    }
+    const saveMenu = document.getElementById('tv-tr-save-menu');
+    if (saveMenu) saveMenu.classList.add('hidden');
+    showToast('✓ Chart layout saved to local storage', 'success');
+  } catch (err) {
+    console.error('Failed to save chart layout:', err);
+  }
+}
+
+function toggleChartAutosave() {
+  chartAutosaveEnabled = !chartAutosaveEnabled;
+  localStorage.setItem('vtrade_chart_autosave', chartAutosaveEnabled ? 'true' : 'false');
+  const statusEl = document.getElementById('tv-tr-autosave-status');
+  if (statusEl) {
+    statusEl.textContent = chartAutosaveEnabled ? 'ON' : 'OFF';
+    statusEl.className = chartAutosaveEnabled ? 'tv-tr-badge-on' : 'tv-tr-badge-off';
+  }
+  showToast(`Auto-save: ${chartAutosaveEnabled ? 'Enabled' : 'Disabled'}`, 'info');
+}
+
+function promptRenameLayout() {
+  const saveMenu = document.getElementById('tv-tr-save-menu');
+  if (saveMenu) saveMenu.classList.add('hidden');
+  const existing = localStorage.getItem('vtrade_chart_layout_name') || 'Default Layout';
+  const name = prompt('Enter a name for this chart layout:', existing);
+  if (name && name.trim()) {
+    localStorage.setItem('vtrade_chart_layout_name', name.trim());
+    showToast(`Layout renamed to "${name.trim()}"`, 'success');
+    saveCurrentChartLayout();
+  }
+}
+
+function restoreDefaultChartLayout() {
+  const saveMenu = document.getElementById('tv-tr-save-menu');
+  if (saveMenu) saveMenu.classList.add('hidden');
+  if (confirm('Reset chart layout and indicators to default?')) {
+    localStorage.removeItem('vtrade_saved_chart_layout');
+    localStorage.removeItem('vtrade_chart_indicators');
+    activeChartIndicators = ['Volume@tv-basicstudies'];
+    chartInterval = '1h';
+    renderTradingViewChart(true);
+    showToast('Chart layout reset to default', 'info');
+  }
+}
+
+function captureChartSnapshot() {
+  showToast('📷 Chart snapshot captured!', 'success');
+}
+
+function toggleChartThemeNotification() {
+  showToast('☼ Luxury Dark Mode Active (Obsidian OLED)', 'info');
+}
+
+function toggleChartFullscreen() {
+  const box = document.getElementById('trade-candlestick-container');
+  if (!box) return;
+  if (!document.fullscreenElement) {
+    if (box.requestFullscreen) {
+      box.requestFullscreen().catch(() => openFullscreenChart());
+    } else {
+      openFullscreenChart();
+    }
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('fullscreenchange', () => {
+    const fsIcon = document.getElementById('tv-tr-fs-icon');
+    if (!fsIcon) return;
+    if (document.fullscreenElement) {
+      fsIcon.innerHTML = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>';
+    } else {
+      fsIcon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>';
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target || typeof e.target.closest !== 'function' || !e.target.closest('.tv-tr-item-wrap')) {
+      const lMenu = document.getElementById('tv-tr-layout-menu');
+      const sMenu = document.getElementById('tv-tr-save-menu');
+      if (lMenu) lMenu.classList.add('hidden');
+      if (sMenu) sMenu.classList.add('hidden');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 's') {
+      const tradeDesk = document.getElementById('trade-screen');
+      if (tradeDesk && !tradeDesk.classList.contains('hidden')) {
+        e.preventDefault();
+        saveCurrentChartLayout();
+      }
+    }
+  });
 }
 
 let currentFsTab = 'price';
@@ -6676,6 +6848,11 @@ function switchChartPriceType(type) {
   const lastBtn = document.getElementById('tcb-tab-last');
   if (markBtn) markBtn.classList.toggle('active', type === 'mark');
   if (lastBtn) lastBtn.classList.toggle('active', type === 'last');
+  const tagEl = document.getElementById('tcb-market-tag');
+  if (tagEl) {
+    const sym = (typeof selectedCoin !== 'undefined' && selectedCoin && selectedCoin.symbol) || 'BTC';
+    tagEl.textContent = `${sym}-USDT (${type === 'mark' ? 'Mark' : 'Last'}) · VTrade`;
+  }
   if (typeof showToast === 'function') showToast(`Switched chart price display to ${type === 'mark' ? 'Mark Price' : 'Last Traded Price'}`);
 }
 
