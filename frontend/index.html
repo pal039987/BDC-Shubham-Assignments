@@ -1731,6 +1731,62 @@
                   <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
                 </div>
                 <span id="tcb-hidden-tf-strip" style="display:none;"></span>
+                <div class="tcb-indicators-wrap" id="tcb-indicators-wrap">
+                  <button class="tcb-ind-btn" id="tcb-ind-menu-btn" onclick="toggleIndicatorsDropdown(event)" title="Technical Indicators & Countdown">
+                    <span class="tcb-ind-icon">ƒx</span>
+                    <span class="tcb-ind-label">Indicators</span>
+                    <span class="tcb-ind-count" id="tcb-ind-count">0</span>
+                  </button>
+                  <div class="tcb-ind-dropdown hidden" id="tcb-ind-dropdown" onclick="event.stopPropagation()">
+                    <div class="tcb-ind-dropdown-header">
+                      <span>Technical Indicators & Timer</span>
+                      <button class="tcb-ind-close" onclick="closeIndicatorsDropdown()">✕</button>
+                    </div>
+                    <div class="tcb-ind-timer-row">
+                      <div class="tcb-ind-timer-info">
+                        <span class="tcb-ind-timer-title">⏱️ Countdown to Bar Close</span>
+                        <span class="tcb-ind-timer-desc">Candle countdown on price scale</span>
+                      </div>
+                      <label class="tcb-switch">
+                        <input type="checkbox" id="tcb-ind-countdown-input" checked onchange="toggleChartCountdown(this.checked)">
+                        <span class="tcb-slider"></span>
+                      </label>
+                    </div>
+                    <div class="tcb-ind-divider"></div>
+                    <div class="tcb-ind-list">
+                      <button class="tcb-ind-item" id="tcb-ind-volume" onclick="toggleChartIndicator('Volume@tv-basicstudies')">
+                        <span class="ind-icon">📊</span>
+                        <span class="ind-name">Volume (VOL)</span>
+                        <span class="ind-status">OFF</span>
+                      </button>
+                      <button class="tcb-ind-item" id="tcb-ind-ma" onclick="toggleChartIndicator('MASimple@tv-basicstudies')">
+                        <span class="ind-icon">📈</span>
+                        <span class="ind-name">Moving Average (MA)</span>
+                        <span class="ind-status">OFF</span>
+                      </button>
+                      <button class="tcb-ind-item" id="tcb-ind-ema" onclick="toggleChartIndicator('MAExp@tv-basicstudies')">
+                        <span class="ind-icon">⚡</span>
+                        <span class="ind-name">Exponential MA (EMA)</span>
+                        <span class="ind-status">OFF</span>
+                      </button>
+                      <button class="tcb-ind-item" id="tcb-ind-rsi" onclick="toggleChartIndicator('RSI@tv-basicstudies')">
+                        <span class="ind-icon">📉</span>
+                        <span class="ind-name">Relative Strength (RSI)</span>
+                        <span class="ind-status">OFF</span>
+                      </button>
+                      <button class="tcb-ind-item" id="tcb-ind-macd" onclick="toggleChartIndicator('MACD@tv-basicstudies')">
+                        <span class="ind-icon">🌊</span>
+                        <span class="ind-name">MACD</span>
+                        <span class="ind-status">OFF</span>
+                      </button>
+                      <button class="tcb-ind-item" id="tcb-ind-bb" onclick="toggleChartIndicator('BB@tv-basicstudies')">
+                        <span class="ind-icon">🎯</span>
+                        <span class="ind-name">Bollinger Bands (BB)</span>
+                        <span class="ind-status">OFF</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="tcb-1click-box">
                 <span class="tcb-1click-text">1-Click Trade</span>
@@ -1789,6 +1845,45 @@
                     if (input1Click) input1Click.checked = (saved1Click === 'true');
                   }
 
+                  // Early sync Countdown to bar close
+                  var savedCountdown = localStorage.getItem('vtrade_chart_countdown');
+                  var showCountdown = (savedCountdown === null || savedCountdown === 'true');
+                  var indCountdownInput = document.getElementById('tcb-ind-countdown-input');
+                  if (indCountdownInput) indCountdownInput.checked = showCountdown;
+                  var csCountdownInput = document.getElementById('cs-countdown-input');
+                  if (csCountdownInput) csCountdownInput.checked = showCountdown;
+
+                  // Early sync saved indicators
+                  var savedIndicators = [];
+                  try {
+                    var rawInd = localStorage.getItem('vtrade_chart_indicators');
+                    if (rawInd) savedIndicators = JSON.parse(rawInd) || [];
+                  } catch (e) {}
+
+                  // Update indicators count and items
+                  var indCountEl = document.getElementById('tcb-ind-count');
+                  if (indCountEl) {
+                    indCountEl.textContent = savedIndicators.length;
+                    indCountEl.classList.toggle('active', savedIndicators.length > 0);
+                  }
+                  var indMap = {
+                    'Volume@tv-basicstudies': 'tcb-ind-volume',
+                    'MASimple@tv-basicstudies': 'tcb-ind-ma',
+                    'MAExp@tv-basicstudies': 'tcb-ind-ema',
+                    'RSI@tv-basicstudies': 'tcb-ind-rsi',
+                    'MACD@tv-basicstudies': 'tcb-ind-macd',
+                    'BB@tv-basicstudies': 'tcb-ind-bb'
+                  };
+                  Object.keys(indMap).forEach(function(k) {
+                    var itemEl = document.getElementById(indMap[k]);
+                    if (itemEl) {
+                      var isAct = savedIndicators.indexOf(k) !== -1;
+                      itemEl.classList.toggle('active', isAct);
+                      var st = itemEl.querySelector('.ind-status');
+                      if (st) st.textContent = isAct ? 'ON' : 'OFF';
+                    }
+                  });
+
                   var intervalMap = {
                     '1m': '1', '3m': '3', '5m': '5', '15m': '15', '30m': '30',
                     '1h': '60', '2h': '120', '4h': '240', '1d': 'D', '1w': 'W', '1M': 'M'
@@ -1823,8 +1918,8 @@
                   if (settings.grid === 'subtle') gridColor = 'rgba(255, 255, 255, 0.04)';
                   if (settings.grid === 'visible') gridColor = 'rgba(255, 255, 255, 0.09)';
                   var overrides = {
-                    "mainSeriesProperties.showCountdown": true,
-                    "scalesProperties.showCountdown": true,
+                    "mainSeriesProperties.showCountdown": showCountdown,
+                    "scalesProperties.showCountdown": showCountdown,
                     "paneProperties.background": settings.bgColor,
                     "paneProperties.vertGridProperties.color": gridColor,
                     "paneProperties.horzGridProperties.color": gridColor,
@@ -1843,7 +1938,13 @@
                     "mainSeriesProperties.haStyle.borderUpColor": settings.upColor,
                     "mainSeriesProperties.haStyle.borderDownColor": settings.downColor
                   };
-                  var features = ['countdown', 'use_localstorage_for_settings', 'save_chart_properties_to_local_storage', 'chart_template_storage', 'study_templates', 'side_toolbar_in_fullscreen_mode'];
+                  var features = ['use_localstorage_for_settings', 'save_chart_properties_to_local_storage', 'chart_template_storage', 'study_templates', 'side_toolbar_in_fullscreen_mode'];
+                  if (showCountdown) features.push('countdown');
+
+                  var studiesPart = '';
+                  if (savedIndicators && savedIndicators.length > 0) {
+                    studiesPart = '&studies=' + encodeURIComponent(JSON.stringify(savedIndicators));
+                  }
                   var earlySrc = 'https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe' +
                     '&symbol=' + encodeURIComponent(tvSym) +
                     '&interval=' + intervalCode +
@@ -1859,7 +1960,8 @@
                     '&withdateranges=1' +
                     '&locale=en' +
                     '&enabled_features=' + encodeURIComponent(JSON.stringify(features)) +
-                    '&overrides=' + encodeURIComponent(JSON.stringify(overrides));
+                    '&overrides=' + encodeURIComponent(JSON.stringify(overrides)) +
+                    studiesPart;
                   iframe.src = earlySrc;
                   iframe.setAttribute('data-applied-url', earlySrc);
                 } catch(e) {}
@@ -2801,6 +2903,52 @@
             <option value="Asia/Singapore">SGT (Singapore UTC+8)</option>
             <option value="Asia/Tokyo">JST (Tokyo UTC+9)</option>
           </select>
+        </div>
+
+        <!-- Bar Close Countdown -->
+        <div class="cs-group">
+          <span class="cs-label">Bar Close Countdown</span>
+          <div class="cs-toggle-box">
+            <div class="cs-tb-info">
+              <span class="cs-sub-label">Countdown to Bar Close</span>
+              <span class="cs-sub-desc">Display candle close timer on price scale</span>
+            </div>
+            <label class="tcb-switch">
+              <input type="checkbox" id="cs-countdown-input" checked onchange="toggleChartCountdown(this.checked)">
+              <span class="tcb-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Technical Indicators -->
+        <div class="cs-group">
+          <span class="cs-label">Technical Indicators</span>
+          <div class="cs-ind-grid" id="cs-ind-grid">
+            <button type="button" class="cs-ind-btn" id="cs-ind-volume" onclick="toggleChartIndicator('Volume@tv-basicstudies')">
+              <span class="cs-ib-icon">📊</span>
+              <span class="cs-ib-name">Volume</span>
+            </button>
+            <button type="button" class="cs-ind-btn" id="cs-ind-ma" onclick="toggleChartIndicator('MASimple@tv-basicstudies')">
+              <span class="cs-ib-icon">📈</span>
+              <span class="cs-ib-name">MA</span>
+            </button>
+            <button type="button" class="cs-ind-btn" id="cs-ind-ema" onclick="toggleChartIndicator('MAExp@tv-basicstudies')">
+              <span class="cs-ib-icon">⚡</span>
+              <span class="cs-ib-name">EMA</span>
+            </button>
+            <button type="button" class="cs-ind-btn" id="cs-ind-rsi" onclick="toggleChartIndicator('RSI@tv-basicstudies')">
+              <span class="cs-ib-icon">📉</span>
+              <span class="cs-ib-name">RSI</span>
+            </button>
+            <button type="button" class="cs-ind-btn" id="cs-ind-macd" onclick="toggleChartIndicator('MACD@tv-basicstudies')">
+              <span class="cs-ib-icon">🌊</span>
+              <span class="cs-ib-name">MACD</span>
+            </button>
+            <button type="button" class="cs-ind-btn" id="cs-ind-bb" onclick="toggleChartIndicator('BB@tv-basicstudies')">
+              <span class="cs-ib-icon">🎯</span>
+              <span class="cs-ib-name">Bollinger</span>
+            </button>
+          </div>
         </div>
       </div>
 

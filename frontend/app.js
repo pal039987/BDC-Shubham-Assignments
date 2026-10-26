@@ -3565,10 +3565,14 @@ const DEFAULT_CHART_SETTINGS = {
   bgColor: '#080b11',
   grid: 'hidden',
   chartStyle: '1',
-  timezone: 'Etc/UTC'
+  timezone: 'Etc/UTC',
+  showCountdown: true,
+  indicators: []
 };
 
 let currentChartSettings = { ...DEFAULT_CHART_SETTINGS };
+let activeChartIndicators = [];
+let chartCountdownEnabled = true;
 
 function loadChartSettings() {
   try {
@@ -3579,12 +3583,28 @@ function loadChartSettings() {
         currentChartSettings = { ...DEFAULT_CHART_SETTINGS, ...parsed };
       }
     }
+    const savedInd = localStorage.getItem('vtrade_chart_indicators');
+    if (savedInd) {
+      activeChartIndicators = JSON.parse(savedInd) || [];
+    } else if (Array.isArray(currentChartSettings.indicators)) {
+      activeChartIndicators = [...currentChartSettings.indicators];
+    }
+    const savedCd = localStorage.getItem('vtrade_chart_countdown');
+    if (savedCd !== null) {
+      chartCountdownEnabled = (savedCd === 'true');
+    } else if (typeof currentChartSettings.showCountdown === 'boolean') {
+      chartCountdownEnabled = currentChartSettings.showCountdown;
+    }
   } catch (e) {}
 }
 
 function saveChartSettings() {
   try {
+    currentChartSettings.indicators = [...activeChartIndicators];
+    currentChartSettings.showCountdown = chartCountdownEnabled;
     localStorage.setItem('vtrade_tv_chart_settings', JSON.stringify(currentChartSettings));
+    localStorage.setItem('vtrade_chart_indicators', JSON.stringify(activeChartIndicators));
+    localStorage.setItem('vtrade_chart_countdown', chartCountdownEnabled ? 'true' : 'false');
   } catch (e) {}
 }
 
@@ -3599,7 +3619,7 @@ function getTradingViewOverrides() {
   if (currentChartSettings.grid === 'subtle') gridColor = 'rgba(255, 255, 255, 0.04)';
   if (currentChartSettings.grid === 'visible') gridColor = 'rgba(255, 255, 255, 0.09)';
 
-  return {
+  const overrides = {
     "mainSeriesProperties.showCountdown": true,
     "scalesProperties.showCountdown": true,
     "paneProperties.background": bg,
@@ -3620,6 +3640,12 @@ function getTradingViewOverrides() {
     "mainSeriesProperties.haStyle.borderUpColor": up,
     "mainSeriesProperties.haStyle.borderDownColor": down
   };
+
+  if (chartCountdownEnabled === false) {
+    overrides["mainSeriesProperties.showCountdown"] = false;
+    overrides["scalesProperties.showCountdown"] = false;
+  }
+  return overrides;
 }
 
 function renderTradingViewChart() {
@@ -3629,7 +3655,7 @@ function renderTradingViewChart() {
 
   loadChartSettings();
   const overrides = getTradingViewOverrides();
-  const defaultCountdownFeatures = ['countdown'];
+  const defaultCountdownFeatures = chartCountdownEnabled ? ['countdown'] : [];
   const enabledFeatures = [
     ...defaultCountdownFeatures,
     'use_localstorage_for_settings',
@@ -3646,13 +3672,19 @@ function renderTradingViewChart() {
   };
   const intervalCode = tvIntervalMap[chartInterval] || '60';
 
-  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  let studiesParam = '';
+  if (activeChartIndicators && activeChartIndicators.length > 0) {
+    studiesParam = `&studies=${encodeURIComponent(JSON.stringify(activeChartIndicators))}`;
+  }
+
+  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}${studiesParam}`;
 
   const currentApplied = iframe.getAttribute('data-applied-url');
   if (forceReload || !iframe.src || currentApplied !== newSrc || iframe.src !== newSrc) {
     iframe.setAttribute('data-applied-url', newSrc);
     iframe.src = newSrc;
   }
+  syncIndicatorsUI();
 }
 
 let currentFsTab = 'price';
@@ -3719,7 +3751,12 @@ function openFullscreenChart() {
   switchFsTab('price');
   renderFsTabContent();
 
-  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}`;
+  let fsStudiesParam = '';
+  if (activeChartIndicators && activeChartIndicators.length > 0) {
+    fsStudiesParam = `&studies=${encodeURIComponent(JSON.stringify(activeChartIndicators))}`;
+  }
+
+  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}${fsStudiesParam}`;
   const currentApplied = iframe.getAttribute('data-applied-url');
   if (forceReload || !iframe.src || currentApplied !== url || iframe.src !== url) {
     iframe.setAttribute('data-applied-url', url);
@@ -3865,6 +3902,8 @@ function syncChartSettingsUI() {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('active', currentChartSettings.bgColor.toLowerCase() === color.toLowerCase());
   });
+
+  syncIndicatorsUI();
 }
 
 function applyColorPreset(up, down, btn) {
@@ -3944,8 +3983,11 @@ function updateChartSettings() {
 
 function resetChartSettingsToDefault() {
   currentChartSettings = { ...DEFAULT_CHART_SETTINGS };
+  activeChartIndicators = [];
+  chartCountdownEnabled = true;
   saveChartSettings();
   syncChartSettingsUI();
+  syncIndicatorsUI();
   showToast('Chart settings reset to default');
 }
 
@@ -3958,6 +4000,85 @@ function saveAndApplyChartSettings() {
   }
   renderTradingViewChart(true);
   showToast('Chart colors & settings applied!', 'success');
+}
+
+function toggleChartIndicator(studyId) {
+  const idx = activeChartIndicators.indexOf(studyId);
+  const studyNames = {
+    'Volume@tv-basicstudies': 'Volume',
+    'MASimple@tv-basicstudies': 'Moving Average (MA)',
+    'MAExp@tv-basicstudies': 'Exponential MA (EMA)',
+    'RSI@tv-basicstudies': 'Relative Strength (RSI)',
+    'MACD@tv-basicstudies': 'MACD',
+    'BB@tv-basicstudies': 'Bollinger Bands'
+  };
+  const name = studyNames[studyId] || studyId;
+  if (idx !== -1) {
+    activeChartIndicators.splice(idx, 1);
+    showToast(`${name} indicator removed`, 'info');
+  } else {
+    activeChartIndicators.push(studyId);
+    showToast(`${name} indicator saved & active!`, 'success');
+  }
+  saveChartSettings();
+  syncIndicatorsUI();
+  renderTradingViewChart(true);
+}
+
+function toggleChartCountdown(enabled) {
+  chartCountdownEnabled = !!enabled;
+  saveChartSettings();
+  syncIndicatorsUI();
+  renderTradingViewChart(true);
+  showToast(`Bar countdown: ${chartCountdownEnabled ? 'ON (Saved)' : 'OFF (Saved)'}`, 'info');
+}
+
+function toggleIndicatorsDropdown(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  const dd = document.getElementById('tcb-ind-dropdown');
+  if (dd) dd.classList.toggle('hidden');
+}
+
+function closeIndicatorsDropdown() {
+  const dd = document.getElementById('tcb-ind-dropdown');
+  if (dd) dd.classList.add('hidden');
+}
+
+function syncIndicatorsUI() {
+  const indMap = {
+    'Volume@tv-basicstudies': ['tcb-ind-volume', 'cs-ind-volume'],
+    'MASimple@tv-basicstudies': ['tcb-ind-ma', 'cs-ind-ma'],
+    'MAExp@tv-basicstudies': ['tcb-ind-ema', 'cs-ind-ema'],
+    'RSI@tv-basicstudies': ['tcb-ind-rsi', 'cs-ind-rsi'],
+    'MACD@tv-basicstudies': ['tcb-ind-macd', 'cs-ind-macd'],
+    'BB@tv-basicstudies': ['tcb-ind-bb', 'cs-ind-bb']
+  };
+
+  Object.keys(indMap).forEach(key => {
+    const isAct = activeChartIndicators.includes(key);
+    const [tcbId, csId] = indMap[key];
+    const tcbEl = document.getElementById(tcbId);
+    if (tcbEl && tcbEl.classList) {
+      tcbEl.classList.toggle('active', isAct);
+      const st = (typeof tcbEl.querySelector === 'function') ? tcbEl.querySelector('.ind-status') : null;
+      if (st) st.textContent = isAct ? 'ON' : 'OFF';
+    }
+    const csEl = document.getElementById(csId);
+    if (csEl && csEl.classList) {
+      csEl.classList.toggle('active', isAct);
+    }
+  });
+
+  const countEl = document.getElementById('tcb-ind-count');
+  if (countEl) {
+    countEl.textContent = activeChartIndicators.length;
+    if (countEl.classList) countEl.classList.toggle('active', activeChartIndicators.length > 0);
+  }
+
+  const tcbCd = document.getElementById('tcb-ind-countdown-input');
+  if (tcbCd) tcbCd.checked = chartCountdownEnabled;
+  const csCd = document.getElementById('cs-countdown-input');
+  if (csCd) csCd.checked = chartCountdownEnabled;
 }
 
 function selectCoinAndTrade(coinId) {
@@ -7350,6 +7471,14 @@ if (typeof window !== 'undefined') {
   window.restoreSavedChartState = restoreSavedChartState;
   window.updateChartSettings = updateChartSettings;
   window.openMarketSelectorModal = openMarketSelectorModal;
+  window.toggleChartIndicator = toggleChartIndicator;
+  window.toggleChartCountdown = toggleChartCountdown;
+  window.toggleIndicatorsDropdown = toggleIndicatorsDropdown;
+  window.closeIndicatorsDropdown = closeIndicatorsDropdown;
+  window.syncIndicatorsUI = syncIndicatorsUI;
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    document.addEventListener('click', () => closeIndicatorsDropdown());
+  }
 
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', () => {

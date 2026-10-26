@@ -78,6 +78,28 @@ assert.ok(js.includes("window.location.hash = '#' + activeTab;"),
   'switchBottomTab must sync URL hash to preserve page on refresh');
 console.log('  ✓ Timeframe buttons prominently visible and page retention on refresh verified');
 
+// 7. Problem 7: Indicators & Countdown to Bar Close Persistence
+console.log('7. Testing Indicators & Countdown to Bar Close Persistence...');
+assert.ok(html.includes('id="tcb-indicators-wrap"'), 'Indicators wrap must exist in chart subheader');
+assert.ok(html.includes('id="tcb-ind-menu-btn"'), 'Indicators menu button must exist in chart subheader');
+assert.ok(html.includes('id="tcb-ind-dropdown"'), 'Indicators dropdown menu must exist');
+assert.ok(html.includes('id="tcb-ind-countdown-input"'), 'Bar close countdown switch must exist in dropdown');
+assert.ok(html.includes('id="cs-countdown-input"'), 'Bar close countdown switch must exist in Chart Settings modal');
+assert.ok(html.includes('id="cs-ind-grid"'), 'Indicators grid must exist in Chart Settings modal');
+['volume', 'ma', 'ema', 'rsi', 'macd', 'bb'].forEach(ind => {
+  assert.ok(html.includes(`id="tcb-ind-${ind}"`), `tcb-ind-${ind} indicator item must exist`);
+  assert.ok(html.includes(`id="cs-ind-${ind}"`), `cs-ind-${ind} indicator button must exist in settings modal`);
+});
+assert.ok(js.includes("localStorage.setItem('vtrade_chart_indicators'"), 'vtrade_chart_indicators must be saved to localStorage');
+assert.ok(js.includes("localStorage.setItem('vtrade_chart_countdown'"), 'vtrade_chart_countdown must be saved to localStorage');
+assert.ok(js.includes('function toggleChartIndicator('), 'toggleChartIndicator must be defined in app.js');
+assert.ok(js.includes('function toggleChartCountdown('), 'toggleChartCountdown must be defined in app.js');
+assert.ok(js.includes('function syncIndicatorsUI('), 'syncIndicatorsUI must be defined in app.js');
+assert.ok(js.includes('activeChartIndicators.length > 0'), 'app.js must check active indicators before building URL');
+assert.ok(html.includes("localStorage.getItem('vtrade_chart_indicators')"), 'index.html early script must sync indicators from localStorage');
+assert.ok(html.includes("localStorage.getItem('vtrade_chart_countdown')"), 'index.html early script must sync countdown from localStorage');
+console.log('  ✓ Indicators and countdown to bar close persistence and UI controls verified');
+
 console.log('\n=== ALL PROBLEMS & CHART PERSISTENCE TESTS PASSED SUCCESSFULLY! ===');
 
 
