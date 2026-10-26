@@ -2211,11 +2211,20 @@ function switchBottomTab(tab) {
     return;
   }
   activeTab = tab || 'home';
+  if (activeTab === 'vtrade') activeTab = 'trade';
   try {
     if (activeTab && activeTab !== 'account' && activeTab !== 'auth') {
       localStorage.setItem('vtrade_active_tab', activeTab);
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', '#' + activeTab);
+      } else if (typeof window !== 'undefined') {
+        window.location.hash = '#' + activeTab;
+      }
     }
   } catch (e) {}
+  if (document.documentElement && typeof document.documentElement.removeAttribute === 'function') {
+    document.documentElement.removeAttribute('data-initial-tab');
+  }
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle('trade-screen-active', activeTab === 'trade');
   }
@@ -5646,19 +5655,22 @@ function initVTradeApp() {
   // Restore saved active tab or default to 'home'
   let initialTab = 'home';
   try {
-    const savedTab = localStorage.getItem('vtrade_active_tab');
+    const hash = (window.location.hash || '').replace(/^#\/?/, '').toLowerCase();
+    const savedTab = hash || localStorage.getItem('vtrade_active_tab');
     if (savedTab && ['home', 'markets', 'trade', 'portfolio', 'vtrade'].includes(savedTab)) {
-      initialTab = savedTab;
+      initialTab = (savedTab === 'vtrade') ? 'trade' : savedTab;
     }
   } catch (e) {}
   switchBottomTab(initialTab);
 
-  // Initialize Aceternity, Skiper-UI & GSAP Animation Suite
-  initHeroTextAnimation();
-  if (typeof initHeroGlassBlockInteractions === 'function') initHeroGlassBlockInteractions();
-  if (typeof initHeroGsapTimeline === 'function') initHeroGsapTimeline();
-  initScrollRevealEngine();
-  initSpotlightAndTiltCards();
+  // Initialize Aceternity, Skiper-UI & GSAP Animation Suite (only for home screen)
+  if (initialTab === 'home') {
+    initHeroTextAnimation();
+    if (typeof initHeroGlassBlockInteractions === 'function') initHeroGlassBlockInteractions();
+    if (typeof initHeroGsapTimeline === 'function') initHeroGsapTimeline();
+    initScrollRevealEngine();
+    initSpotlightAndTiltCards();
+  }
   updateNavIndicator();
   window.addEventListener('resize', updateNavIndicator);
 

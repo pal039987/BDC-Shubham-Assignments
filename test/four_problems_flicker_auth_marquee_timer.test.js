@@ -61,6 +61,24 @@ assert.ok(!html.includes('studies=%5B%5D'), 'index.html chart iframe must not ha
 assert.ok(html.includes("localStorage.getItem('vtrade_tv_chart_settings')"), 'index.html must include early synchronous chart settings restoration script');
 console.log('  ✓ Chart settings, timeframe, coin, indicators, active tab, and states strictly persist across page refresh');
 
+// 6. Problem 6: Timeframe Buttons Visibility & Refresh Tab Retention
+console.log('6. Testing Timeframe Buttons Visibility & Refresh Page Retention...');
+assert.ok(html.includes('class="tcb-tf-strip" id="tcb-visible-tf-strip"'), 'Visible timeframe strip must exist in index.html');
+const expectedTimeframes = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '1d', '1w', '1M'];
+expectedTimeframes.forEach(tf => {
+  assert.ok(html.includes(`id="ctf-${tf}"`), `ctf-${tf} button must be present in chart header`);
+});
+assert.ok(css.includes('.tcb-tf-strip {') && css.includes('display: inline-flex !important;'),
+  '.tcb-tf-strip must be styled with display: inline-flex !important');
+assert.ok(html.includes("document.documentElement.setAttribute('data-initial-tab', _s);"),
+  'Head synchronous script must set data-initial-tab attribute to prevent landing page flash');
+assert.ok(css.includes('html[data-initial-tab="trade"] #screen-home') && css.includes('display: none !important;'),
+  'style.css must hide home screen immediately when data-initial-tab="trade"');
+assert.ok(js.includes("window.location.hash = '#' + activeTab;"),
+  'switchBottomTab must sync URL hash to preserve page on refresh');
+console.log('  ✓ Timeframe buttons prominently visible and page retention on refresh verified');
+
 console.log('\n=== ALL PROBLEMS & CHART PERSISTENCE TESTS PASSED SUCCESSFULLY! ===');
+
 
 

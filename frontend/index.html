@@ -43,6 +43,15 @@
         }
       }
     })();
+    try {
+      var _h = (window.location.hash || '').replace(/^#\/?/, '').toLowerCase();
+      var _s = _h || localStorage.getItem('vtrade_active_tab');
+      if (_s === 'vtrade') _s = 'trade';
+      if (_s && ['trade', 'markets', 'portfolio'].indexOf(_s) !== -1) {
+        document.documentElement.setAttribute('data-initial-tab', _s);
+        window.__VTRADE_INITIAL_TAB__ = _s;
+      }
+    } catch (e) {}
   </script>
 
   <!-- External Charting Libraries -->
@@ -1708,19 +1717,20 @@
               <div class="tcb-tabs-left">
                 <button class="tcb-tab active" id="tcb-tab-mark" onclick="switchChartPriceType('mark')">Mark Price</button>
                 <button class="tcb-tab" id="tcb-tab-last" onclick="switchChartPriceType('last')">Last Traded Price</button>
-                <div class="hidden" style="display:none;" id="tcb-hidden-tf-strip">
+                <div class="tcb-tf-strip" id="tcb-visible-tf-strip">
                   <button class="ctf-btn" id="ctf-1m" onclick="setChartInterval('1m')">1m</button>
                   <button class="ctf-btn" id="ctf-3m" onclick="setChartInterval('3m')">3m</button>
                   <button class="ctf-btn" id="ctf-5m" onclick="setChartInterval('5m')">5m</button>
-                  <button class="ctf-btn active" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
+                  <button class="ctf-btn" id="ctf-15m" onclick="setChartInterval('15m')">15m</button>
                   <button class="ctf-btn" id="ctf-30m" onclick="setChartInterval('30m')">30m</button>
-                  <button class="ctf-btn" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
+                  <button class="ctf-btn active" id="ctf-1h" onclick="setChartInterval('1h')">1h</button>
                   <button class="ctf-btn" id="ctf-2h" onclick="setChartInterval('2h')">2h</button>
                   <button class="ctf-btn" id="ctf-4h" onclick="setChartInterval('4h')">4h</button>
                   <button class="ctf-btn" id="ctf-1d" onclick="setChartInterval('1d')">1d</button>
                   <button class="ctf-btn" id="ctf-1w" onclick="setChartInterval('1w')">1w</button>
                   <button class="ctf-btn" id="ctf-1M" onclick="setChartInterval('1M')">1M</button>
                 </div>
+                <span id="tcb-hidden-tf-strip" style="display:none;"></span>
               </div>
               <div class="tcb-1click-box">
                 <span class="tcb-1click-text">1-Click Trade</span>
@@ -1742,7 +1752,7 @@
                   var iframe = document.getElementById('tradingview-chart-iframe');
                   if (!iframe) return;
                   var savedCoinId = localStorage.getItem('vtrade_selected_coin');
-                  var savedInterval = localStorage.getItem('vtrade_chart_interval');
+                  var savedInterval = localStorage.getItem('vtrade_chart_interval') || '1h';
                   var rawSettings = localStorage.getItem('vtrade_tv_chart_settings');
                   var settings = {
                     upColor: '#00c087',
@@ -1756,6 +1766,29 @@
                     var parsed = JSON.parse(rawSettings);
                     if (parsed && typeof parsed === 'object') Object.assign(settings, parsed);
                   }
+
+                  // Early sync active timeframe button on header bar
+                  var targetTfBtn = document.getElementById('ctf-' + savedInterval);
+                  if (targetTfBtn) {
+                    var tfBtns = document.querySelectorAll('.tcb-tf-strip .ctf-btn');
+                    for (var i = 0; i < tfBtns.length; i++) tfBtns[i].classList.remove('active');
+                    targetTfBtn.classList.add('active');
+                  }
+
+                  // Early sync Mark Price vs Last Price tabs
+                  var savedPriceType = localStorage.getItem('vtrade_chart_price_type') || 'mark';
+                  var markBtn = document.getElementById('tcb-tab-mark');
+                  var lastBtn = document.getElementById('tcb-tab-last');
+                  if (markBtn) markBtn.classList.toggle('active', savedPriceType === 'mark');
+                  if (lastBtn) lastBtn.classList.toggle('active', savedPriceType === 'last');
+
+                  // Early sync 1-Click trade switch
+                  var saved1Click = localStorage.getItem('vtrade_1click_trade');
+                  if (saved1Click !== null) {
+                    var input1Click = document.getElementById('tcb-1click-input');
+                    if (input1Click) input1Click.checked = (saved1Click === 'true');
+                  }
+
                   var intervalMap = {
                     '1m': '1', '3m': '3', '5m': '5', '15m': '15', '30m': '30',
                     '1h': '60', '2h': '120', '4h': '240', '1d': 'D', '1w': 'W', '1M': 'M'

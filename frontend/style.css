@@ -8266,10 +8266,64 @@ html:not(.is-native-apk) .tv-fs-header {
 }
 
 .tcb-tf-strip {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
-  gap: 4px;
-  margin-left: 8px;
+  gap: 3px;
+  margin-left: 12px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tcb-tf-strip::-webkit-scrollbar {
+  display: none;
+}
+.tcb-tf-strip .ctf-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #8b92a4;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.tcb-tf-strip .ctf-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+.tcb-tf-strip .ctf-btn.active {
+  background: rgba(0, 242, 254, 0.14) !important;
+  color: #00f2fe !important;
+  border-color: rgba(0, 242, 254, 0.35) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 8px rgba(0, 242, 254, 0.2);
+}
+
+/* Instant Page Restore Guardrails - Zero Flash of Landing Page */
+html[data-initial-tab="trade"] #screen-home,
+html[data-initial-tab="markets"] #screen-home,
+html[data-initial-tab="portfolio"] #screen-home {
+  display: none !important;
+}
+html[data-initial-tab="trade"] #screen-trade,
+html[data-initial-tab="markets"] #screen-markets,
+html[data-initial-tab="portfolio"] #screen-portfolio {
+  display: block !important;
+}
+html[data-initial-tab="trade"] #dnav-home,
+html[data-initial-tab="markets"] #dnav-home,
+html[data-initial-tab="portfolio"] #dnav-home {
+  color: #8b92a4 !important;
+  font-weight: 500 !important;
+}
+html[data-initial-tab="trade"] #dnav-trade,
+html[data-initial-tab="markets"] #dnav-markets,
+html[data-initial-tab="portfolio"] #dnav-portfolio {
+  color: #ffffff !important;
+  font-weight: 700 !important;
 }
 
 /* SS 2: Candle Closing Timer & Live Price Pill - Cleanly hidden to eliminate duplicate scale pill */
