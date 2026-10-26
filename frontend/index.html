@@ -1806,114 +1806,6 @@
               src="https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#%7B%22autosize%22%3Atrue%2C%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22interval%22%3A%2260%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22locale%22%3A%22en%22%2C%22allow_symbol_change%22%3Atrue%2C%22calendar%22%3Afalse%2C%22hide_side_toolbar%22%3Afalse%2C%22hide_top_toolbar%22%3Afalse%2C%22withdateranges%22%3Afalse%2C%22save_image%22%3Atrue%2C%22enable_publishing%22%3Afalse%2C%22hideideas%22%3Atrue%2C%22enabled_features%22%3A%5B%22countdown%22%2C%22header_widget%22%2C%22header_symbol_search%22%2C%22header_resolutions%22%2C%22header_chart_type%22%2C%22header_indicators%22%2C%22header_compare%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22header_screenshot%22%2C%22header_saveload%22%2C%22header_undo_redo%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%5D%2C%22overrides%22%3A%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLinesColor%22%3A%22%232196F3%22%7D%7D"
               allowtransparency="true" frameborder="0">
             </iframe>
-
-            <!-- Shark Exchange Native-Style Top Right Toolbar Controls (Screenshot 2) -->
-            <div class="tv-top-right-controls" id="tv-top-right-controls">
-              <!-- Layout Box [ □ ] -->
-              <div class="tv-tr-item-wrap">
-                <button class="tv-tr-btn" id="tv-tr-layout-btn" onclick="toggleTvLayoutMenu(event)" title="Select Chart Layout">
-                  <span class="tv-tr-layout-icon"></span>
-                </button>
-                <div class="tv-tr-dropdown hidden" id="tv-tr-layout-menu" onclick="event.stopPropagation()">
-                  <div class="tv-tr-dropdown-header">Chart Layout</div>
-                  <button class="tv-tr-dd-item active" onclick="selectChartLayout('1x1')">
-                    <span class="tv-tr-dd-check">✓</span> Single Chart (1x1)
-                  </button>
-                  <button class="tv-tr-dd-item" onclick="selectChartLayout('2x1')">
-                    <span class="tv-tr-dd-check"></span> 2 Charts (Split Horizontal)
-                  </button>
-                  <button class="tv-tr-dd-item" onclick="selectChartLayout('1x2')">
-                    <span class="tv-tr-dd-check"></span> 2 Charts (Split Vertical)
-                  </button>
-                  <button class="tv-tr-dd-item" onclick="selectChartLayout('2x2')">
-                    <span class="tv-tr-dd-check"></span> 4 Charts (Grid 2x2)
-                  </button>
-                </div>
-              </div>
-
-              <!-- Save ▾ -->
-              <div class="tv-tr-item-wrap">
-                <div class="tv-tr-save-group">
-                  <button class="tv-tr-save-text" id="tv-tr-save-btn" onclick="saveCurrentChartLayout(event)" title="Save Chart Layout (Ctrl+S)">
-                    <span id="tv-tr-save-label">Save</span>
-                  </button>
-                  <button class="tv-tr-save-caret" id="tv-tr-save-caret-btn" onclick="toggleTvSaveMenu(event)" title="Layout Management Options">
-                    <svg viewBox="0 0 10 6" width="10" height="6" fill="currentColor"><path d="M0 0l5 5 5-5z"></path></svg>
-                  </button>
-                </div>
-                <div class="tv-tr-dropdown hidden" id="tv-tr-save-menu" onclick="event.stopPropagation()">
-                  <div class="tv-tr-dropdown-header">Layout Management</div>
-                  <button class="tv-tr-dd-item" onclick="saveCurrentChartLayout(event)">
-                    <span class="tv-tr-dd-icon">💾</span> Save Layout <span class="tv-tr-hotkey">Ctrl+S</span>
-                  </button>
-                  <button class="tv-tr-dd-item" id="tv-tr-autosave-toggle" onclick="toggleChartAutosave()">
-                    <span class="tv-tr-dd-icon">🔄</span> Auto-save: <span id="tv-tr-autosave-status" class="tv-tr-badge-on">ON</span>
-                  </button>
-                  <button class="tv-tr-dd-item" onclick="promptRenameLayout()">
-                    <span class="tv-tr-dd-icon">✏️</span> Rename Layout...
-                  </button>
-                  <button class="tv-tr-dd-item" onclick="restoreDefaultChartLayout()">
-                    <span class="tv-tr-dd-icon">↺</span> Reset to Default
-                  </button>
-                </div>
-              </div>
-
-              <div class="tv-tr-divider"></div>
-
-              <!-- Quick Search ⚡ -->
-              <button class="tv-tr-btn" id="tv-tr-quicksearch-btn" onclick="openMarketSelectorModal()" title="Quick Search Symbol (⚡)">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="7"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  <path d="M11 8l-2 3.5h3.5L10.5 15" stroke-width="1.8" fill="currentColor"></path>
-                </svg>
-              </button>
-
-              <!-- Chart Settings ⚙ -->
-              <button class="tv-tr-btn" id="tv-tr-settings-btn" onclick="openFsSettings()" title="Chart Properties & Colors (⚙)">
-                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path>
-                </svg>
-              </button>
-
-              <!-- Camera 📷 -->
-              <button class="tv-tr-btn" id="tv-tr-camera-btn" onclick="captureChartSnapshot()" title="Take a Snapshot (📷)">
-                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                  <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-              </button>
-
-              <div class="tv-tr-divider"></div>
-
-              <!-- Theme Brightness ☼ -->
-              <button class="tv-tr-btn" id="tv-tr-theme-btn" onclick="toggleChartThemeNotification()" title="Color Theme (Dark)">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="5"></circle>
-                  <line x1="12" y1="1" x2="12" y2="3"></line>
-                  <line x1="12" y1="21" x2="12" y2="23"></line>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                  <line x1="1" y1="12" x2="3" y2="12"></line>
-                  <line x1="21" y1="12" x2="23" y2="12"></line>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-              </button>
-
-              <div class="tv-tr-divider"></div>
-
-              <!-- Fullscreen ⛶ -->
-              <button class="tv-tr-btn" id="tv-tr-fullscreen-btn" onclick="toggleChartFullscreen()" title="Fullscreen mode (⛶)">
-                <svg id="tv-tr-fs-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-                </svg>
-              </button>
-            </div>
-
-            <!-- Custom Watermark: BTC-USDT · VTrade -->
-            <div class="tv-custom-watermark" id="tv-custom-watermark">BTC-USDT · VTrade</div>
             <script>
               (function() {
                 try {
@@ -1965,11 +1857,18 @@
                   var csCountdownInput = document.getElementById('cs-countdown-input');
                   if (csCountdownInput) csCountdownInput.checked = showCountdown;
 
-                  // Early sync saved indicators
+                  // Early sync saved indicators (with auto-purge for legacy cluttered arrays)
                   var savedIndicators = [];
                   try {
                     var rawInd = localStorage.getItem('vtrade_chart_indicators');
-                    if (rawInd) savedIndicators = JSON.parse(rawInd) || [];
+                    if (rawInd) {
+                      var parsedInd = JSON.parse(rawInd);
+                      if (Array.isArray(parsedInd) && parsedInd.length > 2) {
+                        localStorage.removeItem('vtrade_chart_indicators');
+                        parsedInd = [];
+                      }
+                      savedIndicators = parsedInd || [];
+                    }
                   } catch (e) {}
 
                   // Update indicators count and items

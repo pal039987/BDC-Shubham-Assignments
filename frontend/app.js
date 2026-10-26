@@ -3585,9 +3585,14 @@ function loadChartSettings() {
     }
     const savedInd = localStorage.getItem('vtrade_chart_indicators');
     if (savedInd) {
-      activeChartIndicators = JSON.parse(savedInd) || [];
-    } else if (Array.isArray(currentChartSettings.indicators)) {
-      activeChartIndicators = [...currentChartSettings.indicators];
+      let parsed = JSON.parse(savedInd);
+      if (Array.isArray(parsed) && parsed.length > 2) {
+        localStorage.removeItem('vtrade_chart_indicators');
+        parsed = [];
+      }
+      activeChartIndicators = parsed || [];
+    } else {
+      activeChartIndicators = [];
     }
     const savedCd = localStorage.getItem('vtrade_chart_countdown');
     if (savedCd !== null) {
