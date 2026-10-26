@@ -3686,7 +3686,30 @@ function renderTradingViewChart() {
     studiesParam = `&studies=${encodeURIComponent(JSON.stringify(activeChartIndicators))}`;
   }
 
-  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}${studiesParam}`;
+  const widgetConfig = {
+    autosize: true,
+    symbol: tvSymbol,
+    interval: intervalCode,
+    timezone: currentChartSettings.timezone,
+    theme: 'dark',
+    style: String(currentChartSettings.chartStyle || '1'),
+    locale: 'en',
+    allow_symbol_change: true,
+    calendar: false,
+    hide_side_toolbar: false,
+    hide_top_toolbar: false,
+    withdateranges: false,
+    save_image: true,
+    enable_publishing: false,
+    hideideas: true,
+    enabled_features: enabledFeatures,
+    overrides: overrides
+  };
+  if (activeChartIndicators && activeChartIndicators.length > 0) {
+    widgetConfig.studies = activeChartIndicators;
+  }
+
+  const newSrc = `https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#${encodeURIComponent(JSON.stringify(widgetConfig))}`;
 
   const currentApplied = iframe.getAttribute('data-applied-url');
   if (forceReload || !iframe.src || currentApplied !== newSrc || iframe.src !== newSrc) {
@@ -3772,7 +3795,30 @@ function openFullscreenChart() {
     fsStudiesParam = `&studies=${encodeURIComponent(JSON.stringify(activeChartIndicators))}`;
   }
 
-  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}${fsStudiesParam}`;
+  const fsWidgetConfig = {
+    autosize: true,
+    symbol: tvSymbol,
+    interval: intervalCode,
+    timezone: currentChartSettings.timezone,
+    theme: 'dark',
+    style: String(currentChartSettings.chartStyle || '1'),
+    locale: 'en',
+    allow_symbol_change: true,
+    calendar: false,
+    hide_side_toolbar: false,
+    hide_top_toolbar: false,
+    withdateranges: false,
+    save_image: true,
+    enable_publishing: false,
+    hideideas: true,
+    enabled_features: enabledFeatures,
+    overrides: overrides
+  };
+  if (activeChartIndicators && activeChartIndicators.length > 0) {
+    fsWidgetConfig.studies = activeChartIndicators;
+  }
+
+  const url = `https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tv-fullscreen-iframe&hide_side_toolbar=0&locale=en#${encodeURIComponent(JSON.stringify(fsWidgetConfig))}`;
   const currentApplied = iframe.getAttribute('data-applied-url');
   if (forceReload || !iframe.src || currentApplied !== url || iframe.src !== url) {
     iframe.setAttribute('data-applied-url', url);

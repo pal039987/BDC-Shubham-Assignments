@@ -1800,8 +1800,9 @@
               </div>
             </div>
 
+            <!-- TradingView official chart iframe (supports https://s.tradingview.com/widgetembed/ legacy fallback) -->
             <iframe id="tradingview-chart-iframe" class="tradingview-iframe"
-              src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=BINANCE%3ABTCUSDT&interval=60&theme=dark&style=1&timezone=Etc%2FUTC&hide_side_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&locale=en&enabled_features=%5B%22countdown%22%2C%22header_widget%22%2C%22header_resolutions%22%2C%22header_indicators%22%2C%22header_symbol_search%22%2C%22header_chart_type%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%2C%22chart_template_storage%22%2C%22study_templates%22%2C%22side_toolbar_in_fullscreen_mode%22%5D&overrides=%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLinesColor%22%3A%22%232196F3%22%7D"
+              src="https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#%7B%22autosize%22%3Atrue%2C%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22interval%22%3A%2260%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22locale%22%3A%22en%22%2C%22allow_symbol_change%22%3Atrue%2C%22calendar%22%3Afalse%2C%22hide_side_toolbar%22%3Afalse%2C%22hide_top_toolbar%22%3Afalse%2C%22withdateranges%22%3Afalse%2C%22save_image%22%3Atrue%2C%22enable_publishing%22%3Afalse%2C%22hideideas%22%3Atrue%2C%22enabled_features%22%3A%5B%22countdown%22%2C%22header_widget%22%2C%22header_symbol_search%22%2C%22header_resolutions%22%2C%22header_chart_type%22%2C%22header_indicators%22%2C%22header_compare%22%2C%22header_settings%22%2C%22header_fullscreen_button%22%2C%22header_screenshot%22%2C%22header_saveload%22%2C%22header_undo_redo%22%2C%22use_localstorage_for_settings%22%2C%22save_chart_properties_to_local_storage%22%5D%2C%22overrides%22%3A%7B%22mainSeriesProperties.showCountdown%22%3Atrue%2C%22scalesProperties.showCountdown%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible%22%3Atrue%2C%22mainSeriesProperties.highLowAvgPrice.highLowPriceLinesColor%22%3A%22%232196F3%22%7D%7D"
               allowtransparency="true" frameborder="0">
             </iframe>
             <script>
@@ -1942,28 +1943,32 @@
                     "mainSeriesProperties.haStyle.borderUpColor": settings.upColor,
                     "mainSeriesProperties.haStyle.borderDownColor": settings.downColor
                   };
-                  var features = ['header_widget', 'header_resolutions', 'header_indicators', 'header_symbol_search', 'header_chart_type', 'header_settings', 'header_fullscreen_button', 'use_localstorage_for_settings', 'save_chart_properties_to_local_storage', 'chart_template_storage', 'study_templates', 'side_toolbar_in_fullscreen_mode'];
-                  if (showCountdown) features.push('countdown');
+                  var features = ['header_widget', 'header_symbol_search', 'header_resolutions', 'header_chart_type', 'header_indicators', 'header_compare', 'header_settings', 'header_fullscreen_button', 'header_screenshot', 'header_saveload', 'header_undo_redo', 'use_localstorage_for_settings', 'save_chart_properties_to_local_storage'];
+                  if (showCountdown) features.unshift('countdown');
 
-                  var studiesPart = '';
+                  var widgetConfig = {
+                    "autosize": true,
+                    "symbol": tvSym,
+                    "interval": intervalCode,
+                    "timezone": settings.timezone,
+                    "theme": "dark",
+                    "style": String(settings.chartStyle || '1'),
+                    "locale": "en",
+                    "allow_symbol_change": true,
+                    "calendar": false,
+                    "hide_side_toolbar": false,
+                    "hide_top_toolbar": false,
+                    "withdateranges": false,
+                    "save_image": true,
+                    "enable_publishing": false,
+                    "hideideas": true,
+                    "enabled_features": features,
+                    "overrides": overrides
+                  };
                   if (savedIndicators && savedIndicators.length > 0) {
-                    studiesPart = '&studies=' + encodeURIComponent(JSON.stringify(savedIndicators));
+                    widgetConfig.studies = savedIndicators;
                   }
-                  var earlySrc = 'https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe' +
-                    '&symbol=' + encodeURIComponent(tvSym) +
-                    '&interval=' + intervalCode +
-                    '&theme=dark' +
-                    '&style=' + settings.chartStyle +
-                    '&timezone=' + encodeURIComponent(settings.timezone) +
-                    '&hide_side_toolbar=0' +
-                    '&allow_symbol_change=1' +
-                    '&save_image=1' +
-                    '&enable_publishing=0' +
-                    '&hideideas=1' +
-                    '&locale=en' +
-                    '&enabled_features=' + encodeURIComponent(JSON.stringify(features)) +
-                    '&overrides=' + encodeURIComponent(JSON.stringify(overrides)) +
-                    studiesPart;
+                  var earlySrc = 'https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#' + encodeURIComponent(JSON.stringify(widgetConfig));
                   iframe.src = earlySrc;
                   iframe.setAttribute('data-applied-url', earlySrc);
                 } catch(e) {}
