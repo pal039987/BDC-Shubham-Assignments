@@ -5840,21 +5840,38 @@ html:not(.is-native-apk) .tv-fs-header {
     color: #8b92a4;
   }
 
+  html:not(.is-native-apk) .dtod-pct-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  html:not(.is-native-apk) .dtod-min-helper {
+    font-size: 11px;
+    font-weight: 500;
+    color: #8b92a4;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+  }
+
   html:not(.is-native-apk) .dtod-pct-chips {
     display: flex;
+    align-items: center;
     gap: 6px;
-    margin-top: 4px;
+    margin-top: 0;
   }
 
   html:not(.is-native-apk) .dtod-pchip {
-    flex: 1;
+    flex: initial;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
+    border-radius: 4px;
     background: rgba(255, 255, 255, 0.03);
     color: #8b92a4;
     font-size: 11px;
     font-weight: 600;
-    padding: 4px 0;
+    padding: 3px 10px;
     cursor: pointer;
     transition: all 0.15s;
   }

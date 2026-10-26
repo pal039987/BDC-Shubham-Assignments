@@ -3622,6 +3622,8 @@ function getTradingViewOverrides() {
   const overrides = {
     "mainSeriesProperties.showCountdown": true,
     "scalesProperties.showCountdown": true,
+    "mainSeriesProperties.highLowAvgPrice.highLowPriceLabelsVisible": true,
+    "mainSeriesProperties.highLowAvgPrice.highLowPriceLinesColor": "#2196F3",
     "paneProperties.background": bg,
     "paneProperties.vertGridProperties.color": gridColor,
     "paneProperties.horzGridProperties.color": gridColor,
@@ -3684,7 +3686,7 @@ function renderTradingViewChart() {
     studiesParam = `&studies=${encodeURIComponent(JSON.stringify(activeChartIndicators))}`;
   }
 
-  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}${studiesParam}`;
+  const newSrc = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}${studiesParam}`;
 
   const currentApplied = iframe.getAttribute('data-applied-url');
   if (forceReload || !iframe.src || currentApplied !== newSrc || iframe.src !== newSrc) {
@@ -3770,7 +3772,7 @@ function openFullscreenChart() {
     fsStudiesParam = `&studies=${encodeURIComponent(JSON.stringify(activeChartIndicators))}`;
   }
 
-  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&hide_top_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&withdateranges=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}${fsStudiesParam}`;
+  const url = `https://s.tradingview.com/widgetembed/?frameElementId=tv-fullscreen-iframe&symbol=${encodeURIComponent(tvSymbol)}&interval=${intervalCode}&theme=dark&style=${currentChartSettings.chartStyle}&timezone=${encodeURIComponent(currentChartSettings.timezone)}&hide_side_toolbar=0&allow_symbol_change=1&save_image=1&enable_publishing=0&hideideas=1&locale=en&enabled_features=${encodeURIComponent(JSON.stringify(enabledFeatures))}&overrides=${encodeURIComponent(JSON.stringify(overrides))}${fsStudiesParam}`;
   const currentApplied = iframe.getAttribute('data-applied-url');
   if (forceReload || !iframe.src || currentApplied !== url || iframe.src !== url) {
     iframe.setAttribute('data-applied-url', url);
@@ -6059,7 +6061,7 @@ function setupOnboardingSwipe() {
 // ─── DESKTOP ENHANCED TRADING WORKSTATION LOGIC (ORIGINAL STYLISH UI) ────
 let desktopOrderSide = 'long';
 let desktopOrderType = 'market';
-let desktopLeverage = 20;
+let desktopLeverage = 150;
 let desktopSizeCoins = 0.05;
 
 function syncDesktopHeaderState() {
@@ -6596,7 +6598,7 @@ function setDesktopOrderType(type) {
 }
 
 function handleDesktopLeverageInput(val) {
-  desktopLeverage = Math.min(parseInt(val) || 20, selectedCoin.maxLev || 150);
+  desktopLeverage = Math.min(parseInt(val) || 150, selectedCoin.maxLev || 150);
   const levVal = document.getElementById('dtod-lev-val');
   if (levVal) levVal.textContent = `${desktopLeverage}x`;
   const levPillVal = document.getElementById('dtod-lev-pill-val');
@@ -6658,7 +6660,8 @@ function setDesktopOrderPct(pct) {
 
   const chips = document.querySelectorAll('.dtod-pchip');
   chips.forEach(c => {
-    c.classList.toggle('active', c.textContent.trim() === `${pct}%`);
+    const isAct = (pct === 100 && c.textContent.trim() === 'Max') || c.textContent.trim() === `${pct}%`;
+    c.classList.toggle('active', isAct);
   });
   updateDesktopOrderCalculations();
 }
@@ -6667,6 +6670,12 @@ function updateDesktopOrderCalculations() {
   if (!selectedCoin) return;
   const unitEl = document.getElementById('dtod-coin-unit');
   if (unitEl) unitEl.textContent = selectedCoin.symbol;
+
+  const minHelper = document.getElementById('dtod-min-helper');
+  if (minHelper) {
+    const minVal = selectedCoin.symbol === 'BTC' ? '0.002' : '0.1';
+    minHelper.textContent = `Min : ${minVal} ${selectedCoin.symbol}`;
+  }
 
   const price = desktopOrderType === 'limit'
     ? (parseFloat(document.getElementById('dtod-limit-price')?.value) || selectedCoin.price)
