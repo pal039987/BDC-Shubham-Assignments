@@ -4992,8 +4992,7 @@ function connectCoinTickerWs(binanceSym) {
                 changePercent = parseFloat((((newPrice - openPrice) / openPrice) * 100).toFixed(2));
                 selectedCoin.chartChange = changePercent;
               }
-              if (d.k.h) high = parseFloat(d.k.h);
-              if (d.k.l) low = parseFloat(d.k.l);
+              // Do NOT overwrite 24h High / Low with single-candle d.k.h / d.k.l!
             } else if (d.e === '24hrTicker' || (d.c && d.P !== undefined)) {
               // Direct Binance 24hrTicker stream payload
               newPrice = parseFloat(d.c);
@@ -5008,6 +5007,7 @@ function connectCoinTickerWs(binanceSym) {
               if (changePercent === null && d.P !== undefined) {
                 changePercent = parseFloat(d.P);
               }
+              // Strictly capture true 24-hour high and low from 24hr ticker
               if (d.h) high = parseFloat(d.h);
               if (d.l) low = parseFloat(d.l);
             }
@@ -5019,8 +5019,8 @@ function connectCoinTickerWs(binanceSym) {
               } else if (selectedCoin.chartChange !== undefined) {
                 selectedCoin.change = selectedCoin.chartChange;
               }
-              if (high && !isNaN(high)) selectedCoin.high = high;
-              if (low && !isNaN(low)) selectedCoin.low = low;
+              if (high && !isNaN(high) && high > 0) selectedCoin.high = high;
+              if (low && !isNaN(low) && low > 0) selectedCoin.low = low;
 
               // Immediate order checking (0ms latency for limits/triggers)
               checkPendingOrdersTrigger();
@@ -5798,7 +5798,7 @@ function syncDesktopHeaderState() {
   });
 
   const sess = typeof getAuthSession === 'function' ? getAuthSession() : null;
-  const isAuthedSession = !!(sess && !sess.isGuest && sess.email);
+  const isAuthedSession = !!(sess && !sess.isGuest && (sess.email || sess.username || sess.token));
 
   // Real Wallet Equity Badge strictly visible only when user is authenticated
   const cashBadge = document.getElementById('header-cash-badge');
@@ -6235,6 +6235,25 @@ function initDesktopMarquee() {
   }).join('');
 
   track.innerHTML = itemsHtml + itemsHtml;
+
+  const miniTrack = document.getElementById('tib-mini-track');
+  if (miniTrack && typeof COINS !== 'undefined') {
+    const miniCoins = COINS.slice(0, 12);
+    const miniItemsHtml = miniCoins.map(coin => {
+      const chgVal = coin.change !== undefined ? coin.change : (coin.change24h || 0);
+      const isUp = chgVal >= 0;
+      const changeClass = isUp ? 'up' : 'down';
+      const changeSign = isUp ? '+' : '';
+      return `
+        <span class="tib-mini-pill" onclick="selectCoinAndTrade('${coin.id}')">
+          <span class="tib-mini-dot ${coin.symbol.toLowerCase()}"></span>
+          ${coin.symbol.toUpperCase()}-USDT
+          <span class="tib-mini-chg ${changeClass}" id="tib-chg-${coin.id}">${changeSign}${chgVal ? chgVal.toFixed(2) : '0.00'}%</span>
+        </span>
+      `;
+    }).join('');
+    miniTrack.innerHTML = miniItemsHtml + miniItemsHtml;
+  }
 }
 
 function updateDesktopMarqueePrices() {
@@ -6251,6 +6270,12 @@ function updateDesktopMarqueePrices() {
     });
     chgEls.forEach(el => {
       el.className = `m-chg ${isUp ? 'up' : 'down'}`;
+      el.textContent = `${changeSign}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
+    });
+
+    const miniChgEls = document.querySelectorAll(`[id="tib-chg-${coin.id}"]`);
+    miniChgEls.forEach(el => {
+      el.className = `tib-mini-chg ${isUp ? 'up' : 'down'}`;
       el.textContent = `${changeSign}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
     });
   });

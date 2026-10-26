@@ -5182,12 +5182,14 @@ html:not(.is-native-apk) .tv-fs-header {
    MOBILE / NATIVE APK SAFEGUARD (HIDE DESKTOP-SPECIFIC WORKSTATION DOCKS)
    ══════════════════════════════════════════════════════════════════ */
 .desktop-header-nav,
-.header-cash-badge,
 .header-trade-cta-btn,
 .desktop-marquee-wrap,
 .desktop-trade-order-dock,
 .brand-sub-badge {
   display: none !important;
+}
+.header-cash-badge {
+  display: none;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -5305,7 +5307,7 @@ html:not(.is-native-apk) .tv-fs-header {
   }
 
   html:not(.is-native-apk) .header-cash-badge {
-    display: flex;
+    display: inline-flex !important;
     align-items: center;
     gap: 8px;
     background: rgba(16, 185, 129, 0.08);
@@ -7875,7 +7877,33 @@ html:not(.is-native-apk) .tv-fs-header {
 .tib-mini-tickers {
   display: flex;
   align-items: center;
-  gap: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 680px;
+  mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+}
+
+.tib-mini-track {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: max-content;
+  will-change: transform;
+  animation: tibMarqueeScroll 28s linear infinite;
+}
+
+.tib-mini-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes tibMarqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .tib-mini-pill {
@@ -7887,6 +7915,7 @@ html:not(.is-native-apk) .tv-fs-header {
   color: #8b92a4;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .tib-mini-pill:hover {
@@ -7897,6 +7926,7 @@ html:not(.is-native-apk) .tv-fs-header {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 .tib-mini-dot.btc { background: #ff9900; }
 .tib-mini-dot.eth { background: #627eea; }
