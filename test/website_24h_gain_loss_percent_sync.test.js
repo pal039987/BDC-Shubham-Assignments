@@ -51,3 +51,4 @@ assert.ok(!androidAppJs.includes('const is24Up = chg24 >= 0;'), 'Android app.js 
 console.log('  ✓ Mobile APK assets untouched; all fixes applied strictly to website frontend');
 
 console.log('\n=== ALL WEBSITE 24-HOUR GAIN/LOSS SYNC TESTS PASSED! ===\n');
+

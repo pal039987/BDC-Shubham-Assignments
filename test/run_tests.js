@@ -53,6 +53,7 @@ const testFiles = [
   'test/trade_now_and_instant_ticker.test.js',
   'test/chart_change_sync_and_fullscreen_icon.test.js',
   'test/coin_prices_and_gold_chart_sync.test.js',
+  'test/website_price_flicker_and_diffing.test.js',
   'test/website_24h_gain_loss_percent_sync.test.js'
 ];
 
@@ -97,7 +98,7 @@ async function main() {
   }
 
   console.log('\n========================================');
-  console.log('🎉 ALL 27 VTRADE TEST SUITES PASSED SUCCESSFULLY!');
+  console.log(`🎉 ALL ${testFiles.length} VTRADE TEST SUITES PASSED SUCCESSFULLY!`);
   console.log('========================================\n');
   cleanup();
   process.exit(0);
