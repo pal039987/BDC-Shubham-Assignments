@@ -5509,11 +5509,13 @@ html:not(.is-native-apk) .tv-fs-header {
     font-weight: 600;
     color: #d1d5db;
     font-family: var(--font-price, monospace);
+    font-variant-numeric: tabular-nums;
   }
 
   html:not(.is-native-apk) .m-chg {
     font-size: 11px;
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 
   html:not(.is-native-apk) .m-chg.up {
@@ -7600,6 +7602,7 @@ html:not(.is-native-apk) .tv-fs-header {
   font-weight: 800;
   color: #ffffff;
   font-family: var(--font-price);
+  font-variant-numeric: tabular-nums;
 }
 
 .bento-chg {
@@ -7607,6 +7610,7 @@ html:not(.is-native-apk) .tv-fs-header {
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 8px;
+  font-variant-numeric: tabular-nums;
 }
 
 .bento-chg.up {
@@ -8033,6 +8037,7 @@ html:not(.is-native-apk) .tv-fs-header {
 
 .tib-mini-chg {
   font-family: var(--font-price, monospace);
+  font-variant-numeric: tabular-nums;
 }
 .tib-mini-chg.up { color: #00c087; }
 .tib-mini-chg.down { color: #f04f5e; }

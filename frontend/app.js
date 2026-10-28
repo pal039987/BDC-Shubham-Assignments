@@ -3595,7 +3595,7 @@ function renderMarketsScreen() {
   // Search filter
   if (marketSearchQuery) {
     const q = marketSearchQuery.toLowerCase();
-    list = list.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q) || (c.id === 'gold' && 'gold/usdt'.includes(q)));
+    list = list.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q) || (c.pair && c.pair.toLowerCase().includes(q)) || (c.id === 'gold' && ('gold/usdt'.includes(q) || 'xau/usd'.includes(q))));
   }
 
   // Sort
@@ -3609,7 +3609,30 @@ function renderMarketsScreen() {
     list.sort((a, b) => marketSortAsc ? (parseFloat(a.vol) || 0) - (parseFloat(b.vol) || 0) : (parseFloat(b.vol) || 0) - (parseFloat(a.vol) || 0));
   }
 
-  if (tbody) {
+  const listKey = list.map(c => c.id).join(',');
+  if (tbody && typeof tbody.getAttribute === 'function' && tbody.getAttribute('data-rendered-key') === listKey && tbody.children && tbody.children.length === list.length) {
+    list.forEach((c, i) => {
+      const row = tbody.children[i];
+      if (!row || !row.children) return;
+      const isUp = c.change >= 0;
+      const priceTd = row.children[1];
+      const chgTd = row.children[2]?.querySelector ? row.children[2].querySelector('.coin-chg-badge') : null;
+      const hlTd = row.children[3];
+      const formattedPrice = `${getCurrencySymbol()}${fmtPrice(c.price)}`;
+      if (priceTd && priceTd.textContent !== formattedPrice) priceTd.textContent = formattedPrice;
+      if (chgTd) {
+        const formattedChg = `${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%`;
+        if (chgTd.textContent !== formattedChg) chgTd.textContent = formattedChg;
+        const targetClass = `coin-chg-badge ${isUp ? 'up' : 'down'}`;
+        if (chgTd.className !== targetClass) chgTd.className = targetClass;
+      }
+      if (hlTd) {
+        const formattedHl = `${getCurrencySymbol()}${fmtPrice(c.high || c.price)} / ${getCurrencySymbol()}${fmtPrice(c.low || c.price)}`;
+        if (hlTd.textContent !== formattedHl) hlTd.textContent = formattedHl;
+      }
+    });
+  } else if (tbody) {
+    if (typeof tbody.setAttribute === 'function') tbody.setAttribute('data-rendered-key', listKey);
     tbody.innerHTML = list.map(c => {
       const isUp = c.change >= 0;
       const displayPair = getCoinDisplayPair(c);
@@ -5843,10 +5866,12 @@ async function pollLiveGoldPrice() {
         const goldR = await fetch('https://api.gold-api.com/price/XAU', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
         if (goldR && goldR.price) {
           gold.price = parseFloat(parseFloat(goldR.price).toFixed(2));
-          if (!gold.open || gold.open > 4100) gold.open = 3992.60;
+          if (!gold.open) gold.open = 4060.34;
           const diff = gold.price - gold.open;
           gold.change = parseFloat(((diff / gold.open) * 100).toFixed(2));
           gold.change24h = gold.change;
+          gold.chartChange = gold.change;
+        } else if (gold.price) {
           gold.chartChange = gold.change;
         } else {
           const bResp = await fetch('https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PAXGUSDT', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
@@ -5879,6 +5904,8 @@ async function pollLiveGoldPrice() {
           if (typeof updateDesktopOrderCalculations === 'function') updateDesktopOrderCalculations();
         }
       }
+      updateDesktopMarqueePrices();
+      if (typeof updateSpotlightBentoPrices === 'function') updateSpotlightBentoPrices();
     }
     clearTimeout(goldTmr);
   } catch (gErr) {}
@@ -6101,7 +6128,9 @@ async function fetchLiveBinanceTickers() {
                 c.vol = qv >= 1e9 ? (qv / 1e9).toFixed(2) + 'B' : (qv / 1e6).toFixed(1) + 'M';
               }
               if (selectedCoin && c.id === selectedCoin.id) {
-                selectedCoin.price = c.price;
+                if (activeTab !== 'trade' || !liveTickerWs || liveTickerWs.readyState !== 1) {
+                  selectedCoin.price = c.price;
+                }
                 selectedCoin.change = c.change;
                 selectedCoin.change24h = c.change;
                 if (c.open24h) selectedCoin.open24h = c.open24h;
@@ -7413,19 +7442,25 @@ function updateDesktopMarqueePrices() {
     const chgVal = coin.change !== undefined ? coin.change : (coin.change24h || 0);
     const isUp = chgVal >= 0;
     const changeSign = isUp ? '+' : '';
+    const formattedPrice = `${getCurrencySymbol()}${fmtPrice(coin.price)}`;
+    const formattedChg = `${changeSign}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
+    const targetClass = `m-chg ${isUp ? 'up' : 'down'}`;
 
     priceEls.forEach(el => {
-      el.textContent = `${getCurrencySymbol()}${fmtPrice(coin.price)}`;
+      if (el.textContent !== formattedPrice) {
+        el.textContent = formattedPrice;
+      }
     });
     chgEls.forEach(el => {
-      el.className = `m-chg ${isUp ? 'up' : 'down'}`;
-      el.textContent = `${changeSign}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
+      if (el.className !== targetClass) el.className = targetClass;
+      if (el.textContent !== formattedChg) el.textContent = formattedChg;
     });
 
     const miniChgEls = document.querySelectorAll(`[id="tib-chg-${coin.id}"]`);
+    const targetMiniClass = `tib-mini-chg ${isUp ? 'up' : 'down'}`;
     miniChgEls.forEach(el => {
-      el.className = `tib-mini-chg ${isUp ? 'up' : 'down'}`;
-      el.textContent = `${changeSign}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
+      if (el.className !== targetMiniClass) el.className = targetMiniClass;
+      if (el.textContent !== formattedChg) el.textContent = formattedChg;
     });
   });
 }
@@ -7959,76 +7994,121 @@ function renderTradeDeskOrderBookAndTrades() {
 
   const price = selectedCoin.price;
   if (obContainer) {
-    const asks = [
-      { p: price * 1.0032, s: (Math.random() * 2.8 + 0.1).toFixed(3), w: 85 },
-      { p: price * 1.0025, s: (Math.random() * 2.2 + 0.1).toFixed(3), w: 72 },
-      { p: price * 1.0019, s: (Math.random() * 3.4 + 0.2).toFixed(3), w: 90 },
-      { p: price * 1.0013, s: (Math.random() * 1.5 + 0.1).toFixed(3), w: 45 },
-      { p: price * 1.0008, s: (Math.random() * 0.9 + 0.05).toFixed(3), w: 30 },
-      { p: price * 1.0003, s: (Math.random() * 0.4 + 0.02).toFixed(3), w: 18 }
-    ];
+    const obRendered = (obContainer.dataset && obContainer.dataset.rendered) || (typeof obContainer.getAttribute === 'function' && obContainer.getAttribute('data-rendered'));
+    const obSym = (obContainer.dataset && obContainer.dataset.renderedSym) || (typeof obContainer.getAttribute === 'function' && obContainer.getAttribute('data-rendered-sym'));
+    if (!obRendered || obSym !== selectedCoin.symbol) {
+      if (obContainer.dataset) {
+        obContainer.dataset.rendered = '1';
+        obContainer.dataset.renderedSym = selectedCoin.symbol;
+      }
+      if (typeof obContainer.setAttribute === 'function') {
+        obContainer.setAttribute('data-rendered', '1');
+        obContainer.setAttribute('data-rendered-sym', selectedCoin.symbol);
+      }
+      const asks = [
+        { p: price * 1.0032, s: '1.420', w: 85 },
+        { p: price * 1.0025, s: '0.850', w: 72 },
+        { p: price * 1.0019, s: '2.140', w: 90 },
+        { p: price * 1.0013, s: '0.950', w: 45 },
+        { p: price * 1.0008, s: '0.420', w: 30 },
+        { p: price * 1.0003, s: '0.180', w: 18 }
+      ];
+      const bids = [
+        { p: price * 0.9997, s: '0.350', w: 22 },
+        { p: price * 0.9992, s: '0.920', w: 38 },
+        { p: price * 0.9986, s: '1.850', w: 68 },
+        { p: price * 0.9980, s: '1.120', w: 55 },
+        { p: price * 0.9973, s: '2.400', w: 88 },
+        { p: price * 0.9965, s: '3.150', w: 95 }
+      ];
 
-    const bids = [
-      { p: price * 0.9997, s: (Math.random() * 0.5 + 0.05).toFixed(3), w: 22 },
-      { p: price * 0.9992, s: (Math.random() * 1.2 + 0.1).toFixed(3), w: 38 },
-      { p: price * 0.9986, s: (Math.random() * 2.5 + 0.2).toFixed(3), w: 68 },
-      { p: price * 0.9980, s: (Math.random() * 1.8 + 0.1).toFixed(3), w: 55 },
-      { p: price * 0.9973, s: (Math.random() * 3.2 + 0.4).toFixed(3), w: 88 },
-      { p: price * 0.9965, s: (Math.random() * 4.1 + 0.6).toFixed(3), w: 95 }
-    ];
-
-    obContainer.innerHTML = `
-      <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
-        <span>Price (${selectedCoin.symbol})</span>
-        <span>Size</span>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:3px;">
-        ${asks.map(a => `
-          <div style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); padding:3px 6px; border-radius:4px; overflow:hidden;">
-            <div style="position:absolute; right:0; top:0; bottom:0; width:${a.w}%; background:rgba(240, 79, 94, 0.12); pointer-events:none;"></div>
-            <span style="color:#f04f5e; font-weight:700; position:relative; z-index:1;">${fmtPrice(a.p)}</span>
-            <span style="color:#c0c6d4; position:relative; z-index:1;">${a.s}</span>
-          </div>
-        `).join('')}
-      </div>
-      <div style="text-align:center; padding:8px 0; font-size:15px; font-weight:800; font-family:var(--font-price); color:#ff9900; background:rgba(255, 153, 0, 0.05); border-radius:6px; margin:6px 0; display:flex; align-items:center; justify-content:center; gap:6px;">
-        <span>${getCurrencySymbol()}${fmtPrice(price)}</span>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:3px;">
-        ${bids.map(b => `
-          <div style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); padding:3px 6px; border-radius:4px; overflow:hidden;">
-            <div style="position:absolute; right:0; top:0; bottom:0; width:${b.w}%; background:rgba(0, 192, 135, 0.12); pointer-events:none;"></div>
-            <span style="color:#00c087; font-weight:700; position:relative; z-index:1;">${fmtPrice(b.p)}</span>
-            <span style="color:#c0c6d4; position:relative; z-index:1;">${b.s}</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
+      obContainer.innerHTML = `
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
+          <span>Price (${selectedCoin.symbol})</span>
+          <span>Size</span>
+        </div>
+        <div class="ob-asks-list" style="display:flex; flex-direction:column; gap:3px;">
+          ${asks.map((a, i) => `
+            <div class="ob-ask-row" data-idx="${i}" style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); font-variant-numeric:tabular-nums; padding:3px 6px; border-radius:4px; overflow:hidden;">
+              <div class="ob-bar" style="position:absolute; right:0; top:0; bottom:0; width:${a.w}%; background:rgba(240, 79, 94, 0.12); pointer-events:none;"></div>
+              <span class="ob-p" style="color:#f04f5e; font-weight:700; position:relative; z-index:1;">${fmtPrice(a.p)}</span>
+              <span class="ob-s" style="color:#c0c6d4; position:relative; z-index:1;">${a.s}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="ob-mid-price" style="text-align:center; padding:8px 0; font-size:15px; font-weight:800; font-family:var(--font-price); font-variant-numeric:tabular-nums; color:#ff9900; background:rgba(255, 153, 0, 0.05); border-radius:6px; margin:6px 0; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <span class="ob-mid-val">${getCurrencySymbol()}${fmtPrice(price)}</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        </div>
+        <div class="ob-bids-list" style="display:flex; flex-direction:column; gap:3px;">
+          ${bids.map((b, i) => `
+            <div class="ob-bid-row" data-idx="${i}" style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); font-variant-numeric:tabular-nums; padding:3px 6px; border-radius:4px; overflow:hidden;">
+              <div class="ob-bar" style="position:absolute; right:0; top:0; bottom:0; width:${b.w}%; background:rgba(0, 192, 135, 0.12); pointer-events:none;"></div>
+              <span class="ob-p" style="color:#00c087; font-weight:700; position:relative; z-index:1;">${fmtPrice(b.p)}</span>
+              <span class="ob-s" style="color:#c0c6d4; position:relative; z-index:1;">${b.s}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } else {
+      const midVal = obContainer.querySelector('.ob-mid-val');
+      const formattedMid = `${getCurrencySymbol()}${fmtPrice(price)}`;
+      if (midVal && midVal.textContent !== formattedMid) {
+        midVal.textContent = formattedMid;
+      }
+      const askMultipliers = [1.0032, 1.0025, 1.0019, 1.0013, 1.0008, 1.0003];
+      obContainer.querySelectorAll('.ob-ask-row').forEach((row, i) => {
+        const pEl = row.querySelector('.ob-p');
+        if (pEl) {
+          const fp = fmtPrice(price * (askMultipliers[i] || 1.001));
+          if (pEl.textContent !== fp) pEl.textContent = fp;
+        }
+      });
+      const bidMultipliers = [0.9997, 0.9992, 0.9986, 0.9980, 0.9973, 0.9965];
+      obContainer.querySelectorAll('.ob-bid-row').forEach((row, i) => {
+        const pEl = row.querySelector('.ob-p');
+        if (pEl) {
+          const fp = fmtPrice(price * (bidMultipliers[i] || 0.999));
+          if (pEl.textContent !== fp) pEl.textContent = fp;
+        }
+      });
+    }
   }
 
   if (trContainer) {
-    const times = ['10:35:12', '10:35:08', '10:34:55', '10:34:42', '10:34:30', '10:34:11', '10:33:58', '10:33:45'];
-    trContainer.innerHTML = `
-      <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
-        <span>Price</span>
-        <span>Size</span>
-        <span>Time</span>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:3px;">
-        ${times.map((t, idx) => {
-          const isBuy = idx % 2 === 0;
-          const trPrice = price * (1 + (isBuy ? 0.0002 : -0.0002) * idx);
-          return `
-            <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); padding:3px 6px;">
-              <span style="color:${isBuy ? '#00c087' : '#f04f5e'}; font-weight:700;">${fmtPrice(trPrice)}</span>
-              <span style="color:#c0c6d4;">${(Math.random() * 0.8 + 0.05).toFixed(3)}</span>
-              <span style="color:#6b7280; font-size:11px;">${t}</span>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
+    const trRendered = (trContainer.dataset && trContainer.dataset.rendered) || (typeof trContainer.getAttribute === 'function' && trContainer.getAttribute('data-rendered'));
+    const trSym = (trContainer.dataset && trContainer.dataset.renderedSym) || (typeof trContainer.getAttribute === 'function' && trContainer.getAttribute('data-rendered-sym'));
+    if (!trRendered || trSym !== selectedCoin.symbol) {
+      if (trContainer.dataset) {
+        trContainer.dataset.rendered = '1';
+        trContainer.dataset.renderedSym = selectedCoin.symbol;
+      }
+      if (typeof trContainer.setAttribute === 'function') {
+        trContainer.setAttribute('data-rendered', '1');
+        trContainer.setAttribute('data-rendered-sym', selectedCoin.symbol);
+      }
+      const times = ['10:35:12', '10:35:08', '10:34:55', '10:34:42', '10:34:30', '10:34:11', '10:33:58', '10:33:45'];
+      trContainer.innerHTML = `
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b92a4; padding-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">
+          <span>Price</span>
+          <span>Size</span>
+          <span>Time</span>
+        </div>
+        <div class="tr-list-inner" style="display:flex; flex-direction:column; gap:3px;">
+          ${times.map((t, idx) => {
+            const isBuy = idx % 2 === 0;
+            const trPrice = price * (1 + (isBuy ? 0.0002 : -0.0002) * idx);
+            return `
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); font-variant-numeric:tabular-nums; padding:3px 6px;">
+                <span class="tr-p" style="color:${isBuy ? '#00c087' : '#f04f5e'}; font-weight:700;">${fmtPrice(trPrice)}</span>
+                <span style="color:#c0c6d4;">${(0.15 + (idx * 0.12)).toFixed(3)}</span>
+                <span style="color:#6b7280; font-size:11px;">${t}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
   }
 }
 
