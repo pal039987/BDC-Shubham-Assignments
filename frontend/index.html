@@ -2103,7 +2103,7 @@
 
             <!-- Mode & Leverage Pill Row (Screenshot 1) -->
             <div class="dtod-sub-row">
-              <button class="dtod-pill-mode" id="dtod-pill-mode" type="button">Isolated Margin Mode</button>
+              <button class="dtod-pill-mode" id="dtod-pill-mode" type="button" onclick="toggleDesktopMarginMode()">Isolated Margin Mode</button>
               <button class="dtod-pill-lev" id="dtod-pill-lev" type="button" onclick="toggleDesktopLevDropdown()">
                 <span id="dtod-lev-pill-val">150x</span> ▾
               </button>
@@ -2145,10 +2145,10 @@
             <div class="dtod-input-group">
               <div class="dtod-label-row">
                 <label class="dtod-label">Quantity</label>
-                <div class="dtod-unit-toggle" id="dtod-unit-toggle">
+                <div class="dtod-unit-toggle" id="dtod-unit-toggle" onclick="toggleDesktopTradeUnit()" style="cursor:pointer;" title="Toggle Quantity Unit (Coin / USDT)">
                   <span class="dtod-u-active" id="dtod-coin-unit">BTC</span>
                   <span class="dtod-unit-sep">|</span>
-                  <span>USDT</span>
+                  <span id="dtod-usdt-unit">USDT</span>
                 </div>
               </div>
               <div class="dtod-input-box">

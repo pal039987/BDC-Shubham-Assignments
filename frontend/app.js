@@ -1425,7 +1425,7 @@ const CLOUD_API_BASE = 'https://vtrade-crypto.onrender.com';
 
 function getApiEndpoint(path) {
   if (typeof window !== 'undefined') {
-    if (isNativePlatform() || window.location.protocol === 'capacitor:' || window.location.protocol === 'file:' || window.location.hostname === 'localhost') {
+    if (isNativePlatform() || window.location.protocol === 'capacitor:' || window.location.protocol === 'file:') {
       return CLOUD_API_BASE + path;
     }
   }
@@ -2998,8 +2998,8 @@ function calculateUnrealizedPnL() {
 }
 
 function getNetEquity() {
-  const { totalPnL } = calculateUnrealizedPnL();
-  return Math.max(0, walletState.cashBalance + totalPnL);
+  const { totalPnL, totalMargin } = calculateUnrealizedPnL();
+  return Math.max(0, (walletState.cashBalance || 0) + (totalMargin || 0) + totalPnL);
 }
 
 // ─── 9. HOME SCREEN RENDERING & PORTFOLIO GRAPH ──────────────────────────
@@ -5323,7 +5323,7 @@ function handleSizeInput(val) {
 
 function setOrderSheetPct(pct) {
   const numericPct = pct > 1 ? pct / 100 : pct;
-  const availableCash = (walletState.cashBalance && walletState.cashBalance >= 10) ? walletState.cashBalance : 10000;
+  const availableCash = (typeof walletState.cashBalance === 'number') ? walletState.cashBalance : 10000;
   const maxNotional = availableCash * sheetLeverage * numericPct;
   sheetSizeCoins = Math.max(0.0001, parseFloat((maxNotional / (selectedCoin.price || 80000)).toFixed(4)));
 
@@ -5426,8 +5426,8 @@ function executeOrderFromSheet() {
     }
   }
 
-  if (sheetOrderType === 'limit') {
-    // Add pending limit order
+  if (sheetOrderType === 'limit' || sheetOrderType === 'stop-l' || sheetOrderType === 'stop-m') {
+    // Add pending limit/stop order
     walletState.orders.unshift({
       id: Date.now() + Math.floor(Math.random() * 1000),
       coinId: selectedCoin.id,
@@ -5435,6 +5435,8 @@ function executeOrderFromSheet() {
       pair: selectedCoin.pair,
       side: sheetSide,
       price: price,
+      triggerPrice: price,
+      type: sheetOrderType,
       size: sheetSizeCoins,
       leverage: sheetLeverage,
       margin: reqMarginUsd,
@@ -5445,7 +5447,8 @@ function executeOrderFromSheet() {
     closeOrderSheet();
     syncWalletWithCloud(true);
     renderTradeBottomLedger();
-    showToast(`Pending Limit Order placed: ${sheetSizeCoins} ${selectedCoin.symbol} @ ${getCurrencySymbol()}${fmtPrice(price)}`, 'info');
+    const orderTitle = sheetOrderType === 'limit' ? 'Pending Limit Order' : (sheetOrderType === 'stop-l' ? 'Stop-Limit Order' : 'Stop-Market Order');
+    showToast(`${orderTitle} placed: ${sheetSizeCoins} ${selectedCoin.symbol} @ ${getCurrencySymbol()}${fmtPrice(price)}`, 'info');
   } else {
     // Market order executes immediately
     walletState.cashBalance = Math.max(0, walletState.cashBalance - reqMarginUsd);
@@ -5884,6 +5887,7 @@ async function pollLiveGoldPrice() {
 function startGoldLivePolling() {
   if (goldLivePollTimer) clearInterval(goldLivePollTimer);
   goldLivePollTimer = setInterval(() => {
+    if (typeof document !== 'undefined' && document.hidden) return;
     if (activeTab === 'trade' && selectedCoin && selectedCoin.id === 'gold') {
       pollLiveGoldPrice();
     }
@@ -6135,52 +6139,103 @@ function simulatePriceFluctuations() {
   // Pure authentic data: NO random drift simulation!
 }
 
-function checkPendingOrdersTrigger() {
-  // Check if any pending limit orders should execute
-  if (walletState.orders.length === 0) return;
-
+function checkPositionLiquidations() {
+  if (!walletState || !Array.isArray(walletState.positions) || walletState.positions.length === 0) return;
   const remaining = [];
-  walletState.orders.forEach(ord => {
-    const coin = COINS.find(c => c.id === ord.coinId);
-    if (!coin) { remaining.push(ord); return; }
+  let liquidatedCount = 0;
 
-    const isTriggered = ord.side === 'long' 
-      ? coin.price <= ord.price 
-      : coin.price >= ord.price;
+  walletState.positions.forEach(pos => {
+    const coin = COINS.find(c => c.id === pos.coinId) || (selectedCoin && selectedCoin.id === pos.coinId ? selectedCoin : null);
+    if (!coin || !coin.price) {
+      remaining.push(pos);
+      return;
+    }
+    const curPrice = coin.price;
+    const isLiquidated = (pos.side === 'long' && curPrice <= pos.liqPrice) ||
+                         (pos.side === 'short' && curPrice >= pos.liqPrice);
 
-    if (isTriggered && ord.margin <= walletState.cashBalance) {
-      // Execute order
-      walletState.cashBalance = Math.max(0, walletState.cashBalance - ord.margin);
-      const liqFactor = (1 / ord.leverage) * 0.9;
-      const liqPrice = ord.side === 'long' 
-        ? ord.price * (1 - liqFactor) 
-        : ord.price * (1 + liqFactor);
-
-      walletState.positions.unshift({
+    if (isLiquidated) {
+      liquidatedCount++;
+      walletState.tradesHistory = walletState.tradesHistory || [];
+      walletState.tradesHistory.unshift({
         id: Date.now() + Math.floor(Math.random() * 1000),
-        coinId: ord.coinId,
-        symbol: ord.symbol,
-        pair: ord.pair,
-        side: ord.side,
-        entryPrice: ord.price,
-        size: ord.size,
-        leverage: ord.leverage,
-        margin: ord.margin,
-        liqPrice: Math.max(0, liqPrice),
-        created_at: new Date().toISOString()
+        symbol: pos.symbol,
+        side: pos.side,
+        size: pos.size,
+        entryPrice: pos.entryPrice,
+        closePrice: pos.liqPrice || curPrice,
+        leverage: pos.leverage,
+        pnl: -pos.margin,
+        type: 'liquidation',
+        closed_at: new Date().toISOString()
       });
-
-      showToast(`🎯 Limit order executed! ${ord.side.toUpperCase()} ${ord.size} ${ord.symbol} @ ${getCurrencySymbol()}${fmtPrice(ord.price)}`, 'success');
+      showToast(`⚠️ Position Liquidated! ${pos.symbol} ${pos.side.toUpperCase()} reached ${getCurrencySymbol()}${fmtPrice(curPrice)}`, 'error');
     } else {
-      remaining.push(ord);
+      remaining.push(pos);
     }
   });
 
-  if (remaining.length !== walletState.orders.length) {
-    walletState.orders = remaining;
+  if (liquidatedCount > 0) {
+    walletState.positions = remaining;
     saveWalletState();
     renderAllViews();
+    syncWalletWithCloud(true);
   }
+}
+
+function checkPendingOrdersTrigger() {
+  // Check if any pending limit or stop orders should execute
+  if (walletState.orders.length > 0) {
+    const remaining = [];
+    walletState.orders.forEach(ord => {
+      const coin = COINS.find(c => c.id === ord.coinId);
+      if (!coin) { remaining.push(ord); return; }
+
+      let isTriggered = false;
+      if (ord.type === 'stop-l' || ord.type === 'stop-m') {
+        isTriggered = ord.side === 'long' ? coin.price >= ord.price : coin.price <= ord.price;
+      } else {
+        isTriggered = ord.side === 'long' ? coin.price <= ord.price : coin.price >= ord.price;
+      }
+
+      if (isTriggered && ord.margin <= walletState.cashBalance) {
+        // Execute order
+        walletState.cashBalance = Math.max(0, walletState.cashBalance - ord.margin);
+        const liqFactor = (1 / ord.leverage) * 0.9;
+        const liqPrice = ord.side === 'long' 
+          ? ord.price * (1 - liqFactor) 
+          : ord.price * (1 + liqFactor);
+
+        walletState.positions.unshift({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          coinId: ord.coinId,
+          symbol: ord.symbol,
+          pair: ord.pair,
+          side: ord.side,
+          entryPrice: ord.price,
+          size: ord.size,
+          leverage: ord.leverage,
+          margin: ord.margin,
+          liqPrice: Math.max(0, liqPrice),
+          created_at: new Date().toISOString()
+        });
+
+        const ordLabel = (ord.type === 'stop-l' || ord.type === 'stop-m') ? 'Stop' : 'Limit';
+        showToast(`🎯 ${ordLabel} order executed! ${ord.side.toUpperCase()} ${ord.size} ${ord.symbol} @ ${getCurrencySymbol()}${fmtPrice(ord.price)}`, 'success');
+      } else {
+        remaining.push(ord);
+      }
+    });
+
+    if (remaining.length !== walletState.orders.length) {
+      walletState.orders = remaining;
+      saveWalletState();
+      renderAllViews();
+    }
+  }
+
+  // Check liquidation status
+  checkPositionLiquidations();
 }
 
 let lastObRenderTime = 0;
@@ -6551,6 +6606,16 @@ function initVTradeApp() {
 
   // Initialize live Candle Closing Countdown Engine
   startCandleCountdownEngine();
+
+  // Apply trading defaults from settings
+  if (typeof applySettingsToTradePanel === 'function') {
+    applySettingsToTradePanel();
+  }
+
+  // Register PWA Service Worker for offline capability & install prompt
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && !isNativePlatform()) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
 
   // Check auth session & strictly validate against database users
   const sess = getAuthSession();
@@ -7404,8 +7469,48 @@ function setDesktopOrderType(type) {
     if (btn) btn.classList.toggle('active', t === type);
   });
   const limitGroup = document.getElementById('dtod-limit-group');
-  if (limitGroup) limitGroup.classList.toggle('hidden', type !== 'limit');
+  if (limitGroup) {
+    limitGroup.classList.toggle('hidden', type === 'market');
+    const label = limitGroup.querySelector('label');
+    if (label) {
+      label.textContent = (type === 'stop-l' || type === 'stop-m') ? 'Trigger Price (USDT)' : 'Order Price (USDT)';
+    }
+  }
   updateDesktopOrderCalculations();
+}
+
+let desktopMarginMode = 'isolated';
+function toggleDesktopMarginMode() {
+  desktopMarginMode = desktopMarginMode === 'isolated' ? 'cross' : 'isolated';
+  const btn = document.getElementById('dtod-pill-mode');
+  if (btn) btn.textContent = desktopMarginMode === 'isolated' ? 'Isolated Margin Mode' : 'Cross Margin Mode';
+  showToast(`Switched to ${desktopMarginMode.toUpperCase()} margin mode`, 'info');
+}
+
+let desktopUnit = 'coin';
+function toggleDesktopTradeUnit() {
+  desktopUnit = desktopUnit === 'coin' ? 'usdt' : 'coin';
+  const coinSpan = document.getElementById('dtod-coin-unit');
+  const usdtSpan = document.getElementById('dtod-usdt-unit');
+  if (coinSpan) coinSpan.className = desktopUnit === 'coin' ? 'dtod-u-active' : '';
+  if (usdtSpan) usdtSpan.className = desktopUnit === 'usdt' ? 'dtod-u-active' : '';
+  showToast(`Order unit set to ${desktopUnit.toUpperCase()}`, 'info');
+  updateDesktopOrderCalculations();
+}
+
+function reverseOpenPosition(posId) {
+  const pos = walletState.positions.find(p => p.id === posId);
+  if (!pos) return;
+  const oppSide = pos.side === 'long' ? 'short' : 'long';
+  const size = pos.size;
+  const lev = pos.leverage;
+  closePosition(posId);
+  sheetSide = oppSide;
+  sheetLeverage = lev;
+  sheetSizeCoins = size;
+  sheetOrderType = 'market';
+  executeOrderFromSheet();
+  showToast(`Reversed position to ${oppSide.toUpperCase()} ${size} ${pos.symbol}!`, 'success');
 }
 
 function handleDesktopLeverageInput(val) {
@@ -7467,7 +7572,8 @@ function handleDesktopSizeInput(val) {
 
 function setDesktopOrderPct(pct) {
   const price = selectedCoin.price || 1;
-  const maxNotional = (walletState.cashBalance || 10000) * desktopLeverage;
+  const availableCash = (typeof walletState.cashBalance === 'number') ? walletState.cashBalance : 10000;
+  const maxNotional = availableCash * desktopLeverage;
   const maxCoins = maxNotional / price;
   desktopSizeCoins = parseFloat(((maxCoins * pct) / 100).toFixed(4));
 
@@ -7747,7 +7853,7 @@ function renderTradeBottomLedger() {
             </td>
             <td style="font-family:var(--font-price);">${getCurrencySymbol()}${fmtMoney(pos.margin)}</td>
             <td><button class="tblc-btn-sm" onclick="showToast('Margin is auto-managed', 'info')" title="Top Up Margin">+</button></td>
-            <td><button class="tblc-btn-sm" onclick="showToast('Reverse order triggered', 'info')" title="Reverse Order">⇄</button></td>
+            <td><button class="tblc-btn-sm" onclick="reverseOpenPosition(${pos.id})" title="Reverse Order">⇄</button></td>
             <td><button class="tblc-link-btn" onclick="showToast('Set TP/SL in order dock above', 'info')">Add</button></td>
             <td style="text-align: right;">
               <button class="pos-close-btn" style="padding:4px 10px; font-size:11px; background:rgba(240,79,94,0.15); color:#f04f5e; border:1px solid rgba(240,79,94,0.3); border-radius:4px; cursor:pointer;" onclick="closePosition(${pos.id})">Close</button>
@@ -7950,22 +8056,16 @@ function openPwaInstallPrompt() {
 
   const isIos = typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent);
   if (isIos) {
-    if (typeof showNotification === 'function') {
+    if (typeof showToast === 'function') {
+      showToast("To install on iOS: Tap 'Share' (⎋) in Safari and select 'Add to Home Screen' (+)", 'info');
+    } else if (typeof showNotification === 'function') {
       showNotification("To install on iOS: Tap 'Share' (⎋) in Safari and select 'Add to Home Screen' (+)", 'info', 7000);
-    } else if (typeof alert === 'function') {
-      alert("To install on iOS: Tap Safari's 'Share' button and select 'Add to Home Screen'");
     }
   } else {
-    if (typeof showNotification === 'function') {
-      showNotification('Downloading VTrade Android APK directly...', 'success');
-    }
-    if (typeof document !== 'undefined') {
-      const link = document.createElement('a');
-      link.href = '/vtrade.apk';
-      link.download = 'VTrade.apk';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    if (typeof showToast === 'function') {
+      showToast("To install VTrade PWA: Click the install icon (⊕) in your browser address bar", 'info');
+    } else if (typeof showNotification === 'function') {
+      showNotification("To install VTrade PWA: Click the install icon (⊕) in your browser address bar", 'info');
     }
   }
 }
@@ -8315,6 +8415,10 @@ if (typeof window !== 'undefined') {
   window.toggleIndicatorsDropdown = toggleIndicatorsDropdown;
   window.closeIndicatorsDropdown = closeIndicatorsDropdown;
   window.syncIndicatorsUI = syncIndicatorsUI;
+  window.toggleDesktopMarginMode = toggleDesktopMarginMode;
+  window.toggleDesktopTradeUnit = toggleDesktopTradeUnit;
+  window.reverseOpenPosition = reverseOpenPosition;
+  window.checkPositionLiquidations = checkPositionLiquidations;
   if (typeof document !== 'undefined' && document.addEventListener) {
     document.addEventListener('click', () => closeIndicatorsDropdown());
   }

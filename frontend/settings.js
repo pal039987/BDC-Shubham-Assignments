@@ -186,21 +186,20 @@ function applySettingsToTradePanel() {
   const s = getSettings();
 
   // Apply default leverage
-  if (typeof setLeverage === 'function') {
-    setLeverage(s.defaultLeverage);
-  }
+  if (typeof setLeverage === 'function') setLeverage(s.defaultLeverage);
+  if (typeof setOrderSheetLeverage === 'function') setOrderSheetLeverage(s.defaultLeverage);
+  if (typeof setDesktopLeverage === 'function') setDesktopLeverage(s.defaultLeverage);
+
   // Apply default order type
-  if (typeof setOrderType === 'function') {
-    setOrderType(s.defaultOrderType);
-  }
+  if (typeof setOrderType === 'function') setOrderType(s.defaultOrderType);
+  if (typeof setOrderSheetType === 'function') setOrderSheetType(s.defaultOrderType);
+  if (typeof setDesktopOrderType === 'function') setDesktopOrderType(s.defaultOrderType);
+
   // Apply default margin mode
-  if (typeof setMarginMode === 'function') {
-    setMarginMode(s.defaultMarginMode);
-  }
+  if (typeof setMarginMode === 'function') setMarginMode(s.defaultMarginMode);
+
   // Apply default unit
-  if (typeof setTradeUnit === 'function') {
-    setTradeUnit(s.defaultUnit);
-  }
+  if (typeof setTradeUnit === 'function') setTradeUnit(s.defaultUnit);
 
   // Hide Download APK button if running as installed Android app (Requirement D3)
   initDownloadApkVisibility();
@@ -247,9 +246,13 @@ function executeSafeWalletReset() {
       positions: [],
       orders: [],
       history: [],
+      tradesHistory: [],
+      balanceVisible: true,
+      currency: 'USD',
       realizedPnl: 0,
       tradesCount: 0,
-      positionsClosed: 0
+      positionsClosed: 0,
+      lastUpdated: Date.now()
     };
     if (typeof saveWalletState === 'function') saveWalletState();
     if (typeof updateMiniStats === 'function') updateMiniStats();
@@ -258,6 +261,11 @@ function executeSafeWalletReset() {
     if (typeof renderHistory === 'function') renderHistory();
     if (typeof updatePnlSummary === 'function') updatePnlSummary();
     if (typeof updateTabBadges === 'function') updateTabBadges();
+    if (typeof renderTradeBottomLedger === 'function') renderTradeBottomLedger();
+    if (typeof renderPortfolioScreen === 'function') renderPortfolioScreen();
+    if (typeof renderHomeBalanceCard === 'function') renderHomeBalanceCard();
+    if (typeof renderAllViews === 'function') renderAllViews();
+    if (typeof syncWalletWithCloud === 'function') syncWalletWithCloud(true);
   }
 
   closeResetWalletDialog();
@@ -271,6 +279,7 @@ function executeSafeWalletReset() {
 function clearTradeHistoryOnly() {
   if (typeof walletState !== 'undefined') {
     walletState.history = [];
+    walletState.tradesHistory = [];
     walletState.tradesCount = 0;
     walletState.positionsClosed = 0;
     walletState.realizedPnl = 0;
@@ -278,13 +287,22 @@ function clearTradeHistoryOnly() {
     if (typeof renderHistory === 'function') renderHistory();
     if (typeof updatePnlSummary === 'function') updatePnlSummary();
     if (typeof updateTabBadges === 'function') updateTabBadges();
+    if (typeof renderTradeBottomLedger === 'function') renderTradeBottomLedger();
+    if (typeof renderPortfolioScreen === 'function') renderPortfolioScreen();
   }
   if (typeof showToast === 'function') showToast('Trade history cleared', 'info');
 }
 
 // ─── CSV EXPORT (Requirement C) ──────────────────────────────────────────────
 async function exportTradeHistoryCsv() {
-  const hist = (typeof walletState !== 'undefined' && walletState.history) ? walletState.history : [];
+  let hist = [];
+  if (typeof walletState !== 'undefined') {
+    if (Array.isArray(walletState.tradesHistory) && walletState.tradesHistory.length) {
+      hist = walletState.tradesHistory;
+    } else if (Array.isArray(walletState.history) && walletState.history.length) {
+      hist = walletState.history;
+    }
+  }
   if (!hist.length) {
     if (typeof showToast === 'function') showToast('No trades to export', 'info');
     return;
@@ -293,12 +311,12 @@ async function exportTradeHistoryCsv() {
   // Header: time, coin, side, type, price, size, fee, realized_pnl
   const header = 'time,coin,side,type,price,size,fee,realized_pnl';
   const rows = hist.map(h => {
-    const timeStr = `"${h.time || new Date().toISOString()}"`;
-    const coinStr = `"${h.coin || ''}"`;
+    const timeStr = `"${h.closed_at || h.time || new Date().toISOString()}"`;
+    const coinStr = `"${h.symbol || h.coin || ''}"`;
     const sideStr = `"${h.side || ''}"`;
-    const typeStr = `"${h.type || ''}"`;
-    const priceVal = Number(h.price || 0).toFixed(2);
-    const sizeVal = typeof fmtCoin === 'function' ? fmtCoin(h.size || 0) : (h.size || 0);
+    const typeStr = `"${h.type || (h.leverage ? `${h.leverage}x` : 'market')}"`;
+    const priceVal = Number(h.closePrice || h.price || h.entryPrice || 0).toFixed(2);
+    const sizeVal = Number(h.size || 0).toFixed(4);
     const feeVal = Number(h.fee || 0).toFixed(2);
     const pnlVal = h.pnl != null ? Number(h.pnl).toFixed(2) : '0.00';
     return `${timeStr},${coinStr},${sideStr},${typeStr},${priceVal},${sizeVal},${feeVal},${pnlVal}`;
@@ -393,8 +411,15 @@ async function handleDownloadApk(event) {
 
 function initDownloadApkVisibility() {
   // Requirement D3: Hide this button when app is running as an installed Android app
-  if (window.Capacitor?.isNativePlatform?.()) {
-    const btn = document.querySelector('.nav-btn-apk');
-    if (btn) btn.style.display = 'none';
+  const isNative = typeof window !== 'undefined' && (
+    window.Capacitor?.isNativePlatform?.() ||
+    window.location.protocol === 'capacitor:' ||
+    document.documentElement.classList.contains('is-native-apk')
+  );
+  if (isNative) {
+    const selectors = ['.nav-btn-apk', '.lhs-btn-download', '#apk-download-android-btn'];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => { el.style.display = 'none'; });
+    });
   }
 }

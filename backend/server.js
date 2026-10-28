@@ -63,6 +63,7 @@ db.exec(`
     amount REAL NOT NULL,
     price REAL,
     trigger_price REAL,
+    leverage REAL DEFAULT 10,
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending','filled','cancelled')),
     filled_price REAL,
     total REAL,
@@ -96,6 +97,10 @@ db.exec(`
 
 try {
   db.exec('ALTER TABLE portfolio ADD COLUMN avg_entry_price REAL DEFAULT 0');
+} catch (e) { }
+
+try {
+  db.exec('ALTER TABLE orders ADD COLUMN leverage REAL DEFAULT 10');
 } catch (e) { }
 
 // ─── Universal Persistent User Registry Backup Engine ──────────────────────────
@@ -252,34 +257,23 @@ function authenticateToken(req, res, next) {
       req.user = jwt.verify(token, JWT_SECRET);
       return next();
     } catch (verifyErr) {
-      // Decode expired token to restore the user session seamlessly in paper trading
-      let decoded = null;
-      try { decoded = jwt.decode(token); } catch (_) { }
-      let user = null;
-      if (decoded?.id) {
-        user = db.prepare('SELECT id, username FROM users WHERE id = ?').get(decoded.id);
+      // Decode expired token to restore user session seamlessly only if authentically signed with server secret
+      if (verifyErr.name === 'TokenExpiredError') {
+        try {
+          const decoded = jwt.verify(token, JWT_SECRET, { ignoreExpiration: true });
+          if (decoded && decoded.id) {
+            const user = db.prepare('SELECT id, username, email FROM users WHERE id = ?').get(decoded.id);
+            if (user) {
+              req.user = { id: user.id, username: user.username, email: user.email };
+              const refreshedToken = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '365d' });
+              res.setHeader('X-Refreshed-Token', refreshedToken);
+              res.setHeader('Access-Control-Expose-Headers', 'X-Refreshed-Token');
+              return next();
+            }
+          }
+        } catch (_) { }
       }
-      if (!user && decoded?.username) {
-        user = db.prepare('SELECT id, username FROM users WHERE username = ?').get(decoded.username);
-      }
-      if (!user) {
-        user = db.prepare('SELECT id, username FROM users ORDER BY id ASC LIMIT 1').get();
-      }
-      if (!user) {
-        const hash = bcrypt.hashSync('papertrading123', 10);
-        const ins = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(
-          'flipfishtrust',
-          'flipfishtrust@vtrade.paper',
-          hash
-        );
-        user = { id: ins.lastInsertRowid, username: 'flipfishtrust' };
-      }
-
-      req.user = { id: user.id, username: user.username };
-      const refreshedToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '365d' });
-      res.setHeader('X-Refreshed-Token', refreshedToken);
-      res.setHeader('Access-Control-Expose-Headers', 'X-Refreshed-Token');
-      return next();
+      return res.status(401).json({ error: 'Invalid or expired token' });
     }
   } catch (err) {
     res.status(403).json({ error: 'Invalid or expired token' });
@@ -1007,6 +1001,10 @@ async function handleSpotTrade(req, res) {
     const newUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
     const newPortfolio = db.prepare('SELECT * FROM portfolio WHERE user_id = ? AND coin = ?').get(req.user.id, coin);
 
+    // Keep user_wallets and backup ledger synchronized
+    db.prepare('UPDATE user_wallets SET cash_balance = ?, updated_at = ? WHERE user_id = ?').run(newUser.balance, Date.now(), req.user.id);
+    syncUsersBackup();
+
     res.json({
       success: true,
       message: `${type === 'buy' ? 'Bought' : 'Sold'} ${coinAmount} ${COIN_METADATA[coin].symbol} at $${marketPrice.toLocaleString()} USDT`,
@@ -1064,8 +1062,8 @@ async function handlePositionsOpen(req, res) {
         return res.status(400).json({ error: `Insufficient USDT balance for limit margin ($${user.balance.toFixed(2)} available, $${margin.toFixed(2)} required)` });
       }
 
-      const insRes = db.prepare(`INSERT INTO orders (user_id, coin, type, direction, amount, price, trigger_price, status)
-                  VALUES (?, ?, 'limit', ?, ?, ?, ?, 'pending')`).run(req.user.id, coin, direction, size, limitPrice, limitPrice);
+      const insRes = db.prepare(`INSERT INTO orders (user_id, coin, type, direction, amount, price, trigger_price, leverage, status)
+                  VALUES (?, ?, 'limit', ?, ?, ?, ?, ?, 'pending')`).run(req.user.id, coin, direction, size, limitPrice, limitPrice, leverage || 10);
       return res.json({
         success: true,
         id: insRes.lastInsertRowid,
@@ -1105,6 +1103,8 @@ async function handlePositionsOpen(req, res) {
         db.prepare('INSERT INTO trades (user_id, coin, type, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)').run(req.user.id, coin, direction, closeSize, entryPrice, parseFloat((closeSize * entryPrice).toFixed(2)));
 
         const newUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+        db.prepare('UPDATE user_wallets SET cash_balance = ?, updated_at = ? WHERE user_id = ?').run(newUser.balance, Date.now(), req.user.id);
+        syncUsersBackup();
         return res.json({
           success: true,
           message: `Opposing ${opp.direction.toUpperCase()} reduced by ${closeSize} ${COIN_METADATA[coin].symbol} at $${entryPrice.toLocaleString()} USDT (Market Netting)`,
@@ -1144,6 +1144,8 @@ async function handlePositionsOpen(req, res) {
     db.prepare('INSERT INTO trades (user_id, coin, type, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)').run(req.user.id, coin, direction, size, entryPrice, parseFloat((size * entryPrice).toFixed(2)));
 
     const newUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+    db.prepare('UPDATE user_wallets SET cash_balance = ?, updated_at = ? WHERE user_id = ?').run(newUser.balance, Date.now(), req.user.id);
+    syncUsersBackup();
     res.json({
       success: true,
       message: `${direction === 'long' ? 'Long' : 'Short'} order filled successfully on ${COIN_METADATA[coin].pair} at $${entryPrice.toLocaleString()} USDT`,
@@ -1196,6 +1198,8 @@ app.post('/api/positions/close/:id', authenticateToken, async (req, res) => {
     db.prepare('INSERT INTO trades (user_id, coin, type, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)').run(req.user.id, pos.coin, 'close_' + pos.direction, actualCloseSize, closePrice, parseFloat((actualCloseSize * closePrice).toFixed(2)));
 
     const newUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(req.user.id);
+    db.prepare('UPDATE user_wallets SET cash_balance = ?, updated_at = ? WHERE user_id = ?').run(newUser.balance, Date.now(), req.user.id);
+    syncUsersBackup();
     res.json({
       success: true,
       message: `${isPartial ? 'Position partially closed' : 'Position closed'} at $${closePrice.toLocaleString()} USDT. PnL: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`,
@@ -1318,39 +1322,87 @@ function checkPendingOrders() {
 
       if (shouldFill) {
         const total = parseFloat((order.amount * price).toFixed(2));
-        db.prepare(`UPDATE orders SET status = 'filled', filled_price = ?, total = ?, filled_at = CURRENT_TIMESTAMP WHERE id = ?`).run(price, total, order.id);
         if (order.direction === 'long' || order.direction === 'short') {
-          const lev = 10;
+          const lev = order.leverage || 10;
           const margin = parseFloat(((order.amount * price) / lev).toFixed(2));
-          db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(margin, order.user_id);
-          db.prepare(`INSERT INTO positions (user_id, coin, direction, size, entry_price, leverage, margin, status)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`).run(order.user_id, order.coin, order.direction, order.amount, price, lev, margin);
+          const currentUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(order.user_id);
+          if (currentUser && currentUser.balance >= margin) {
+            db.prepare(`UPDATE orders SET status = 'filled', filled_price = ?, total = ?, filled_at = CURRENT_TIMESTAMP WHERE id = ?`).run(price, total, order.id);
+            db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(margin, order.user_id);
+            db.prepare(`INSERT INTO positions (user_id, coin, direction, size, entry_price, leverage, margin, status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`).run(order.user_id, order.coin, order.direction, order.amount, price, lev, margin);
+            db.prepare('UPDATE user_wallets SET cash_balance = (SELECT balance FROM users WHERE id = ?), updated_at = ? WHERE user_id = ?').run(order.user_id, Date.now(), order.user_id);
+            syncUsersBackup();
+          } else {
+            db.prepare(`UPDATE orders SET status = 'cancelled' WHERE id = ?`).run(order.id);
+            continue;
+          }
         } else if (order.direction === 'buy') {
-          db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(total, order.user_id);
-          db.prepare(`INSERT INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, ?, ?)
-                      ON CONFLICT(user_id, coin) DO UPDATE SET amount = amount + ?, avg_entry_price = (avg_entry_price + ?)/2`)
-            .run(order.user_id, order.coin, order.amount, price, order.amount, price);
+          const currentUser = db.prepare('SELECT balance FROM users WHERE id = ?').get(order.user_id);
+          if (currentUser && currentUser.balance >= total) {
+            db.prepare(`UPDATE orders SET status = 'filled', filled_price = ?, total = ?, filled_at = CURRENT_TIMESTAMP WHERE id = ?`).run(price, total, order.id);
+            db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(total, order.user_id);
+            const currentPortfolio = db.prepare('SELECT * FROM portfolio WHERE user_id = ? AND coin = ?').get(order.user_id, order.coin);
+            const curAmt = currentPortfolio?.amount || 0;
+            const curAvg = currentPortfolio?.avg_entry_price || 0;
+            const newAmt = curAmt + order.amount;
+            const weightedAvg = newAmt > 0 ? (curAmt * curAvg + order.amount * price) / newAmt : price;
+            db.prepare(`INSERT INTO portfolio (user_id, coin, amount, avg_entry_price) VALUES (?, ?, ?, ?)
+                        ON CONFLICT(user_id, coin) DO UPDATE SET amount = ?, avg_entry_price = ?`)
+              .run(order.user_id, order.coin, newAmt, weightedAvg, newAmt, weightedAvg);
+            db.prepare('UPDATE user_wallets SET cash_balance = (SELECT balance FROM users WHERE id = ?), updated_at = ? WHERE user_id = ?').run(order.user_id, Date.now(), order.user_id);
+            syncUsersBackup();
+          } else {
+            db.prepare(`UPDATE orders SET status = 'cancelled' WHERE id = ?`).run(order.id);
+            continue;
+          }
         } else {
+          db.prepare(`UPDATE orders SET status = 'filled', filled_price = ?, total = ?, filled_at = CURRENT_TIMESTAMP WHERE id = ?`).run(price, total, order.id);
           db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(total, order.user_id);
           db.prepare('UPDATE portfolio SET amount = MAX(0, amount - ?) WHERE user_id = ? AND coin = ?').run(order.amount, order.user_id, order.coin);
+          db.prepare('UPDATE user_wallets SET cash_balance = (SELECT balance FROM users WHERE id = ?), updated_at = ? WHERE user_id = ?').run(order.user_id, Date.now(), order.user_id);
+          syncUsersBackup();
         }
         db.prepare('INSERT INTO trades (user_id, coin, type, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)').run(order.user_id, order.coin, order.direction, order.amount, price, total);
       }
     }
 
-    // Check open positions for SL/TP
+    // Check open positions for SL/TP and Liquidation
     const openPositions = db.prepare(`SELECT * FROM positions WHERE status = 'open'`).all();
     for (const pos of openPositions) {
       const price = priceCache[pos.coin]?.price;
       if (!price || price <= 0 || !isFinite(price)) continue;
-      let shouldClose = false;
-      if (pos.stop_loss && ((pos.direction === 'long' && price <= pos.stop_loss) || (pos.direction === 'short' && price >= pos.stop_loss))) shouldClose = true;
-      if (pos.take_profit && ((pos.direction === 'long' && price >= pos.take_profit) || (pos.direction === 'short' && price <= pos.take_profit))) shouldClose = true;
+
+      const lev = pos.leverage || 10;
+      const liqFactor = (1 / lev) * 0.9;
+      const liqPrice = (pos.direction === 'long') ? (pos.entry_price * (1 - liqFactor)) : (pos.entry_price * (1 + liqFactor));
+      const isLiq = (pos.direction === 'long' && price <= liqPrice) || (pos.direction === 'short' && price >= liqPrice);
+
+      let shouldClose = isLiq;
+      let closePrice = price;
+      let pnl = 0;
+      let returnBalance = 0;
+
+      if (isLiq) {
+        pnl = -pos.margin;
+        returnBalance = 0;
+      } else {
+        if (pos.stop_loss && ((pos.direction === 'long' && price <= pos.stop_loss) || (pos.direction === 'short' && price >= pos.stop_loss))) shouldClose = true;
+        if (pos.take_profit && ((pos.direction === 'long' && price >= pos.take_profit) || (pos.direction === 'short' && price <= pos.take_profit))) shouldClose = true;
+        if (shouldClose) {
+          const priceDiff = price - pos.entry_price;
+          pnl = parseFloat((pos.direction === 'long' ? priceDiff * pos.size : -priceDiff * pos.size).toFixed(2));
+          returnBalance = Math.max(pos.margin + pnl, 0);
+        }
+      }
+
       if (shouldClose) {
-        const priceDiff = price - pos.entry_price;
-        const pnl = parseFloat((pos.direction === 'long' ? priceDiff * pos.size : -priceDiff * pos.size).toFixed(2));
         db.prepare(`UPDATE positions SET status = 'closed', close_price = ?, pnl = ?, closed_at = CURRENT_TIMESTAMP WHERE id = ?`).run(price, pnl, pos.id);
-        db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(Math.max(pos.margin + pnl, 0), pos.user_id);
+        if (returnBalance > 0) {
+          db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(returnBalance, pos.user_id);
+        }
+        db.prepare('UPDATE user_wallets SET cash_balance = (SELECT balance FROM users WHERE id = ?), updated_at = ? WHERE user_id = ?').run(pos.user_id, Date.now(), pos.user_id);
+        syncUsersBackup();
       }
     }
   } catch (err) { }
@@ -1397,6 +1449,8 @@ app.post('/api/user/reset-balance', authenticateToken, (req, res) => {
     db.prepare(`UPDATE positions SET status = 'closed', closed_at = CURRENT_TIMESTAMP WHERE user_id = ? AND status = 'open'`).run(req.user.id);
     db.prepare(`UPDATE orders SET status = 'cancelled' WHERE user_id = ? AND status = 'pending'`).run(req.user.id);
     db.prepare('UPDATE portfolio SET amount = 0, avg_entry_price = 0 WHERE user_id = ?').run(req.user.id);
+    db.prepare("UPDATE user_wallets SET cash_balance = ?, positions_json = '[]', orders_json = '[]', updated_at = ? WHERE user_id = ?").run(STARTING_BALANCE, Date.now(), req.user.id);
+    syncUsersBackup();
     res.json({
       success: true,
       message: `Wallet reset to $${STARTING_BALANCE.toLocaleString()} USDT`,
