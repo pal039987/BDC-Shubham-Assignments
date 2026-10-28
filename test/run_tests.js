@@ -52,7 +52,8 @@ const testFiles = [
   'test/four_problems_flicker_auth_marquee_timer.test.js',
   'test/trade_now_and_instant_ticker.test.js',
   'test/chart_change_sync_and_fullscreen_icon.test.js',
-  'test/coin_prices_and_gold_chart_sync.test.js'
+  'test/coin_prices_and_gold_chart_sync.test.js',
+  'test/website_24h_gain_loss_percent_sync.test.js'
 ];
 
 async function main() {

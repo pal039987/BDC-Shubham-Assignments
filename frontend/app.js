@@ -60,13 +60,13 @@ const COINS = [
     "tvSymbol": "TVC:GOLD",
     "category": "futures",
     "maxLev": 100,
-    "price": 4022.74,
-    "open": 3992.6,
-    "change": 0.68,
-    "high": 4026.74,
-    "low": 3977.93,
+    "price": 4029.40,
+    "open": 4060.34,
+    "change": -0.76,
+    "high": 4070.77,
+    "low": 4028.23,
     "vol": "8.5M",
-    "change24h": 0.68
+    "change24h": -0.76
   },
   {
     "id": "solana",
@@ -3107,9 +3107,10 @@ function updateSpotlightBentoPrices() {
     }
 
     if (chgEl) {
-      const isUp = coin.change >= 0;
+      const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
+      const isUp = chgVal >= 0;
       chgEl.className = `bento-chg ${isUp ? 'up' : 'down'}`;
-      chgEl.textContent = `${isUp ? '+' : ''}${coin.change ? coin.change.toFixed(2) : '0.00'}%`;
+      chgEl.textContent = `${isUp ? '+' : ''}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
     }
 
     if (volEl && coin.vol) {
@@ -3469,14 +3470,19 @@ function tradeTopGainer() {
 }
 
 function renderHomeMarketIntel() {
-  const sorted = [...COINS].sort((a, b) => b.change - a.change);
+  const sorted = [...COINS].sort((a, b) => {
+    const aChg = (a.change24h !== undefined && !isNaN(a.change24h)) ? a.change24h : (a.change || 0);
+    const bChg = (b.change24h !== undefined && !isNaN(b.change24h)) ? b.change24h : (b.change || 0);
+    return bChg - aChg;
+  });
   const top = sorted[0];
-  const symEl = document.getElementById('intel-tg-sym');
-  const chgEl = document.getElementById('intel-tg-chg');
+  const symEl = document.getElementById('intel-top-gainer-sym') || document.getElementById('intel-tg-sym');
+  const chgEl = document.getElementById('intel-top-gainer-badge') || document.getElementById('intel-tg-chg');
   if (symEl && top) symEl.textContent = top.symbol;
   if (chgEl && top) {
-    chgEl.textContent = `${top.change >= 0 ? '+' : ''}${top.change.toFixed(1)}%`;
-    chgEl.className = `intel-change ${top.change >= 0 ? 'up' : 'down'}`;
+    const topChg = (top.change24h !== undefined && !isNaN(top.change24h)) ? top.change24h : (top.change || 0);
+    chgEl.textContent = `${topChg >= 0 ? '+' : ''}${topChg.toFixed(1)}%`;
+    chgEl.className = `intel-badge ${topChg >= 0 ? 'up' : 'down'}`;
   }
 
   const btc = COINS.find(c => c.id === 'bitcoin');
@@ -3602,7 +3608,11 @@ function renderMarketsScreen() {
   if (marketSortBy === 'price') {
     list.sort((a, b) => marketSortAsc ? a.price - b.price : b.price - a.price);
   } else if (marketSortBy === 'change') {
-    list.sort((a, b) => marketSortAsc ? a.change - b.change : b.change - a.change);
+    list.sort((a, b) => {
+      const aChg = (a.change24h !== undefined && !isNaN(a.change24h)) ? a.change24h : (a.change || 0);
+      const bChg = (b.change24h !== undefined && !isNaN(b.change24h)) ? b.change24h : (b.change || 0);
+      return marketSortAsc ? aChg - bChg : bChg - aChg;
+    });
   } else if (marketSortBy === 'name') {
     list.sort((a, b) => marketSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
   } else if (marketSortBy === 'vol') {
@@ -3614,14 +3624,15 @@ function renderMarketsScreen() {
     list.forEach((c, i) => {
       const row = tbody.children[i];
       if (!row || !row.children) return;
-      const isUp = c.change >= 0;
+      const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
+      const isUp = chgVal >= 0;
       const priceTd = row.children[1];
       const chgTd = row.children[2]?.querySelector ? row.children[2].querySelector('.coin-chg-badge') : null;
       const hlTd = row.children[3];
       const formattedPrice = `${getCurrencySymbol()}${fmtPrice(c.price)}`;
       if (priceTd && priceTd.textContent !== formattedPrice) priceTd.textContent = formattedPrice;
       if (chgTd) {
-        const formattedChg = `${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%`;
+        const formattedChg = `${isUp ? '+' : ''}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
         if (chgTd.textContent !== formattedChg) chgTd.textContent = formattedChg;
         const targetClass = `coin-chg-badge ${isUp ? 'up' : 'down'}`;
         if (chgTd.className !== targetClass) chgTd.className = targetClass;
@@ -3634,7 +3645,8 @@ function renderMarketsScreen() {
   } else if (tbody) {
     if (typeof tbody.setAttribute === 'function') tbody.setAttribute('data-rendered-key', listKey);
     tbody.innerHTML = list.map(c => {
-      const isUp = c.change >= 0;
+      const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
+      const isUp = chgVal >= 0;
       const displayPair = getCoinDisplayPair(c);
       return `
         <tr onclick="selectCoinAndTrade('${c.id}')" style="cursor: pointer;">
@@ -3649,7 +3661,7 @@ function renderMarketsScreen() {
           </td>
           <td style="text-align: right; font-family: var(--font-price); font-weight: 700;">${getCurrencySymbol()}${fmtPrice(c.price)}</td>
           <td style="text-align: right;">
-            <span class="coin-chg-badge ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%</span>
+            <span class="coin-chg-badge ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${chgVal ? chgVal.toFixed(2) : '0.00'}%</span>
           </td>
           <td style="text-align: right; color: #8b92a4; font-family: var(--font-price); font-size: 13px;">${getCurrencySymbol()}${fmtPrice(c.high || c.price)} / ${getCurrencySymbol()}${fmtPrice(c.low || c.price)}</td>
           <td style="text-align: right; color: #8b92a4; font-size: 13px;">${c.vol ? (c.vol.includes('M') || c.vol.includes('B') ? c.vol : '$' + c.vol) : 'N/A'}</td>
@@ -3664,7 +3676,8 @@ function renderMarketsScreen() {
 
   if (container) {
     container.innerHTML = list.map(c => {
-      const isUp = c.change >= 0;
+      const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
+      const isUp = chgVal >= 0;
       const displayPair = getCoinDisplayPair(c);
       return `
         <div class="mkt-coin-item" onclick="selectCoinAndTrade('${c.id}')">
@@ -3686,7 +3699,7 @@ function renderMarketsScreen() {
 
           <div style="display:flex; justify-content:flex-end;">
             <span class="coin-chg-badge ${isUp ? 'up' : 'down'}" style="font-size:12px;">
-              ${isUp ? '+' : ''}${c.change ? c.change.toFixed(2) : '0.00'}%
+              ${isUp ? '+' : ''}${chgVal ? chgVal.toFixed(2) : '0.00'}%
             </span>
           </div>
         </div>
@@ -4775,16 +4788,21 @@ function renderTradeScreen() {
     curIcon.src = selectedCoin.icon;
     curIcon.onerror = function() { handleCoinIconError(this, selectedCoin.symbol, selectedCoin.category); };
   }
+  const chg24 = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+    ? selectedCoin.change24h
+    : ((typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change))
+        ? selectedCoin.change
+        : 0);
+  const is24Up = chg24 >= 0;
+
   const currentChange = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange))
     ? selectedCoin.chartChange
-    : ((selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
-        ? selectedCoin.change24h
-        : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0));
+    : chg24;
   const isUp = currentChange >= 0;
   if (livePriceEl) livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
   if (liveChangeEl) {
-    liveChangeEl.className = `trade-live-change ${isUp ? 'up' : 'down'}`;
-    liveChangeEl.textContent = `${isUp ? '+' : ''}${currentChange.toFixed(2)}%`;
+    liveChangeEl.className = `trade-live-change ${is24Up ? 'up' : 'down'}`;
+    liveChangeEl.textContent = `${is24Up ? '+' : ''}${chg24.toFixed(2)}%`;
   }
 
   // Update Full-Width Top Instrument Bar
@@ -4820,8 +4838,8 @@ function renderTradeScreen() {
   if (tabPrice) tabPrice.textContent = fmtPrice(selectedCoin.price);
 
   if (changeVal) {
-    changeVal.className = `tib-val ${isUp ? 'up' : 'down'}`;
-    changeVal.textContent = `${isUp ? '+' : ''}${currentChange.toFixed(2)}%`;
+    changeVal.className = `tib-val ${is24Up ? 'up' : 'down'}`;
+    changeVal.textContent = `${is24Up ? '+' : ''}${chg24.toFixed(2)}%`;
   }
   if (highVal) highVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price)}`;
   if (lowVal) lowVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price)}`;
@@ -4894,8 +4912,22 @@ async function fetchFastCoinTicker(binanceSym) {
             if (selectedCoin.candleOpen && selectedCoin.candleOpen > 0) {
               selectedCoin.chartChange = parseFloat((((p - selectedCoin.candleOpen) / selectedCoin.candleOpen) * 100).toFixed(2));
             }
+            const listCoin = typeof COINS !== 'undefined' ? COINS.find(c => c.id === selectedCoin.id) : null;
+            if (listCoin) {
+              listCoin.price = p;
+              if (!isNaN(chg)) {
+                listCoin.change = chg;
+                listCoin.change24h = chg;
+              }
+              if (o > 0 && !isNaN(o)) listCoin.open = o;
+              if (selectedCoin.high) listCoin.high = selectedCoin.high;
+              if (selectedCoin.low) listCoin.low = selectedCoin.low;
+              if (selectedCoin.vol) listCoin.vol = selectedCoin.vol;
+            }
             persistSelectedCoinState();
             renderLivePriceUpdates();
+            updateDesktopMarqueePrices();
+            if (typeof updateSpotlightBentoPrices === 'function') updateSpotlightBentoPrices();
             break;
           }
         }
@@ -5062,7 +5094,7 @@ async function fetchRealBinanceCandles() {
           const curCandle = chartCandlesData[chartCandlesData.length - 1];
           if (curCandle && curCandle.open > 0) {
             if (selectedCoin.id === 'gold') {
-              if (!selectedCoin.candleOpen) selectedCoin.candleOpen = selectedCoin.open || 3992.60;
+              if (!selectedCoin.candleOpen) selectedCoin.candleOpen = selectedCoin.open || 4060.34;
               const livePrice = selectedCoin.price || curCandle.close;
               const diff = livePrice - selectedCoin.candleOpen;
               selectedCoin.chartChange = parseFloat(((diff / selectedCoin.candleOpen) * 100).toFixed(2));
@@ -5866,13 +5898,21 @@ async function pollLiveGoldPrice() {
         const goldR = await fetch('https://api.gold-api.com/price/XAU', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
         if (goldR && goldR.price) {
           gold.price = parseFloat(parseFloat(goldR.price).toFixed(2));
-          if (!gold.open) gold.open = 4060.34;
+          if (!gold.open || gold.open < 4000) gold.open = 4060.34;
           const diff = gold.price - gold.open;
           gold.change = parseFloat(((diff / gold.open) * 100).toFixed(2));
           gold.change24h = gold.change;
           gold.chartChange = gold.change;
+          gold.open24h = gold.open;
+          gold.candleOpen = gold.open;
         } else if (gold.price) {
+          if (!gold.open || gold.open < 4000) gold.open = 4060.34;
+          const diff = gold.price - gold.open;
+          gold.change = parseFloat(((diff / gold.open) * 100).toFixed(2));
+          gold.change24h = gold.change;
           gold.chartChange = gold.change;
+          gold.open24h = gold.open;
+          gold.candleOpen = gold.open;
         } else {
           const bResp = await fetch('https://data-api.binance.vision/api/v3/ticker/24hr?symbol=PAXGUSDT', { signal: goldCtl.signal }).then(r => r.json()).catch(() => null);
           if (bResp && bResp.lastPrice) {
@@ -6017,6 +6057,15 @@ function connectCoinTickerWs(binanceSym) {
               if (high && !isNaN(high) && high > 0) selectedCoin.high = high;
               if (low && !isNaN(low) && low > 0) selectedCoin.low = low;
 
+              const listCoin = typeof COINS !== 'undefined' ? COINS.find(c => c.id === selectedCoin.id) : null;
+              if (listCoin) {
+                listCoin.price = newPrice;
+                listCoin.change = selectedCoin.change;
+                listCoin.change24h = selectedCoin.change24h;
+                if (selectedCoin.high) listCoin.high = selectedCoin.high;
+                if (selectedCoin.low) listCoin.low = selectedCoin.low;
+              }
+
               persistSelectedCoinState();
 
               // Immediate order checking (0ms latency for limits/triggers)
@@ -6028,11 +6077,13 @@ function connectCoinTickerWs(binanceSym) {
                 lastWsRenderTime = now;
                 if (wsRenderTimer) { clearTimeout(wsRenderTimer); wsRenderTimer = null; }
                 renderLivePriceUpdates();
+                updateDesktopMarqueePrices();
               } else if (!wsRenderTimer) {
                 wsRenderTimer = setTimeout(() => {
                   lastWsRenderTime = Date.now();
                   wsRenderTimer = null;
                   renderLivePriceUpdates();
+                  updateDesktopMarqueePrices();
                 }, 150 - (now - lastWsRenderTime));
               }
             }
@@ -6296,11 +6347,16 @@ function renderLivePriceUpdates() {
     const tabPrice = document.getElementById('trade-coin-tab-price');
     const highVal = document.getElementById('trade-high-val');
     const lowVal = document.getElementById('trade-low-val');
+    const chg24 = (selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
+      ? selectedCoin.change24h
+      : ((typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change))
+          ? selectedCoin.change
+          : 0);
+    const is24Up = chg24 >= 0;
+
     const currentChange = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange))
       ? selectedCoin.chartChange
-      : ((selectedCoin.change24h !== undefined && !isNaN(selectedCoin.change24h))
-          ? selectedCoin.change24h
-          : (typeof selectedCoin.change === 'number' && !isNaN(selectedCoin.change) ? selectedCoin.change : 0));
+      : chg24;
     const isUp = currentChange >= 0;
 
     if (livePriceEl) {
@@ -6330,11 +6386,11 @@ function renderLivePriceUpdates() {
       }
     }
     if (liveChangeEl) {
-      const formattedChange = `${isUp ? '+' : ''}${currentChange.toFixed(2)}%`;
+      const formattedChange = `${is24Up ? '+' : ''}${chg24.toFixed(2)}%`;
       if (liveChangeEl.textContent !== formattedChange) {
         liveChangeEl.textContent = formattedChange;
       }
-      const targetChangeClass = `tib-val ${isUp ? 'up' : 'down'}`;
+      const targetChangeClass = `tib-val ${is24Up ? 'up' : 'down'}`;
       if (liveChangeEl.className !== targetChangeClass) {
         liveChangeEl.className = targetChangeClass;
       }
@@ -7397,7 +7453,7 @@ function initDesktopMarquee() {
 
   const showcaseCoins = COINS; // All 56 coins plus Gold!
   const itemsHtml = showcaseCoins.map(coin => {
-    const chgVal = coin.change !== undefined ? coin.change : (coin.change24h || 0);
+    const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
     const isUp = chgVal >= 0;
     const changeClass = isUp ? 'up' : 'down';
     const changeSign = isUp ? '+' : '';
@@ -7418,7 +7474,7 @@ function initDesktopMarquee() {
   if (miniTrack && typeof COINS !== 'undefined') {
     const miniCoins = COINS;
     const miniItemsHtml = miniCoins.map(coin => {
-      const chgVal = coin.change !== undefined ? coin.change : (coin.change24h || 0);
+      const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
       const isUp = chgVal >= 0;
       const changeClass = isUp ? 'up' : 'down';
       const changeSign = isUp ? '+' : '';
@@ -7439,7 +7495,7 @@ function updateDesktopMarqueePrices() {
   COINS.forEach(coin => {
     const priceEls = document.querySelectorAll(`[id="marq-price-${coin.id}"]`);
     const chgEls = document.querySelectorAll(`[id="marq-chg-${coin.id}"]`);
-    const chgVal = coin.change !== undefined ? coin.change : (coin.change24h || 0);
+    const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
     const isUp = chgVal >= 0;
     const changeSign = isUp ? '+' : '';
     const formattedPrice = `${getCurrencySymbol()}${fmtPrice(coin.price)}`;
