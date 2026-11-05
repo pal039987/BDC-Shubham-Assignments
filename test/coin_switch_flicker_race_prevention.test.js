@@ -46,3 +46,4 @@ assert.ok(js.includes('renderTradeScreen();'), 'selectCoinFromPicker must call r
 console.log('  ✓ selectCoinFromPicker cleanly transitions and initiates single unified trade screen render');
 
 console.log('\n=== ALL COIN SWITCH FLICKER & RACE PREVENTION TESTS PASSED! ===\n');
+
