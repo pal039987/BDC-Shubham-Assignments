@@ -5762,28 +5762,28 @@ html:not(.is-native-apk) .tv-fs-header {
     display: none !important;
   }
 
-  /* 2. STRICT 4-COLUMN CSS GRID STRUCTURE */
+  /* 2. STRICT 4-COLUMN CSS GRID STRUCTURE (Grid Collapse Prevention) */
   html:not(.is-native-apk) .trade-workspace-grid,
   html:not(.is-native-apk) body.trade-screen-active .trade-workspace-grid,
   html:not(.is-native-apk) #screen-trade .trade-workspace-grid {
     display: grid !important;
-    grid-template-columns: 20% 40% 18% 22% !important;
-    grid-template-rows: 65% 35% !important;
+    grid-template-columns: 240px minmax(0, 1fr) 280px 330px !important;
+    grid-template-rows: 60% 40% !important;
     gap: 4px !important;
     padding: 4px !important;
-    height: calc(100% - 70px) !important;
-    max-height: calc(100% - 70px) !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: calc(100vh - 64px) !important;
+    max-height: calc(100vh - 64px) !important;
     flex: 1 1 0% !important;
     min-height: 0 !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     background: #080B11 !important;
     background-color: #080B11 !important;
-    width: 100% !important;
-    max-width: 100% !important;
   }
 
-  /* Column 1 (Width: 20%): Vertical Watchlist */
+  /* Column 1 (Width: 240px): Vertical Watchlist */
   html:not(.is-native-apk) .trade-watchlist-panel,
   html:not(.is-native-apk) .trade-watchlist,
   html:not(.is-native-apk) .trade-watchlist-col,
@@ -5791,6 +5791,7 @@ html:not(.is-native-apk) .tv-fs-header {
     grid-column: 1 !important;
     grid-row: 1 / span 2 !important;
     width: 100% !important;
+    max-width: 240px !important;
     height: 100% !important;
     max-height: 100% !important;
     min-height: 0 !important;
@@ -5802,6 +5803,7 @@ html:not(.is-native-apk) .tv-fs-header {
     flex-direction: column !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
+    margin: 0 !important;
   }
 
   /* Watchlist Search Input & Header */
@@ -5905,15 +5907,39 @@ html:not(.is-native-apk) .tv-fs-header {
     font-variant-numeric: tabular-nums !important;
   }
 
-  /* Column 2 (Width: 40%): Top 65% Main TradingView Chart Container */
+  /* Column 2: Vertical Flex Container & Direct Children */
+  html:not(.is-native-apk) .trade-center-column,
+  html:not(.is-native-apk) .trade-center-col,
+  html:not(.is-native-apk) .trade-column-2,
+  html:not(.is-native-apk) .trade-col-2,
+  html:not(.is-native-apk) .trade-mid-col,
+  html:not(.is-native-apk) .trade-chart-ledger-column,
+  html:not(.is-native-apk) .trade-chart-ledger-container {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    gap: 4px !important;
+    margin: 0 !important;
+  }
+
+  /* Column 2: Top 60% Main TradingView Chart Container */
   html:not(.is-native-apk) .trade-chart-box,
   html:not(.is-native-apk) body.trade-screen-active .trade-chart-box,
   html:not(.is-native-apk) #screen-trade .trade-chart-box {
     grid-column: 2 !important;
     grid-row: 1 !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: 60% !important;
+    max-height: 60% !important;
     min-height: 0 !important;
+    flex: 0 0 60% !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
@@ -5926,6 +5952,7 @@ html:not(.is-native-apk) .tv-fs-header {
     overflow: hidden !important;
     box-sizing: border-box !important;
     position: relative !important;
+    margin: 0 !important;
   }
 
   html:not(.is-native-apk) .tcb-header-bar {
@@ -5956,15 +5983,16 @@ html:not(.is-native-apk) .tv-fs-header {
     display: block !important;
   }
 
-  /* Column 2 (Width: 40%): Bottom 35% Active Positions / Ledger Panel */
+  /* Column 2: Bottom 40% Active Positions / Ledger Panel */
   html:not(.is-native-apk) .trade-bottom-ledger-card,
   html:not(.is-native-apk) body.trade-screen-active .trade-bottom-ledger-card,
   html:not(.is-native-apk) #screen-trade .trade-bottom-ledger-card {
     grid-column: 2 !important;
     grid-row: 2 !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: 40% !important;
+    max-height: 40% !important;
     min-height: 0 !important;
+    flex: 0 0 40% !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
@@ -5977,6 +6005,7 @@ html:not(.is-native-apk) .tv-fs-header {
     overflow: hidden !important;
     box-sizing: border-box !important;
     padding: 0 !important;
+    margin: 0 !important;
   }
 
   html:not(.is-native-apk) .tblc-tabs {
@@ -6022,18 +6051,20 @@ html:not(.is-native-apk) .tv-fs-header {
     box-sizing: border-box !important;
   }
 
-  /* Column 3 (Width: 18%): Real-time Order Book Depth Panel */
+  /* Column 3 (Width: 280px): Real-time Order Book Depth Panel */
   html:not(.is-native-apk) .trade-depth-panel,
   html:not(.is-native-apk) body.trade-screen-active .trade-depth-panel,
   html:not(.is-native-apk) #screen-trade .trade-depth-panel {
     grid-column: 3 !important;
     grid-row: 1 / span 2 !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: calc(100vh - 64px) !important;
+    max-height: calc(100vh - 64px) !important;
     min-height: 0 !important;
     width: 100% !important;
     min-width: 0 !important;
-    max-width: 100% !important;
+    max-width: 280px !important;
+    border-right: none !important;
+    margin: 0 !important;
     background: #080B11 !important;
     background-color: #080B11 !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -6074,18 +6105,20 @@ html:not(.is-native-apk) .tv-fs-header {
     border-bottom: 2px solid #00C853 !important;
   }
 
-  /* Column 4 (Width: 22%): Buy/Sell Order Form Terminal */
+  /* Column 4 (Width: 330px): Buy/Sell Order Form Terminal */
   html:not(.is-native-apk) .desktop-trade-order-dock,
   html:not(.is-native-apk) body.trade-screen-active .desktop-trade-order-dock,
   html:not(.is-native-apk) #screen-trade .desktop-trade-order-dock {
     grid-column: 4 !important;
     grid-row: 1 / span 2 !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: calc(100vh - 64px) !important;
+    max-height: calc(100vh - 64px) !important;
     min-height: 0 !important;
     width: 100% !important;
     min-width: 0 !important;
-    max-width: 100% !important;
+    max-width: 330px !important;
+    border-right: none !important;
+    margin: 0 !important;
     background: #080B11 !important;
     background-color: #080B11 !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -6102,7 +6135,7 @@ html:not(.is-native-apk) .tv-fs-header {
   /* Order Book Hidden State Responsive Rebalancing */
   html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden,
   html:not(.is-native-apk) body.trade-screen-active .trade-workspace-grid.orderbook-hidden {
-    grid-template-columns: 20% 58% 0% 22% !important;
+    grid-template-columns: 240px minmax(0, 1fr) 0px 330px !important;
   }
   html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden .trade-depth-panel {
     display: none !important;
