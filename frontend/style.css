@@ -5684,40 +5684,40 @@ html:not(.is-native-apk) .tv-fs-header {
   }
 
   html:not(.is-native-apk) body.trade-screen-active {
-    overflow: hidden !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100vh !important;
   }
   html:not(.is-native-apk) body.trade-screen-active::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
+    width: 6px !important;
+  }
+  html:not(.is-native-apk) body.trade-screen-active::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-radius: 3px !important;
   }
 
   html:not(.is-native-apk) body.trade-screen-active .desktop-marquee-wrap {
     display: none !important;
   }
   html:not(.is-native-apk) body.trade-screen-active .app-top-header {
-    height: 64px !important;
-    min-height: 64px !important;
-    max-height: 64px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
     padding: 0 20px !important;
     background: #080B11 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-sizing: border-box !important;
   }
 
-  /* 1. GLOBAL VIEWPORT CONSTRAINT (Zero-Scroll 100vh Fit) */
+  /* 1. GLOBAL VIEWPORT CONSTRAINT (Smooth Trade Desk Scrolling) */
   html:not(.is-native-apk) body.trade-screen-active #screen-trade,
   html:not(.is-native-apk) body.trade-screen-active #screen-trade.active,
-  html:not(.is-native-apk) #screen-trade.active,
-  html:not(.is-native-apk) body.trade-screen-active .trade-fullwidth-container,
-  html:not(.is-native-apk) #screen-trade .trade-fullwidth-container {
-    height: calc(100vh - 64px) !important;
-    max-height: calc(100vh - 64px) !important;
-    overflow: hidden !important;
+  html:not(.is-native-apk) #screen-trade.active {
+    height: auto !important;
+    min-height: calc(100vh - 50px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     display: flex !important;
     flex-direction: column !important;
     background: #080B11 !important;
@@ -5725,6 +5725,18 @@ html:not(.is-native-apk) .tv-fs-header {
     box-sizing: border-box !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  html:not(.is-native-apk) body.trade-screen-active .trade-fullwidth-container,
+  html:not(.is-native-apk) #screen-trade .trade-fullwidth-container,
+  .trade-fullwidth-container {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
     max-width: 100% !important;
   }
@@ -15115,12 +15127,17 @@ body.trade-screen-active .trade-depth-panel {
   /* 4. Trading Desk Screen Institutional 3-Column Engine */
   #screen-trade,
   #screen-trade.active,
-  body.trade-screen-active #screen-trade.active,
-  .trade-fullwidth-container {
+  body.trade-screen-active #screen-trade.active {
     height: auto !important;
-    min-height: calc(100vh - 64px) !important;
+    min-height: calc(100vh - 50px) !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+  }
+
+  .trade-fullwidth-container {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100% !important;
   }
 
   body.trade-screen-active .desktop-marquee-wrap {
