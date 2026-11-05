@@ -2413,11 +2413,16 @@ function switchBottomTab(tab) {
   else if (activeTab === 'markets') {
     renderMarketsScreen();
     fetchLiveBinanceTickers(true);
+    startMarketsLivePolling();
   }
   else if (activeTab === 'trade') renderTradeScreen();
   else if (activeTab === 'portfolio') renderPortfolioScreen();
   else if (activeTab === 'account') renderAccountScreen();
   else if (activeTab === 'auth') renderDesktopAuthPage();
+
+  if (activeTab !== 'markets' && typeof stopMarketsLivePolling === 'function') {
+    stopMarketsLivePolling();
+  }
 
   if (activeTab !== 'home' && typeof cleanUpGsapScrollAnimations === 'function') {
     cleanUpGsapScrollAnimations();
@@ -3628,7 +3633,7 @@ function renderMarketsScreen() {
     });
   } else if (marketSortBy === 'name') {
     list.sort((a, b) => marketSortAsc ? a.symbol.localeCompare(b.symbol) : b.symbol.localeCompare(a.symbol));
-  } else if (marketSortBy === 'vol') {
+  } else if (marketSortBy === 'vol' || marketSortBy === 'volume') {
     list.sort((a, b) => marketSortAsc ? (parseFloat(a.vol) || 0) - (parseFloat(b.vol) || 0) : (parseFloat(b.vol) || 0) - (parseFloat(a.vol) || 0));
   }
 
@@ -3965,13 +3970,18 @@ function renderTradingViewChart() {
     chartBox.style.backgroundColor = bg;
   }
 
+  const currentSymbol = iframe.getAttribute('data-active-symbol');
+  const symbolChanged = currentSymbol !== tvSymbol;
+  const isForce = forceReload || symbolChanged;
   const reloadParam = forceReload ? `&_t=${Date.now()}` : '';
-  const newSrc = `https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en${reloadParam}#${encodeURIComponent(JSON.stringify(widgetConfig))}`;
+  const activeReloadParam = isForce ? `&_t=${Date.now()}` : reloadParam;
+  const newSrc = `https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&symbol=${encodeURIComponent(tvSymbol)}&hide_side_toolbar=0&locale=en${activeReloadParam}#${encodeURIComponent(JSON.stringify(widgetConfig))}`;
 
   const currentApplied = iframe.getAttribute('data-applied-url');
-  if (forceReload || !iframe.src || currentApplied !== newSrc || iframe.src !== newSrc) {
+  if (isForce || !iframe.src || currentApplied !== newSrc || iframe.src !== newSrc) {
     iframe.setAttribute('data-applied-url', newSrc);
-    if (forceReload) {
+    iframe.setAttribute('data-active-symbol', tvSymbol);
+    if (isForce) {
       iframe.src = 'about:blank';
       setTimeout(() => {
         if (iframe) iframe.src = newSrc;
@@ -6170,13 +6180,8 @@ function connectCoinTickerWs(binanceSym) {
             } else if (d.e === '24hrTicker' || (d.c && d.P !== undefined)) {
               // Direct Binance 24hrTicker stream payload
               newPrice = parseFloat(d.c);
-              if (d.o && !isNaN(parseFloat(d.o)) && parseFloat(d.o) > 0) {
+              if (!selectedCoin.candleOpen && d.o && !isNaN(parseFloat(d.o)) && parseFloat(d.o) > 0) {
                 selectedCoin.open24h = parseFloat(d.o);
-              }
-              if (d.P !== undefined && !isNaN(parseFloat(d.P))) {
-                changePercent = parseFloat(d.P);
-                selectedCoin.change = changePercent;
-                selectedCoin.change24h = changePercent;
               }
               // Strictly capture true 24-hour high and low from 24hr ticker
               if (d.h) high = parseFloat(d.h);
@@ -6194,13 +6199,24 @@ function connectCoinTickerWs(binanceSym) {
                   selectedCoin.chartChange = parseFloat((((newPrice - curC.open) / curC.open) * 100).toFixed(2));
                 }
               }
+
+              // Synchronize open24h with authentic session open to eliminate flickering!
+              const sessionOpen = (selectedCoin.candleOpen && selectedCoin.candleOpen > 0)
+                ? selectedCoin.candleOpen
+                : ((selectedCoin.open && selectedCoin.open > 0) ? selectedCoin.open : selectedCoin.open24h);
+              if (sessionOpen && sessionOpen > 0) {
+                selectedCoin.open24h = sessionOpen;
+              }
+
               if (selectedCoin.open24h && selectedCoin.open24h > 0) {
                 const live24hChg = parseFloat((((newPrice - selectedCoin.open24h) / selectedCoin.open24h) * 100).toFixed(2));
                 selectedCoin.change24h = live24hChg;
                 selectedCoin.change = live24hChg;
+                selectedCoin.chartChange = live24hChg;
               } else if (changePercent !== null && !isNaN(changePercent)) {
                 selectedCoin.change = changePercent;
                 selectedCoin.change24h = changePercent;
+                selectedCoin.chartChange = changePercent;
               }
               if (high && !isNaN(high) && high > 0) selectedCoin.high = high;
               if (low && !isNaN(low) && low > 0) selectedCoin.low = low;
@@ -6210,6 +6226,7 @@ function connectCoinTickerWs(binanceSym) {
                 listCoin.price = newPrice;
                 listCoin.change = selectedCoin.change;
                 listCoin.change24h = selectedCoin.change24h;
+                listCoin.chartChange = selectedCoin.chartChange;
                 if (selectedCoin.high) listCoin.high = selectedCoin.high;
                 if (selectedCoin.low) listCoin.low = selectedCoin.low;
               }
@@ -6258,10 +6275,28 @@ function connectCoinTickerWs(binanceSym) {
 }
 
 let lastRestTickerFetch = 0;
+let marketsLivePollTimer = null;
+
+function startMarketsLivePolling() {
+  if (marketsLivePollTimer) clearInterval(marketsLivePollTimer);
+  marketsLivePollTimer = setInterval(() => {
+    if (activeTab === 'markets' && typeof document !== 'undefined' && !document.hidden) {
+      fetchLiveBinanceTickers(true);
+    }
+  }, 2000); // 2-second fast live polling for Markets screen
+}
+
+function stopMarketsLivePolling() {
+  if (marketsLivePollTimer) {
+    clearInterval(marketsLivePollTimer);
+    marketsLivePollTimer = null;
+  }
+}
+
 async function fetchLiveBinanceTickers(force = false) {
   const now = Date.now();
-  // While on trade tab, throttle background REST polling to every 10s to preserve Binance weight
-  if (!force && now - lastRestTickerFetch < 10000) {
+  const minInterval = (activeTab === 'markets') ? 1800 : 8000;
+  if (!force && now - lastRestTickerFetch < minInterval) {
     return;
   }
   lastRestTickerFetch = now;
@@ -6276,8 +6311,6 @@ async function fetchLiveBinanceTickers(force = false) {
     `https://api.binance.com/api/v3/ticker/tradingDay?symbols=${encodedSymbols}`,
     `https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${encodedSymbols}`,
     `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodedSymbols}`,
-    'https://data-api.binance.vision/api/v3/ticker/tradingDay',
-    'https://api.binance.com/api/v3/ticker/tradingDay',
     'https://data-api.binance.vision/api/v3/ticker/24hr',
     'https://api.binance.com/api/v3/ticker/24hr',
     getApiEndpoint('/api/prices')
@@ -6287,7 +6320,7 @@ async function fetchLiveBinanceTickers(force = false) {
   for (const url of endpoints) {
     try {
       const ctl = new AbortController();
-      const tmr = setTimeout(() => ctl.abort(), 2800);
+      const tmr = setTimeout(() => ctl.abort(), 3500);
       const resp = await fetch(url, { signal: ctl.signal });
       clearTimeout(tmr);
 
@@ -6318,16 +6351,19 @@ async function fetchLiveBinanceTickers(force = false) {
             const t = tickerMap.get(c.binanceSym) || tickerMap.get(c.id);
             if (t) {
               c.price = parseFloat(t.lastPrice);
-              const dayChange = parseFloat(t.priceChangePercent);
-              c.change = dayChange;
-              c.change24h = dayChange;
-              c.chartChange = dayChange;
               if (t.openPrice) {
                 const oPrice = parseFloat(t.openPrice);
                 c.open = oPrice;
                 c.open24h = oPrice;
                 c.candleOpen = oPrice;
               }
+              let dayChange = parseFloat(t.priceChangePercent);
+              if (c.open && c.open > 0 && c.price > 0) {
+                dayChange = parseFloat((((c.price - c.open) / c.open) * 100).toFixed(2));
+              }
+              c.change = dayChange;
+              c.change24h = dayChange;
+              c.chartChange = dayChange;
               c.high = parseFloat(t.highPrice);
               c.low = parseFloat(t.lowPrice);
               if (t.quoteVolume) {

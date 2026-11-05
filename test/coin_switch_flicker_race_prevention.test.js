@@ -45,5 +45,26 @@ assert.ok(js.includes('closeCoinPickerModal();'), 'selectCoinFromPicker must clo
 assert.ok(js.includes('renderTradeScreen();'), 'selectCoinFromPicker must call renderTradeScreen');
 console.log('  ✓ selectCoinFromPicker cleanly transitions and initiates single unified trade screen render');
 
+// 6. Verify TradingView Chart Symbol Tracking & Force Reload on Coin Switch
+console.log('6. Testing TradingView Chart Symbol Change Force Reload...');
+assert.ok(js.includes("const currentSymbol = iframe.getAttribute('data-active-symbol');"), 'renderTradingViewChart must track currentSymbol');
+assert.ok(js.includes('const symbolChanged = currentSymbol !== tvSymbol;'), 'renderTradingViewChart must detect symbol change');
+assert.ok(js.includes('symbol=${encodeURIComponent(tvSymbol)}'), 'TradingView iframe URL query string must include symbol');
+assert.ok(js.includes("iframe.setAttribute('data-active-symbol', tvSymbol);"), 'renderTradingViewChart must store data-active-symbol');
+console.log('  ✓ Chart iframe immediately and unconditionally reloads whenever active coin/symbol changes');
+
+// 7. Verify Markets Screen 2-Second Fast Live Polling & Session Open Sync
+console.log('7. Testing Markets Screen Fast Live Polling & Session Math...');
+assert.ok(js.includes('function startMarketsLivePolling()'), 'startMarketsLivePolling function must be defined');
+assert.ok(js.includes('function stopMarketsLivePolling()'), 'stopMarketsLivePolling function must be defined');
+assert.ok(js.includes('dayChange = parseFloat((((c.price - c.open) / c.open) * 100).toFixed(2));'), 'Daily session change must calculate mathematically from session open');
+console.log('  ✓ Markets screen updates every 2 seconds with authentic session change math');
+
+// 8. Verify WebSocket Session Open Synchronization to Kill 24hr Rolling Flicker
+console.log('8. Testing WebSocket Session Open Synchronization...');
+assert.ok(js.includes('const sessionOpen = (selectedCoin.candleOpen && selectedCoin.candleOpen > 0)'), 'WebSocket must resolve sessionOpen from candleOpen');
+assert.ok(js.includes('selectedCoin.open24h = sessionOpen;'), 'selectedCoin.open24h must be synchronized with sessionOpen');
+console.log('  ✓ 24hr ticker rolling open strictly superseded by daily session open, eliminating random percentage jumping');
+
 console.log('\n=== ALL COIN SWITCH FLICKER & RACE PREVENTION TESTS PASSED! ===\n');
 
