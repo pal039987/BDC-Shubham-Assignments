@@ -5321,15 +5321,43 @@ function openOrderSheet(side) {
 
   updateOrderSheetCalculations();
 
-  if (backdrop) backdrop.classList.remove('hidden');
-  if (container) container.classList.remove('hidden');
+  if (backdrop) {
+    backdrop.classList.remove('hidden');
+    if (backdrop.style && typeof backdrop.style.removeProperty === 'function') {
+      backdrop.style.removeProperty('display');
+    } else if (backdrop.style) {
+      backdrop.style.display = '';
+    }
+  }
+  if (container) {
+    container.classList.remove('hidden');
+    if (container.style && typeof container.style.removeProperty === 'function') {
+      container.style.removeProperty('display');
+    } else if (container.style) {
+      container.style.display = '';
+    }
+  }
 }
 
 function closeOrderSheet() {
   const backdrop = document.getElementById('order-sheet-backdrop');
   const container = document.getElementById('order-sheet-container');
-  if (backdrop) backdrop.classList.add('hidden');
-  if (container) container.classList.add('hidden');
+  if (backdrop) {
+    backdrop.classList.add('hidden');
+    if (backdrop.style && typeof backdrop.style.setProperty === 'function') {
+      backdrop.style.setProperty('display', 'none', 'important');
+    } else if (backdrop.style) {
+      backdrop.style.display = 'none';
+    }
+  }
+  if (container) {
+    container.classList.add('hidden');
+    if (container.style && typeof container.style.setProperty === 'function') {
+      container.style.setProperty('display', 'none', 'important');
+    } else if (container.style) {
+      container.style.display = 'none';
+    }
+  }
 }
 
 function setOrderSheetType(type) {
@@ -7877,6 +7905,7 @@ function getTradeHistoryList() {
 
 function toggleTradeDeskOrderBook(forceState) {
   const grid = document.getElementById('trade-workspace-grid');
+  const panel = document.getElementById('trade-depth-panel');
   const btnText = document.getElementById('ctf-ob-text');
   const toggleBtn = document.getElementById('ctf-toggle-ob');
   if (!grid) return;
@@ -7886,12 +7915,28 @@ function toggleTradeDeskOrderBook(forceState) {
 
   if (willShow) {
     grid.classList.remove('orderbook-hidden');
+    if (panel) {
+      if (panel.style && typeof panel.style.removeProperty === 'function') {
+        panel.style.removeProperty('display');
+      } else if (panel.style) {
+        panel.style.display = '';
+      }
+      panel.classList.remove('hidden');
+    }
     if (btnText) btnText.textContent = 'Order Book: ON';
     if (toggleBtn) toggleBtn.classList.remove('off');
     try { localStorage.setItem('vtrade_show_orderbook', 'true'); } catch (e) {}
     showToast('Order Book panel restored', 'info');
   } else {
     grid.classList.add('orderbook-hidden');
+    if (panel) {
+      if (panel.style && typeof panel.style.setProperty === 'function') {
+        panel.style.setProperty('display', 'none', 'important');
+      } else if (panel.style) {
+        panel.style.display = 'none';
+      }
+      panel.classList.add('hidden');
+    }
     if (btnText) btnText.textContent = 'Order Book: OFF';
     if (toggleBtn) toggleBtn.classList.add('off');
     try { localStorage.setItem('vtrade_show_orderbook', 'false'); } catch (e) {}
@@ -7904,9 +7949,18 @@ function initOrderBookPreference() {
     const saved = localStorage.getItem('vtrade_show_orderbook');
     if (saved === 'false') {
       const grid = document.getElementById('trade-workspace-grid');
+      const panel = document.getElementById('trade-depth-panel');
       const btnText = document.getElementById('ctf-ob-text');
       const toggleBtn = document.getElementById('ctf-toggle-ob');
       if (grid) grid.classList.add('orderbook-hidden');
+      if (panel) {
+        if (panel.style && typeof panel.style.setProperty === 'function') {
+          panel.style.setProperty('display', 'none', 'important');
+        } else if (panel.style) {
+          panel.style.display = 'none';
+        }
+        panel.classList.add('hidden');
+      }
       if (btnText) btnText.textContent = 'Order Book: OFF';
       if (toggleBtn) toggleBtn.classList.add('off');
     }

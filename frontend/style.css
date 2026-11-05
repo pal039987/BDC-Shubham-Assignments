@@ -6144,10 +6144,13 @@ html:not(.is-native-apk) .tv-fs-header {
 
   /* Order Book Hidden State Responsive Rebalancing */
   html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden,
-  html:not(.is-native-apk) body.trade-screen-active .trade-workspace-grid.orderbook-hidden {
-    grid-template-columns: minmax(0, 1fr) 330px !important;
+  html:not(.is-native-apk) body.trade-screen-active .trade-workspace-grid.orderbook-hidden,
+  #screen-trade .trade-workspace-grid.orderbook-hidden {
+    grid-template-columns: minmax(0, 1fr) 340px !important;
   }
-  html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden .trade-depth-panel {
+  html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden .trade-depth-panel,
+  html:not(.is-native-apk) #screen-trade .trade-workspace-grid.orderbook-hidden .trade-depth-panel,
+  #screen-trade .trade-workspace-grid.orderbook-hidden .trade-depth-panel {
     display: none !important;
   }
 
@@ -15226,6 +15229,76 @@ body.trade-screen-active .trade-depth-panel {
     background-color: #080B11 !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 8px !important;
+  }
+
+  /* Order Book Hidden State Responsive Override (Fix Close ✕ Button) */
+  .trade-workspace-grid.orderbook-hidden,
+  body.trade-screen-active .trade-workspace-grid.orderbook-hidden,
+  #screen-trade .trade-workspace-grid.orderbook-hidden,
+  #screen-trade.active .trade-workspace-grid.orderbook-hidden,
+  html:not(.is-native-apk) #screen-trade .trade-workspace-grid.orderbook-hidden,
+  html:not(.is-native-apk) body.trade-screen-active #screen-trade .trade-workspace-grid.orderbook-hidden {
+    grid-template-columns: minmax(0, 1fr) 340px !important;
+  }
+
+  .trade-workspace-grid.orderbook-hidden #trade-depth-panel,
+  .trade-workspace-grid.orderbook-hidden .trade-depth-panel,
+  body.trade-screen-active .trade-workspace-grid.orderbook-hidden .trade-depth-panel,
+  #screen-trade .trade-workspace-grid.orderbook-hidden #trade-depth-panel,
+  #screen-trade .trade-workspace-grid.orderbook-hidden .trade-depth-panel,
+  #screen-trade.active .trade-workspace-grid.orderbook-hidden .trade-depth-panel,
+  body.trade-screen-active #screen-trade .trade-workspace-grid.orderbook-hidden .trade-depth-panel,
+  html:not(.is-native-apk) #screen-trade .trade-workspace-grid.orderbook-hidden .trade-depth-panel,
+  html:not(.is-native-apk) body.trade-screen-active #screen-trade .trade-workspace-grid.orderbook-hidden .trade-depth-panel {
+    display: none !important;
+  }
+
+  .trade-workspace-grid.orderbook-hidden .desktop-trade-order-dock,
+  body.trade-screen-active .trade-workspace-grid.orderbook-hidden .desktop-trade-order-dock,
+  #screen-trade .trade-workspace-grid.orderbook-hidden .desktop-trade-order-dock,
+  #screen-trade.active .trade-workspace-grid.orderbook-hidden .desktop-trade-order-dock,
+  html:not(.is-native-apk) #screen-trade .trade-workspace-grid.orderbook-hidden .desktop-trade-order-dock,
+  html:not(.is-native-apk) body.trade-screen-active #screen-trade .trade-workspace-grid.orderbook-hidden .desktop-trade-order-dock {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+  }
+
+  .trade-workspace-grid.orderbook-hidden .trade-chart-box,
+  #screen-trade .trade-workspace-grid.orderbook-hidden .trade-chart-box {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  .trade-workspace-grid.orderbook-hidden .trade-bottom-ledger-card,
+  #screen-trade .trade-workspace-grid.orderbook-hidden .trade-bottom-ledger-card {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+
+  .tdp-remove-btn,
+  html:not(.is-native-apk) .tdp-remove-btn {
+    width: 32px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    border: none !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #94a3b8 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    z-index: 5 !important;
+    pointer-events: auto !important;
+  }
+
+  .tdp-remove-btn:hover,
+  html:not(.is-native-apk) .tdp-remove-btn:hover {
+    background: rgba(244, 63, 94, 0.2) !important;
+    color: #f43f5e !important;
   }
 
   /* Independent Overflows */
