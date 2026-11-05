@@ -5563,6 +5563,11 @@ html:not(.is-native-apk) .tv-fs-header {
   }
 
   /* ─── SCREEN 1: HOME WORKSTATION ─── */
+  #screen-home,
+  #vtrade-hero-glass-block {
+    background: #05070F !important;
+  }
+
   html:not(.is-native-apk) #screen-home .home-scroll-container {
     max-width: 1360px;
     margin: 0 auto;
@@ -7557,7 +7562,7 @@ html:not(.is-native-apk) .tv-fs-header {
 /* Landing Hero Section */
 .landing-hero-section {
   position: relative;
-  background: linear-gradient(135deg, rgba(16, 22, 34, 0.85), rgba(8, 11, 17, 0.95));
+  background: #05070F;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   padding: 48px 40px;
@@ -7572,7 +7577,7 @@ html:not(.is-native-apk) .tv-fs-header {
   left: -20%;
   width: 140%;
   height: 200%;
-  background: radial-gradient(circle at 50% 20%, rgba(245, 166, 35, 0.12) 0%, rgba(0, 210, 255, 0.06) 40%, transparent 70%);
+  background: radial-gradient(circle at 50% 20%, rgba(0, 242, 254, 0.08) 0%, rgba(165, 180, 252, 0.04) 40%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -7581,9 +7586,9 @@ html:not(.is-native-apk) .tv-fs-header {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(245, 166, 35, 0.12);
-  border: 1px solid rgba(245, 166, 35, 0.3);
-  color: #ff9900;
+  background: rgba(0, 242, 254, 0.08);
+  border: 1px solid rgba(0, 242, 254, 0.25);
+  color: #00f2fe;
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 12px;
@@ -7598,16 +7603,16 @@ html:not(.is-native-apk) .tv-fs-header {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ff9900;
-  box-shadow: 0 0 10px #ff9900;
+  background: #00f2fe;
+  box-shadow: 0 0 10px #00f2fe;
   animation: splashPulse 2s infinite;
 }
 
 .lhs-headline {
-  font-size: 38px;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -1px;
+  font-size: clamp(36px, 4.4vw, 56px);
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
   color: #ffffff;
   margin-bottom: 16px;
   position: relative;
@@ -7616,17 +7621,18 @@ html:not(.is-native-apk) .tv-fs-header {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #00c087 0%, #00e5ff 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #00f2fe 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .lhs-subtext {
-  font-size: 16px;
-  color: #94a3b8;
+  font-size: 15px;
+  font-weight: 500;
+  color: #8492a6;
   line-height: 1.6;
-  max-width: 700px;
+  max-width: 540px;
   margin-bottom: 32px;
   position: relative;
   z-index: 1;
@@ -7645,91 +7651,121 @@ html:not(.is-native-apk) .tv-fs-header {
 .lhs-btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #ff9900, #ff7700);
-  color: #080b11;
+  gap: 10px;
+  background: linear-gradient(135deg, #00f2fe 0%, #00c087 100%);
+  color: #05070F;
   border: none;
   font-size: 15px;
   font-weight: 800;
   padding: 14px 28px;
   border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(255, 153, 0, 0.35);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 18px rgba(0, 242, 254, 0.35), 0 0 16px rgba(0, 192, 135, 0.25);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .lhs-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(255, 153, 0, 0.5);
+  transform: scale(1.02);
+  box-shadow: 0 6px 24px rgba(0, 242, 254, 0.45), 0 0 28px rgba(255, 153, 0, 0.45);
+}
+
+.lhs-btn-primary:active {
+  transform: scale(0.98);
 }
 
 .lhs-btn-secondary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #ffffff;
   font-size: 15px;
   font-weight: 700;
   padding: 14px 26px;
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .lhs-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.lhs-btn-secondary:active {
+  transform: scale(0.98);
 }
 
 .lhs-btn-download {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 192, 135, 0.1);
-  border: 1px solid rgba(0, 192, 135, 0.3);
+  background: rgba(0, 192, 135, 0.08);
+  border: 1px solid rgba(0, 192, 135, 0.25);
   color: #00c087;
   font-size: 14px;
   font-weight: 700;
   padding: 14px 22px;
   border-radius: 12px;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .lhs-btn-download:hover {
-  background: rgba(0, 192, 135, 0.2);
+  transform: scale(1.02);
+  background: rgba(0, 192, 135, 0.16);
   border-color: #00c087;
+  box-shadow: 0 6px 20px rgba(0, 192, 135, 0.25);
 }
 
-.lhs-metrics-bar {
+.lhs-btn-download:active {
+  transform: scale(0.98);
+}
+
+.lhs-metrics-bar,
+.hero-bento-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 20px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
   z-index: 1;
 }
 
-.lhs-m-item {
+.lhs-m-item,
+.bento-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 20px 22px;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .lhs-m-val {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 900;
   color: #ffffff;
-  font-family: var(--font-price);
+  font-family: var(--font-price), 'Inter', monospace;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .lhs-m-lbl {
-  font-size: 12px;
-  color: #8b92a4;
+  font-size: 13px;
+  color: #8492a6;
   font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 /* Bento Spotlight Cards on Home */
@@ -9991,8 +10027,8 @@ body.trade-screen-active .trade-depth-panel {
 /* 1. Hero Dynamic Glass Atmosphere, Animated Border & 3D Tilt */
 .landing-hero-section {
   position: relative;
-  background: linear-gradient(135deg, rgba(16, 23, 38, 0.82), rgba(8, 12, 19, 0.92)) !important;
-  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  background: #05070F !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 24px;
   padding: 52px 42px !important;
   box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.15),
@@ -10013,7 +10049,7 @@ body.trade-screen-active .trade-depth-panel {
               inset 0 0 35px rgba(0, 242, 254, 0.06),
               0 28px 75px -10px rgba(0, 0, 0, 0.7),
               0 0 40px -10px rgba(0, 242, 254, 0.15);
-  background: linear-gradient(135deg, rgba(19, 27, 44, 0.88), rgba(10, 14, 23, 0.95)) !important;
+  background: #05070F !important;
 }
 
 /* 1b. Animated Glass Border Beam Layer */
@@ -10153,11 +10189,11 @@ body.trade-screen-active .trade-depth-panel {
 .gradient-text-animated {
   background: linear-gradient(
     135deg,
-    #00c087 0%,
-    #00e5ff 25%,
-    #ffd000 50%,
-    #00e5ff 75%,
-    #00c087 100%
+    #ffffff 0%,
+    #a5b4fc 25%,
+    #00f2fe 50%,
+    #a5b4fc 75%,
+    #ffffff 100%
   ) !important;
   background-size: 250% 100% !important;
   -webkit-background-clip: text !important;
@@ -10208,12 +10244,12 @@ body.trade-screen-active .trade-depth-panel {
 .lhs-btn-primary {
   position: relative;
   overflow: hidden;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .lhs-btn-primary:hover {
-  transform: translateY(-2px) scale(1.01) !important;
-  box-shadow: 0 0 28px rgba(255, 153, 0, 0.45), 0 8px 24px rgba(255, 153, 0, 0.3) !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 0 28px rgba(255, 153, 0, 0.45), 0 8px 24px rgba(0, 242, 254, 0.35) !important;
 }
 
 .lhs-btn-primary::after {
@@ -10242,18 +10278,23 @@ body.trade-screen-active .trade-depth-panel {
 }
 
 .lhs-btn-primary:active {
-  transform: scale(0.97) !important;
+  transform: scale(0.98) !important;
 }
 
 .lhs-btn-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .lhs-btn-secondary:hover {
-  transform: translateY(-2px) !important;
-  border-color: rgba(255, 255, 255, 0.28) !important;
+  transform: scale(1.02) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
   background: rgba(255, 255, 255, 0.07) !important;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+}
+
+.lhs-btn-secondary:active {
+  transform: scale(0.98) !important;
 }
 
 .lhs-btn-download {
@@ -10261,25 +10302,35 @@ body.trade-screen-active .trade-depth-panel {
 }
 
 .lhs-btn-download:hover {
-  transform: translateY(-2px) !important;
+  transform: scale(1.02) !important;
   border-color: rgba(0, 192, 135, 0.5) !important;
   box-shadow: 0 6px 20px rgba(0, 192, 135, 0.25) !important;
 }
 
-.lhs-m-item {
-  padding: 8px 14px;
-  border-radius: 12px;
+.lhs-btn-download:active {
+  transform: scale(0.98) !important;
+}
+
+.lhs-m-item,
+.bento-card {
+  padding: 20px 22px !important;
+  border-radius: 16px !important;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   cursor: default;
 }
 
-.lhs-m-item:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.035);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+.lhs-m-item:hover,
+.bento-card:hover {
+  transform: scale(1.02) !important;
+  background-color: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(0, 242, 254, 0.28) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 0 24px rgba(0, 242, 254, 0.12) !important;
 }
 
-.lhs-m-item:hover .lhs-m-val {
+.lhs-m-item:hover .lhs-m-val,
+.bento-card:hover .lhs-m-val {
   color: #00f2fe;
   text-shadow: 0 0 14px rgba(0, 242, 254, 0.35);
 }
@@ -12703,7 +12754,7 @@ body.trade-screen-active .trade-depth-panel {
 }
 
 .shark-headline {
-  font-size: clamp(34px, 4.2vw, 56px);
+  font-size: clamp(36px, 4.4vw, 56px);
   font-weight: 900;
   line-height: 1.12;
   color: #ffffff;
@@ -12713,8 +12764,9 @@ body.trade-screen-active .trade-depth-panel {
 
 .shark-subtext {
   font-size: 15px;
+  font-weight: 500;
   line-height: 1.6;
-  color: #94a3b8;
+  color: #8492a6;
   max-width: 520px;
   margin-bottom: 24px;
 }
@@ -12729,21 +12781,26 @@ body.trade-screen-active .trade-depth-panel {
 
 .shark-cta-btn {
   background: linear-gradient(135deg, #00f2fe 0%, #00c087 100%) !important;
-  color: #080c14 !important;
+  color: #05070F !important;
   font-weight: 800 !important;
   font-size: 15px !important;
-  padding: 13px 26px !important;
-  border-radius: 10px !important;
+  padding: 14px 28px !important;
+  border-radius: 12px !important;
   border: none !important;
-  box-shadow: 0 0 24px rgba(0, 242, 254, 0.35) !important;
+  box-shadow: 0 4px 18px rgba(0, 242, 254, 0.35), 0 0 16px rgba(0, 192, 135, 0.25) !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .shark-cta-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 32px rgba(0, 242, 254, 0.6) !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 6px 24px rgba(0, 242, 254, 0.5), 0 0 28px rgba(255, 153, 0, 0.45) !important;
+}
+
+.shark-cta-btn:active {
+  transform: scale(0.98) !important;
 }
 
 .shark-btn-arrow {
@@ -12754,6 +12811,84 @@ body.trade-screen-active .trade-depth-panel {
 
 .shark-cta-btn:hover .shark-btn-arrow {
   transform: translateX(4px);
+}
+
+/* ─── Bento Grid Spotlight & Beam Tokens ─── */
+.bento-card-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bento-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.bento-icon-tag {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.bento-chip-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8492a6;
+}
+
+.bento-spotlight-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    280px circle at var(--mouse-x, var(--bento-x, 50%)) var(--mouse-y, var(--bento-y, 50%)),
+    rgba(0, 242, 254, 0.16) 0%,
+    rgba(165, 180, 252, 0.08) 35%,
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+}
+
+.bento-card:hover .bento-spotlight-layer {
+  opacity: 1 !important;
+}
+
+.bento-card.border-beam-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--beam-angle, 0deg) at 50% 50%,
+    transparent 0%,
+    transparent 65%,
+    rgba(165, 180, 252, 0.5) 80%,
+    rgba(0, 242, 254, 0.8) 92%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+  animation: rotateBorderBeam 8s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bento-card.border-beam-card:hover::after {
+  opacity: 1 !important;
 }
 
 .shark-hero-socials {

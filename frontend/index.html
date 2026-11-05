@@ -302,25 +302,65 @@
             </div>
           </div>
 
-          <!-- Quick Metrics Bar -->
-          <div class="lhs-metrics-bar">
-            <div class="lhs-m-item">
-              <span class="lhs-m-val">$10,000</span>
-              <span class="lhs-m-lbl">Starting Funds</span>
+          <!-- Aceternity-Style Hero Bento Spotlight Grid (SS 1 Quick Metrics) -->
+          <div class="lhs-metrics-bar hero-bento-grid" id="hero-bento-grid">
+            <div class="lhs-m-item bento-card spotlight-card border-beam-card" onmousemove="handleBentoSpotlight(event, this)">
+              <div class="bento-spotlight-layer" aria-hidden="true"></div>
+              <div class="bento-card-content">
+                <div class="bento-badge-row">
+                  <span class="bento-icon-tag">💰</span>
+                  <span class="bento-chip-label">Starting Capital</span>
+                </div>
+                <span class="lhs-m-val">$10,000</span>
+                <span class="lhs-m-lbl">Starting Funds</span>
+              </div>
             </div>
-            <div class="lhs-m-item">
-              <span class="lhs-m-val">56+</span>
-              <span class="lhs-m-lbl">Crypto & Gold Markets</span>
+            <div class="lhs-m-item bento-card spotlight-card border-beam-card" onmousemove="handleBentoSpotlight(event, this)">
+              <div class="bento-spotlight-layer" aria-hidden="true"></div>
+              <div class="bento-card-content">
+                <div class="bento-badge-row">
+                  <span class="bento-icon-tag">🌐</span>
+                  <span class="bento-chip-label">Liquid Pairs</span>
+                </div>
+                <span class="lhs-m-val">56+</span>
+                <span class="lhs-m-lbl">Crypto Markets</span>
+              </div>
             </div>
-            <div class="lhs-m-item">
-              <span class="lhs-m-val">Up to 150x</span>
-              <span class="lhs-m-lbl">Simulated Leverage</span>
+            <div class="lhs-m-item bento-card spotlight-card border-beam-card" onmousemove="handleBentoSpotlight(event, this)">
+              <div class="bento-spotlight-layer" aria-hidden="true"></div>
+              <div class="bento-card-content">
+                <div class="bento-badge-row">
+                  <span class="bento-icon-tag">⚡</span>
+                  <span class="bento-chip-label">High Power</span>
+                </div>
+                <span class="lhs-m-val">Up to 150x</span>
+                <span class="lhs-m-lbl">Leverage</span>
+              </div>
             </div>
-            <div class="lhs-m-item">
-              <span class="lhs-m-val">0 ms</span>
-              <span class="lhs-m-lbl">Realtime Execution Latency</span>
+            <div class="lhs-m-item bento-card spotlight-card border-beam-card" onmousemove="handleBentoSpotlight(event, this)">
+              <div class="bento-spotlight-layer" aria-hidden="true"></div>
+              <div class="bento-card-content">
+                <div class="bento-badge-row">
+                  <span class="bento-icon-tag">⏱️</span>
+                  <span class="bento-chip-label">Ultra-Low</span>
+                </div>
+                <span class="lhs-m-val">0ms</span>
+                <span class="lhs-m-lbl">Latency</span>
+              </div>
             </div>
           </div>
+          <script>
+            function handleBentoSpotlight(e, el) {
+              if (!el) return;
+              var r = el.getBoundingClientRect();
+              var x = e.clientX - r.left;
+              var y = e.clientY - r.top;
+              el.style.setProperty('--bento-x', x + 'px');
+              el.style.setProperty('--bento-y', y + 'px');
+              el.style.setProperty('--mouse-x', x + 'px');
+              el.style.setProperty('--mouse-y', y + 'px');
+            }
+          </script>
         </div>
 
         <!-- 4 Market Intelligence Cards (Animmaster & Aceternity Style) -->
