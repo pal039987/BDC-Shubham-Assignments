@@ -2090,9 +2090,10 @@
                   if (savedIndicators && savedIndicators.length > 0) {
                     widgetConfig.studies = savedIndicators;
                   }
-                  var earlySrc = 'https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&hide_side_toolbar=0&locale=en#' + encodeURIComponent(JSON.stringify(widgetConfig));
+                  var earlySrc = 'https://s.tradingview.com/embed-widget/advanced-chart/?frameElementId=tradingview-chart-iframe&symbol=' + encodeURIComponent(tvSym) + '&hide_side_toolbar=0&locale=en#' + encodeURIComponent(JSON.stringify(widgetConfig));
                   iframe.src = earlySrc;
                   iframe.setAttribute('data-applied-url', earlySrc);
+                  iframe.setAttribute('data-active-symbol', tvSym);
                   var chartBoxEl = document.getElementById('trade-candlestick-container');
                   if (chartBoxEl && settings.bgColor) chartBoxEl.style.backgroundColor = settings.bgColor;
                 } catch(e) {}

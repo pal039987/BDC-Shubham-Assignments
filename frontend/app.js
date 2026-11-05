@@ -4815,7 +4815,19 @@ function selectCoinAndTrade(coinId) {
     } catch (e) {}
     switchBottomTab('trade');
     renderTradeScreen();
+    if (coin.id === 'gold' || coin.symbol === 'XAU') {
+      pollLiveGoldPrice();
+      startGoldLivePolling();
+    } else {
+      if (goldLivePollTimer) {
+        clearInterval(goldLivePollTimer);
+        goldLivePollTimer = null;
+      }
+      fetchFastCoinTicker(coin.binanceSym);
+      connectCoinTickerWs(coin.binanceSym);
+    }
     if (typeof updateDesktopOrderCalculations === 'function') updateDesktopOrderCalculations();
+    updateDesktopMarqueePrices();
   }
 }
 
@@ -5968,7 +5980,7 @@ function renderCoinPickerList(query = '') {
 }
 
 function selectCoinFromPicker(coinId) {
-  const coin = COINS.find(c => c.id === coinId);
+  const coin = COINS.find(c => c.id === coinId || c.symbol.toLowerCase() === coinId.toLowerCase());
   if (coin) {
     if (liveTickerWs) {
       try {
@@ -5990,6 +6002,18 @@ function selectCoinFromPicker(coinId) {
     } catch (e) {}
     closeCoinPickerModal();
     renderTradeScreen();
+    if (coin.id === 'gold' || coin.symbol === 'XAU') {
+      pollLiveGoldPrice();
+      startGoldLivePolling();
+    } else {
+      if (goldLivePollTimer) {
+        clearInterval(goldLivePollTimer);
+        goldLivePollTimer = null;
+      }
+      fetchFastCoinTicker(coin.binanceSym);
+      connectCoinTickerWs(coin.binanceSym);
+    }
+    updateDesktopMarqueePrices();
     const fsModal = document.getElementById('tv-fullscreen-modal');
     if (fsModal && !fsModal.classList.contains('hidden')) {
       openFullscreenChart();
@@ -6083,6 +6107,7 @@ async function pollLiveGoldPrice() {
       }
       updateDesktopMarqueePrices();
       if (typeof updateSpotlightBentoPrices === 'function') updateSpotlightBentoPrices();
+      if (activeTab === 'markets') renderMarketsScreen();
     }
     clearTimeout(goldTmr);
   } catch (gErr) {}
@@ -6130,10 +6155,10 @@ function connectCoinTickerWs(binanceSym) {
 
   // Connect to Binance official real-time ticker stream with vision and kline fallbacks
   const endpoints = [
-    `wss://stream.binance.com:9443/stream?streams=${sym}@kline_${bTf}/${sym}@ticker`,
-    `wss://data-stream.binance.vision/stream?streams=${sym}@kline_${bTf}/${sym}@ticker`,
-    `wss://stream.binance.com:9443/ws/${sym}@kline_${bTf}`,
-    `wss://data-stream.binance.vision/ws/${sym}@kline_${bTf}`,
+    `wss://stream.binance.com:9443/stream?streams=${sym}@kline_1d/${sym}@ticker`,
+    `wss://data-stream.binance.vision/stream?streams=${sym}@kline_1d/${sym}@ticker`,
+    `wss://stream.binance.com:9443/ws/${sym}@kline_1d`,
+    `wss://data-stream.binance.vision/ws/${sym}@kline_1d`,
     `wss://stream.binance.com:9443/ws/${sym}@ticker`
   ];
 
@@ -6169,12 +6194,13 @@ function connectCoinTickerWs(binanceSym) {
             let low = null;
 
             if (d.k) {
-              // Fallback kline payload: live price tick
+              // Daily session candle tick: captures true 00:00 UTC session open & live price
               newPrice = parseFloat(d.k.c);
               const openPrice = parseFloat(d.k.o);
               if (openPrice > 0 && !isNaN(openPrice)) {
                 selectedCoin.candleOpen = openPrice;
-                selectedCoin.chartChange = parseFloat((((newPrice - openPrice) / openPrice) * 100).toFixed(2));
+                selectedCoin.open = openPrice;
+                selectedCoin.open24h = openPrice;
               }
               // Do NOT overwrite 24h High / Low with single-candle d.k.h / d.k.l!
             } else if (d.e === '24hrTicker' || (d.c && d.P !== undefined)) {
@@ -6190,15 +6216,6 @@ function connectCoinTickerWs(binanceSym) {
 
             if (newPrice > 0 && !isNaN(newPrice)) {
               selectedCoin.price = newPrice;
-              if (selectedCoin.candleOpen && selectedCoin.candleOpen > 0) {
-                selectedCoin.chartChange = parseFloat((((newPrice - selectedCoin.candleOpen) / selectedCoin.candleOpen) * 100).toFixed(2));
-              } else if (chartCandlesData && chartCandlesData.length > 0) {
-                const curC = chartCandlesData[chartCandlesData.length - 1];
-                if (curC && curC.open > 0) {
-                  selectedCoin.candleOpen = curC.open;
-                  selectedCoin.chartChange = parseFloat((((newPrice - curC.open) / curC.open) * 100).toFixed(2));
-                }
-              }
 
               // Synchronize open24h with authentic session open to eliminate flickering!
               const sessionOpen = (selectedCoin.candleOpen && selectedCoin.candleOpen > 0)
@@ -6206,6 +6223,8 @@ function connectCoinTickerWs(binanceSym) {
                 : ((selectedCoin.open && selectedCoin.open > 0) ? selectedCoin.open : selectedCoin.open24h);
               if (sessionOpen && sessionOpen > 0) {
                 selectedCoin.open24h = sessionOpen;
+                selectedCoin.open = sessionOpen;
+                selectedCoin.candleOpen = sessionOpen;
               }
 
               if (selectedCoin.open24h && selectedCoin.open24h > 0) {
@@ -6224,6 +6243,9 @@ function connectCoinTickerWs(binanceSym) {
               const listCoin = typeof COINS !== 'undefined' ? COINS.find(c => c.id === selectedCoin.id) : null;
               if (listCoin) {
                 listCoin.price = newPrice;
+                listCoin.open = selectedCoin.open;
+                listCoin.open24h = selectedCoin.open24h;
+                listCoin.candleOpen = selectedCoin.candleOpen;
                 listCoin.change = selectedCoin.change;
                 listCoin.change24h = selectedCoin.change24h;
                 listCoin.chartChange = selectedCoin.chartChange;
@@ -6243,13 +6265,21 @@ function connectCoinTickerWs(binanceSym) {
                 if (wsRenderTimer) { clearTimeout(wsRenderTimer); wsRenderTimer = null; }
                 renderLivePriceUpdates();
                 updateDesktopMarqueePrices();
+                if (activeTab === 'markets') renderMarketsScreen();
+                if (typeof updateDesktopOrderCalculations === 'function') {
+                  updateDesktopOrderCalculations();
+                }
               } else if (!wsRenderTimer) {
                 wsRenderTimer = setTimeout(() => {
                   lastWsRenderTime = Date.now();
                   wsRenderTimer = null;
                   renderLivePriceUpdates();
                   updateDesktopMarqueePrices();
-                }, 150 - (now - lastWsRenderTime));
+                  if (activeTab === 'markets') renderMarketsScreen();
+                  if (typeof updateDesktopOrderCalculations === 'function') {
+                    updateDesktopOrderCalculations();
+                  }
+                }, 150);
               }
             }
           }
