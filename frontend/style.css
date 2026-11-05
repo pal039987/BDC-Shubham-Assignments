@@ -15037,15 +15037,15 @@ body.trade-screen-active .trade-depth-panel {
    VTRADE INSTITUTIONAL HERO REFACTOR (ACETERNITY & LINEAR INSPIRED)
    ══════════════════════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
-  /* 1. Global Viewport Base Reset */
-  body, html {
+  /* Enforce Premium Dark Space Identity */
+  body, html, main, .vtrade-app-root {
     background-color: #05070F !important;
-    font-family: 'Inter', -apple-system, sans-serif;
+    background: radial-gradient(circle at 50% -20%, rgba(0, 242, 254, 0.12) 0%, rgba(255, 153, 0, 0.04) 50%, transparent 80%), #05070F !important;
   }
 
-  /* 2. Premium Heading Gradient and Modern Lettering */
+  /* Shimmer Gradient Text Core Typography */
   .shark-headline, h1, .landing-hero-section h1 {
-    font-size: 54px !important;
+    font-size: 56px !important;
     font-weight: 900 !important;
     letter-spacing: -0.03em !important;
     line-height: 1.15 !important;
@@ -15055,47 +15055,23 @@ body.trade-screen-active .trade-depth-panel {
     -webkit-text-fill-color: transparent !important;
   }
 
-  /* Description text adjustment */
+  /* Balanced Description Subtext Block */
   .shark-subtext, .landing-hero-section p {
     color: #8492a6 !important;
     font-size: 15px !important;
     font-weight: 500 !important;
     line-height: 1.6 !important;
-    max-width: 540px !important;
   }
 
-  /* 3. Tactile Control & Glassmorphic Buttons */
-  .shark-cta-btn, .lhs-btn-primary, button:contains("Let's Get Started") {
+  /* Translucent Floating Interactive Control Elements */
+  .shark-cta-btn, .lhs-btn-primary, button[id*="start"] {
     background: linear-gradient(135deg, #00c087 0%, #059669 100%) !important;
     color: #ffffff !important;
     font-weight: 700 !important;
-    border-radius: 10px !important;
     box-shadow: 0 4px 20px rgba(0, 192, 135, 0.3) !important;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
-  .shark-cta-btn:hover, .lhs-btn-primary:hover {
-    transform: translateY(-2px) scale(1.02) !important;
-    box-shadow: 0 8px 28px rgba(0, 192, 135, 0.45) !important;
-  }
-
-  /* Secondary Button Glass styling */
-  button:contains("Explore 50+ Markets"), .lhs-btn-secondary {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    color: #ffffff !important;
-    border-radius: 10px !important;
-    backdrop-filter: blur(12px) !important;
-    transition: all 0.25s ease !important;
-  }
-
-  button:contains("Explore 50+ Markets"):hover, .lhs-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
-    transform: translateY(-2px) !important;
-  }
-
-  /* 4. Strict Metrics Bento Box Framework */
+  /* Linear Grid System for Statistics Cards Row */
   .shark-key-stats-container, .lhs-metrics-bar {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -15104,23 +15080,12 @@ body.trade-screen-active .trade-depth-panel {
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
     border-radius: 20px !important;
     padding: 24px !important;
-    backdrop-filter: blur(20px) !important;
-    margin-top: 40px !important;
   }
 
-  /* Individual Metrics Cards Inside Bento */
   .sks-col, .lhs-m-item {
     background: rgba(255, 255, 255, 0.02) !important;
     border: 1px solid rgba(255, 255, 255, 0.05) !important;
     border-radius: 14px !important;
     padding: 16px !important;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  }
-
-  .sks-col:hover, .lhs-m-item:hover {
-    border-color: rgba(0, 242, 254, 0.3) !important;
-    transform: translateY(-4px) !important;
-    background: rgba(255, 255, 255, 0.04) !important;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4) !important;
   }
 }
