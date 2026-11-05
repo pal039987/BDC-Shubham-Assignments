@@ -26,6 +26,79 @@
   <!-- Core Stylesheet -->
   <link rel="stylesheet" href="style.css?v=2.9" />
 
+  <style>
+  @media (min-width: 1024px) {
+    /* 1. Global Viewport Luxury Base Background */
+    body, html, main, .vtrade-app-root, .home-scroll-container {
+      background-color: #05070F !important;
+      background: radial-gradient(circle at 50% -15%, rgba(0, 242, 254, 0.15) 0%, rgba(255, 153, 0, 0.04) 55%, transparent 80%), #05070F !important;
+    }
+
+    /* 2. Shimmer Text Gradient for Main Tagline */
+    .shark-headline, h1, .landing-hero-section h1, [class*="headline"] {
+      font-size: 56px !important;
+      font-weight: 900 !important;
+      letter-spacing: -0.03em !important;
+      line-height: 1.15 !important;
+      background: linear-gradient(135deg, #ffffff 0%, #c7d2fe 50%, #38bdf8 100%) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      display: inline-block !important;
+    }
+
+    /* 3. Muted Luxury Description Subtext */
+    .shark-subtext, .landing-hero-section p {
+      color: #8492a6 !important;
+      font-size: 15px !important;
+      font-weight: 500 !important;
+      line-height: 1.6 !important;
+      max-width: 540px !important;
+    }
+
+    /* 4. Glassmorphic Smooth Buttons Control */
+    .shark-cta-btn, .lhs-btn-primary, button:contains("Let's Get Started") {
+      background: linear-gradient(135deg, #00c087 0%, #059669 100%) !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      border-radius: 10px !important;
+      box-shadow: 0 4px 24px rgba(0, 192, 135, 0.35) !important;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .shark-cta-btn:hover, .lhs-btn-primary:hover {
+      transform: translateY(-2px) scale(1.02) !important;
+      box-shadow: 0 8px 32px rgba(0, 192, 135, 0.5) !important;
+    }
+
+    /* 5. Metrics Bento Box Framework Grid Alignment */
+    .shark-key-stats-container, .lhs-metrics-bar {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 18px !important;
+      background: rgba(255, 255, 255, 0.01) !important;
+      border: 1px solid rgba(255, 255, 255, 0.06) !important;
+      border-radius: 20px !important;
+      padding: 24px !important;
+      margin-top: 45px !important;
+    }
+
+    .sks-col, .lhs-m-item {
+      background: rgba(255, 255, 255, 0.02) !important;
+      border: 1px solid rgba(255, 255, 255, 0.05) !important;
+      border-radius: 14px !important;
+      padding: 18px !important;
+      transition: all 0.25s ease !important;
+    }
+
+    .sks-col:hover, .lhs-m-item:hover {
+      border-color: rgba(0, 242, 254, 0.35) !important;
+      transform: translateY(-4px) !important;
+      background: rgba(255, 255, 255, 0.04) !important;
+    }
+  }
+  </style>
+
   <script>
     (function() {
       var isCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
