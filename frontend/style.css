@@ -5269,6 +5269,17 @@ html:not(.is-native-apk) .tv-fs-header {
   display: none;
 }
 
+/* Responsive & Legacy Compatibility Fallback (< 1024px) */
+@media (max-width: 1023px) {
+  body.trade-screen-active .app-top-header {
+    height: 50px !important;
+  }
+  body.trade-screen-active #screen-trade.active,
+  #screen-trade.active {
+    overflow-y: auto !important;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════════
    DESKTOP INSTITUTIONAL TRADING WORKSTATION
    Inspired by Aceternity UI, Skiper UI & Animmaster (Trading-Focused)
@@ -5660,48 +5671,90 @@ html:not(.is-native-apk) .tv-fs-header {
     transform: translateX(4px);
   }
 
-  /* ─── SCREEN 3: PROFESSIONAL TRADE DESK (WIDESCREEN 3-COLUMN) ─── */
+  /* ─── SCREEN 3: INSTITUTIONAL CRYPTO TRADING TERMINAL WORKSTATION ───
+     Strict 4-Column High-Speed Zero-Scroll Desktop Terminal Architecture
+     Col 1 (20%): Vertical Watchlist | Col 2 (40%): Chart (65%) + Ledger (35%) | Col 3 (18%): Order Book | Col 4 (22%): Order Terminal */
   html:not(.is-native-apk) #screen-trade {
     display: none !important;
+  }
+
+  html:not(.is-native-apk) body.trade-screen-active {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  html:not(.is-native-apk) body.trade-screen-active::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 
   html:not(.is-native-apk) body.trade-screen-active .desktop-marquee-wrap {
     display: none !important;
   }
   html:not(.is-native-apk) body.trade-screen-active .app-top-header {
-    height: 50px !important;
-    min-height: 50px !important;
-    padding: 0 16px !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+    padding: 0 20px !important;
+    background: #080B11 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-sizing: border-box !important;
   }
+
+  /* 1. GLOBAL VIEWPORT CONSTRAINT (Zero-Scroll 100vh Fit) */
+  html:not(.is-native-apk) body.trade-screen-active #screen-trade,
   html:not(.is-native-apk) body.trade-screen-active #screen-trade.active,
-  html:not(.is-native-apk) #screen-trade.active {
+  html:not(.is-native-apk) #screen-trade.active,
+  html:not(.is-native-apk) body.trade-screen-active .trade-fullwidth-container,
+  html:not(.is-native-apk) #screen-trade .trade-fullwidth-container {
+    height: calc(100vh - 64px) !important;
+    max-height: calc(100vh - 64px) !important;
+    overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
-    height: calc(100vh - 50px) !important;
-    max-height: calc(100vh - 50px) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
-  html:not(.is-native-apk) #screen-trade.active::-webkit-scrollbar {
-    width: 6px;
-  }
-  html:not(.is-native-apk) #screen-trade.active::-webkit-scrollbar-track {
-    background: #080b11;
-  }
-  html:not(.is-native-apk) #screen-trade.active::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.16);
-    border-radius: 4px;
-  }
-  html:not(.is-native-apk) #screen-trade.active::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.28);
+  /* Top Subtabs & Instrument Bar Height Calibration */
+  html:not(.is-native-apk) body.trade-screen-active .tib-top-subtabs,
+  html:not(.is-native-apk) #screen-trade .tib-top-subtabs {
+    height: 30px !important;
+    min-height: 30px !important;
+    max-height: 30px !important;
+    padding: 0 10px !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    display: flex !important;
+    align-items: center !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
   }
 
-  html:not(.is-native-apk) #screen-trade .trade-top-asset-bar {
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
-    padding: 12px 20px;
+  html:not(.is-native-apk) body.trade-screen-active .trade-instrument-bar,
+  html:not(.is-native-apk) #screen-trade .trade-instrument-bar {
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    padding: 0 12px !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    display: flex !important;
+    align-items: center !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
   }
 
   /* Hide Mobile Floating Dock on Desktop */
@@ -5709,317 +5762,764 @@ html:not(.is-native-apk) .tv-fs-header {
     display: none !important;
   }
 
-  /* Desktop Side Order Terminal Dock (Skiper UI Style) */
-  html:not(.is-native-apk) .desktop-trade-order-dock {
-    display: flex !important;
-    flex-direction: column;
-    width: 100%;
-    height: auto;
-    min-height: 550px;
-    background: #0d121c;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 16px 18px 24px 18px;
-    overflow-y: visible;
-    gap: 12px;
-    box-shadow: none;
+  /* 2. STRICT 4-COLUMN CSS GRID STRUCTURE */
+  html:not(.is-native-apk) .trade-workspace-grid,
+  html:not(.is-native-apk) body.trade-screen-active .trade-workspace-grid,
+  html:not(.is-native-apk) #screen-trade .trade-workspace-grid {
+    display: grid !important;
+    grid-template-columns: 20% 40% 18% 22% !important;
+    grid-template-rows: 65% 35% !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    height: calc(100% - 70px) !important;
+    max-height: calc(100% - 70px) !important;
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
+  /* Column 1 (Width: 20%): Vertical Watchlist */
+  html:not(.is-native-apk) .trade-watchlist-panel,
+  html:not(.is-native-apk) .trade-watchlist,
+  html:not(.is-native-apk) .trade-watchlist-col,
+  html:not(.is-native-apk) #trade-watchlist-panel {
+    grid-column: 1 !important;
+    grid-row: 1 / span 2 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Watchlist Search Input & Header */
+  html:not(.is-native-apk) .trade-watchlist-search,
+  html:not(.is-native-apk) .tw-search-wrap,
+  html:not(.is-native-apk) .trade-watchlist-header {
+    padding: 6px 8px !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  html:not(.is-native-apk) .trade-watchlist-search input,
+  html:not(.is-native-apk) .tw-search-input {
+    width: 100% !important;
+    height: 26px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 4px !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    padding: 0 8px !important;
+    outline: none !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    box-sizing: border-box !important;
+    transition: all 0.15s ease !important;
+  }
+
+  html:not(.is-native-apk) .trade-watchlist-search input:focus,
+  html:not(.is-native-apk) .tw-search-input:focus {
+    border-color: #00C853 !important;
+    background: rgba(0, 200, 83, 0.06) !important;
+  }
+
+  /* Watchlist Compact Asset Rows */
+  html:not(.is-native-apk) .trade-watchlist-list,
+  html:not(.is-native-apk) .tw-list-wrap {
+    flex: 1 1 0% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+  }
+
+  html:not(.is-native-apk) .trade-watchlist-row,
+  html:not(.is-native-apk) .tw-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 5px 8px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    transition: background 0.15s ease !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.is-native-apk) .trade-watchlist-row:hover,
+  html:not(.is-native-apk) .tw-row:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  html:not(.is-native-apk) .trade-watchlist-row.active,
+  html:not(.is-native-apk) .tw-row.active {
+    background: rgba(0, 200, 83, 0.08) !important;
+    border-left: 2px solid #00C853 !important;
+  }
+
+  html:not(.is-native-apk) .tw-sym,
+  html:not(.is-native-apk) .tw-symbol {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    letter-spacing: -0.2px !important;
+  }
+
+  html:not(.is-native-apk) .tw-p,
+  html:not(.is-native-apk) .tw-price {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    font-family: var(--font-price, monospace) !important;
+    font-variant-numeric: tabular-nums !important;
+    color: #cbd5e1 !important;
+  }
+
+  html:not(.is-native-apk) .tw-chg,
+  html:not(.is-native-apk) .tw-change {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    font-family: var(--font-price, monospace) !important;
+    font-variant-numeric: tabular-nums !important;
+  }
+
+  /* Column 2 (Width: 40%): Top 65% Main TradingView Chart Container */
+  html:not(.is-native-apk) .trade-chart-box,
+  html:not(.is-native-apk) body.trade-screen-active .trade-chart-box,
+  html:not(.is-native-apk) #screen-trade .trade-chart-box {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+  }
+
+  html:not(.is-native-apk) .tcb-header-bar {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding: 0 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  html:not(.is-native-apk) .trade-chart-box .tradingview-iframe,
+  html:not(.is-native-apk) .trade-chart-box iframe {
+    flex: 1 1 0% !important;
+    width: 100% !important;
+    height: calc(100% - 36px) !important;
+    min-height: 0 !important;
+    max-height: calc(100% - 36px) !important;
+    border: none !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    display: block !important;
+  }
+
+  /* Column 2 (Width: 40%): Bottom 35% Active Positions / Ledger Panel */
+  html:not(.is-native-apk) .trade-bottom-ledger-card,
+  html:not(.is-native-apk) body.trade-screen-active .trade-bottom-ledger-card,
+  html:not(.is-native-apk) #screen-trade .trade-bottom-ledger-card {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+  }
+
+  html:not(.is-native-apk) .tblc-tabs {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding: 0 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  html:not(.is-native-apk) .tblc-tab {
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+    color: #94a3b8 !important;
+    background: transparent !important;
+    border: none !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: color 0.15s ease !important;
+  }
+
+  html:not(.is-native-apk) .tblc-tab.active {
+    color: #00f2fe !important;
+    border-bottom: 2px solid #00f2fe !important;
+  }
+
+  html:not(.is-native-apk) .tblc-view {
+    flex: 1 1 0% !important;
+    height: calc(100% - 34px) !important;
+    max-height: calc(100% - 34px) !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Column 3 (Width: 18%): Real-time Order Book Depth Panel */
+  html:not(.is-native-apk) .trade-depth-panel,
+  html:not(.is-native-apk) body.trade-screen-active .trade-depth-panel,
+  html:not(.is-native-apk) #screen-trade .trade-depth-panel {
+    grid-column: 3 !important;
+    grid-row: 1 / span 2 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  html:not(.is-native-apk) .tdp-tabs {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 8px !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+  }
+
+  html:not(.is-native-apk) .tdp-tab {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #94a3b8 !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 4px 6px !important;
+    cursor: pointer !important;
+  }
+
+  html:not(.is-native-apk) .tdp-tab.active {
+    color: #ffffff !important;
+    border-bottom: 2px solid #00C853 !important;
+  }
+
+  /* Column 4 (Width: 22%): Buy/Sell Order Form Terminal */
+  html:not(.is-native-apk) .desktop-trade-order-dock,
+  html:not(.is-native-apk) body.trade-screen-active .desktop-trade-order-dock,
+  html:not(.is-native-apk) #screen-trade .desktop-trade-order-dock {
+    grid-column: 4 !important;
+    grid-row: 1 / span 2 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    background: #080B11 !important;
+    background-color: #080B11 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  /* Order Book Hidden State Responsive Rebalancing */
+  html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden,
+  html:not(.is-native-apk) body.trade-screen-active .trade-workspace-grid.orderbook-hidden {
+    grid-template-columns: 20% 58% 0% 22% !important;
+  }
+  html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden .trade-depth-panel {
+    display: none !important;
+  }
+
+  /* 3. THEME & VISUAL HIERARCHY SYSTEM */
+  /* Main Background: Force single deep rich solid dark background #080B11 across active parents */
+  html:not(.is-native-apk) #screen-trade,
+  html:not(.is-native-apk) #screen-trade.active,
+  html:not(.is-native-apk) .trade-fullwidth-container,
+  html:not(.is-native-apk) .trade-workspace-grid,
+  html:not(.is-native-apk) .trade-chart-box,
+  html:not(.is-native-apk) .trade-bottom-ledger-card,
+  html:not(.is-native-apk) .trade-depth-panel,
+  html:not(.is-native-apk) .desktop-trade-order-dock,
+  html:not(.is-native-apk) .trade-watchlist-panel,
+  html:not(.is-native-apk) .tdp-content,
+  html:not(.is-native-apk) .tblc-view,
+  html:not(.is-native-apk) .tblc-table-wrap,
+  html:not(.is-native-apk) .tblc-tabs,
+  html:not(.is-native-apk) .tcb-header-bar,
+  html:not(.is-native-apk) .trade-instrument-bar,
+  html:not(.is-native-apk) .tib-top-subtabs,
+  html:not(.is-native-apk) .dtod-margin-card {
+    background-color: #080B11 !important;
+  }
+
+  /* Strict Neon Green #00C853 (Buy/Long) and Neon Red #FF3D00 (Sell/Short) */
+  html:not(.is-native-apk) .dtod-side-btn.active-buy {
+    background: #00C853 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(0, 200, 83, 0.4) !important;
+  }
+  html:not(.is-native-apk) .dtod-side-btn.active-sell {
+    background: #FF3D00 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(255, 61, 0, 0.4) !important;
+  }
+  html:not(.is-native-apk) .dtod-submit-btn.buy {
+    background: #00C853 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(0, 200, 83, 0.45) !important;
+    border: none !important;
+  }
+  html:not(.is-native-apk) .dtod-submit-btn.buy:hover {
+    background: #00b34a !important;
+    box-shadow: 0 0 20px rgba(0, 200, 83, 0.6) !important;
+  }
+  html:not(.is-native-apk) .dtod-submit-btn.sell {
+    background: #FF3D00 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 16px rgba(255, 61, 0, 0.45) !important;
+    border: none !important;
+  }
+  html:not(.is-native-apk) .dtod-submit-btn.sell:hover {
+    background: #e03500 !important;
+    box-shadow: 0 0 20px rgba(255, 61, 0, 0.6) !important;
+  }
+
+  /* Text Accents for Orders / PnL / Market Depth */
+  html:not(.is-native-apk) .up,
+  html:not(.is-native-apk) .tib-live-price.up,
+  html:not(.is-native-apk) .tib-price-arrow.up,
+  html:not(.is-native-apk) .trade-change-val.up,
+  html:not(.is-native-apk) .tw-change.up,
+  html:not(.is-native-apk) .pos-pnl.positive,
+  html:not(.is-native-apk) .ob-bids .ob-p,
+  html:not(.is-native-apk) .ob-p.up,
+  html:not(.is-native-apk) .tr-p.up {
+    color: #00C853 !important;
+  }
+
+  html:not(.is-native-apk) .down,
+  html:not(.is-native-apk) .tib-live-price.down,
+  html:not(.is-native-apk) .tib-price-arrow.down,
+  html:not(.is-native-apk) .trade-change-val.down,
+  html:not(.is-native-apk) .tw-change.down,
+  html:not(.is-native-apk) .pos-pnl.negative,
+  html:not(.is-native-apk) .ob-asks .ob-p,
+  html:not(.is-native-apk) .ob-p.down,
+  html:not(.is-native-apk) .tr-p.down {
+    color: #FF3D00 !important;
+  }
+
+  /* Typography: Tabular Monospace / Compact 'Inter' (11px to 13px) */
+  html:not(.is-native-apk) .ob-p,
+  html:not(.is-native-apk) .ob-s,
+  html:not(.is-native-apk) .ob-t,
+  html:not(.is-native-apk) .tr-p,
+  html:not(.is-native-apk) .tr-s,
+  html:not(.is-native-apk) .tr-t,
+  html:not(.is-native-apk) .orderbook-row,
+  html:not(.is-native-apk) .recent-trades-row,
+  html:not(.is-native-apk) .tblc-table td,
+  html:not(.is-native-apk) .tib-val,
+  html:not(.is-native-apk) .dtod-mv,
+  html:not(.is-native-apk) .tib-live-price,
+  html:not(.is-native-apk) .dtod-input,
+  html:not(.is-native-apk) .dtod-lev-val,
+  html:not(.is-native-apk) .tw-price,
+  html:not(.is-native-apk) .tw-change,
+  html:not(.is-native-apk) .trade-coin-tab-price,
+  html:not(.is-native-apk) .tib-mini-chg {
+    font-family: var(--font-price, 'SF Mono', Monaco, Consolas, 'Liberation Mono', monospace) !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: "tnum" 1, "zero" 1 !important;
+    letter-spacing: -0.2px !important;
+    font-size: 12px !important;
+  }
+
+  /* Spacing: Tight Padding Wrapper Classes & Minimal Grid Gaps */
+  .p-1 { padding: 4px !important; }
+  .p-2 { padding: 8px !important; }
+  .gap-1 { gap: 4px !important; }
+  .gap-2 { gap: 8px !important; }
+
+  /* 4. INDEPENDENT OVERFLOW SCROLLS */
+  /* Disable body element scrollbars */
+  html:not(.is-native-apk) body,
+  html:not(.is-native-apk) body.trade-screen-active {
+    overflow: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  html:not(.is-native-apk) body::-webkit-scrollbar,
+  html:not(.is-native-apk) body.trade-screen-active::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Internal native overflow-y scrolling for nested components only */
+  html:not(.is-native-apk) .tblc-table-wrap,
+  html:not(.is-native-apk) body.trade-screen-active .tblc-table-wrap {
+    flex: 1 1 0% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+  }
+
+  html:not(.is-native-apk) .tblc-table-wrap::-webkit-scrollbar {
+    width: 4px !important;
+    height: 4px !important;
+  }
+  html:not(.is-native-apk) .tblc-table-wrap::-webkit-scrollbar-track {
+    background: #080B11 !important;
+  }
+  html:not(.is-native-apk) .tblc-table-wrap::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-radius: 2px !important;
+  }
+
+  html:not(.is-native-apk) .tdp-content {
+    flex: 1 1 0% !important;
+    height: calc(100% - 34px) !important;
+    max-height: calc(100% - 34px) !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+  }
+
+  html:not(.is-native-apk) .tdp-content::-webkit-scrollbar {
+    width: 4px !important;
+  }
+  html:not(.is-native-apk) .tdp-content::-webkit-scrollbar-track {
+    background: #080B11 !important;
+  }
+  html:not(.is-native-apk) .tdp-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-radius: 2px !important;
+  }
+
+  html:not(.is-native-apk) .desktop-trade-order-dock {
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+  }
   html:not(.is-native-apk) .desktop-trade-order-dock::-webkit-scrollbar {
-    width: 4px;
+    width: 4px !important;
+  }
+  html:not(.is-native-apk) .desktop-trade-order-dock::-webkit-scrollbar-track {
+    background: #080B11 !important;
   }
   html:not(.is-native-apk) .desktop-trade-order-dock::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.16) !important;
+    border-radius: 2px !important;
   }
 
+  /* Desktop Side Order Terminal Dock Controls & Fine Details */
   html:not(.is-native-apk) .dtod-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
   }
-
   html:not(.is-native-apk) .dtod-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -0.3px;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #fff !important;
+    letter-spacing: -0.3px !important;
   }
-
   html:not(.is-native-apk) .dtod-badge {
-    font-size: 10px;
-    font-weight: 700;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.12);
-    padding: 3px 8px;
-    border-radius: 6px;
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #00C853 !important;
+    background: rgba(0, 200, 83, 0.12) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    border: 1px solid rgba(0, 200, 83, 0.25) !important;
   }
-
-  /* Buy / Sell Switcher */
   html:not(.is-native-apk) .dtod-side-switcher {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 10px;
-    padding: 4px;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-radius: 8px !important;
+    padding: 3px !important;
   }
-
   html:not(.is-native-apk) .dtod-side-btn {
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    color: #8b92a4;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 9px;
-    cursor: pointer;
-    transition: all 0.2s;
+    border: none !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    color: #8b92a4 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 7px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
   }
-
-  html:not(.is-native-apk) .dtod-side-btn.active-buy {
-    background: #10b981;
-    color: #fff;
-    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
-  }
-
-  html:not(.is-native-apk) .dtod-side-btn.active-sell {
-    background: #ef4444;
-    color: #fff;
-    box-shadow: 0 2px 10px rgba(239, 68, 68, 0.35);
-  }
-
-  /* Market vs Limit Switcher */
   html:not(.is-native-apk) .dtod-type-switcher {
-    display: flex;
-    gap: 8px;
+    display: flex !important;
+    gap: 4px !important;
   }
-
   html:not(.is-native-apk) .dtod-type-btn {
-    flex: 1;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    background: transparent;
-    color: #8b92a4;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
+    flex: 1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    color: #8b92a4 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 5px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
   }
-
   html:not(.is-native-apk) .dtod-type-btn.active {
-    border-color: #f5a623;
-    color: #f5a623;
-    background: rgba(245, 166, 35, 0.1);
+    border-color: #f5a623 !important;
+    color: #f5a623 !important;
+    background: rgba(245, 166, 35, 0.1) !important;
   }
-
-  /* Leverage Section */
   html:not(.is-native-apk) .dtod-leverage-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 12px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
   }
-
   html:not(.is-native-apk) .dtod-lev-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
   }
-
   html:not(.is-native-apk) .dtod-label {
-    font-size: 12px;
-    color: #8b92a4;
-    font-weight: 600;
+    font-size: 11px !important;
+    color: #8b92a4 !important;
+    font-weight: 600 !important;
   }
-
   html:not(.is-native-apk) .dtod-lev-val {
-    font-size: 13px;
-    font-weight: 800;
-    color: #f5a623;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    color: #f5a623 !important;
   }
-
   html:not(.is-native-apk) .dtod-lev-slider {
-    width: 100%;
-    accent-color: #f5a623;
-    cursor: pointer;
+    width: 100% !important;
+    accent-color: #f5a623 !important;
+    cursor: pointer !important;
   }
-
   html:not(.is-native-apk) .dtod-lev-chips {
-    display: flex;
-    gap: 5px;
+    display: flex !important;
+    gap: 4px !important;
   }
-
   html:not(.is-native-apk) .dtod-lchip {
-    flex: 1;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.03);
-    color: #8b92a4;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 0;
-    cursor: pointer;
-    transition: all 0.15s;
+    flex: 1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: #8b92a4 !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    padding: 3px 0 !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
   }
-
   html:not(.is-native-apk) .dtod-lchip.active {
-    background: rgba(245, 166, 35, 0.2);
-    border-color: #f5a623;
-    color: #f5a623;
+    background: rgba(245, 166, 35, 0.2) !important;
+    border-color: #f5a623 !important;
+    color: #f5a623 !important;
   }
-
-  /* Size Input */
   html:not(.is-native-apk) .dtod-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
   }
-
   html:not(.is-native-apk) .dtod-label-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
   }
-
   html:not(.is-native-apk) .dtod-max-label {
-    font-size: 11px;
-    color: #8b92a4;
+    font-size: 11px !important;
+    color: #8b92a4 !important;
   }
-
   html:not(.is-native-apk) .dtod-input-box {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 4px 12px;
+    display: flex !important;
+    align-items: center !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    padding: 2px 10px !important;
   }
-
   html:not(.is-native-apk) .dtod-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    outline: none;
-    padding: 8px 0;
-    font-family: var(--font-price, monospace);
+    flex: 1 !important;
+    background: transparent !important;
+    border: none !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    outline: none !important;
+    padding: 6px 0 !important;
+    font-family: var(--font-price, monospace) !important;
   }
-
   html:not(.is-native-apk) .dtod-unit {
-    font-size: 12px;
-    font-weight: 700;
-    color: #8b92a4;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #8b92a4 !important;
   }
-
   html:not(.is-native-apk) .dtod-pct-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-top: 6px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
   }
-
   html:not(.is-native-apk) .dtod-min-helper {
-    font-size: 11px;
-    font-weight: 500;
-    color: #8b92a4;
-    white-space: nowrap;
-    letter-spacing: 0.2px;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #8b92a4 !important;
+    white-space: nowrap !important;
   }
-
   html:not(.is-native-apk) .dtod-pct-chips {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 0;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
   }
-
   html:not(.is-native-apk) .dtod-pchip {
-    flex: initial;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.03);
-    color: #8b92a4;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: #8b92a4 !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    padding: 2px 8px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
   }
-
   html:not(.is-native-apk) .dtod-pchip.active {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
   }
-
-  /* Metrics Card */
   html:not(.is-native-apk) .dtod-metrics-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-radius: 8px !important;
+    padding: 8px 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
   }
-
   html:not(.is-native-apk) .dtod-m-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 11px !important;
   }
-
   html:not(.is-native-apk) .dtod-mk {
-    color: #8b92a4;
+    color: #8b92a4 !important;
   }
-
   html:not(.is-native-apk) .dtod-mv {
-    color: #fff;
-    font-weight: 600;
-    font-family: var(--font-price, monospace);
+    color: #fff !important;
+    font-weight: 600 !important;
+    font-family: var(--font-price, monospace) !important;
+    font-size: 12px !important;
   }
-
   html:not(.is-native-apk) .dtod-liq {
-    color: #f59e0b;
+    color: #f59e0b !important;
   }
-
-  /* Submit Button */
   html:not(.is-native-apk) .dtod-submit-btn {
-    border: none;
-    border-radius: 12px;
-    padding: 14px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    color: #fff;
-    transition: transform 0.15s, box-shadow 0.15s;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 11px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    color: #fff !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
   }
-
-  html:not(.is-native-apk) .dtod-submit-btn.buy {
-    background: linear-gradient(135deg, #10b981, #059669);
-    box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
-  }
-
-  html:not(.is-native-apk) .dtod-submit-btn.sell {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    box-shadow: 0 4px 18px rgba(239, 68, 68, 0.35);
-  }
-
   html:not(.is-native-apk) .dtod-submit-btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-1px) !important;
   }
-
   html:not(.is-native-apk) .dtod-submit-btn:active {
-    transform: scale(0.98);
+    transform: scale(0.98) !important;
   }
 
   /* ─── ELIMINATE NESTED SCROLLBARS ON DESKTOP ─── */
