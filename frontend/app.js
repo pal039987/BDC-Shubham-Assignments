@@ -4801,8 +4801,11 @@ function renderTradeScreen() {
   const isUp = currentChange >= 0;
   if (livePriceEl) livePriceEl.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.price)}`;
   if (liveChangeEl) {
-    liveChangeEl.className = `trade-live-change ${is24Up ? 'up' : 'down'}`;
-    liveChangeEl.textContent = `${is24Up ? '+' : ''}${chg24.toFixed(2)}%`;
+    const isChartChangeValid = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange));
+    const activeChangeToDisplay = isChartChangeValid ? selectedCoin.chartChange : chg24;
+    const isDispUp = activeChangeToDisplay >= 0;
+    liveChangeEl.className = `trade-live-change ${isDispUp ? 'up' : 'down'}`;
+    liveChangeEl.textContent = `${isDispUp ? '+' : ''}${activeChangeToDisplay.toFixed(2)}%`;
   }
 
   // Update Full-Width Top Instrument Bar
@@ -4838,8 +4841,12 @@ function renderTradeScreen() {
   if (tabPrice) tabPrice.textContent = fmtPrice(selectedCoin.price);
 
   if (changeVal) {
-    changeVal.className = `tib-val ${is24Up ? 'up' : 'down'}`;
-    changeVal.textContent = `${is24Up ? '+' : ''}${chg24.toFixed(2)}%`;
+    const isChartChangeValid = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange));
+    const activeChangeToDisplay = isChartChangeValid ? selectedCoin.chartChange : chg24;
+    const isDispUp = activeChangeToDisplay >= 0;
+    changeVal.className = `tib-val ${isDispUp ? 'up' : 'down'}`;
+    changeVal.textContent = `${isDispUp ? '+' : ''}${activeChangeToDisplay.toFixed(2)}%`;
+    // changeVal.textContent = `${is24Up ? '+' : ''}${chg24.toFixed(2)}%`;
   }
   if (highVal) highVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.high || selectedCoin.price)}`;
   if (lowVal) lowVal.textContent = `${getCurrencySymbol()}${fmtPrice(selectedCoin.low || selectedCoin.price)}`;
@@ -5491,6 +5498,21 @@ function executeOrderFromSheet() {
     email: sess.email,
     balance: walletState.cashBalance || 10000
   });
+
+  const sizeInputEl = document.getElementById('sheet-size-input');
+  if (sizeInputEl && sizeInputEl.value !== undefined && sizeInputEl.value !== null && String(sizeInputEl.value).trim() !== '') {
+    const p = parseFloat(sizeInputEl.value);
+    if (!isNaN(p) && p > 0) sheetSizeCoins = p;
+  }
+
+  const sym = (selectedCoin && selectedCoin.symbol) || 'BTC';
+  const minVal = sym === 'BTC' ? 0.002 : 0.1;
+
+  if (!sheetSizeCoins || isNaN(sheetSizeCoins) || sheetSizeCoins <= 0) {
+    showToast(`⚠️ Please enter order quantity (Min: ${minVal} ${sym}) or choose percentage chips`, 'error');
+    if (sizeInputEl && typeof sizeInputEl.focus === 'function') sizeInputEl.focus();
+    return;
+  }
 
   const price = sheetOrderType === 'limit' 
     ? (parseFloat(document.getElementById('sheet-limit-price')?.value) || selectedCoin.price)
@@ -6414,11 +6436,14 @@ function renderLivePriceUpdates() {
       }
     }
     if (liveChangeEl) {
-      const formattedChange = `${is24Up ? '+' : ''}${chg24.toFixed(2)}%`;
+      const isChartChangeValid = (selectedCoin.chartChange !== undefined && !isNaN(selectedCoin.chartChange));
+      const activeChangeToDisplay = isChartChangeValid ? selectedCoin.chartChange : chg24;
+      const isDispUp = activeChangeToDisplay >= 0;
+      const formattedChange = `${isDispUp ? '+' : ''}${activeChangeToDisplay.toFixed(2)}%`;
       if (liveChangeEl.textContent !== formattedChange) {
         liveChangeEl.textContent = formattedChange;
       }
-      const targetChangeClass = `tib-val ${is24Up ? 'up' : 'down'}`;
+      const targetChangeClass = `tib-val ${isDispUp ? 'up' : 'down'}`;
       if (liveChangeEl.className !== targetChangeClass) {
         liveChangeEl.className = targetChangeClass;
       }
@@ -7040,7 +7065,7 @@ function setupOnboardingSwipe() {
 let desktopOrderSide = 'long';
 let desktopOrderType = 'market';
 let desktopLeverage = 150;
-let desktopSizeCoins = 0.05;
+let desktopSizeCoins = 0;
 
 function syncDesktopHeaderState() {
   const tabs = ['home', 'markets', 'trade', 'portfolio', 'account', 'auth'];
@@ -7766,19 +7791,17 @@ function updateDesktopOrderCalculations() {
 function executeDesktopOrder() {
   const sizeInput = document.getElementById('dtod-order-size');
   let parsed = 0;
-  if (sizeInput) {
+  if (sizeInput && sizeInput.value !== undefined && sizeInput.value !== null && String(sizeInput.value).trim() !== '') {
     parsed = parseFloat(sizeInput.value);
-    if (!isNaN(parsed) && parsed > 0) {
-      desktopSizeCoins = parsed;
-    }
   }
+  desktopSizeCoins = (!isNaN(parsed) && parsed > 0) ? parsed : 0;
 
   const sym = (selectedCoin && selectedCoin.symbol) || 'BTC';
   const minVal = sym === 'BTC' ? 0.002 : 0.1;
 
   if (!desktopSizeCoins || isNaN(desktopSizeCoins) || desktopSizeCoins <= 0) {
     showToast(`⚠️ Please enter order quantity (Min: ${minVal} ${sym}) or choose 25% / 50% / Max chips`, 'error');
-    if (sizeInput) sizeInput.focus();
+    if (sizeInput && typeof sizeInput.focus === 'function') sizeInput.focus();
     return;
   }
 
@@ -7804,6 +7827,14 @@ function executeDesktopOrder() {
   }
 
   executeOrderFromSheet();
+
+  // Reset input field and state so next click without quantity doesn't execute
+  if (sizeInput) sizeInput.value = '';
+  desktopSizeCoins = 0;
+  const chips = document.querySelectorAll('.dtod-pchip');
+  if (chips) chips.forEach(c => c.classList.remove('active'));
+  updateDesktopOrderCalculations();
+
   syncDesktopHeaderState();
   renderTradeBottomLedger();
   syncWalletWithCloud(true);
