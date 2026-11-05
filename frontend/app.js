@@ -6699,7 +6699,9 @@ function initVTradeApp() {
 
   // Register PWA Service Worker for offline capability & install prompt
   if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && !isNativePlatform()) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      reg.update().catch(() => {});
+    }).catch(() => {});
   }
 
   // Check auth session & strictly validate against database users

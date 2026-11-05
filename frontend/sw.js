@@ -1,5 +1,5 @@
 // VTrade Service Worker for PWA Offline Functionality & Installability
-const CACHE_NAME = 'vtrade-pwa-v1';
+const CACHE_NAME = 'vtrade-pwa-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -39,10 +39,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Network-first strategy: always fetch the latest version from server when online
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(event.request).then((networkResponse) => {
+    fetch(event.request)
+      .then((networkResponse) => {
         if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
           return networkResponse;
         }
@@ -51,8 +51,7 @@ self.addEventListener('fetch', (event) => {
           cache.put(event.request, responseToCache).catch(() => {});
         });
         return networkResponse;
-      }).catch(() => caches.match('/index.html'));
-    })
+      })
+      .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/index.html')))
   );
 });
-
