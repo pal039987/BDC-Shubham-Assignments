@@ -2402,7 +2402,10 @@ function switchBottomTab(tab) {
     renderHomeScreen();
     if (typeof initHeroGlassBlockInteractions === 'function') initHeroGlassBlockInteractions();
   }
-  else if (activeTab === 'markets') renderMarketsScreen();
+  else if (activeTab === 'markets') {
+    renderMarketsScreen();
+    fetchLiveBinanceTickers(true);
+  }
   else if (activeTab === 'trade') renderTradeScreen();
   else if (activeTab === 'portfolio') renderPortfolioScreen();
   else if (activeTab === 'account') renderAccountScreen();
@@ -3107,7 +3110,9 @@ function updateSpotlightBentoPrices() {
     }
 
     if (chgEl) {
-      const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
+      const chgVal = (coin.chartChange !== undefined && !isNaN(coin.chartChange))
+        ? coin.chartChange
+        : ((coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0));
       const isUp = chgVal >= 0;
       chgEl.className = `bento-chg ${isUp ? 'up' : 'down'}`;
       chgEl.textContent = `${isUp ? '+' : ''}${chgVal ? chgVal.toFixed(2) : '0.00'}%`;
@@ -3609,8 +3614,8 @@ function renderMarketsScreen() {
     list.sort((a, b) => marketSortAsc ? a.price - b.price : b.price - a.price);
   } else if (marketSortBy === 'change') {
     list.sort((a, b) => {
-      const aChg = (a.change24h !== undefined && !isNaN(a.change24h)) ? a.change24h : (a.change || 0);
-      const bChg = (b.change24h !== undefined && !isNaN(b.change24h)) ? b.change24h : (b.change || 0);
+      const aChg = (a.chartChange !== undefined && !isNaN(a.chartChange)) ? a.chartChange : ((a.change24h !== undefined && !isNaN(a.change24h)) ? a.change24h : (a.change || 0));
+      const bChg = (b.chartChange !== undefined && !isNaN(b.chartChange)) ? b.chartChange : ((b.change24h !== undefined && !isNaN(b.change24h)) ? b.change24h : (b.change || 0));
       return marketSortAsc ? aChg - bChg : bChg - aChg;
     });
   } else if (marketSortBy === 'name') {
@@ -3624,7 +3629,10 @@ function renderMarketsScreen() {
     list.forEach((c, i) => {
       const row = tbody.children[i];
       if (!row || !row.children) return;
-      const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
+      const chgVal = (c.chartChange !== undefined && !isNaN(c.chartChange))
+        ? c.chartChange
+        : ((c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0));
+      // const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
       const isUp = chgVal >= 0;
       const priceTd = row.children[1];
       const chgTd = row.children[2]?.querySelector ? row.children[2].querySelector('.coin-chg-badge') : null;
@@ -3645,7 +3653,10 @@ function renderMarketsScreen() {
   } else if (tbody) {
     if (typeof tbody.setAttribute === 'function') tbody.setAttribute('data-rendered-key', listKey);
     tbody.innerHTML = list.map(c => {
-      const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
+      const chgVal = (c.chartChange !== undefined && !isNaN(c.chartChange))
+        ? c.chartChange
+        : ((c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0));
+      // const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
       const isUp = chgVal >= 0;
       const displayPair = getCoinDisplayPair(c);
       return `
@@ -3676,7 +3687,10 @@ function renderMarketsScreen() {
 
   if (container) {
     container.innerHTML = list.map(c => {
-      const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
+      const chgVal = (c.chartChange !== undefined && !isNaN(c.chartChange))
+        ? c.chartChange
+        : ((c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0));
+      // const chgVal = (c.change24h !== undefined && !isNaN(c.change24h)) ? c.change24h : ((c.change !== undefined && !isNaN(c.change)) ? c.change : 0);
       const isUp = chgVal >= 0;
       const displayPair = getCoinDisplayPair(c);
       return `
@@ -4878,6 +4892,8 @@ async function fetchFastCoinTicker(binanceSym) {
     return;
   }
   const urls = [
+    `https://data-api.binance.vision/api/v3/ticker/tradingDay?symbol=${binanceSym}`,
+    `https://api.binance.com/api/v3/ticker/tradingDay?symbol=${binanceSym}`,
     `https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${binanceSym}`,
     `https://api.binance.com/api/v3/ticker/24hr?symbol=${binanceSym}`,
     getApiEndpoint('/api/prices')
@@ -4908,8 +4924,12 @@ async function fetchFastCoinTicker(binanceSym) {
             if (!isNaN(chg)) {
               selectedCoin.change = chg;
               selectedCoin.change24h = chg;
+              selectedCoin.chartChange = chg;
             }
-            if (o > 0 && !isNaN(o)) selectedCoin.open24h = o;
+            if (o > 0 && !isNaN(o)) {
+              selectedCoin.open24h = o;
+              selectedCoin.candleOpen = o;
+            }
             if (item.highPrice && parseFloat(item.highPrice) > 0) selectedCoin.high = parseFloat(item.highPrice);
             if (item.lowPrice && parseFloat(item.lowPrice) > 0) selectedCoin.low = parseFloat(item.lowPrice);
             if (item.quoteVolume) {
@@ -4925,8 +4945,12 @@ async function fetchFastCoinTicker(binanceSym) {
               if (!isNaN(chg)) {
                 listCoin.change = chg;
                 listCoin.change24h = chg;
+                listCoin.chartChange = chg;
               }
-              if (o > 0 && !isNaN(o)) listCoin.open = o;
+              if (o > 0 && !isNaN(o)) {
+                listCoin.open = o;
+                listCoin.candleOpen = o;
+              }
               if (selectedCoin.high) listCoin.high = selectedCoin.high;
               if (selectedCoin.low) listCoin.low = selectedCoin.low;
               if (selectedCoin.vol) listCoin.vol = selectedCoin.vol;
@@ -6160,10 +6184,10 @@ function connectCoinTickerWs(binanceSym) {
 }
 
 let lastRestTickerFetch = 0;
-async function fetchLiveBinanceTickers() {
+async function fetchLiveBinanceTickers(force = false) {
   const now = Date.now();
   // While on trade tab, throttle background REST polling to every 10s to preserve Binance weight
-  if (now - lastRestTickerFetch < 10000) {
+  if (!force && now - lastRestTickerFetch < 10000) {
     return;
   }
   lastRestTickerFetch = now;
@@ -6174,8 +6198,12 @@ async function fetchLiveBinanceTickers() {
   const encodedSymbols = encodeURIComponent(JSON.stringify(symbols));
 
   const endpoints = [
+    `https://data-api.binance.vision/api/v3/ticker/tradingDay?symbols=${encodedSymbols}`,
+    `https://api.binance.com/api/v3/ticker/tradingDay?symbols=${encodedSymbols}`,
     `https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${encodedSymbols}`,
     `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodedSymbols}`,
+    'https://data-api.binance.vision/api/v3/ticker/tradingDay',
+    'https://api.binance.com/api/v3/ticker/tradingDay',
     'https://data-api.binance.vision/api/v3/ticker/24hr',
     'https://api.binance.com/api/v3/ticker/24hr',
     getApiEndpoint('/api/prices')
@@ -6216,11 +6244,15 @@ async function fetchLiveBinanceTickers() {
             const t = tickerMap.get(c.binanceSym) || tickerMap.get(c.id);
             if (t) {
               c.price = parseFloat(t.lastPrice);
-              c.change = parseFloat(t.priceChangePercent);
-              c.change24h = c.change;
+              const dayChange = parseFloat(t.priceChangePercent);
+              c.change = dayChange;
+              c.change24h = dayChange;
+              c.chartChange = dayChange;
               if (t.openPrice) {
-                c.open = parseFloat(t.openPrice);
-                c.open24h = parseFloat(t.openPrice);
+                const oPrice = parseFloat(t.openPrice);
+                c.open = oPrice;
+                c.open24h = oPrice;
+                c.candleOpen = oPrice;
               }
               c.high = parseFloat(t.highPrice);
               c.low = parseFloat(t.lowPrice);
@@ -6234,7 +6266,11 @@ async function fetchLiveBinanceTickers() {
                 }
                 selectedCoin.change = c.change;
                 selectedCoin.change24h = c.change;
-                if (c.open24h) selectedCoin.open24h = c.open24h;
+                selectedCoin.chartChange = c.chartChange;
+                if (c.open24h) {
+                  selectedCoin.open24h = c.open24h;
+                  selectedCoin.candleOpen = c.candleOpen;
+                }
                 if (c.high) selectedCoin.high = c.high;
                 if (c.low) selectedCoin.low = c.low;
                 persistSelectedCoinState();
@@ -6260,7 +6296,9 @@ async function fetchLiveBinanceTickers() {
   }
 
   checkPendingOrdersTrigger();
-  if (activeTab !== 'trade') {
+  if (activeTab === 'markets') {
+    renderMarketsScreen();
+  } else if (activeTab !== 'trade') {
     renderLivePriceUpdates();
   }
 }
@@ -7508,7 +7546,9 @@ function initDesktopMarquee() {
 
   const showcaseCoins = COINS; // All 56 coins plus Gold!
   const itemsHtml = showcaseCoins.map(coin => {
-    const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
+    const chgVal = (coin.chartChange !== undefined && !isNaN(coin.chartChange))
+      ? coin.chartChange
+      : ((coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0));
     const isUp = chgVal >= 0;
     const changeClass = isUp ? 'up' : 'down';
     const changeSign = isUp ? '+' : '';
@@ -7529,7 +7569,9 @@ function initDesktopMarquee() {
   if (miniTrack && typeof COINS !== 'undefined') {
     const miniCoins = COINS;
     const miniItemsHtml = miniCoins.map(coin => {
-      const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
+      const chgVal = (coin.chartChange !== undefined && !isNaN(coin.chartChange))
+        ? coin.chartChange
+        : ((coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0));
       const isUp = chgVal >= 0;
       const changeClass = isUp ? 'up' : 'down';
       const changeSign = isUp ? '+' : '';
@@ -7550,7 +7592,10 @@ function updateDesktopMarqueePrices() {
   COINS.forEach(coin => {
     const priceEls = document.querySelectorAll(`[id="marq-price-${coin.id}"]`);
     const chgEls = document.querySelectorAll(`[id="marq-chg-${coin.id}"]`);
-    const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
+    const chgVal = (coin.chartChange !== undefined && !isNaN(coin.chartChange))
+      ? coin.chartChange
+      : ((coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0));
+    // const chgVal = (coin.change24h !== undefined && !isNaN(coin.change24h)) ? coin.change24h : ((coin.change !== undefined && !isNaN(coin.change)) ? coin.change : 0);
     const isUp = chgVal >= 0;
     const changeSign = isUp ? '+' : '';
     const formattedPrice = `${getCurrencySymbol()}${fmtPrice(coin.price)}`;
