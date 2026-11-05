@@ -2151,15 +2151,23 @@ let selectedCoin = (function() {
     if (coin && cachedStateRaw) {
       const cached = JSON.parse(cachedStateRaw);
       if (cached && (cached.id === coin.id || !saved || saved === coin.id)) {
-        if (typeof cached.price === 'number' && cached.price > 0) coin.price = cached.price;
-        if (typeof cached.change === 'number') coin.change = cached.change;
-        if (typeof cached.change24h === 'number') coin.change24h = cached.change24h;
-        if (typeof cached.chartChange === 'number') coin.chartChange = cached.chartChange;
-        if (typeof cached.candleOpen === 'number' && cached.candleOpen > 0) coin.candleOpen = cached.candleOpen;
-        if (typeof cached.open24h === 'number' && cached.open24h > 0) coin.open24h = cached.open24h;
-        if (typeof cached.high === 'number' && cached.high > 0) coin.high = cached.high;
-        if (typeof cached.low === 'number' && cached.low > 0) coin.low = cached.low;
-        if (cached.vol) coin.vol = cached.vol;
+        let isCorruptedCache = false;
+        if (coin.id === 'bitcoin' && cached.price < 5000) isCorruptedCache = true;
+        if (coin.id === 'ethereum' && cached.price < 200) isCorruptedCache = true;
+        if (coin.id === 'gold' && cached.price < 1000) isCorruptedCache = true;
+        if (cached.id && cached.id !== coin.id) isCorruptedCache = true;
+
+        if (!isCorruptedCache) {
+          if (typeof cached.price === 'number' && cached.price > 0) coin.price = cached.price;
+          if (typeof cached.change === 'number') coin.change = cached.change;
+          if (typeof cached.change24h === 'number') coin.change24h = cached.change24h;
+          if (typeof cached.chartChange === 'number') coin.chartChange = cached.chartChange;
+          if (typeof cached.candleOpen === 'number' && cached.candleOpen > 0) coin.candleOpen = cached.candleOpen;
+          if (typeof cached.open24h === 'number' && cached.open24h > 0) coin.open24h = cached.open24h;
+          if (typeof cached.high === 'number' && cached.high > 0) coin.high = cached.high;
+          if (typeof cached.low === 'number' && cached.low > 0) coin.low = cached.low;
+          if (cached.vol) coin.vol = cached.vol;
+        }
       }
     }
     if (coin) return coin;
@@ -4777,6 +4785,19 @@ function syncIndicatorsUI() {
 function selectCoinAndTrade(coinId) {
   const coin = COINS.find(c => c.id === coinId || c.symbol.toLowerCase() === coinId.toLowerCase());
   if (coin) {
+    if (liveTickerWs) {
+      try {
+        liveTickerWs.onmessage = null;
+        liveTickerWs.onerror = null;
+        liveTickerWs.onclose = null;
+        liveTickerWs.close();
+      } catch (e) {}
+      liveTickerWs = null;
+    }
+    if (wsRenderTimer) {
+      clearTimeout(wsRenderTimer);
+      wsRenderTimer = null;
+    }
     selectedCoin = coin;
     try {
       localStorage.setItem('vtrade_selected_coin', coin.id);
@@ -4784,8 +4805,6 @@ function selectCoinAndTrade(coinId) {
     } catch (e) {}
     switchBottomTab('trade');
     renderTradeScreen();
-    renderTradingViewChart(true);
-    fetchRealBinanceCandles();
     if (typeof updateDesktopOrderCalculations === 'function') updateDesktopOrderCalculations();
   }
 }
@@ -4885,8 +4904,13 @@ function renderTradeScreen() {
   updateDesktopOrderCalculations();
 }
 
+let currentFastTickerId = 0;
 async function fetchFastCoinTicker(binanceSym) {
   if (!binanceSym) return;
+  const thisTickerId = ++currentFastTickerId;
+  const targetId = selectedCoin ? selectedCoin.id : null;
+  const targetSym = binanceSym;
+
   if (selectedCoin && (selectedCoin.id === 'gold' || binanceSym === 'PAXGUSDT')) {
     await pollLiveGoldPrice();
     return;
@@ -4904,8 +4928,14 @@ async function fetchFastCoinTicker(binanceSym) {
       const tmr = setTimeout(() => ctl.abort(), 2200);
       const resp = await fetch(url, { signal: ctl.signal });
       clearTimeout(tmr);
+      if (thisTickerId !== currentFastTickerId || !selectedCoin || selectedCoin.id !== targetId || selectedCoin.binanceSym !== targetSym) {
+        return;
+      }
       if (resp.ok) {
         const d = await resp.json();
+        if (thisTickerId !== currentFastTickerId || !selectedCoin || selectedCoin.id !== targetId || selectedCoin.binanceSym !== targetSym) {
+          return;
+        }
         const item = d && d.lastPrice ? d : (d && d.prices && selectedCoin && d.prices[selectedCoin.id] ? {
           lastPrice: d.prices[selectedCoin.id].price,
           priceChangePercent: d.prices[selectedCoin.id].change24h,
@@ -4919,7 +4949,7 @@ async function fetchFastCoinTicker(binanceSym) {
           const p = parseFloat(item.lastPrice);
           const chg = parseFloat(item.priceChangePercent);
           const o = parseFloat(item.openPrice);
-          if (p > 0 && !isNaN(p) && selectedCoin && selectedCoin.binanceSym === binanceSym) {
+          if (p > 0 && !isNaN(p) && selectedCoin && selectedCoin.id === targetId && selectedCoin.binanceSym === targetSym) {
             selectedCoin.price = p;
             if (!isNaN(chg)) {
               selectedCoin.change = chg;
@@ -4939,7 +4969,7 @@ async function fetchFastCoinTicker(binanceSym) {
             if (selectedCoin.candleOpen && selectedCoin.candleOpen > 0) {
               selectedCoin.chartChange = parseFloat((((p - selectedCoin.candleOpen) / selectedCoin.candleOpen) * 100).toFixed(2));
             }
-            const listCoin = typeof COINS !== 'undefined' ? COINS.find(c => c.id === selectedCoin.id) : null;
+            const listCoin = typeof COINS !== 'undefined' ? COINS.find(c => c.id === targetId) : null;
             if (listCoin) {
               listCoin.price = p;
               if (!isNaN(chg)) {
@@ -5083,17 +5113,20 @@ function setChartInterval(interval) {
   }
 }
 
+let currentCandleFetchId = 0;
 async function fetchRealBinanceCandles() {
   const loader = document.getElementById('chart-loading-indicator');
   if (loader) loader.classList.remove('hidden');
 
+  const thisFetchId = ++currentCandleFetchId;
+  const targetCoinId = selectedCoin ? selectedCoin.id : null;
   const binanceTfMap = {
     '1m': '1m', '3m': '3m', '5m': '5m', '15m': '15m', '30m': '30m',
     '1h': '1h', '2h': '2h', '4h': '4h', '1d': '1d', '1w': '1w', '1M': '1M'
   };
 
   const bTf = binanceTfMap[chartInterval] || '1h';
-  const sym = selectedCoin.binanceSym || 'BTCUSDT';
+  const sym = (selectedCoin && selectedCoin.binanceSym) || 'BTCUSDT';
 
   const urls = [
     `https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${bTf}&limit=32`,
@@ -5108,8 +5141,15 @@ async function fetchRealBinanceCandles() {
       const resp = await fetch(u, { signal: ctl.signal });
       clearTimeout(tmr);
 
+      if (thisFetchId !== currentCandleFetchId || !selectedCoin || selectedCoin.id !== targetCoinId || selectedCoin.binanceSym !== sym) {
+        return;
+      }
+
       if (resp.ok) {
         const klines = await resp.json();
+        if (thisFetchId !== currentCandleFetchId || !selectedCoin || selectedCoin.id !== targetCoinId || selectedCoin.binanceSym !== sym) {
+          return;
+        }
         if (Array.isArray(klines) && klines.length > 0) {
           chartCandlesData = klines.map(k => ({
             time: k[0],
@@ -5147,6 +5187,7 @@ async function fetchRealBinanceCandles() {
   }
 
   if (!loaded) {
+    if (thisFetchId !== currentCandleFetchId || !selectedCoin || selectedCoin.id !== targetCoinId) return;
     generateSimulatedCandles();
   }
 
@@ -5919,14 +5960,26 @@ function renderCoinPickerList(query = '') {
 function selectCoinFromPicker(coinId) {
   const coin = COINS.find(c => c.id === coinId);
   if (coin) {
+    if (liveTickerWs) {
+      try {
+        liveTickerWs.onmessage = null;
+        liveTickerWs.onerror = null;
+        liveTickerWs.onclose = null;
+        liveTickerWs.close();
+      } catch (e) {}
+      liveTickerWs = null;
+    }
+    if (wsRenderTimer) {
+      clearTimeout(wsRenderTimer);
+      wsRenderTimer = null;
+    }
     selectedCoin = coin;
     try {
       localStorage.setItem('vtrade_selected_coin', coin.id);
+      persistSelectedCoinState();
     } catch (e) {}
     closeCoinPickerModal();
     renderTradeScreen();
-    renderTradingViewChart();
-    fetchRealBinanceCandles();
     const fsModal = document.getElementById('tv-fullscreen-modal');
     if (fsModal && !fsModal.classList.contains('hidden')) {
       openFullscreenChart();
@@ -6038,7 +6091,12 @@ function startGoldLivePolling() {
 function connectCoinTickerWs(binanceSym) {
   if (typeof WebSocket === 'undefined' || !binanceSym) return;
   if (liveTickerWs) {
-    try { liveTickerWs.close(); } catch (e) {}
+    try {
+      liveTickerWs.onmessage = null;
+      liveTickerWs.onerror = null;
+      liveTickerWs.onclose = null;
+      liveTickerWs.close();
+    } catch (e) {}
     liveTickerWs = null;
   }
   if (wsRenderTimer) {
@@ -6049,6 +6107,9 @@ function connectCoinTickerWs(binanceSym) {
     pollLiveGoldPrice();
     return; // Gold uses direct TVC:GOLD TradingView scanner feed
   }
+
+  const expectedSym = binanceSym.toUpperCase();
+  const targetCoinId = selectedCoin ? selectedCoin.id : null;
 
   const binanceTfMap = {
     '1m': '1m', '3m': '3m', '5m': '5m', '15m': '15m', '30m': '30m',
@@ -6069,15 +6130,28 @@ function connectCoinTickerWs(binanceSym) {
   let endpointIdx = 0;
 
   function tryConnect() {
-    if (activeTab !== 'trade' || !selectedCoin || selectedCoin.binanceSym !== binanceSym) return;
+    if (activeTab !== 'trade' || !selectedCoin || selectedCoin.binanceSym !== binanceSym || selectedCoin.id !== targetCoinId) return;
     try {
       const url = endpoints[endpointIdx % endpoints.length];
-      liveTickerWs = new WebSocket(url);
+      const ws = new WebSocket(url);
+      liveTickerWs = ws;
 
-      liveTickerWs.onmessage = (event) => {
+      ws.onmessage = (event) => {
         try {
+          if (activeTab !== 'trade' || !selectedCoin || selectedCoin.binanceSym !== binanceSym || selectedCoin.id !== targetCoinId) {
+            try { ws.onmessage = null; ws.close(); } catch (e) {}
+            return;
+          }
+
           const raw = JSON.parse(event.data);
           const d = raw.data || raw;
+          if (!d) return;
+
+          // Strict symbol match: reject any ticker/kline that belongs to a different coin!
+          if (d.s && d.s.toUpperCase() !== expectedSym) {
+            return;
+          }
+
           if (d && selectedCoin && (d.s === binanceSym || !d.s || selectedCoin.binanceSym === binanceSym)) {
             let newPrice = 0;
             let changePercent = null;
@@ -6165,18 +6239,18 @@ function connectCoinTickerWs(binanceSym) {
         } catch (err) {}
       };
 
-      liveTickerWs.onclose = () => {
-        if (activeTab === 'trade' && selectedCoin && selectedCoin.binanceSym === binanceSym) {
+      ws.onclose = () => {
+        if (activeTab === 'trade' && selectedCoin && selectedCoin.binanceSym === binanceSym && selectedCoin.id === targetCoinId) {
           endpointIdx++;
           setTimeout(() => {
-            if (activeTab === 'trade' && (!liveTickerWs || liveTickerWs.readyState !== 1)) {
+            if (activeTab === 'trade' && selectedCoin && selectedCoin.binanceSym === binanceSym && selectedCoin.id === targetCoinId && (!liveTickerWs || liveTickerWs.readyState !== 1)) {
               tryConnect();
             }
           }, 2000);
         }
       };
 
-      liveTickerWs.onerror = () => { try { liveTickerWs.close(); } catch (e) {} };
+      ws.onerror = () => { try { ws.close(); } catch (e) {} };
     } catch (e) {}
   }
 
@@ -7621,21 +7695,8 @@ function updateDesktopMarqueePrices() {
   });
 }
 
-function selectCoinAndTrade(coinId) {
-  const found = COINS.find(c => c.id === coinId || c.symbol.toLowerCase() === coinId.toLowerCase());
-  if (found) {
-    selectedCoin = found;
-    try {
-      localStorage.setItem('vtrade_selected_coin', found.id);
-      persistSelectedCoinState();
-    } catch (e) {}
-  }
-  switchBottomTab('trade');
-  renderTradeScreen();
-  renderTradingViewChart(true);
-  fetchRealBinanceCandles();
-  updateDesktopOrderCalculations();
-}
+// window.selectCoinAndTrade alias
+window.selectCoinAndTrade = selectCoinAndTrade;
 
 function setDesktopOrderSide(side) {
   desktopOrderSide = side;

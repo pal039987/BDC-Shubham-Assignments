@@ -54,7 +54,8 @@ const testFiles = [
   'test/chart_change_sync_and_fullscreen_icon.test.js',
   'test/coin_prices_and_gold_chart_sync.test.js',
   'test/website_price_flicker_and_diffing.test.js',
-  'test/website_24h_gain_loss_percent_sync.test.js'
+  'test/website_24h_gain_loss_percent_sync.test.js',
+  'test/coin_switch_flicker_race_prevention.test.js'
 ];
 
 async function main() {
