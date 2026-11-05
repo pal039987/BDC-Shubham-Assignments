@@ -1,5 +1,5 @@
 // VTrade Service Worker for PWA Offline Functionality & Installability
-const CACHE_NAME = 'vtrade-pwa-v2';
+const CACHE_NAME = 'vtrade-pwa-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

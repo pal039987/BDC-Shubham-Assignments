@@ -7737,11 +7737,21 @@ function updateDesktopOrderCalculations() {
 
 function executeDesktopOrder() {
   const sizeInput = document.getElementById('dtod-order-size');
+  let parsed = 0;
   if (sizeInput) {
-    const parsed = parseFloat(sizeInput.value);
+    parsed = parseFloat(sizeInput.value);
     if (!isNaN(parsed) && parsed > 0) {
       desktopSizeCoins = parsed;
     }
+  }
+
+  const sym = (selectedCoin && selectedCoin.symbol) || 'BTC';
+  const minVal = sym === 'BTC' ? 0.002 : 0.1;
+
+  if (!desktopSizeCoins || isNaN(desktopSizeCoins) || desktopSizeCoins <= 0) {
+    showToast(`⚠️ Please enter order quantity (Min: ${minVal} ${sym}) or choose 25% / 50% / Max chips`, 'error');
+    if (sizeInput) sizeInput.focus();
+    return;
   }
 
   // Sync to sheet state and execute!
@@ -7751,8 +7761,17 @@ function executeDesktopOrder() {
   sheetSizeCoins = desktopSizeCoins;
 
   if (desktopOrderType === 'limit') {
-    const limitInput = document.getElementById('sheet-limit-price');
     const dtodLimit = document.getElementById('dtod-limit-price');
+    if (dtodLimit && (!dtodLimit.value || parseFloat(dtodLimit.value) <= 0)) {
+      if (selectedCoin && selectedCoin.price) {
+        dtodLimit.value = selectedCoin.price;
+      } else {
+        showToast('⚠️ Please enter a valid limit order price', 'error');
+        dtodLimit.focus();
+        return;
+      }
+    }
+    const limitInput = document.getElementById('sheet-limit-price');
     if (limitInput && dtodLimit) limitInput.value = dtodLimit.value;
   }
 
@@ -7760,6 +7779,40 @@ function executeDesktopOrder() {
   syncDesktopHeaderState();
   renderTradeBottomLedger();
   syncWalletWithCloud(true);
+}
+
+function handleDesktopPriceSelect(p) {
+  if (!p || isNaN(p)) return;
+  const priceVal = parseFloat(p).toFixed(selectedCoin && selectedCoin.price < 1 ? 4 : 2);
+  const limitInput = document.getElementById('dtod-limit-price');
+  if (limitInput) limitInput.value = priceVal;
+  setDesktopOrderType('limit');
+  showToast(`Limit price set to $${priceVal}`, 'info');
+}
+
+function closeAllPositions() {
+  if (!walletState || !walletState.positions || walletState.positions.length === 0) {
+    showToast('No open positions to close', 'info');
+    return;
+  }
+  const count = walletState.positions.length;
+  while (walletState.positions.length > 0) {
+    closePosition(walletState.positions[0].id);
+  }
+  showToast(`All ${count} positions closed successfully`, 'success');
+}
+
+function cancelAllOrders() {
+  if (!walletState || !walletState.orders || walletState.orders.length === 0) {
+    showToast('No open orders to cancel', 'info');
+    return;
+  }
+  const count = walletState.orders.length;
+  walletState.orders = [];
+  saveWalletState();
+  syncWalletWithCloud(true);
+  renderTradeBottomLedger();
+  showToast(`All ${count} pending orders cancelled`, 'info');
 }
 
 function switchLedgerTab(tab) {
@@ -8087,7 +8140,7 @@ function renderTradeDeskOrderBookAndTrades() {
         </div>
         <div class="ob-asks-list" style="display:flex; flex-direction:column; gap:3px;">
           ${asks.map((a, i) => `
-            <div class="ob-ask-row" data-idx="${i}" style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); font-variant-numeric:tabular-nums; padding:3px 6px; border-radius:4px; overflow:hidden;">
+            <div class="ob-ask-row" data-idx="${i}" onclick="handleDesktopPriceSelect(${a.p})" title="Click to pre-fill limit price" style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); font-variant-numeric:tabular-nums; padding:3px 6px; border-radius:4px; overflow:hidden; cursor:pointer;">
               <div class="ob-bar" style="position:absolute; right:0; top:0; bottom:0; width:${a.w}%; background:rgba(240, 79, 94, 0.12); pointer-events:none;"></div>
               <span class="ob-p" style="color:#f04f5e; font-weight:700; position:relative; z-index:1;">${fmtPrice(a.p)}</span>
               <span class="ob-s" style="color:#c0c6d4; position:relative; z-index:1;">${a.s}</span>
@@ -8100,7 +8153,7 @@ function renderTradeDeskOrderBookAndTrades() {
         </div>
         <div class="ob-bids-list" style="display:flex; flex-direction:column; gap:3px;">
           ${bids.map((b, i) => `
-            <div class="ob-bid-row" data-idx="${i}" style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); font-variant-numeric:tabular-nums; padding:3px 6px; border-radius:4px; overflow:hidden;">
+            <div class="ob-bid-row" data-idx="${i}" onclick="handleDesktopPriceSelect(${b.p})" title="Click to pre-fill limit price" style="position:relative; display:flex; justify-content:space-between; font-size:12px; font-family:var(--font-price); font-variant-numeric:tabular-nums; padding:3px 6px; border-radius:4px; overflow:hidden; cursor:pointer;">
               <div class="ob-bar" style="position:absolute; right:0; top:0; bottom:0; width:${b.w}%; background:rgba(0, 192, 135, 0.12); pointer-events:none;"></div>
               <span class="ob-p" style="color:#00c087; font-weight:700; position:relative; z-index:1;">${fmtPrice(b.p)}</span>
               <span class="ob-s" style="color:#c0c6d4; position:relative; z-index:1;">${b.s}</span>

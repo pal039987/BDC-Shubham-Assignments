@@ -5767,23 +5767,21 @@ html:not(.is-native-apk) .tv-fs-header {
     display: none !important;
   }
 
-  /* 2. STRICT 4-COLUMN CSS GRID STRUCTURE (Grid Collapse Prevention) */
+  /* 2. INSTITUTIONAL 3-COLUMN CSS GRID STRUCTURE (Expansive Chart & Full-width Ledger) */
   html:not(.is-native-apk) .trade-workspace-grid,
   html:not(.is-native-apk) body.trade-screen-active .trade-workspace-grid,
   html:not(.is-native-apk) #screen-trade .trade-workspace-grid {
     display: grid !important;
-    grid-template-columns: 240px minmax(0, 1fr) 280px 330px !important;
-    grid-template-rows: 60% 40% !important;
-    gap: 4px !important;
-    padding: 4px !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: calc(100vh - 64px) !important;
-    max-height: calc(100vh - 64px) !important;
-    flex: 1 1 0% !important;
+    grid-template-columns: minmax(0, 1fr) 280px 330px !important;
+    grid-template-rows: auto auto !important;
+    gap: 8px !important;
+    padding: 8px 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    flex: 1 1 auto !important;
     min-height: 0 !important;
     box-sizing: border-box !important;
-    overflow: hidden !important;
     background: #080B11 !important;
     background-color: #080B11 !important;
   }
@@ -5935,16 +5933,15 @@ html:not(.is-native-apk) .tv-fs-header {
     margin: 0 !important;
   }
 
-  /* Column 2: Top 60% Main TradingView Chart Container */
+  /* Column 1 (Row 1): Main Responsive TradingView Chart Container */
   html:not(.is-native-apk) .trade-chart-box,
   html:not(.is-native-apk) body.trade-screen-active .trade-chart-box,
   html:not(.is-native-apk) #screen-trade .trade-chart-box {
-    grid-column: 2 !important;
+    grid-column: 1 !important;
     grid-row: 1 !important;
-    height: 60% !important;
-    max-height: 60% !important;
-    min-height: 0 !important;
-    flex: 0 0 60% !important;
+    height: 540px !important;
+    min-height: 480px !important;
+    max-height: 600px !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
@@ -5988,21 +5985,19 @@ html:not(.is-native-apk) .tv-fs-header {
     display: block !important;
   }
 
-  /* Column 2: Bottom 40% Active Positions / Ledger Panel */
+  /* Column 1 (Row 2): Wide Positions & Trade Ledger Panel directly below chart */
   html:not(.is-native-apk) .trade-bottom-ledger-card,
   html:not(.is-native-apk) body.trade-screen-active .trade-bottom-ledger-card,
   html:not(.is-native-apk) #screen-trade .trade-bottom-ledger-card {
-    grid-column: 2 !important;
+    grid-column: 1 !important;
     grid-row: 2 !important;
-    height: 40% !important;
-    max-height: 40% !important;
-    min-height: 0 !important;
-    flex: 0 0 40% !important;
+    min-height: 320px !important;
+    height: auto !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
-    background: #080B11 !important;
-    background-color: #080B11 !important;
+    background: #0c1018 !important;
+    background-color: #0c1018 !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 6px !important;
     display: flex !important;
@@ -6056,15 +6051,14 @@ html:not(.is-native-apk) .tv-fs-header {
     box-sizing: border-box !important;
   }
 
-  /* Column 3 (Width: 280px): Real-time Order Book Depth Panel */
+  /* Column 2 (Width: 280px): Real-time Order Book Depth Panel */
   html:not(.is-native-apk) .trade-depth-panel,
   html:not(.is-native-apk) body.trade-screen-active .trade-depth-panel,
   html:not(.is-native-apk) #screen-trade .trade-depth-panel {
-    grid-column: 3 !important;
+    grid-column: 2 !important;
     grid-row: 1 / span 2 !important;
-    height: calc(100vh - 64px) !important;
-    max-height: calc(100vh - 64px) !important;
-    min-height: 0 !important;
+    height: 100% !important;
+    min-height: 870px !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 280px !important;
@@ -6110,15 +6104,14 @@ html:not(.is-native-apk) .tv-fs-header {
     border-bottom: 2px solid #00C853 !important;
   }
 
-  /* Column 4 (Width: 330px): Buy/Sell Order Form Terminal */
+  /* Column 3 (Width: 330px): Buy/Sell Order Form Terminal */
   html:not(.is-native-apk) .desktop-trade-order-dock,
   html:not(.is-native-apk) body.trade-screen-active .desktop-trade-order-dock,
   html:not(.is-native-apk) #screen-trade .desktop-trade-order-dock {
-    grid-column: 4 !important;
+    grid-column: 3 !important;
     grid-row: 1 / span 2 !important;
-    height: calc(100vh - 64px) !important;
-    max-height: calc(100vh - 64px) !important;
-    min-height: 0 !important;
+    height: 100% !important;
+    min-height: 870px !important;
     width: 100% !important;
     min-width: 0 !important;
     max-width: 330px !important;
@@ -6140,7 +6133,7 @@ html:not(.is-native-apk) .tv-fs-header {
   /* Order Book Hidden State Responsive Rebalancing */
   html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden,
   html:not(.is-native-apk) body.trade-screen-active .trade-workspace-grid.orderbook-hidden {
-    grid-template-columns: 240px minmax(0, 1fr) 0px 330px !important;
+    grid-template-columns: minmax(0, 1fr) 330px !important;
   }
   html:not(.is-native-apk) .trade-workspace-grid.orderbook-hidden .trade-depth-panel {
     display: none !important;
@@ -15119,43 +15112,39 @@ body.trade-screen-active .trade-depth-panel {
     background: rgba(255, 255, 255, 0.04) !important;
   }
 
-  /* 4. Trading Desk Screen Rigid 4-Column Engine (Zero Vertical Scroll) */
+  /* 4. Trading Desk Screen Institutional 3-Column Engine */
   #screen-trade,
   #screen-trade.active,
+  body.trade-screen-active #screen-trade.active,
   .trade-fullwidth-container {
-    height: calc(100vh - 64px) !important;
-    max-height: calc(100vh - 64px) !important;
-    overflow: hidden !important;
+    height: auto !important;
+    min-height: calc(100vh - 64px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  body.trade-screen-active .desktop-marquee-wrap {
+    display: none !important;
+  }
+
+  body.trade-screen-active .app-top-header {
+    height: 50px !important;
   }
 
   .trade-workspace-grid,
   body.trade-screen-active .trade-workspace-grid,
   #screen-trade .trade-workspace-grid {
     display: grid !important;
-    grid-template-columns: 240px minmax(0, 1fr) 280px 330px !important;
-    grid-template-rows: 62% 38% !important;
-    gap: 6px !important;
-    padding: 6px !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: calc(100vh - 64px) !important;
-    max-height: calc(100vh - 64px) !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-    background-color: #05070F !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  }
-
-  .trade-watchlist-panel,
-  .trade-watchlist,
-  #trade-watchlist-panel {
-    grid-column: 1 !important;
-    grid-row: 1 / span 2 !important;
+    grid-template-columns: minmax(0, 1fr) 280px 330px !important;
+    grid-template-rows: auto auto !important;
+    gap: 8px !important;
+    padding: 8px 12px !important;
     width: 100% !important;
-    max-width: 240px !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: calc(100vh - 120px) !important;
+    box-sizing: border-box !important;
+    background: #05070F !important;
     background-color: #05070F !important;
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
   }
@@ -15163,49 +15152,63 @@ body.trade-screen-active .trade-depth-panel {
   .trade-chart-box,
   body.trade-screen-active .trade-chart-box,
   #screen-trade .trade-chart-box {
-    grid-column: 2 !important;
+    grid-column: 1 !important;
     grid-row: 1 !important;
-    height: 62% !important;
-    max-height: 62% !important;
-    flex: 0 0 62% !important;
+    height: 540px !important;
+    min-height: 480px !important;
+    max-height: 600px !important;
+    width: 100% !important;
+    min-width: 0 !important;
     overflow: hidden !important;
-    background-color: #05070F !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background-color: #080B11 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
   }
 
   .trade-bottom-ledger-card,
   body.trade-screen-active .trade-bottom-ledger-card,
   #screen-trade .trade-bottom-ledger-card {
-    grid-column: 2 !important;
+    grid-column: 1 !important;
     grid-row: 2 !important;
-    height: 38% !important;
-    max-height: 38% !important;
-    flex: 0 0 38% !important;
+    min-height: 320px !important;
+    height: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
     overflow: hidden !important;
-    background-color: #05070F !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background: #0c1018 !important;
+    background-color: #0c1018 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
   }
 
   .trade-depth-panel,
   body.trade-screen-active .trade-depth-panel {
-    grid-column: 3 !important;
+    grid-column: 2 !important;
     grid-row: 1 / span 2 !important;
-    height: calc(100vh - 64px) !important;
-    max-height: calc(100vh - 64px) !important;
+    height: 100% !important;
+    min-height: 870px !important;
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
     overflow: hidden !important;
-    background-color: #05070F !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background-color: #080B11 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
   }
 
   .desktop-trade-order-dock,
   body.trade-screen-active .desktop-trade-order-dock {
-    grid-column: 4 !important;
+    grid-column: 3 !important;
     grid-row: 1 / span 2 !important;
-    height: calc(100vh - 64px) !important;
-    max-height: calc(100vh - 64px) !important;
-    overflow: hidden !important;
-    background-color: #05070F !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    height: 100% !important;
+    min-height: 870px !important;
+    width: 330px !important;
+    min-width: 330px !important;
+    max-width: 330px !important;
+    overflow-y: auto !important;
+    background-color: #080B11 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
   }
 
   /* Independent Overflows */
